@@ -8,6 +8,7 @@ import {
   isSameMonth,
   isSameDay,
   differenceInMinutes,
+  getDay,
 } from "date-fns";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -26,14 +27,14 @@ import type { TimeEntry } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const dayOfWeekMap: { [key: string]: string } = {
-  Monday: "Mo",
-  Tuesday: "Di",
-  Wednesday: "Mi",
-  Thursday: "Do",
-  Friday: "Fr",
-  Saturday: "Sa",
-  Sunday: "So",
+const dayOfWeekMap: { [key: number]: string } = {
+  1: "Mo",
+  2: "Di",
+  3: "Mi",
+  4: "Do",
+  5: "Fr",
+  6: "Sa",
+  0: "So",
 };
 
 export default function ExportPreview() {
@@ -42,13 +43,18 @@ export default function ExportPreview() {
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   useEffect(() => {
-    const storedEntries = localStorage.getItem("timeEntries");
-    if (storedEntries) {
-      setEntries(
-        JSON.parse(storedEntries, (key, value) =>
-          key === "startTime" || key === "endTime" ? new Date(value) : value
-        )
-      );
+    try {
+      const storedEntries = localStorage.getItem("timeEntries");
+      if (storedEntries) {
+        setEntries(
+          JSON.parse(storedEntries, (key, value) =>
+            key === "startTime" || key === "endTime" ? new Date(value) : value
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to parse time entries from localStorage, clearing data.", error);
+      localStorage.removeItem("timeEntries");
     }
     setSelectedMonth(new Date());
   }, []);
@@ -116,7 +122,7 @@ export default function ExportPreview() {
                 const pauseTime = entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : '';
                 
                 data.push([
-                    dayOfWeekMap[format(day, 'EEEE')],
+                    dayOfWeekMap[getDay(day)],
                     format(day, 'd/M/yyyy'),
                     entry.location,
                     entry.startTime ? format(entry.startTime, 'HH:mm') : '',
@@ -128,9 +134,9 @@ export default function ExportPreview() {
                     entry.isDriver ? 'F' : '',
                 ]);
               });
-            } else if (parseInt(format(day, 'i')) <= 6) { // Not sunday
+            } else if (getDay(day) !== 0) { // Not sunday
                 data.push([
-                    dayOfWeekMap[format(day, 'EEEE')],
+                    dayOfWeekMap[getDay(day)],
                     format(day, 'd/M/yyyy'),
                     '', '', '', '', '', '', '', '',
                 ]);
@@ -235,8 +241,7 @@ export default function ExportPreview() {
 
           <main>
             {weeksInMonth.map((week, weekIndex) => {
-              const weeklyTotal = calculateWeekTotal(week);
-              if (weeklyTotal === 0 && !week.some(d => isSameMonth(d, selectedMonth))) {
+              if (!week.some(d => isSameMonth(d, selectedMonth))) {
                 return null;
               }
 
@@ -244,7 +249,7 @@ export default function ExportPreview() {
               <div key={weekIndex} className="mb-6">
                 <Table className="border">
                   <TableHeader>
-                    <TableRow className="bg-blue-100 hover:bg-blue-100">
+                    <TableRow className="bg-secondary hover:bg-secondary">
                       <TableHead className="w-[8%]">Woche</TableHead>
                       <TableHead className="w-[12%]">Datum</TableHead>
                       <TableHead className="w-[15%]">Einsatzort</TableHead>
@@ -256,7 +261,7 @@ export default function ExportPreview() {
                       <TableHead className="w-[10%]">vergütete AZ</TableHead>
                       <TableHead className="w-[8%]">Fahrer</TableHead>
                     </TableRow>
-                    <TableRow className="bg-blue-100 hover:bg-blue-100">
+                    <TableRow className="bg-secondary hover:bg-secondary">
                       <TableHead></TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
@@ -270,19 +275,21 @@ export default function ExportPreview() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {week.map((day, dayIndex) => {
-                       if (!isSameMonth(day, selectedMonth) || format(day, 'EEEE') === 'Sunday') {
+                    {week.map((day) => {
+                       if (!isSameMonth(day, selectedMonth)) {
                         return null;
                       }
 
                       const dayEntries = getEntriesForDay(day);
+                      const isSunday = getDay(day) === 0;
 
                       if (dayEntries.length === 0) {
+                        if (isSunday) return null; // Don't render empty Sundays
                         return (
                            <TableRow key={day.toISOString()}>
-                              <TableCell>{dayOfWeekMap[format(day, 'EEEE')]}</TableCell>
+                              <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
-                              <TableCell className="text-gray-400">..................................................</TableCell>
+                              <TableCell className="text-muted-foreground">..................................................</TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
@@ -300,7 +307,7 @@ export default function ExportPreview() {
 
                         return (
                         <TableRow key={entry.id}>
-                          {entryIndex === 0 ? <TableCell>{dayOfWeekMap[format(day, 'EEEE')]}</TableCell> : <TableCell></TableCell>}
+                          {entryIndex === 0 ? <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell> : <TableCell></TableCell>}
                           {entryIndex === 0 ? <TableCell>{format(day, "d/M/yyyy")}</TableCell> : <TableCell></TableCell>}
                           <TableCell>{entry.location}</TableCell>
                           <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>

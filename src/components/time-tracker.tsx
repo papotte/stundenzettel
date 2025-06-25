@@ -13,6 +13,7 @@ import {
   FileSpreadsheet,
   MapPin,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -174,6 +186,20 @@ export default function TimeTracker() {
     toast({ title: "Entry Deleted", variant: 'destructive'});
   };
 
+  const handleClearData = () => {
+    localStorage.removeItem("timeEntries");
+    setEntries([]);
+    if (runningTimer) {
+      setRunningTimer(null);
+      setLocation("");
+      setElapsedTime(0);
+    }
+    toast({
+      title: "Data Cleared",
+      description: "All your time entries have been removed.",
+    });
+  };
+
   const handleGetCurrentLocation = async () => {
     if (isFetchingLocation) return;
     if (navigator.geolocation) {
@@ -248,153 +274,186 @@ export default function TimeTracker() {
 
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <div className="flex items-center gap-2">
-          <Clock className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight">TimeWise Tracker</h1>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-            <Button asChild variant="outline">
-              <Link href="/export">
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                Preview & Export
-              </Link>
-            </Button>
-        </div>
-      </header>
+    <TooltipProvider>
+      <div className="flex min-h-screen w-full flex-col">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+          <div className="flex items-center gap-2">
+            <Clock className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold tracking-tight">TimeWise Tracker</h1>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href="/export">
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Preview & Export
+                </Link>
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <Button variant="destructive" size="icon">
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Clear All Data</span>
+                          </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Clear all data</p>
+                      </TooltipContent>
+                  </Tooltip>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete all
+                      your time tracking data from this browser.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleClearData}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      Yes, delete everything
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+          </div>
+        </header>
 
-      <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="mx-auto grid max-w-6xl gap-8">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Live Time Tracking</CardTitle>
-              <CardDescription>
-                Start the timer to track your work as it happens.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {runningTimer ? (
-                <div className="grid gap-4">
-                  <div className="flex items-center justify-between rounded-lg bg-muted p-4">
-                    <div>
-                      <p className="font-medium">{runningTimer.location}</p>
-                    </div>
-                    <p className="text-2xl font-bold font-mono tabular-nums tracking-wider text-primary">
-                      {formatDuration(elapsedTime)}
-                    </p>
-                  </div>
-                  <div className="flex">
-                    <Button onClick={handleStopTimer} className="w-full bg-destructive hover:bg-destructive/90 transition-all duration-300">
-                      <Pause className="mr-2 h-4 w-4" />
-                      Stop
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  <div className="flex w-full items-center gap-2">
-                    <Input
-                      placeholder="Where are you working from?"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className="flex-1"
-                    />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location" disabled={isFetchingLocation}>
-                             {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Get current location</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300 bg-accent hover:bg-accent/90">
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Tracking
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <div>
-            <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold">Time Entries</h2>
-              <div className="flex items-center gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => date && setSelectedDate(date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
-                  <SheetTrigger asChild>
-                    <Button onClick={openNewEntryForm}>
-                      <Plus className="mr-2 h-4 w-4" /> Add Entry
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent className="w-full max-w-none sm:max-w-md">
-                    {selectedDate && <TimeEntryForm
-                      entry={editingEntry}
-                      onSave={handleSaveEntry}
-                      selectedDate={selectedDate}
-                      onClose={() => setIsFormOpen(false)}
-                    />}
-                  </SheetContent>
-                </Sheet>
-              </div>
-            </div>
-            
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
+          <div className="mx-auto grid max-w-6xl gap-8">
             <Card className="shadow-lg">
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>
-                            {selectedDate && isSameDay(selectedDate, new Date())
-                            ? "Today's Entries"
-                            : selectedDate ? `Entries for ${format(selectedDate, "PPP")}` : "Loading..."}
-                        </CardTitle>
-                        <div className="text-lg font-bold text-primary">{formatDuration(totalDayDuration)}</div>
+              <CardHeader>
+                <CardTitle>Live Time Tracking</CardTitle>
+                <CardDescription>
+                  Start the timer to track your work as it happens.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {runningTimer ? (
+                  <div className="grid gap-4">
+                    <div className="flex items-center justify-between rounded-lg bg-muted p-4">
+                      <div>
+                        <p className="font-medium">{runningTimer.location}</p>
+                      </div>
+                      <p className="text-2xl font-bold font-mono tabular-nums tracking-wider text-primary">
+                        {formatDuration(elapsedTime)}
+                      </p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    {filteredEntries.length > 0 ? (
-                    <div className="space-y-4">
-                        {filteredEntries.map((entry) => (
-                        <TimeEntryCard
-                            key={entry.id}
-                            entry={entry}
-                            onEdit={handleEditEntry}
-                            onDelete={handleDeleteEntry}
-                        />
-                        ))}
+                    <div className="flex">
+                      <Button onClick={handleStopTimer} className="w-full bg-destructive hover:bg-destructive/90 transition-all duration-300">
+                        <Pause className="mr-2 h-4 w-4" />
+                        Stop
+                      </Button>
                     </div>
-                    ) : (
-                    <div className="text-center py-12">
-                        <p className="text-muted-foreground">No entries for this day.</p>
-                        <Button variant="link" onClick={openNewEntryForm} className="mt-2">Add your first entry</Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    <div className="flex w-full items-center gap-2">
+                      <Input
+                        placeholder="Where are you working from?"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location" disabled={isFetchingLocation}>
+                              {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Get current location</p>
+                          </TooltipContent>
+                        </Tooltip>
                     </div>
-                    )}
-                </CardContent>
+                    <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300 bg-accent hover:bg-accent/90">
+                      <Play className="mr-2 h-4 w-4" />
+                      Start Tracking
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
             </Card>
 
+            <div>
+              <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold">Time Entries</h2>
+                <div className="flex items-center gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => date && setSelectedDate(date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+                    <SheetTrigger asChild>
+                      <Button onClick={openNewEntryForm}>
+                        <Plus className="mr-2 h-4 w-4" /> Add Entry
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent className="w-full max-w-none sm:max-w-md">
+                      {selectedDate && <TimeEntryForm
+                        entry={editingEntry}
+                        onSave={handleSaveEntry}
+                        selectedDate={selectedDate}
+                        onClose={() => setIsFormOpen(false)}
+                      />}
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              </div>
+              
+              <Card className="shadow-lg">
+                  <CardHeader>
+                      <div className="flex justify-between items-center">
+                          <CardTitle>
+                              {selectedDate && isSameDay(selectedDate, new Date())
+                              ? "Today's Entries"
+                              : selectedDate ? `Entries for ${format(selectedDate, "PPP")}` : "Loading..."}
+                          </CardTitle>
+                          <div className="text-lg font-bold text-primary">{formatDuration(totalDayDuration)}</div>
+                      </div>
+                  </CardHeader>
+                  <CardContent>
+                      {filteredEntries.length > 0 ? (
+                      <div className="space-y-4">
+                          {filteredEntries.map((entry) => (
+                          <TimeEntryCard
+                              key={entry.id}
+                              entry={entry}
+                              onEdit={handleEditEntry}
+                              onDelete={handleDeleteEntry}
+                          />
+                          ))}
+                      </div>
+                      ) : (
+                      <div className="text-center py-12">
+                          <p className="text-muted-foreground">No entries for this day.</p>
+                          <Button variant="link" onClick={openNewEntryForm} className="mt-2">Add your first entry</Button>
+                      </div>
+                      )}
+                  </CardContent>
+              </Card>
+
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </TooltipProvider>
   );
 }
