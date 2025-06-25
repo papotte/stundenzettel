@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -27,6 +28,7 @@ import type { TimeEntry } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTimeEntries } from "@/services/time-entry-service";
+import { useAuth } from "@/hooks/use-auth";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -39,16 +41,18 @@ const dayOfWeekMap: { [key: number]: string } = {
 };
 
 export default function ExportPreview() {
+  const { user } = useAuth();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   useEffect(() => {
+    if (!user) return;
     const fetchAndSetEntries = async () => {
       setIsLoading(true);
       try {
-        const fetchedEntries = await getTimeEntries();
+        const fetchedEntries = await getTimeEntries(user.uid);
         setEntries(fetchedEntries);
       } catch (error) {
         console.error("Failed to load time entries from Firestore.", error);
@@ -57,7 +61,7 @@ export default function ExportPreview() {
       setIsLoading(false);
     };
     fetchAndSetEntries();
-  }, []);
+  }, [user]);
 
   const weeksInMonth = useMemo(
     () => (selectedMonth ? getWeeksForMonth(selectedMonth) : []),
@@ -236,7 +240,7 @@ export default function ExportPreview() {
             <h1 className="text-xl font-bold font-headline">
               Stundenzettel für den Monat: {format(selectedMonth, "MMMM")}
             </h1>
-            <div className="text-right font-semibold">{employeeName}</div>
+            <div className="text-right font-semibold">{user?.displayName || user?.email || employeeName}</div>
           </header>
 
           <main>

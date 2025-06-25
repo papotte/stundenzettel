@@ -1,5 +1,6 @@
 export interface TimeEntry {
   id: string;
+  userId: string;
   startTime: Date;
   endTime?: Date; // undefined if timer is running
   location: string;

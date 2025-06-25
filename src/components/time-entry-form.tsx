@@ -60,7 +60,7 @@ const formSchema = z.object({
 interface TimeEntryFormProps {
   entry: TimeEntry | null;
   selectedDate: Date;
-  onSave: (data: TimeEntry) => void;
+  onSave: (data: Omit<TimeEntry, 'userId'>) => void;
   onClose: () => void;
 }
 
@@ -85,7 +85,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     const startTime = set(values.date, { hours: startHours, minutes: startMinutes, seconds: 0, milliseconds: 0 });
     const endTime = set(values.date, { hours: endHours, minutes: endMinutes, seconds: 0, milliseconds: 0 });
 
-    const finalEntry: TimeEntry = {
+    const finalEntry: Omit<TimeEntry, 'userId'> = {
       id: entry?.id || Date.now().toString(),
       location: values.location,
       startTime,

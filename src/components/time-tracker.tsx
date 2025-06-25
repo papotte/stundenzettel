@@ -18,6 +18,7 @@ import {
   Plane,
   Landmark,
   Hourglass,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,9 +61,12 @@ import {
 import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
 import { Skeleton } from "./ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
+import { auth } from "@/lib/firebase";
 
 
 export default function TimeTracker() {
+  const { user } = useAuth();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null);
@@ -76,10 +80,12 @@ export default function TimeTracker() {
 
   useEffect(() => {
     setSelectedDate(new Date());
+    if (!user) return;
+
     const fetchEntries = async () => {
       setIsLoading(true);
       try {
-        const fetchedEntries = await getTimeEntries();
+        const fetchedEntries = await getTimeEntries(user.uid);
         setEntries(fetchedEntries);
       } catch (error) {
         console.error("Error fetching time entries:", error);
@@ -93,7 +99,7 @@ export default function TimeTracker() {
       }
     };
     fetchEntries();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -108,6 +114,7 @@ export default function TimeTracker() {
   }, [runningTimer]);
 
   const handleStartTimer = () => {
+    if (!user) return;
     if (!location) {
       toast({
         title: "Location required",
@@ -118,6 +125,7 @@ export default function TimeTracker() {
     }
     const newTimer: TimeEntry = {
       id: Date.now().toString(),
+      userId: user.uid,
       startTime: new Date(),
       location,
     };
@@ -138,14 +146,15 @@ export default function TimeTracker() {
     }
   };
 
-  const handleSaveEntry = async (entryData: TimeEntry) => {
+  const handleSaveEntry = async (entryData: Omit<TimeEntry, 'userId'>) => {
+    if (!user) return;
     const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"].includes(entryData.location);
     
-    let finalEntryData = { ...entryData };
-
-    if (!isNonWorkEntry && finalEntryData.endTime) {
-      const workDurationInMinutes = differenceInMinutes(finalEntryData.endTime, finalEntryData.startTime);
-      const travelTimeInMinutes = (finalEntryData.travelTime || 0) * 60;
+    let entryWithUser = { ...entryData, userId: user.uid };
+    
+    if (!isNonWorkEntry && entryWithUser.endTime) {
+      const workDurationInMinutes = differenceInMinutes(entryWithUser.endTime, entryWithUser.startTime);
+      const travelTimeInMinutes = (entryWithUser.travelTime || 0) * 60;
       const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
       
       let requiredPause = 0;
@@ -155,25 +164,25 @@ export default function TimeTracker() {
         requiredPause = 30;
       }
       
-      finalEntryData.pauseDuration = requiredPause;
+      entryWithUser.pauseDuration = requiredPause;
     } else {
-      finalEntryData.pauseDuration = 0;
+      entryWithUser.pauseDuration = 0;
     }
     
     setIsFormOpen(false);
     setEditingEntry(null);
 
     try {
-      if (entries.some(e => e.id === finalEntryData.id)) {
-        await updateTimeEntry(finalEntryData.id, finalEntryData);
-        setEntries(entries.map((e) => (e.id === finalEntryData.id ? finalEntryData : e)));
-        toast({ title: "Entry Updated", description: `Changes to "${finalEntryData.location}" have been saved.`});
+      if (entries.some(e => e.id === entryWithUser.id)) {
+        await updateTimeEntry(entryWithUser.id, entryWithUser);
+        setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
+        toast({ title: "Entry Updated", description: `Changes to "${entryWithUser.location}" have been saved.`});
       } else {
-        const { id, ...dataToSave } = finalEntryData;
-        await addTimeEntry(dataToSave);
-        const fetchedEntries = await getTimeEntries();
+        const { id, ...dataToSave } = entryWithUser;
+        await addTimeEntry(dataToSave as Omit<TimeEntry, 'id'>);
+        const fetchedEntries = await getTimeEntries(user.uid);
         setEntries(fetchedEntries);
-        toast({ title: "Entry Added", description: `New entry for "${finalEntryData.location}" created.`});
+        toast({ title: "Entry Added", description: `New entry for "${entryWithUser.location}" created.`});
       }
     } catch (error) {
       console.error("Error saving entry:", error);
@@ -187,8 +196,9 @@ export default function TimeTracker() {
   };
 
   const handleDeleteEntry = async (id: string) => {
+    if (!user) return;
     try {
-      await deleteTimeEntry(id);
+      await deleteTimeEntry(user.uid, id);
       setEntries(entries.filter((entry) => entry.id !== id));
       toast({ title: "Entry Deleted", variant: 'destructive'});
     } catch (error) {
@@ -198,8 +208,9 @@ export default function TimeTracker() {
   };
 
   const handleClearData = async () => {
+    if (!user) return;
     try {
-      await deleteAllTimeEntries();
+      await deleteAllTimeEntries(user.uid);
       setEntries([]);
       if (runningTimer) {
         setRunningTimer(null);
@@ -217,12 +228,13 @@ export default function TimeTracker() {
   };
 
   const handleAddSpecialEntry = async (location: string, hours: number) => {
-    if (!selectedDate) return;
+    if (!selectedDate || !user) return;
 
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
     const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
 
     const newEntry: Omit<TimeEntry, 'id'> = {
+      userId: user.uid,
       location: location,
       startTime: startTime,
       endTime: endTime,
@@ -243,7 +255,7 @@ export default function TimeTracker() {
 
     try {
       await addTimeEntry(newEntry);
-      const fetchedEntries = await getTimeEntries();
+      const fetchedEntries = await getTimeEntries(user.uid);
       setEntries(fetchedEntries);
       toast({
         title: "Entry Added",
@@ -306,6 +318,11 @@ export default function TimeTracker() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    // The auth context and page guard will handle redirection
   };
 
   const filteredEntries = useMemo(() =>
@@ -377,6 +394,17 @@ export default function TimeTracker() {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4" />
+                    <span className="sr-only">Sign Out</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Sign Out</p>
+                </TooltipContent>
+              </Tooltip>
           </div>
         </header>
 

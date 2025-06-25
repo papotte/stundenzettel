@@ -13,8 +13,6 @@ import {
   writeBatch,
 } from "firebase/firestore";
 
-const timeEntriesCollection = collection(db, "timeEntries");
-
 // Helper to convert Firestore Timestamps to JS Dates in a document
 const fromFirestore = (docData: any): TimeEntry => {
     const data = { ...docData };
@@ -36,26 +34,34 @@ const toFirestore = (entry: Partial<TimeEntry>) => {
     if ('endTime' in entry) {
         data.endTime = entry.endTime ? Timestamp.fromDate(entry.endTime) : null;
     }
+    // Don't save the id field in the document data
+    if ('id' in data) delete data.id;
     return data;
 }
 
 export const addTimeEntry = async (entry: Omit<TimeEntry, 'id'>): Promise<string> => {
-  const docRef = await addDoc(timeEntriesCollection, toFirestore(entry));
+  if (!entry.userId) throw new Error("User not authenticated");
+  const collectionRef = collection(db, "users", entry.userId, "timeEntries");
+  const docRef = await addDoc(collectionRef, toFirestore(entry));
   return docRef.id;
 };
 
-export const updateTimeEntry = async (id: string, entry: Partial<TimeEntry>): Promise<void> => {
-  const docRef = doc(db, "timeEntries", id);
+export const updateTimeEntry = async (entryId: string, entry: Partial<TimeEntry>): Promise<void> => {
+  if (!entry.userId) throw new Error("User not authenticated");
+  const docRef = doc(db, "users", entry.userId, "timeEntries", entryId);
   await updateDoc(docRef, toFirestore(entry));
 };
 
-export const deleteTimeEntry = async (id: string): Promise<void> => {
-  const docRef = doc(db, "timeEntries", id);
+export const deleteTimeEntry = async (userId: string, entryId: string): Promise<void> => {
+  if (!userId) throw new Error("User not authenticated");
+  const docRef = doc(db, "users", userId, "timeEntries", entryId);
   await deleteDoc(docRef);
 };
 
-export const getTimeEntries = async (): Promise<TimeEntry[]> => {
-  const q = query(timeEntriesCollection, orderBy("startTime", "desc"));
+export const getTimeEntries = async (userId: string): Promise<TimeEntry[]> => {
+  if (!userId) return [];
+  const collectionRef = collection(db, "users", userId, "timeEntries");
+  const q = query(collectionRef, orderBy("startTime", "desc"));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -63,8 +69,10 @@ export const getTimeEntries = async (): Promise<TimeEntry[]> => {
   }));
 };
 
-export const deleteAllTimeEntries = async (): Promise<void> => {
-    const querySnapshot = await getDocs(timeEntriesCollection);
+export const deleteAllTimeEntries = async (userId: string): Promise<void> => {
+    if (!userId) throw new Error("User not authenticated");
+    const collectionRef = collection(db, "users", userId, "timeEntries");
+    const querySnapshot = await getDocs(collectionRef);
     if (querySnapshot.empty) {
         return;
     }
