@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { format, isSameDay, startOfDay, addMinutes, subDays } from "date-fns";
 import {
   Clock,
@@ -8,8 +9,6 @@ import {
   Pause,
   Plus,
   Calendar as CalendarIcon,
-  Download,
-  FileText,
   FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,12 +27,6 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import TimeEntryForm from "./time-entry-form";
 import TimeEntryCard from "./time-entry-card";
@@ -46,18 +39,27 @@ const mockEntries: TimeEntry[] = [
     startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
     endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
     location: "Office",
+    pauseDuration: 0,
+    travelTime: 0,
   },
   {
     id: "2",
     startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
     endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
     location: "Home Office",
+    pauseDuration: 30,
+    travelTime: 0.5,
+    isDriver: true,
   },
    {
     id: "3",
     startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
     endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
     location: "Client Site",
+    pauseDuration: 60,
+    travelTime: 1,
+    isDriver: true,
+    kilometers: 50
   },
 ];
 
@@ -74,7 +76,7 @@ export default function TimeTracker() {
 
   useEffect(() => {
     const storedEntries = localStorage.getItem("timeEntries");
-    if (storedEntries) {
+    if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
       setEntries(JSON.parse(storedEntries, (key, value) => 
         (key === 'startTime' || key === 'endTime') ? new Date(value) : value
       ));
@@ -118,9 +120,13 @@ export default function TimeTracker() {
 
   const handleStopTimer = () => {
     if (runningTimer) {
-      const finishedEntry = {
+      const finishedEntry: TimeEntry = {
         ...runningTimer,
         endTime: new Date(),
+        pauseDuration: 0,
+        travelTime: 0,
+        isDriver: false,
+        kilometers: 0,
       };
       setEntries([finishedEntry, ...entries]);
       setRunningTimer(null);
@@ -156,13 +162,6 @@ export default function TimeTracker() {
     toast({ title: "Entry Deleted", variant: 'destructive'});
   };
 
-  const handleExport = (format: "pdf" | "excel") => {
-    toast({
-      title: `Exporting to ${format.toUpperCase()}`,
-      description: "This feature is for demonstration purposes.",
-    });
-  };
-
   const filteredEntries = useMemo(() =>
     entries.filter((entry) => isSameDay(entry.startTime, selectedDate)),
     [entries, selectedDate]
@@ -192,23 +191,12 @@ export default function TimeTracker() {
           <h1 className="text-xl font-bold tracking-tight">TimeWise Tracker</h1>
         </div>
         <div className="ml-auto flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleExport("pdf")}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Export as PDF
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport("excel")}>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Export as Excel
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button asChild variant="outline">
+              <Link href="/export">
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Preview & Export
+              </Link>
+            </Button>
         </div>
       </header>
 
@@ -282,7 +270,7 @@ export default function TimeTracker() {
                       <Plus className="mr-2 h-4 w-4" /> Add Entry
                     </Button>
                   </SheetTrigger>
-                  <SheetContent>
+                  <SheetContent className="w-full max-w-none sm:max-w-md">
                     <TimeEntryForm
                       entry={editingEntry}
                       onSave={handleSaveEntry}
