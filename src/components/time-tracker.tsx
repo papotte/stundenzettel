@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, isSameDay, startOfDay, addMinutes, subDays } from "date-fns";
+import { format, isSameDay, startOfDay, addMinutes, subDays, differenceInMinutes } from "date-fns";
 import {
   Clock,
   Play,
@@ -145,13 +145,23 @@ export default function TimeTracker() {
 
   const handleStopTimer = () => {
     if (runningTimer) {
+      const endTime = new Date();
       const finishedEntry: TimeEntry = {
         ...runningTimer,
-        endTime: new Date(),
+        endTime: endTime,
         pauseDuration: 0,
         travelTime: 0,
         isDriver: false,
       };
+
+      const workDurationInMinutes = differenceInMinutes(endTime, finishedEntry.startTime);
+
+      if (workDurationInMinutes > 9 * 60) {
+        finishedEntry.pauseDuration = 45;
+      } else if (workDurationInMinutes > 6 * 60) {
+        finishedEntry.pauseDuration = 30;
+      }
+      
       setEntries([finishedEntry, ...entries]);
       setRunningTimer(null);
       setLocation("");
@@ -165,12 +175,33 @@ export default function TimeTracker() {
   };
 
   const handleSaveEntry = (entryData: TimeEntry) => {
-    if (entryData.id && entries.some(e => e.id === entryData.id)) {
-      setEntries(entries.map((e) => (e.id === entryData.id ? entryData : e)));
-      toast({ title: "Entry Updated", description: `Changes to "${entryData.location}" have been saved.`});
+    const workDurationInMinutes = entryData.endTime
+      ? differenceInMinutes(entryData.endTime, entryData.startTime)
+      : 0;
+    
+    const travelTimeInMinutes = (entryData.travelTime || 0) * 60;
+    
+    const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
+
+    let requiredPause = 0;
+    if (totalActivityInMinutes > 9 * 60) {
+        requiredPause = 45;
+    } else if (totalActivityInMinutes > 6 * 60) {
+        requiredPause = 30;
+    }
+
+    // Use the greater of user-entered pause and required pause
+    const finalEntryData = {
+        ...entryData,
+        pauseDuration: Math.max(entryData.pauseDuration || 0, requiredPause),
+    };
+
+    if (finalEntryData.id && entries.some(e => e.id === finalEntryData.id)) {
+      setEntries(entries.map((e) => (e.id === finalEntryData.id ? finalEntryData : e)));
+      toast({ title: "Entry Updated", description: `Changes to "${finalEntryData.location}" have been saved.`});
     } else {
-      setEntries([entryData, ...entries]);
-      toast({ title: "Entry Added", description: `New entry for "${entryData.location}" created.`});
+      setEntries([finalEntryData, ...entries]);
+      toast({ title: "Entry Added", description: `New entry for "${finalEntryData.location}" created.`});
     }
     setIsFormOpen(false);
     setEditingEntry(null);
