@@ -26,6 +26,7 @@ import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import type { TimeEntry } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getTimeEntries } from "@/services/time-entry-service";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -39,24 +40,23 @@ const dayOfWeekMap: { [key: number]: string } = {
 
 export default function ExportPreview() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   useEffect(() => {
-    try {
-      const storedEntries = localStorage.getItem("timeEntries");
-      if (storedEntries) {
-        setEntries(
-          JSON.parse(storedEntries, (key, value) =>
-            key === "startTime" || key === "endTime" ? new Date(value) : value
-          )
-        );
+    const fetchAndSetEntries = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedEntries = await getTimeEntries();
+        setEntries(fetchedEntries);
+      } catch (error) {
+        console.error("Failed to load time entries from Firestore.", error);
       }
-    } catch (error) {
-      console.error("Failed to parse time entries from localStorage, clearing data.", error);
-      localStorage.removeItem("timeEntries");
-    }
-    setSelectedMonth(new Date());
+      setSelectedMonth(new Date());
+      setIsLoading(false);
+    };
+    fetchAndSetEntries();
   }, []);
 
   const weeksInMonth = useMemo(
@@ -173,7 +173,7 @@ export default function ExportPreview() {
     XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy")}.xlsx`);
   };
   
-  if (!selectedMonth) {
+  if (isLoading || !selectedMonth) {
     return (
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">

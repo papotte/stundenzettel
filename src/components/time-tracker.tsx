@@ -58,10 +58,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
+import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
+import { Skeleton } from "./ui/skeleton";
 
 
 export default function TimeTracker() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [location, setLocation] = useState("");
@@ -72,28 +75,25 @@ export default function TimeTracker() {
   const { toast } = useToast();
 
   useEffect(() => {
-    try {
-        const storedEntries = localStorage.getItem("timeEntries");
-        if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
-          setEntries(JSON.parse(storedEntries, (key, value) => 
-            (key === 'startTime' || key === 'endTime') ? new Date(value) : value
-          ));
-        } else {
-            setEntries([]); // Initialize with empty if nothing is there
-        }
-    } catch (error) {
-        console.error("Failed to parse time entries, clearing data.", error);
-        localStorage.removeItem("timeEntries");
-        setEntries([]);
-    }
-    
     setSelectedDate(new Date());
-
+    const fetchEntries = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedEntries = await getTimeEntries();
+        setEntries(fetchedEntries);
+      } catch (error) {
+        console.error("Error fetching time entries:", error);
+        toast({
+          title: "Failed to load data",
+          description: "Could not retrieve time entries from the database. Please check your Firebase configuration in the .env file.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEntries();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("timeEntries", JSON.stringify(entries));
-  }, [entries]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -138,7 +138,7 @@ export default function TimeTracker() {
     }
   };
 
-  const handleSaveEntry = (entryData: TimeEntry) => {
+  const handleSaveEntry = async (entryData: TimeEntry) => {
     const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"].includes(entryData.location);
     
     let finalEntryData = { ...entryData };
@@ -147,28 +147,38 @@ export default function TimeTracker() {
       const workDurationInMinutes = differenceInMinutes(finalEntryData.endTime, finalEntryData.startTime);
       const travelTimeInMinutes = (finalEntryData.travelTime || 0) * 60;
       const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
-
+      
       let requiredPause = 0;
       if (totalActivityInMinutes > 9 * 60) {
-          requiredPause = 45;
+        requiredPause = 45;
       } else if (totalActivityInMinutes > 6 * 60) {
-          requiredPause = 30;
+        requiredPause = 30;
       }
-
+      
       finalEntryData.pauseDuration = requiredPause;
     } else {
       finalEntryData.pauseDuration = 0;
     }
-
-    if (entries.some(e => e.id === finalEntryData.id)) {
-      setEntries(entries.map((e) => (e.id === finalEntryData.id ? finalEntryData : e)));
-      toast({ title: "Entry Updated", description: `Changes to "${finalEntryData.location}" have been saved.`});
-    } else {
-      setEntries([finalEntryData, ...entries]);
-      toast({ title: "Entry Added", description: `New entry for "${finalEntryData.location}" created.`});
-    }
+    
     setIsFormOpen(false);
     setEditingEntry(null);
+
+    try {
+      if (entries.some(e => e.id === finalEntryData.id)) {
+        await updateTimeEntry(finalEntryData.id, finalEntryData);
+        setEntries(entries.map((e) => (e.id === finalEntryData.id ? finalEntryData : e)));
+        toast({ title: "Entry Updated", description: `Changes to "${finalEntryData.location}" have been saved.`});
+      } else {
+        const { id, ...dataToSave } = finalEntryData;
+        await addTimeEntry(dataToSave);
+        const fetchedEntries = await getTimeEntries();
+        setEntries(fetchedEntries);
+        toast({ title: "Entry Added", description: `New entry for "${finalEntryData.location}" created.`});
+      }
+    } catch (error) {
+      console.error("Error saving entry:", error);
+      toast({ title: "Save Failed", description: "There was a problem saving your entry.", variant: "destructive" });
+    }
   };
 
   const handleEditEntry = (entry: TimeEntry) => {
@@ -176,33 +186,43 @@ export default function TimeTracker() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteEntry = (id: string) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
-    toast({ title: "Entry Deleted", variant: 'destructive'});
-  };
-
-  const handleClearData = () => {
-    localStorage.removeItem("timeEntries");
-    setEntries([]);
-    if (runningTimer) {
-      setRunningTimer(null);
-      setLocation("");
-      setElapsedTime(0);
+  const handleDeleteEntry = async (id: string) => {
+    try {
+      await deleteTimeEntry(id);
+      setEntries(entries.filter((entry) => entry.id !== id));
+      toast({ title: "Entry Deleted", variant: 'destructive'});
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      toast({ title: "Delete Failed", description: "There was a problem deleting your entry.", variant: "destructive" });
     }
-    toast({
-      title: "Data Cleared",
-      description: "All your time entries have been removed.",
-    });
   };
 
-  const handleAddSpecialEntry = (location: string, hours: number) => {
+  const handleClearData = async () => {
+    try {
+      await deleteAllTimeEntries();
+      setEntries([]);
+      if (runningTimer) {
+        setRunningTimer(null);
+        setLocation("");
+        setElapsedTime(0);
+      }
+      toast({
+        title: "Data Cleared",
+        description: "All your time entries have been removed from the database.",
+      });
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      toast({ title: "Clear Failed", description: "There was a problem clearing your data.", variant: "destructive" });
+    }
+  };
+
+  const handleAddSpecialEntry = async (location: string, hours: number) => {
     if (!selectedDate) return;
 
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
     const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
 
-    const newEntry: TimeEntry = {
-      id: Date.now().toString(),
+    const newEntry: Omit<TimeEntry, 'id'> = {
       location: location,
       startTime: startTime,
       endTime: endTime,
@@ -221,12 +241,19 @@ export default function TimeTracker() {
       return;
     }
 
-    setEntries([newEntry, ...entries]);
-    toast({
-      title: "Entry Added",
-      description: `New entry for "${location}" created.`,
-      className: "bg-accent text-accent-foreground",
-    });
+    try {
+      await addTimeEntry(newEntry);
+      const fetchedEntries = await getTimeEntries();
+      setEntries(fetchedEntries);
+      toast({
+        title: "Entry Added",
+        description: `New entry for "${location}" created.`,
+        className: "bg-accent text-accent-foreground",
+      });
+    } catch (error) {
+      console.error("Error adding special entry:", error);
+      toast({ title: "Save Failed", description: "There was a problem saving the special entry.", variant: "destructive" });
+    }
   };
 
   const handleGetCurrentLocation = async () => {
@@ -336,7 +363,7 @@ export default function TimeTracker() {
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete all
-                      your time tracking data from this browser.
+                      your time tracking data from the database.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -482,9 +509,14 @@ export default function TimeTracker() {
                       </div>
                   </CardHeader>
                   <CardContent>
-                      {filteredEntries.length > 0 ? (
+                      {isLoading ? (
+                        <div className="space-y-4">
+                          <Skeleton className="h-24 w-full" />
+                          <Skeleton className="h-24 w-full" />
+                        </div>
+                      ) : filteredEntries.length > 0 ? (
                       <div className="space-y-4">
-                          {filteredEntries.sort((a,b) => a.startTime.getTime() - b.startTime.getTime()).map((entry) => (
+                          {filteredEntries.map((entry) => (
                           <TimeEntryCard
                               key={entry.id}
                               entry={entry}
