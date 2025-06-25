@@ -43,13 +43,18 @@ export default function ExportPreview() {
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   useEffect(() => {
-    const storedEntries = localStorage.getItem("timeEntries");
-    if (storedEntries) {
-      setEntries(
-        JSON.parse(storedEntries, (key, value) =>
-          key === "startTime" || key === "endTime" ? new Date(value) : value
-        )
-      );
+    try {
+      const storedEntries = localStorage.getItem("timeEntries");
+      if (storedEntries) {
+        setEntries(
+          JSON.parse(storedEntries, (key, value) =>
+            key === "startTime" || key === "endTime" ? new Date(value) : value
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to parse time entries from localStorage, clearing data.", error);
+      localStorage.removeItem("timeEntries");
     }
     setSelectedMonth(new Date());
   }, []);
@@ -245,7 +250,7 @@ export default function ExportPreview() {
               <div key={weekIndex} className="mb-6">
                 <Table className="border">
                   <TableHeader>
-                    <TableRow className="bg-blue-100 hover:bg-blue-100">
+                    <TableRow className="bg-secondary hover:bg-secondary">
                       <TableHead className="w-[8%]">Woche</TableHead>
                       <TableHead className="w-[12%]">Datum</TableHead>
                       <TableHead className="w-[15%]">Einsatzort</TableHead>
@@ -257,7 +262,7 @@ export default function ExportPreview() {
                       <TableHead className="w-[10%]">vergütete AZ</TableHead>
                       <TableHead className="w-[8%]">Fahrer</TableHead>
                     </TableRow>
-                    <TableRow className="bg-blue-100 hover:bg-blue-100">
+                    <TableRow className="bg-secondary hover:bg-secondary">
                       <TableHead></TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
@@ -283,7 +288,7 @@ export default function ExportPreview() {
                            <TableRow key={day.toISOString()}>
                               <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
-                              <TableCell className="text-gray-400">..................................................</TableCell>
+                              <TableCell className="text-muted-foreground">..................................................</TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>

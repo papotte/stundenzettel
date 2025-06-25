@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function ExportPage() {
   return (
-    <div className="bg-gray-200 min-h-screen p-4 sm:p-8">
+    <div className="bg-muted min-h-screen p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <Button asChild variant="outline" className="mb-4 print:hidden">
           <Link href="/">
