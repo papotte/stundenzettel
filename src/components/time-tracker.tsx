@@ -56,46 +56,47 @@ export default function TimeTracker() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // We wrap this in useEffect to avoid hydration errors
-    const mockEntries: TimeEntry[] = [
-      {
-        id: "1",
-        startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
-        endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
-        location: "Office",
-        pauseDuration: 0,
-        travelTime: 0,
-      },
-      {
-        id: "2",
-        startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
-        endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
-        location: "Home Office",
-        pauseDuration: 30,
-        travelTime: 0.5,
-        isDriver: true,
-      },
-      {
-        id: "3",
-        startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
-        endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
-        location: "Client Site",
-        pauseDuration: 60,
-        travelTime: 1,
-        isDriver: true,
-        kilometers: 50
-      },
-    ];
-    
-    setSelectedDate(new Date());
     const storedEntries = localStorage.getItem("timeEntries");
     if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
       setEntries(JSON.parse(storedEntries, (key, value) => 
         (key === 'startTime' || key === 'endTime') ? new Date(value) : value
       ));
     } else {
-      setEntries(mockEntries);
+        // We wrap this in useEffect to avoid hydration errors
+        const mockEntries: TimeEntry[] = [
+          {
+            id: "1",
+            startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
+            endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
+            location: "Office",
+            pauseDuration: 0,
+            travelTime: 0,
+          },
+          {
+            id: "2",
+            startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
+            endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
+            location: "Home Office",
+            pauseDuration: 30,
+            travelTime: 0.5,
+            isDriver: true,
+          },
+          {
+            id: "3",
+            startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
+            endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
+            location: "Client Site",
+            pauseDuration: 60,
+            travelTime: 1,
+            isDriver: true,
+            kilometers: 50
+          },
+        ];
+        setEntries(mockEntries);
     }
+    
+    setSelectedDate(new Date());
+
   }, []);
 
   useEffect(() => {
@@ -192,13 +193,14 @@ export default function TimeTracker() {
             toast({
               title: "Location fetched!",
               description: `Your location has been set to "${result.address}".`,
+              className: "bg-accent text-accent-foreground",
             });
           } catch (error) {
             console.error("Error getting address", error);
             const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
             toast({
               title: "Could not get address",
-              description: `Using coordinates instead. ${errorMessage}`,
+              description: errorMessage,
               variant: "destructive",
             });
             // Fallback to coordinates
@@ -210,8 +212,8 @@ export default function TimeTracker() {
         (error) => {
           console.error("Error getting location", error);
           toast({
-            title: "Could not get location",
-            description: "Please ensure location services are enabled and permission is granted.",
+            title: "Could not get your coordinates",
+            description: "Please ensure location services are enabled and permission is granted in your browser.",
             variant: "destructive",
           });
           setIsFetchingLocation(false);
