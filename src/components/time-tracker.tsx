@@ -12,6 +12,7 @@ import {
   Calendar as CalendarIcon,
   FileSpreadsheet,
   MapPin,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +41,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 
 
 export default function TimeTracker() {
@@ -50,9 +52,11 @@ export default function TimeTracker() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    // We wrap this in useEffect to avoid hydration errors
     const mockEntries: TimeEntry[] = [
       {
         id: "1",
@@ -171,25 +175,46 @@ export default function TimeTracker() {
     toast({ title: "Entry Deleted", variant: 'destructive'});
   };
 
-  const handleGetCurrentLocation = () => {
+  const handleGetCurrentLocation = async () => {
+    if (isFetchingLocation) return;
     if (navigator.geolocation) {
+      setIsFetchingLocation(true);
+      toast({
+        title: "Fetching location...",
+        description: "Please wait while we get your address.",
+      });
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          const locationString = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
-          setLocation(locationString);
-          toast({
-            title: "Location fetched!",
-            description: "Your current location has been set.",
-          });
+          try {
+            const result = await reverseGeocode({ latitude, longitude });
+            setLocation(result.address);
+            toast({
+              title: "Location fetched!",
+              description: `Your location has been set to "${result.address}".`,
+            });
+          } catch (error) {
+            console.error("Error getting address", error);
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({
+              title: "Could not get address",
+              description: `Using coordinates instead. ${errorMessage}`,
+              variant: "destructive",
+            });
+            // Fallback to coordinates
+            setLocation(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+          } finally {
+            setIsFetchingLocation(false);
+          }
         },
         (error) => {
           console.error("Error getting location", error);
           toast({
             title: "Could not get location",
-            description: "Please ensure you have location services enabled and have granted permission.",
+            description: "Please ensure location services are enabled and permission is granted.",
             variant: "destructive",
           });
+          setIsFetchingLocation(false);
         }
       );
     } else {
@@ -278,8 +303,8 @@ export default function TimeTracker() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                           <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location">
-                             <MapPin className="h-4 w-4" />
+                           <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location" disabled={isFetchingLocation}>
+                             {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
                            </Button>
                         </TooltipTrigger>
                         <TooltipContent>
