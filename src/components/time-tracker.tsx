@@ -143,13 +143,9 @@ export default function TimeTracker() {
     
     let finalEntryData = { ...entryData };
 
-    if (!isNonWorkEntry) {
-      const workDurationInMinutes = entryData.endTime
-        ? differenceInMinutes(entryData.endTime, entryData.startTime)
-        : 0;
-      
-      const travelTimeInMinutes = (entryData.travelTime || 0) * 60;
-      
+    if (!isNonWorkEntry && finalEntryData.endTime) {
+      const workDurationInMinutes = differenceInMinutes(finalEntryData.endTime, finalEntryData.startTime);
+      const travelTimeInMinutes = (finalEntryData.travelTime || 0) * 60;
       const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
 
       let requiredPause = 0;
@@ -159,7 +155,7 @@ export default function TimeTracker() {
           requiredPause = 30;
       }
 
-      finalEntryData.pauseDuration = Math.max(entryData.pauseDuration || 0, requiredPause);
+      finalEntryData.pauseDuration = requiredPause;
     } else {
       finalEntryData.pauseDuration = 0;
     }
