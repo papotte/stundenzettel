@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Edit, Trash2, Clock, CarFront, Timer } from "lucide-react";
+import { Edit, Trash2, Clock, CarFront, Timer, BedDouble, Plane, Landmark, Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -25,10 +25,68 @@ interface TimeEntryCardProps {
   onDelete: (id: string) => void;
 }
 
+const SpecialIcons: { [key: string]: React.ElementType } = {
+  "Sick Leave": BedDouble,
+  "PTO": Plane,
+  "Bank Holiday": Landmark,
+  "Time Off in Lieu": Hourglass,
+};
+
 export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCardProps) {
   const durationInSeconds = entry.endTime
     ? (entry.endTime.getTime() - entry.startTime.getTime()) / 1000
     : 0;
+
+  const SpecialIcon = SpecialIcons[entry.location];
+
+  if (SpecialIcon) {
+    return (
+      <Card className="transition-shadow hover:shadow-md">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <SpecialIcon className="h-5 w-5 text-primary" />
+              <p className="font-semibold">{entry.location}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="font-mono text-lg font-medium text-primary tabular-nums">
+                {durationInSeconds > 0 ? formatDuration(durationInSeconds) : "—"}
+              </p>
+              <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
+                <Edit className="h-4 w-4" />
+                <span className="sr-only">Edit</span>
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the time entry for "{entry.location}".
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDelete(entry.id)}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="transition-shadow hover:shadow-md">
