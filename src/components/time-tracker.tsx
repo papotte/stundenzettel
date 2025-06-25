@@ -89,7 +89,6 @@ export default function TimeTracker() {
             pauseDuration: 60,
             travelTime: 1,
             isDriver: true,
-            kilometers: 50
           },
         ];
         setEntries(mockEntries);
@@ -140,7 +139,6 @@ export default function TimeTracker() {
         pauseDuration: 0,
         travelTime: 0,
         isDriver: false,
-        kilometers: 0,
       };
       setEntries([finishedEntry, ...entries]);
       setRunningTimer(null);
