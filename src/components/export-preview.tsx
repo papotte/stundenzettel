@@ -241,8 +241,7 @@ export default function ExportPreview() {
 
           <main>
             {weeksInMonth.map((week, weekIndex) => {
-              const weeklyTotal = calculateWeekTotal(week);
-              if (weeklyTotal === 0 && !week.some(d => isSameMonth(d, selectedMonth))) {
+              if (!week.some(d => isSameMonth(d, selectedMonth))) {
                 return null;
               }
 
@@ -276,14 +275,16 @@ export default function ExportPreview() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {week.map((day, dayIndex) => {
-                       if (!isSameMonth(day, selectedMonth) || getDay(day) === 0) {
+                    {week.map((day) => {
+                       if (!isSameMonth(day, selectedMonth)) {
                         return null;
                       }
 
                       const dayEntries = getEntriesForDay(day);
+                      const isSunday = getDay(day) === 0;
 
                       if (dayEntries.length === 0) {
+                        if (isSunday) return null; // Don't render empty Sundays
                         return (
                            <TableRow key={day.toISOString()}>
                               <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell>
