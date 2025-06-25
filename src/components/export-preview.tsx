@@ -214,7 +214,7 @@ export default function ExportPreview() {
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h2 className="text-2xl font-bold text-center">
+            <h2 className="text-2xl font-bold text-center font-headline">
               {format(selectedMonth, "MMMM yyyy")}
             </h2>
             <Button
@@ -233,7 +233,7 @@ export default function ExportPreview() {
 
         <div className="bg-white p-8 rounded-md shadow-md printable-area">
           <header className="flex justify-between items-start mb-4 border-b pb-4">
-            <h1 className="text-xl font-bold">
+            <h1 className="text-xl font-bold font-headline">
               Stundenzettel für den Monat: {format(selectedMonth, "MMMM")}
             </h1>
             <div className="text-right font-semibold">{employeeName}</div>
