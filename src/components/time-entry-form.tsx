@@ -44,7 +44,6 @@ const formSchema = z.object({
   pauseDuration: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)").optional(),
   travelTime: z.coerce.number().min(0, "Must be positive").optional(),
   isDriver: z.boolean().optional(),
-  kilometers: z.coerce.number().min(0, "Must be positive").optional(),
 }).refine(data => {
     const start = parse(data.startTime, "HH:mm", new Date());
     const end = parse(data.endTime, "HH:mm", new Date());
@@ -72,7 +71,6 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       pauseDuration: entry?.pauseDuration ? format(addMinutes(new Date(0), entry.pauseDuration), "HH:mm") : "00:00",
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
-      kilometers: entry?.kilometers || 0,
     },
   });
 
@@ -91,7 +89,6 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       pauseDuration: timeStringToMinutes(values.pauseDuration),
       travelTime: values.travelTime,
       isDriver: values.isDriver,
-      kilometers: values.kilometers,
     };
     onSave(finalEntry);
   }
@@ -209,19 +206,6 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                       <FormLabel>Travel Time (hours)</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="kilometers"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kilometers</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="1" placeholder="e.g. 50" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

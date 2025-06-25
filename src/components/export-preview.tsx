@@ -42,7 +42,6 @@ export default function ExportPreview() {
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   useEffect(() => {
-    setSelectedMonth(new Date());
     const storedEntries = localStorage.getItem("timeEntries");
     if (storedEntries) {
       setEntries(
@@ -51,6 +50,7 @@ export default function ExportPreview() {
         )
       );
     }
+    setSelectedMonth(new Date());
   }, []);
 
   const weeksInMonth = useMemo(
@@ -100,7 +100,6 @@ export default function ExportPreview() {
       "zzgl. Fahrtzeit",
       "vergütete AZ",
       "Fahrer",
-      "km eig. PKW/ Verpfl.",
     ];
     
     const data: (string | number)[][] = [];
@@ -127,27 +126,26 @@ export default function ExportPreview() {
                     entry.travelTime || '',
                     parseFloat(compensatedHours.toFixed(2)),
                     entry.isDriver ? 'F' : '',
-                    entry.kilometers || ''
                 ]);
               });
             } else if (parseInt(format(day, 'i')) <= 6) { // Not sunday
                 data.push([
                     dayOfWeekMap[format(day, 'EEEE')],
                     format(day, 'd/M/yyyy'),
-                    '', '', '', '', '', '', '', '', ''
+                    '', '', '', '', '', '', '', '',
                 ]);
             }
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
       if (weeklyTotal > 0 || week.some(d => isSameMonth(d, selectedMonth))) {
-        data.push(['', '', '', '', '', '', '', 'Gesamt pro Woche:', weeklyTotal.toFixed(2), '', '']);
+        data.push(['', '', '', '', '', '', '', 'Gesamt pro Woche:', weeklyTotal.toFixed(2), '']);
         data.push([]); // Empty row
       }
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', '', '', '', 'Stunden insgesamt:', monthTotal.toFixed(2), '']);
+    data.push(['', '', '', '', '', '', '', '', 'Stunden insgesamt:', monthTotal.toFixed(2)]);
 
     const worksheetData = [
       [`Stundenzettel für den Monat: ${format(selectedMonth, "MMMM yyyy")}`, '', '', '', '', '', '', '', '', `Raquel Crespillo Andujar`],
@@ -160,7 +158,7 @@ export default function ExportPreview() {
 
     const colWidths = [
         { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 8 }, { wch: 8 }, 
-        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 8 }, { wch: 15 }
+        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 8 }
     ];
     worksheet['!cols'] = colWidths;
 
@@ -257,7 +255,6 @@ export default function ExportPreview() {
                       <TableHead className="w-[10%]">zzgl. Fahrtzeit</TableHead>
                       <TableHead className="w-[10%]">vergütete AZ</TableHead>
                       <TableHead className="w-[8%]">Fahrer</TableHead>
-                      <TableHead className="w-[12%]">km eig. PKW/ Verpfl.</TableHead>
                     </TableRow>
                     <TableRow className="bg-blue-100 hover:bg-blue-100">
                       <TableHead></TableHead>
@@ -267,7 +264,6 @@ export default function ExportPreview() {
                       <TableHead className="w-[7%] text-center">bis</TableHead>
                       <TableHead className="w-[7%] text-center border-l">(time)</TableHead>
                       <TableHead className="w-[7%] text-center">abzgl.</TableHead>
-                      <TableHead></TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
@@ -287,7 +283,6 @@ export default function ExportPreview() {
                               <TableCell>{dayOfWeekMap[format(day, 'EEEE')]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
                               <TableCell className="text-gray-400">..................................................</TableCell>
-                              <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
@@ -315,7 +310,6 @@ export default function ExportPreview() {
                           <TableCell className="text-center">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                           <TableCell className="text-center">{compensatedHours.toFixed(2)}</TableCell>
                           <TableCell className="text-center">{entry.isDriver ? 'F' : ''}</TableCell>
-                          <TableCell className="text-center">{entry.kilometers || ''}</TableCell>
                         </TableRow>
                       )});
                     })}
@@ -324,7 +318,7 @@ export default function ExportPreview() {
                     <TableRow>
                         <TableCell colSpan={8} className="text-right font-bold">Gesamt pro Woche:</TableCell>
                         <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
-                        <TableCell colSpan={2}></TableCell>
+                        <TableCell colSpan={1}></TableCell>
                     </TableRow>
                   </TableFooter>
                 </Table>

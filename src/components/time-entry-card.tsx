@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Edit, Trash2, Clock } from "lucide-react";
+import { Edit, Trash2, Clock, CarFront, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -36,11 +36,25 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
         <div className="flex items-center justify-between gap-4">
           <div className="grid gap-1 flex-1">
             <p className="font-semibold">{entry.location}</p>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="mr-1.5 h-3.5 w-3.5" />
-              <span>
-                {format(entry.startTime, "p")} - {entry.endTime ? format(entry.endTime, "p") : "Now"}
-              </span>
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              <div className="flex items-center">
+                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                <span>
+                  {format(entry.startTime, "p")} - {entry.endTime ? format(entry.endTime, "p") : "Now"}
+                </span>
+              </div>
+              {entry.travelTime && entry.travelTime > 0 ? (
+                <div className="flex items-center">
+                  <Timer className="mr-1.5 h-3.5 w-3.5" />
+                  <span>{entry.travelTime}h travel</span>
+                </div>
+              ) : null}
+              {entry.isDriver ? (
+                <div className="flex items-center">
+                  <CarFront className="mr-1.5 h-3.5 w-3.5" />
+                  <span>Driver</span>
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="flex items-center gap-2">

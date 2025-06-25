@@ -6,5 +6,4 @@ export interface TimeEntry {
   pauseDuration?: number; // in minutes
   travelTime?: number; // in decimal hours
   isDriver?: boolean;
-  kilometers?: number;
 }

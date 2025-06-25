@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
@@ -10,6 +11,8 @@ import {
   Plus,
   Calendar as CalendarIcon,
   FileSpreadsheet,
+  MapPin,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,36 +35,13 @@ import TimeEntryForm from "./time-entry-form";
 import TimeEntryCard from "./time-entry-card";
 import type { TimeEntry } from "@/lib/types";
 import { formatDuration } from "@/lib/utils";
-
-const mockEntries: TimeEntry[] = [
-  {
-    id: "1",
-    startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
-    endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
-    location: "Office",
-    pauseDuration: 0,
-    travelTime: 0,
-  },
-  {
-    id: "2",
-    startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
-    endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
-    location: "Home Office",
-    pauseDuration: 30,
-    travelTime: 0.5,
-    isDriver: true,
-  },
-   {
-    id: "3",
-    startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
-    endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
-    location: "Client Site",
-    pauseDuration: 60,
-    travelTime: 1,
-    isDriver: true,
-    kilometers: 50
-  },
-];
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 
 
 export default function TimeTracker() {
@@ -72,18 +52,50 @@ export default function TimeTracker() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    setSelectedDate(new Date());
     const storedEntries = localStorage.getItem("timeEntries");
     if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
       setEntries(JSON.parse(storedEntries, (key, value) => 
         (key === 'startTime' || key === 'endTime') ? new Date(value) : value
       ));
     } else {
-      setEntries(mockEntries);
+        // We wrap this in useEffect to avoid hydration errors
+        const mockEntries: TimeEntry[] = [
+          {
+            id: "1",
+            startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
+            endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
+            location: "Office",
+            pauseDuration: 0,
+            travelTime: 0,
+          },
+          {
+            id: "2",
+            startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
+            endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
+            location: "Home Office",
+            pauseDuration: 30,
+            travelTime: 0.5,
+            isDriver: true,
+          },
+          {
+            id: "3",
+            startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
+            endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
+            location: "Client Site",
+            pauseDuration: 60,
+            travelTime: 1,
+            isDriver: true,
+          },
+        ];
+        setEntries(mockEntries);
     }
+    
+    setSelectedDate(new Date());
+
   }, []);
 
   useEffect(() => {
@@ -127,7 +139,6 @@ export default function TimeTracker() {
         pauseDuration: 0,
         travelTime: 0,
         isDriver: false,
-        kilometers: 0,
       };
       setEntries([finishedEntry, ...entries]);
       setRunningTimer(null);
@@ -161,6 +172,58 @@ export default function TimeTracker() {
   const handleDeleteEntry = (id: string) => {
     setEntries(entries.filter((entry) => entry.id !== id));
     toast({ title: "Entry Deleted", variant: 'destructive'});
+  };
+
+  const handleGetCurrentLocation = async () => {
+    if (isFetchingLocation) return;
+    if (navigator.geolocation) {
+      setIsFetchingLocation(true);
+      toast({
+        title: "Fetching location...",
+        description: "Please wait while we get your address.",
+      });
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const result = await reverseGeocode({ latitude, longitude });
+            setLocation(result.address);
+            toast({
+              title: "Location fetched!",
+              description: `Your location has been set to "${result.address}".`,
+              className: "bg-accent text-accent-foreground",
+            });
+          } catch (error) {
+            console.error("Error getting address", error);
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({
+              title: "Could not get address",
+              description: errorMessage,
+              variant: "destructive",
+            });
+            // Fallback to coordinates
+            setLocation(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+          } finally {
+            setIsFetchingLocation(false);
+          }
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          toast({
+            title: "Could not get your coordinates",
+            description: "Please ensure location services are enabled and permission is granted in your browser.",
+            variant: "destructive",
+          });
+          setIsFetchingLocation(false);
+        }
+      );
+    } else {
+      toast({
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredEntries = useMemo(() =>
@@ -230,12 +293,26 @@ export default function TimeTracker() {
                 </div>
               ) : (
                 <div className="grid gap-4">
+                  <div className="flex w-full items-center gap-2">
                     <Input
                       placeholder="Where are you working from?"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       className="flex-1"
                     />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location" disabled={isFetchingLocation}>
+                             {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                           </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Get current location</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300 bg-accent hover:bg-accent/90">
                     <Play className="mr-2 h-4 w-4" />
                     Start Tracking
