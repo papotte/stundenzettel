@@ -41,36 +41,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const mockEntries: TimeEntry[] = [
-  {
-    id: "1",
-    startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
-    endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
-    location: "Office",
-    pauseDuration: 0,
-    travelTime: 0,
-  },
-  {
-    id: "2",
-    startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
-    endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
-    location: "Home Office",
-    pauseDuration: 30,
-    travelTime: 0.5,
-    isDriver: true,
-  },
-   {
-    id: "3",
-    startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
-    endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
-    location: "Client Site",
-    pauseDuration: 60,
-    travelTime: 1,
-    isDriver: true,
-    kilometers: 50
-  },
-];
-
 
 export default function TimeTracker() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
@@ -83,6 +53,36 @@ export default function TimeTracker() {
   const { toast } = useToast();
 
   useEffect(() => {
+    const mockEntries: TimeEntry[] = [
+      {
+        id: "1",
+        startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
+        endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
+        location: "Office",
+        pauseDuration: 0,
+        travelTime: 0,
+      },
+      {
+        id: "2",
+        startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
+        endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
+        location: "Home Office",
+        pauseDuration: 30,
+        travelTime: 0.5,
+        isDriver: true,
+      },
+      {
+        id: "3",
+        startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
+        endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
+        location: "Client Site",
+        pauseDuration: 60,
+        travelTime: 1,
+        isDriver: true,
+        kilometers: 50
+      },
+    ];
+    
     setSelectedDate(new Date());
     const storedEntries = localStorage.getItem("timeEntries");
     if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
