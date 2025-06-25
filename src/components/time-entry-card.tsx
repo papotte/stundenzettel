@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { Edit, Trash2, Clock, MapPin } from "lucide-react";
+import { Edit, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -35,19 +35,13 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="grid gap-1 flex-1">
-            <p className="font-semibold">{entry.project}</p>
+            <p className="font-semibold">{entry.location}</p>
             <div className="flex items-center text-sm text-muted-foreground">
               <Clock className="mr-1.5 h-3.5 w-3.5" />
               <span>
                 {format(entry.startTime, "p")} - {entry.endTime ? format(entry.endTime, "p") : "Now"}
               </span>
             </div>
-            {entry.location && (
-               <div className="flex items-center text-sm text-muted-foreground">
-                <MapPin className="mr-1.5 h-3.5 w-3.5" />
-                <span>{entry.location}</span>
-               </div>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <p className="font-mono text-lg font-medium text-primary tabular-nums">
@@ -68,7 +62,7 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the time entry for "{entry.project}".
+                    This action cannot be undone. This will permanently delete the time entry for "{entry.location}".
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

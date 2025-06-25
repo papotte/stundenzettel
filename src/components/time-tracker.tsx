@@ -43,21 +43,18 @@ import { formatDuration } from "@/lib/utils";
 const mockEntries: TimeEntry[] = [
   {
     id: "1",
-    project: "Project Alpha",
     startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
     endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
     location: "Office",
   },
   {
     id: "2",
-    project: "Project Beta",
     startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
     endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
     location: "Home Office",
   },
    {
     id: "3",
-    project: "Design Mockups",
     startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
     endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
     location: "Client Site",
@@ -69,7 +66,6 @@ export default function TimeTracker() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [project, setProject] = useState("");
   const [location, setLocation] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -104,17 +100,16 @@ export default function TimeTracker() {
   }, [runningTimer]);
 
   const handleStartTimer = () => {
-    if (!project) {
+    if (!location) {
       toast({
-        title: "Project name required",
-        description: "Please enter a project name to start tracking.",
+        title: "Location required",
+        description: "Please enter a location to start tracking.",
         variant: "destructive",
       });
       return;
     }
     const newTimer: TimeEntry = {
       id: Date.now().toString(),
-      project,
       startTime: new Date(),
       location,
     };
@@ -126,16 +121,14 @@ export default function TimeTracker() {
       const finishedEntry = {
         ...runningTimer,
         endTime: new Date(),
-        location,
       };
       setEntries([finishedEntry, ...entries]);
       setRunningTimer(null);
-      setProject("");
       setLocation("");
       setElapsedTime(0);
       toast({
         title: "Timer stopped!",
-        description: `Logged ${formatDuration(elapsedTime)} for ${finishedEntry.project}.`,
+        description: `Logged ${formatDuration(elapsedTime)} for ${finishedEntry.location}.`,
         className: "bg-accent text-accent-foreground",
       });
     }
@@ -144,10 +137,10 @@ export default function TimeTracker() {
   const handleSaveEntry = (entryData: TimeEntry) => {
     if (entryData.id && entries.some(e => e.id === entryData.id)) {
       setEntries(entries.map((e) => (e.id === entryData.id ? entryData : e)));
-      toast({ title: "Entry Updated", description: `Changes to "${entryData.project}" have been saved.`});
+      toast({ title: "Entry Updated", description: `Changes to "${entryData.location}" have been saved.`});
     } else {
       setEntries([entryData, ...entries]);
-      toast({ title: "Entry Added", description: `New entry for "${entryData.project}" created.`});
+      toast({ title: "Entry Added", description: `New entry for "${entryData.location}" created.`});
     }
     setIsFormOpen(false);
     setEditingEntry(null);
@@ -233,21 +226,14 @@ export default function TimeTracker() {
                 <div className="grid gap-4">
                   <div className="flex items-center justify-between rounded-lg bg-muted p-4">
                     <div>
-                      <p className="font-medium">{runningTimer.project}</p>
-                      <p className="text-sm text-muted-foreground">{runningTimer.location || 'No location'}</p>
+                      <p className="font-medium">{runningTimer.location}</p>
                     </div>
                     <p className="text-2xl font-bold font-mono tabular-nums tracking-wider text-primary">
                       {formatDuration(elapsedTime)}
                     </p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Input
-                      placeholder="Location (optional)"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleStopTimer} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90 transition-all duration-300">
+                  <div className="flex">
+                    <Button onClick={handleStopTimer} className="w-full bg-destructive hover:bg-destructive/90 transition-all duration-300">
                       <Pause className="mr-2 h-4 w-4" />
                       Stop
                     </Button>
@@ -255,20 +241,12 @@ export default function TimeTracker() {
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  <div className="flex flex-col sm:flex-row gap-2">
                     <Input
-                      placeholder="What are you working on?"
-                      value={project}
-                      onChange={(e) => setProject(e.target.value)}
-                      className="flex-1"
-                    />
-                     <Input
-                      placeholder="Location (optional)"
+                      placeholder="Where are you working from?"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       className="flex-1"
                     />
-                  </div>
                   <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300 bg-accent hover:bg-accent/90">
                     <Play className="mr-2 h-4 w-4" />
                     Start Tracking

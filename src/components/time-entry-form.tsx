@@ -29,13 +29,12 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { TimeEntry, TimeEntryFormData } from "@/lib/types";
+import type { TimeEntry } from "@/lib/types";
 
 const formSchema = z.object({
-  project: z.string().min(2, {
-    message: "Project name must be at least 2 characters.",
+  location: z.string().min(2, {
+    message: "Location must be at least 2 characters.",
   }),
-  location: z.string().optional(),
   date: z.date(),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
@@ -59,7 +58,6 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      project: entry?.project || "",
       location: entry?.location || "",
       date: entry?.startTime || selectedDate,
       startTime: entry ? format(entry.startTime, "HH:mm") : "09:00",
@@ -76,8 +74,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
 
     const finalEntry: TimeEntry = {
       id: entry?.id || Date.now().toString(),
-      project: values.project,
-      location: values.location || "",
+      location: values.location,
       startTime,
       endTime,
     };
@@ -95,19 +92,6 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       <div className="flex-1 overflow-y-auto p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="project"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Project</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Website Redesign" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="location"
