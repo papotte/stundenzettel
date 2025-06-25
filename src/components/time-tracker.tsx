@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, isSameDay, startOfDay, addMinutes, subDays, differenceInMinutes } from "date-fns";
+import { format, isSameDay, startOfDay, addMinutes, subDays, differenceInMinutes, set, addHours } from "date-fns";
 import {
   Clock,
   Play,
@@ -14,6 +14,10 @@ import {
   MapPin,
   Loader2,
   Trash2,
+  BedDouble,
+  Plane,
+  Landmark,
+  Hourglass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,42 +72,19 @@ export default function TimeTracker() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedEntries = localStorage.getItem("timeEntries");
-    if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
-      setEntries(JSON.parse(storedEntries, (key, value) => 
-        (key === 'startTime' || key === 'endTime') ? new Date(value) : value
-      ));
-    } else {
-        // We wrap this in useEffect to avoid hydration errors
-        const mockEntries: TimeEntry[] = [
-          {
-            id: "1",
-            startTime: addMinutes(startOfDay(new Date()), 540), // 9:00 AM
-            endTime: addMinutes(startOfDay(new Date()), 600), // 10:00 AM
-            location: "Office",
-            pauseDuration: 0,
-            travelTime: 0,
-          },
-          {
-            id: "2",
-            startTime: addMinutes(startOfDay(new Date()), 660), // 11:00 AM
-            endTime: addMinutes(startOfDay(new Date()), 750), // 12:30 PM
-            location: "Home Office",
-            pauseDuration: 30,
-            travelTime: 0.5,
-            isDriver: true,
-          },
-          {
-            id: "3",
-            startTime: addMinutes(startOfDay(subDays(new Date(), 1)), 600), // Yesterday 10:00 AM
-            endTime: addMinutes(startOfDay(subDays(new Date(), 1)), 840), // Yesterday 2:00 PM
-            location: "Client Site",
-            pauseDuration: 60,
-            travelTime: 1,
-            isDriver: true,
-          },
-        ];
-        setEntries(mockEntries);
+    try {
+        const storedEntries = localStorage.getItem("timeEntries");
+        if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
+          setEntries(JSON.parse(storedEntries, (key, value) => 
+            (key === 'startTime' || key === 'endTime') ? new Date(value) : value
+          ));
+        } else {
+            setEntries([]); // Initialize with empty if nothing is there
+        }
+    } catch (error) {
+        console.error("Failed to parse time entries, clearing data.", error);
+        localStorage.removeItem("timeEntries");
+        setEntries([]);
     }
     
     setSelectedDate(new Date());
@@ -175,26 +156,28 @@ export default function TimeTracker() {
   };
 
   const handleSaveEntry = (entryData: TimeEntry) => {
-    const workDurationInMinutes = entryData.endTime
-      ? differenceInMinutes(entryData.endTime, entryData.startTime)
-      : 0;
+    const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"].includes(entryData.location);
     
-    const travelTimeInMinutes = (entryData.travelTime || 0) * 60;
-    
-    const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
+    let finalEntryData = { ...entryData };
 
-    let requiredPause = 0;
-    if (totalActivityInMinutes > 9 * 60) {
-        requiredPause = 45;
-    } else if (totalActivityInMinutes > 6 * 60) {
-        requiredPause = 30;
+    if (!isNonWorkEntry) {
+      const workDurationInMinutes = entryData.endTime
+        ? differenceInMinutes(entryData.endTime, entryData.startTime)
+        : 0;
+      
+      const travelTimeInMinutes = (entryData.travelTime || 0) * 60;
+      
+      const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
+
+      let requiredPause = 0;
+      if (totalActivityInMinutes > 9 * 60) {
+          requiredPause = 45;
+      } else if (totalActivityInMinutes > 6 * 60) {
+          requiredPause = 30;
+      }
+
+      finalEntryData.pauseDuration = Math.max(entryData.pauseDuration || 0, requiredPause);
     }
-
-    // Use the greater of user-entered pause and required pause
-    const finalEntryData = {
-        ...entryData,
-        pauseDuration: Math.max(entryData.pauseDuration || 0, requiredPause),
-    };
 
     if (finalEntryData.id && entries.some(e => e.id === finalEntryData.id)) {
       setEntries(entries.map((e) => (e.id === finalEntryData.id ? finalEntryData : e)));
@@ -228,6 +211,40 @@ export default function TimeTracker() {
     toast({
       title: "Data Cleared",
       description: "All your time entries have been removed.",
+    });
+  };
+
+  const handleAddSpecialEntry = (location: string, hours: number) => {
+    if (!selectedDate) return;
+
+    const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
+    const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
+
+    const newEntry: TimeEntry = {
+      id: Date.now().toString(),
+      location: location,
+      startTime: startTime,
+      endTime: endTime,
+      pauseDuration: 0,
+      travelTime: 0,
+      isDriver: false,
+    };
+
+    const entryExists = entries.some(e => isSameDay(e.startTime, selectedDate) && e.location === location);
+    if (entryExists) {
+      toast({
+        title: "Entry already exists",
+        description: `An entry for "${location}" on this day already exists.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEntries([newEntry, ...entries]);
+    toast({
+      title: "Entry Added",
+      description: `New entry for "${location}" created.`,
+      className: "bg-accent text-accent-foreground",
     });
   };
 
@@ -411,6 +428,29 @@ export default function TimeTracker() {
               </CardContent>
             </Card>
 
+            <Card className="shadow-lg">
+              <CardHeader>
+                  <CardTitle>Daily Actions</CardTitle>
+                  <CardDescription>
+                      Quickly add entries for the selected day: {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
+                  </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Button onClick={() => handleAddSpecialEntry("Sick Leave", 7)} variant="outline">
+                      <BedDouble className="mr-2 h-4 w-4" /> Sick Leave
+                  </Button>
+                  <Button onClick={() => handleAddSpecialEntry("PTO", 7)} variant="outline">
+                      <Plane className="mr-2 h-4 w-4" /> PTO
+                  </Button>
+                  <Button onClick={() => handleAddSpecialEntry("Bank Holiday", 7)} variant="outline">
+                      <Landmark className="mr-2 h-4 w-4" /> Bank Holiday
+                  </Button>
+                  <Button onClick={() => handleAddSpecialEntry("Time Off in Lieu", 0)} variant="outline">
+                      <Hourglass className="mr-2 h-4 w-4" /> Time Off in Lieu
+                  </Button>
+              </CardContent>
+            </Card>
+
             <div>
               <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-bold">Time Entries</h2>
@@ -437,7 +477,7 @@ export default function TimeTracker() {
                         <Plus className="mr-2 h-4 w-4" /> Add Entry
                       </Button>
                     </SheetTrigger>
-                    <SheetContent className="w-full max-w-none sm:max-w-md">
+                    <SheetContent className="w-full max-w-none sm:max-w-md flex flex-col">
                       {selectedDate && <TimeEntryForm
                         entry={editingEntry}
                         onSave={handleSaveEntry}
@@ -463,7 +503,7 @@ export default function TimeTracker() {
                   <CardContent>
                       {filteredEntries.length > 0 ? (
                       <div className="space-y-4">
-                          {filteredEntries.map((entry) => (
+                          {filteredEntries.sort((a,b) => a.startTime.getTime() - b.startTime.getTime()).map((entry) => (
                           <TimeEntryCard
                               key={entry.id}
                               entry={entry}
