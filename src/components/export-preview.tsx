@@ -24,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import type { TimeEntry } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const dayOfWeekMap: { [key: string]: string } = {
   Monday: "Mo",
@@ -37,10 +38,11 @@ const dayOfWeekMap: { [key: string]: string } = {
 
 export default function ExportPreview() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState<Date>();
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   useEffect(() => {
+    setSelectedMonth(new Date());
     const storedEntries = localStorage.getItem("timeEntries");
     if (storedEntries) {
       setEntries(
@@ -52,7 +54,7 @@ export default function ExportPreview() {
   }, []);
 
   const weeksInMonth = useMemo(
-    () => getWeeksForMonth(selectedMonth),
+    () => (selectedMonth ? getWeeksForMonth(selectedMonth) : []),
     [selectedMonth]
   );
 
@@ -63,6 +65,7 @@ export default function ExportPreview() {
   };
 
   const calculateWeekTotal = (week: Date[]) => {
+    if (!selectedMonth) return 0;
     let total = 0;
     week.forEach((day) => {
       if (isSameMonth(day, selectedMonth)) {
@@ -79,11 +82,13 @@ export default function ExportPreview() {
   };
   
   const monthTotal = useMemo(() => {
+    if (!selectedMonth) return 0;
     return weeksInMonth.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
-  }, [weeksInMonth, entries]);
+  }, [weeksInMonth, entries, selectedMonth]);
 
 
   const handleExport = () => {
+    if (!selectedMonth) return;
     const header = [
       "Woche",
       "Datum",
@@ -163,6 +168,35 @@ export default function ExportPreview() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stundenzettel");
     XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy")}.xlsx`);
   };
+  
+  if (!selectedMonth) {
+    return (
+      <Card className="shadow-lg">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 print:hidden">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-10 w-10" />
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-10 w-10" />
+            </div>
+            <Skeleton className="h-10 w-36" />
+          </div>
+          <div className="bg-white p-8 rounded-md shadow-md printable-area">
+            <header className="flex justify-between items-start mb-4 border-b pb-4">
+                <Skeleton className="h-7 w-2/5" />
+                <Skeleton className="h-7 w-1/4" />
+            </header>
+            <main>
+                <div className="space-y-6">
+                    <Skeleton className="h-56 w-full" />
+                    <Skeleton className="h-56 w-full" />
+                </div>
+            </main>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="shadow-lg">
@@ -289,7 +323,7 @@ export default function ExportPreview() {
                   <TableFooter>
                     <TableRow>
                         <TableCell colSpan={8} className="text-right font-bold">Gesamt pro Woche:</TableCell>
-                        <TableCell className="text-center font-bold">{weeklyTotal.toFixed(2)}</TableCell>
+                        <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
                         <TableCell colSpan={2}></TableCell>
                     </TableRow>
                   </TableFooter>

@@ -69,12 +69,13 @@ export default function TimeTracker() {
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [location, setLocation] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    setSelectedDate(new Date());
     const storedEntries = localStorage.getItem("timeEntries");
     if (storedEntries && storedEntries.length > 2) { // check for more than just '[]'
       setEntries(JSON.parse(storedEntries, (key, value) => 
@@ -163,7 +164,7 @@ export default function TimeTracker() {
   };
 
   const filteredEntries = useMemo(() =>
-    entries.filter((entry) => isSameDay(entry.startTime, selectedDate)),
+    selectedDate ? entries.filter((entry) => isSameDay(entry.startTime, selectedDate)) : [],
     [entries, selectedDate]
   );
   
@@ -252,7 +253,7 @@ export default function TimeTracker() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(selectedDate, "PPP")}
+                      {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -271,12 +272,12 @@ export default function TimeTracker() {
                     </Button>
                   </SheetTrigger>
                   <SheetContent className="w-full max-w-none sm:max-w-md">
-                    <TimeEntryForm
+                    {selectedDate && <TimeEntryForm
                       entry={editingEntry}
                       onSave={handleSaveEntry}
                       selectedDate={selectedDate}
                       onClose={() => setIsFormOpen(false)}
-                    />
+                    />}
                   </SheetContent>
                 </Sheet>
               </div>
@@ -286,9 +287,9 @@ export default function TimeTracker() {
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle>
-                            {isSameDay(selectedDate, new Date())
+                            {selectedDate && isSameDay(selectedDate, new Date())
                             ? "Today's Entries"
-                            : `Entries for ${format(selectedDate, "PPP")}`}
+                            : selectedDate ? `Entries for ${format(selectedDate, "PPP")}` : "Loading..."}
                         </CardTitle>
                         <div className="text-lg font-bold text-primary">{formatDuration(totalDayDuration)}</div>
                     </div>
