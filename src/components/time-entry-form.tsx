@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format, set, parse, addMinutes } from "date-fns";
+import { format, set, parse, addMinutes, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -33,6 +33,7 @@ import { Calendar as CalendarIcon, Save } from "lucide-react";
 import { cn, timeStringToMinutes } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/types";
 import { Separator } from "./ui/separator";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   location: z.string().min(2, {
@@ -45,9 +46,13 @@ const formSchema = z.object({
   travelTime: z.coerce.number().min(0, "Must be positive").optional(),
   isDriver: z.boolean().optional(),
 }).refine(data => {
-    const start = parse(data.startTime, "HH:mm", new Date());
-    const end = parse(data.endTime, "HH:mm", new Date());
-    return end > start;
+    try {
+      const start = parse(data.startTime, "HH:mm", new Date());
+      const end = parse(data.endTime, "HH:mm", new Date());
+      return end > start;
+    } catch {
+      return false;
+    }
 }, {
     message: "End time must be after start time",
     path: ["endTime"],
@@ -73,6 +78,45 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       isDriver: entry?.isDriver || false,
     },
   });
+
+  const { watch, setValue } = form;
+  const startTimeValue = watch("startTime");
+  const endTimeValue = watch("endTime");
+  const travelTimeValue = watch("travelTime");
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    if (startTimeValue && endTimeValue) {
+      try {
+        const start = parse(startTimeValue, "HH:mm", new Date());
+        const end = parse(endTimeValue, "HH:mm", new Date());
+
+        if (end > start) {
+          const workDurationInMinutes = differenceInMinutes(end, start);
+          const travelTimeInMinutes = (travelTimeValue || 0) * 60;
+          const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
+
+          let requiredPause = 0;
+          if (totalActivityInMinutes > 9 * 60) {
+            requiredPause = 45;
+          } else if (totalActivityInMinutes > 6 * 60) {
+            requiredPause = 30;
+          }
+
+          const currentPauseInMinutes = timeStringToMinutes(watch("pauseDuration"));
+
+          if (requiredPause > currentPauseInMinutes) {
+            const newPauseTime = format(addMinutes(new Date(0), requiredPause), "HH:mm");
+            setValue("pauseDuration", newPauseTime, { shouldValidate: true });
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors while user is typing
+      }
+    }
+  }, [startTimeValue, endTimeValue, travelTimeValue, setValue, watch]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const [startHours, startMinutes] = values.startTime.split(":").map(Number);
