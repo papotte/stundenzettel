@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
@@ -10,6 +11,7 @@ import {
   Plus,
   Calendar as CalendarIcon,
   FileSpreadsheet,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +34,12 @@ import TimeEntryForm from "./time-entry-form";
 import TimeEntryCard from "./time-entry-card";
 import type { TimeEntry } from "@/lib/types";
 import { formatDuration } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const mockEntries: TimeEntry[] = [
   {
@@ -163,6 +171,36 @@ export default function TimeTracker() {
     toast({ title: "Entry Deleted", variant: 'destructive'});
   };
 
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const locationString = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+          setLocation(locationString);
+          toast({
+            title: "Location fetched!",
+            description: "Your current location has been set.",
+          });
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          toast({
+            title: "Could not get location",
+            description: "Please ensure you have location services enabled and have granted permission.",
+            variant: "destructive",
+          });
+        }
+      );
+    } else {
+      toast({
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredEntries = useMemo(() =>
     selectedDate ? entries.filter((entry) => isSameDay(entry.startTime, selectedDate)) : [],
     [entries, selectedDate]
@@ -230,12 +268,26 @@ export default function TimeTracker() {
                 </div>
               ) : (
                 <div className="grid gap-4">
+                  <div className="flex w-full items-center gap-2">
                     <Input
                       placeholder="Where are you working from?"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       className="flex-1"
                     />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location">
+                             <MapPin className="h-4 w-4" />
+                           </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Get current location</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300 bg-accent hover:bg-accent/90">
                     <Play className="mr-2 h-4 w-4" />
                     Start Tracking
