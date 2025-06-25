@@ -327,7 +327,7 @@ export default function TimeTracker() {
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
           <div className="flex items-center gap-2">
             <Clock className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold tracking-tight">TimeWise Tracker</h1>
+            <h1 className="text-xl font-bold tracking-tight font-headline">TimeWise Tracker</h1>
           </div>
           <div className="ml-auto flex items-center gap-2">
               <Button asChild variant="outline">
@@ -419,7 +419,7 @@ export default function TimeTracker() {
                           </TooltipContent>
                         </Tooltip>
                     </div>
-                    <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300 bg-accent hover:bg-accent/90">
+                    <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300">
                       <Play className="mr-2 h-4 w-4" />
                       Start Tracking
                     </Button>
@@ -453,7 +453,7 @@ export default function TimeTracker() {
 
             <div>
               <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold">Time Entries</h2>
+                <h2 className="text-2xl font-bold font-headline">Time Entries</h2>
                 <div className="flex items-center gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
