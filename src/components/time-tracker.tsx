@@ -126,32 +126,15 @@ export default function TimeTracker() {
 
   const handleStopTimer = () => {
     if (runningTimer) {
-      const endTime = new Date();
       const finishedEntry: TimeEntry = {
         ...runningTimer,
-        endTime: endTime,
-        pauseDuration: 0,
-        travelTime: 0,
-        isDriver: false,
+        endTime: new Date(),
       };
-
-      const workDurationInMinutes = differenceInMinutes(endTime, finishedEntry.startTime);
-
-      if (workDurationInMinutes > 9 * 60) {
-        finishedEntry.pauseDuration = 45;
-      } else if (workDurationInMinutes > 6 * 60) {
-        finishedEntry.pauseDuration = 30;
-      }
-      
-      setEntries([finishedEntry, ...entries]);
       setRunningTimer(null);
       setLocation("");
       setElapsedTime(0);
-      toast({
-        title: "Timer stopped!",
-        description: `Logged ${formatDuration(elapsedTime)} for ${finishedEntry.location}.`,
-        className: "bg-accent text-accent-foreground",
-      });
+      setEditingEntry(finishedEntry);
+      setIsFormOpen(true);
     }
   };
 
@@ -160,13 +143,9 @@ export default function TimeTracker() {
     
     let finalEntryData = { ...entryData };
 
-    if (!isNonWorkEntry) {
-      const workDurationInMinutes = entryData.endTime
-        ? differenceInMinutes(entryData.endTime, entryData.startTime)
-        : 0;
-      
-      const travelTimeInMinutes = (entryData.travelTime || 0) * 60;
-      
+    if (!isNonWorkEntry && finalEntryData.endTime) {
+      const workDurationInMinutes = differenceInMinutes(finalEntryData.endTime, finalEntryData.startTime);
+      const travelTimeInMinutes = (finalEntryData.travelTime || 0) * 60;
       const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
 
       let requiredPause = 0;
@@ -176,10 +155,12 @@ export default function TimeTracker() {
           requiredPause = 30;
       }
 
-      finalEntryData.pauseDuration = Math.max(entryData.pauseDuration || 0, requiredPause);
+      finalEntryData.pauseDuration = requiredPause;
+    } else {
+      finalEntryData.pauseDuration = 0;
     }
 
-    if (finalEntryData.id && entries.some(e => e.id === finalEntryData.id)) {
+    if (entries.some(e => e.id === finalEntryData.id)) {
       setEntries(entries.map((e) => (e.id === finalEntryData.id ? finalEntryData : e)));
       toast({ title: "Entry Updated", description: `Changes to "${finalEntryData.location}" have been saved.`});
     } else {
