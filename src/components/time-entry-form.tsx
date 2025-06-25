@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format, set, parse } from "date-fns";
+import { format, set, parse, addMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,8 +12,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   SheetHeader,
   SheetTitle,
@@ -28,8 +30,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, Save } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, timeStringToMinutes } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/types";
+import { Separator } from "./ui/separator";
 
 const formSchema = z.object({
   location: z.string().min(2, {
@@ -38,6 +41,10 @@ const formSchema = z.object({
   date: z.date(),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  pauseDuration: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)").optional(),
+  travelTime: z.coerce.number().min(0, "Must be positive").optional(),
+  isDriver: z.boolean().optional(),
+  kilometers: z.coerce.number().min(0, "Must be positive").optional(),
 }).refine(data => {
     const start = parse(data.startTime, "HH:mm", new Date());
     const end = parse(data.endTime, "HH:mm", new Date());
@@ -62,6 +69,10 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       date: entry?.startTime || selectedDate,
       startTime: entry ? format(entry.startTime, "HH:mm") : "09:00",
       endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : "10:00",
+      pauseDuration: entry?.pauseDuration ? format(addMinutes(new Date(0), entry.pauseDuration), "HH:mm") : "00:00",
+      travelTime: entry?.travelTime || 0,
+      isDriver: entry?.isDriver || false,
+      kilometers: entry?.kilometers || 0,
     },
   });
 
@@ -77,6 +88,10 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       location: values.location,
       startTime,
       endTime,
+      pauseDuration: timeStringToMinutes(values.pauseDuration),
+      travelTime: values.travelTime,
+      isDriver: values.isDriver,
+      kilometers: values.kilometers,
     };
     onSave(finalEntry);
   }
@@ -167,6 +182,75 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                 )}
               />
             </div>
+            
+            <Separator />
+
+            <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
+
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="pauseDuration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Pause</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="travelTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Travel Time (hours)</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="kilometers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kilometers</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="1" placeholder="e.g. 50" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="isDriver"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-end space-x-3 rounded-md border p-3">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Driver
+                        </FormLabel>
+                         <FormDescription>
+                          Were you the designated driver?
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+            </div>
+
 
             <SheetFooter className="pt-6">
                 <SheetClose asChild>
