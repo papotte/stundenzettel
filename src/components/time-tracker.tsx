@@ -62,11 +62,10 @@ import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
 import { Skeleton } from "./ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
-import { auth } from "@/lib/firebase";
 
 
 export default function TimeTracker() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null);
@@ -99,7 +98,7 @@ export default function TimeTracker() {
       }
     };
     fetchEntries();
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -165,7 +164,7 @@ export default function TimeTracker() {
       }
       
       entryWithUser.pauseDuration = requiredPause;
-    } else {
+    } else if (isNonWorkEntry) {
       entryWithUser.pauseDuration = 0;
     }
     
@@ -173,15 +172,15 @@ export default function TimeTracker() {
     setEditingEntry(null);
 
     try {
-      if (entries.some(e => e.id === entryWithUser.id)) {
+      const existingEntry = entries.find(e => e.id === entryWithUser.id);
+      if (existingEntry) {
         await updateTimeEntry(entryWithUser.id, entryWithUser);
         setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
         toast({ title: "Entry Updated", description: `Changes to "${entryWithUser.location}" have been saved.`});
       } else {
-        const { id, ...dataToSave } = entryWithUser;
-        await addTimeEntry(dataToSave as Omit<TimeEntry, 'id'>);
-        const fetchedEntries = await getTimeEntries(user.uid);
-        setEntries(fetchedEntries);
+        const newId = await addTimeEntry(entryWithUser);
+        const newEntry = {...entryWithUser, id: newId};
+        setEntries(prev => [newEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
         toast({ title: "Entry Added", description: `New entry for "${entryWithUser.location}" created.`});
       }
     } catch (error) {
@@ -233,8 +232,7 @@ export default function TimeTracker() {
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
     const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
 
-    const newEntry: Omit<TimeEntry, 'id'> = {
-      userId: user.uid,
+    const newEntry: Omit<TimeEntry, 'id' | 'userId'> = {
       location: location,
       startTime: startTime,
       endTime: endTime,
@@ -254,9 +252,10 @@ export default function TimeTracker() {
     }
 
     try {
-      await addTimeEntry(newEntry);
-      const fetchedEntries = await getTimeEntries(user.uid);
-      setEntries(fetchedEntries);
+      const entryWithUser = { ...newEntry, userId: user.uid };
+      const newId = await addTimeEntry(entryWithUser);
+      const finalNewEntry = { ...entryWithUser, id: newId };
+      setEntries(prev => [finalNewEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
       toast({
         title: "Entry Added",
         description: `New entry for "${location}" created.`,
@@ -321,7 +320,7 @@ export default function TimeTracker() {
   };
 
   const handleSignOut = async () => {
-    await auth.signOut();
+    await signOut();
     // The auth context and page guard will handle redirection
   };
 

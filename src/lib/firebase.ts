@@ -1,6 +1,6 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getFirestore, type Firestore } from "firebase/firestore";
+import { getAuth, type Auth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,9 +11,23 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
-const auth = getAuth(app);
+let app: FirebaseApp;
+let db: Firestore;
+let auth: Auth;
+
+const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' || !firebaseConfig.apiKey;
+
+// Conditionally initialize Firebase only if not in mock mode and API key is provided
+if (!useMocks) {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  db = getFirestore(app);
+  auth = getAuth(app);
+} else {
+  // If in mock mode, create placeholder objects to avoid crashing on import.
+  // The app's logic prevents these from actually being used.
+  app = {} as FirebaseApp;
+  db = {} as Firestore;
+  auth = {} as Auth;
+}
 
 export { db, auth };

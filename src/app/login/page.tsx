@@ -8,6 +8,7 @@ import {
   UserCredential,
   GoogleAuthProvider,
   signInWithPopup,
+  User,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Clock } from 'lucide-react';
+import { Clock, TestTube2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -34,12 +36,21 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+
+const mockUsers = [
+  { uid: 'mock-user-1', email: 'user1@example.com', displayName: 'Raquel Crespillo Andujar' },
+  { uid: 'mock-user-2', email: 'user2@example.com', displayName: 'Max Mustermann' },
+]
+
+const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' || !process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { loginAsMockUser } = useAuth();
 
   const handleAuthAction = async (action: (email: string, password: string) => Promise<UserCredential>) => {
     setLoading(true);
@@ -76,6 +87,39 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  const handleMockLogin = (user: any) => {
+    if (loginAsMockUser) {
+        loginAsMockUser(user as User);
+        router.push('/');
+    }
+  }
+
+  if (useMocks) {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
+            <div className="flex items-center gap-2 mb-4">
+                <TestTube2 className="h-8 w-8 text-primary" />
+                <h1 className="text-3xl font-bold tracking-tight font-headline">TimeWise Tracker (Test Mode)</h1>
+            </div>
+            <Card className="w-full max-w-sm">
+                <CardHeader>
+                    <CardTitle>Select a Mock User</CardTitle>
+                    <CardDescription>
+                        Choose a user to log in as for local testing. Data is stored in-memory and will be reset on page reload.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {mockUsers.map(user => (
+                        <Button key={user.uid} onClick={() => handleMockLogin(user)} className="w-full">
+                            Log in as {user.displayName}
+                        </Button>
+                    ))}
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
