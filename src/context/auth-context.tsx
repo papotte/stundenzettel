@@ -15,6 +15,7 @@ interface AuthContextType {
 }
 
 const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' || !process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const MOCK_USER_STORAGE_KEY = 'mockUser';
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -27,6 +28,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const loginAsMockUser = (user: User | null) => {
+    if (user) {
+      localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+    }
     setUser(user);
     setLoading(false);
   };
@@ -41,7 +47,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (useMocks) {
-      setLoading(false); // In mock mode, we wait for manual login
+      try {
+        const storedUser = localStorage.getItem(MOCK_USER_STORAGE_KEY);
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        console.error("Failed to parse mock user from localStorage", error);
+        localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+      }
+      setLoading(false);
       return;
     }
     
