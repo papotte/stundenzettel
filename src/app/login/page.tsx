@@ -9,6 +9,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   User,
+  setPersistence,
+  browserLocalPersistence,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -55,6 +57,7 @@ export default function LoginPage() {
   const handleAuthAction = async (action: (email: string, password: string) => Promise<UserCredential>) => {
     setLoading(true);
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await action(email, password);
       router.push('/');
     } catch (error: any) {
@@ -75,6 +78,7 @@ export default function LoginPage() {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
+      await setPersistence(auth, browserLocalPersistence);
       await signInWithPopup(auth, provider);
       router.push('/');
     } catch (error: any) {
