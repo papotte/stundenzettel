@@ -36,7 +36,7 @@ const reverseGeocodeFlow = ai.defineFlow(
 
     if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE' || apiKey.trim() === '') {
       console.error('Google Maps API key is not configured in .env file.');
-      throw new Error('Server configuration error: The Google Maps API key is missing or invalid. Please check your .env file.');
+      throw new Error('Configuration Error: The GOOGLE_MAPS_API_KEY is not set in the .env file. This key is for location lookup and is separate from any Gemini/AI keys. Please get a key from the Google Cloud Console and add it to your .env file.');
     }
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
@@ -46,8 +46,11 @@ const reverseGeocodeFlow = ai.defineFlow(
       const data = await response.json();
 
       if (data.status !== 'OK') {
-        console.error('Geocoding API Error:', data);
-        throw new Error(`Geocoding API error: ${data.status} - ${data.error_message || 'Unknown error'}`);
+        console.error('Geocoding API Error:', data.status, data.error_message);
+        if (data.status === 'REQUEST_DENIED') {
+            throw new Error(`Google Maps API Error: ${data.error_message || 'The API key may be invalid or the Geocoding API may not be enabled in your Google Cloud project.'}`);
+        }
+        throw new Error(`Geocoding API error: ${data.status} - ${data.error_message || 'An unknown error occurred.'}`);
       }
       
       if (!data.results || data.results.length === 0) {
