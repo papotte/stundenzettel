@@ -126,16 +126,24 @@ export default function ExportPreview() {
 
   const handleExport = () => {
     if (!selectedMonth) return;
-    const header = [
-      t('export_preview.headerWeek'),
-      t('export_preview.headerDate'),
-      t('export_preview.headerLocation'),
-      t('export_preview.headerFrom'),
-      t('export_preview.headerTo'),
-      t('export_preview.headerPauseDuration'),
-      t('export_preview.headerTravelTime'),
-      t('export_preview.headerCompensatedTime'),
-      t('export_preview.headerDriver'),
+
+    const headerRow1 = [
+        t('export_preview.headerWeek'),
+        t('export_preview.headerDate'),
+        t('export_preview.headerLocation'),
+        t('export_preview.headerWorkTime'),
+        null,
+        t('export_preview.headerPauseDuration'),
+        t('export_preview.headerTravelTime'),
+        t('export_preview.headerCompensatedTime'),
+        t('export_preview.headerDriver'),
+    ];
+
+    const headerRow2 = [
+        null, null, null,
+        t('export_preview.headerFrom'),
+        t('export_preview.headerTo'),
+        null, null, null, null
     ];
     
     const data: (string | number)[][] = [];
@@ -191,27 +199,46 @@ export default function ExportPreview() {
     const worksheetData = [
       [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', user?.displayName || employeeName],
       [],
-      header,
+      headerRow1,
+      headerRow2,
       ...data
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     
-    const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true } };
+    // Define merges for the two-row header
+    if (!worksheet['!merges']) worksheet['!merges'] = [];
+    worksheet['!merges'].push(
+      { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } }, // Week
+      { s: { r: 2, c: 1 }, e: { r: 3, c: 1 } }, // Date
+      { s: { r: 2, c: 2 }, e: { r: 3, c: 2 } }, // Location
+      { s: { r: 2, c: 3 }, e: { r: 2, c: 4 } }, // Work Time
+      { s: { r: 2, c: 5 }, e: { r: 3, c: 5 } }, // Pause
+      { s: { r: 2, c: 6 }, e: { r: 3, c: 6 } }, // Travel
+      { s: { r: 2, c: 7 }, e: { r: 3, c: 7 } }, // Compensated
+      { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }  // Driver
+    );
+    
+    const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true }, alignment: { vertical: 'center', horizontal: 'center' } };
     const dayColStyle = { fill: { fgColor: { rgb: "DDEBF7" } } };
 
-    const headerRef = `A3:I3`;
-    const headerRange = XLSX.utils.decode_range(headerRef);
-    for(let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-        const address = XLSX.utils.encode_cell({r: headerRange.s.r, c: C});
-        if(!worksheet[address]) continue;
-        worksheet[address].s = headerStyle;
+    // Apply style to all header cells
+    for (let R = 2; R <= 3; ++R) {
+        for (let C = 0; C <= 8; ++C) {
+            const address = XLSX.utils.encode_cell({ r: R, c: C });
+            const cell = worksheet[address];
+            if (cell) {
+              if (!cell.s) cell.s = {};
+              cell.s = { ...cell.s, ...headerStyle };
+            }
+        }
     }
     
+    // Apply style to day column in data rows
     data.forEach((rowData, index) => {
         const firstCell = rowData[0];
         if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
-            const address = `A${index + 4}`;
+            const address = `A${index + 5}`;
             if (worksheet[address]) {
                 if (!worksheet[address].s) worksheet[address].s = {};
                 worksheet[address].s.fill = dayColStyle.fill;
@@ -302,15 +329,18 @@ export default function ExportPreview() {
                 <Table className="border">
                   <TableHeader>
                     <TableRow className="bg-secondary hover:bg-secondary">
-                      <TableHead className="w-[8%]">{t('export_preview.headerWeek')}</TableHead>
-                      <TableHead className="w-[12%]">{t('export_preview.headerDate')}</TableHead>
-                      <TableHead className="w-[20%]">{t('export_preview.headerLocation')}</TableHead>
-                      <TableHead className="w-[8%] text-center">{t('export_preview.headerFrom')}</TableHead>
-                      <TableHead className="w-[8%] text-center">{t('export_preview.headerTo')}</TableHead>
-                      <TableHead className="w-[12%] text-center">{t('export_preview.headerPauseDuration')}</TableHead>
-                      <TableHead className="w-[10%] text-center">{t('export_preview.headerTravelTime')}</TableHead>
-                      <TableHead className="w-[12%] text-center">{t('export_preview.headerCompensatedTime')}</TableHead>
-                      <TableHead className="w-[8%] text-center">{t('export_preview.headerDriver')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[12%] align-middle">{t('export_preview.headerDate')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[20%] align-middle">{t('export_preview.headerLocation')}</TableHead>
+                      <TableHead colSpan={2} className="w-[16%] text-center">{t('export_preview.headerWorkTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerPauseDuration')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[10%] text-center align-middle">{t('export_preview.headerTravelTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerCompensatedTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[8%] text-center align-middle">{t('export_preview.headerDriver')}</TableHead>
+                    </TableRow>
+                     <TableRow className="bg-secondary hover:bg-secondary">
+                        <TableHead className="text-center">{t('export_preview.headerFrom')}</TableHead>
+                        <TableHead className="text-center">{t('export_preview.headerTo')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
