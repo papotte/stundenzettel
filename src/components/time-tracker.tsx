@@ -52,7 +52,7 @@ import { useToast } from "@/hooks/use-toast";
 import TimeEntryForm from "./time-entry-form";
 import TimeEntryCard from "./time-entry-card";
 import type { TimeEntry } from "@/lib/types";
-import { formatHoursAndMinutes } from "@/lib/utils";
+import { formatHoursAndMinutes, formatDuration } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -484,34 +484,6 @@ export default function TimeTracker() {
             </Card>
 
             <Card className="shadow-lg">
-                <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <BarChart className="h-5 w-5 text-primary" />
-                        <CardTitle>Hours Summary</CardTitle>
-                    </div>
-                    <CardDescription>
-                        Total compensated hours for periods related to the selected date.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Selected Day</p>
-                            <p className="text-2xl font-bold">{formatHoursAndMinutes(dailyTotal)}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">This Week</p>
-                            <p className="text-2xl font-bold">{formatHoursAndMinutes(weeklyTotal)}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">This Month</p>
-                            <p className="text-2xl font-bold">{formatHoursAndMinutes(monthlyTotal)}</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-            
-            <Card className="shadow-lg">
               <CardHeader>
                   <CardTitle>Daily Actions</CardTitle>
                   <CardDescription>
@@ -608,8 +580,36 @@ export default function TimeTracker() {
                       )}
                   </CardContent>
               </Card>
-
             </div>
+            
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <BarChart className="h-5 w-5 text-primary" />
+                        <CardTitle>Hours Summary</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Total compensated hours for periods related to the selected date.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Selected Day</p>
+                            <p className="text-2xl font-bold">{formatHoursAndMinutes(dailyTotal)}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">This Week</p>
+                            <p className="text-2xl font-bold">{formatHoursAndMinutes(weeklyTotal)}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">This Month</p>
+                            <p className="text-2xl font-bold">{formatHoursAndMinutes(monthlyTotal)}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
           </div>
         </main>
       </div>
