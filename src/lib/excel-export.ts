@@ -73,9 +73,9 @@ export const exportToExcel = async ({
   worksheet.columns = [
     { key: 'week', width: 5 },
     { key: 'date', width: 12 },
-    { key: 'location', width: 24 },
-    { key: 'from', width: 12 },
-    { key: 'to', width: 12 },
+    { key: 'location', width: 30 },
+    { key: 'from', width: 8 },
+    { key: 'to', width: 8 },
     { key: 'pause', width: 8 },
     { key: 'travel', width: 8 },
     { key: 'compensated', width: 12 },
@@ -88,9 +88,12 @@ export const exportToExcel = async ({
   titleRow.getCell('A').value = t('export_preview.timesheetTitle', { month: format(selectedMonth, "MMMM", { locale }) });
   titleRow.getCell('A').font = { bold: true, size: 12 };
 
-  titleRow.getCell('J').value = user?.displayName || user?.email;
-  titleRow.getCell('J').font = { bold: true, size: 10 };
-  titleRow.getCell('J').alignment = { horizontal: 'right' };
+  worksheet.mergeCells(titleRow.number, 1, titleRow.number, 5);
+
+  const userCell = titleRow.getCell('J')
+  userCell.value = user?.displayName || user?.email;
+  userCell.font = { bold: true, size: 10 };
+  userCell.alignment = { horizontal: 'right' };
 
   worksheet.addRow([]); // blank row
 
@@ -150,9 +153,20 @@ export const exportToExcel = async ({
         cell.border = allBorders;
       });
     });
-    // Remove border between von/bis
-    worksheet.getCell(headerRow2Num, 4).border = { top: defaultBorder, left: defaultBorder, bottom: defaultBorder };
-    worksheet.getCell(headerRow2Num, 5).border = { top: defaultBorder, right: defaultBorder, bottom: defaultBorder };
+    
+    // --- Custom border logic for "Arbeitszeit" and "von/bis" headers ---
+    const arbeitszeitCell = worksheet.getCell(headerRow1Num, 4);
+    const vonCell = worksheet.getCell(headerRow2Num, 4);
+    const bisCell = worksheet.getCell(headerRow2Num, 5);
+
+    // Remove bottom border from merged "tatsächliche Arbeitszeit" cell
+    arbeitszeitCell.border = { top: defaultBorder, left: defaultBorder, right: defaultBorder };
+
+    // Remove top & right border from "von" cell
+    vonCell.border = { left: defaultBorder, bottom: defaultBorder };
+
+    // Remove top & left border from "bis" cell
+    bisCell.border = { right: defaultBorder, bottom: defaultBorder };
 
     // --- RENDER DATA ROWS FOR THE WEEK ---
     week.forEach(day => {
@@ -243,6 +257,7 @@ export const exportToExcel = async ({
     // --- RENDER WEEKLY TOTAL ---
     const weeklyTotal = calculateWeekTotal(week);
     const totalRow = worksheet.addRow([]);
+    worksheet.mergeCells(totalRow.number, 1, totalRow.number, 6);
     const totalLabelCell = totalRow.getCell(7);
     totalLabelCell.value = t('export_preview.footerTotalPerWeek');
     totalLabelCell.alignment = { horizontal: 'right' };
@@ -257,6 +272,7 @@ export const exportToExcel = async ({
 
   // --- GRAND TOTAL ---
   const grandTotalRow = worksheet.addRow([]);
+  worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 6);
   const grandTotalLabelCell = grandTotalRow.getCell(7);
   grandTotalLabelCell.value = t('export_preview.footerTotalHours');
   grandTotalLabelCell.alignment = { horizontal: 'right' };
