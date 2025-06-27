@@ -53,3 +53,12 @@ export function timeStringToMinutes(timeStr: string | undefined | null): number 
   if (isNaN(hours) || isNaN(minutes)) return 0;
   return hours * 60 + minutes;
 }
+
+export function formatHoursAndMinutes(totalMinutes: number): string {
+  if (isNaN(totalMinutes) || totalMinutes <= 0) {
+    return "0h 0m";
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = Math.round(totalMinutes % 60);
+  return `${hours}h ${minutes}m`;
+}
