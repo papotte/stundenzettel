@@ -95,7 +95,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
   };
     
   return (
-    <div className="bg-white p-8 rounded-md shadow-md printable-area">
+    <div className="bg-white p-8 rounded-md shadow-md printable-area font-body">
       <header className="flex justify-between items-start mb-4">
         <h1 className="text-xl font-bold">
           {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
@@ -190,13 +190,13 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
               </TableBody>
             </Table>
             <div className="flex justify-end mt-2 text-sm">
-              <span className="mr-4 font-medium">{t('export_preview.footerTotalPerWeek')}</span>
+              <span className="font-medium mr-4">{t('export_preview.footerTotalPerWeek')}</span>
               <span className="font-bold w-36 text-right border-b-2 border-black pb-2">{calculateWeekTotal(week).toFixed(2)}</span>
             </div>
           </div>
         ))}
         <div className="flex justify-end mt-8">
-            <span className="mr-4 font-bold">{t('export_preview.footerTotalHours')}</span>
+            <span className="font-bold mr-4">{t('export_preview.footerTotalHours')}</span>
             <span className="font-bold w-36 text-right border-b-[3px] [border-bottom-style:double] border-black pb-2">{monthTotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-end">
