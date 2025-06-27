@@ -121,7 +121,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                   <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-r border-black">
                     {t('export_preview.headerLocation')}
                   </TableHead>
-                  <TableHead colSpan={2} className="w-[14%] text-center border-b border-r border-black">
+                  <TableHead colSpan={2} className="w-[14%] text-center border-r border-black">
                     {t('export_preview.headerWorkTime')}
                   </TableHead>
                   <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerPauseDuration')}</TableHead>
@@ -181,7 +181,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                       {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
                       <TableCell className="border-r border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
                       <TableCell className="text-right">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
-                      <TableCell className="text-right">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
+                      <TableCell className="text-right border-r border-black">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
                       <TableCell className="text-right border-r border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
                       <TableCell className="text-right border-r border-black">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                       <TableCell className="text-right border-r border-black">{compensatedHours.toFixed(2)}</TableCell>
@@ -192,26 +192,32 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                 })}
               </TableBody>
             </Table>
-            <div className="flex w-full mt-2 text-sm">
-                <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
-                <div style={{ width: '10%' }} className="px-2 text-right">
-                  <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
+            <div className="flex justify-between w-full mt-2 text-sm">
+                <div className="flex w-full">
+                    <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
+                    <div style={{ width: '10%' }} className="px-2 text-right">
+                      <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
+                    </div>
                 </div>
-                <div style={{ width: 'calc(8% + 10% + 8%)' }} />
-                <div style={{ width: '12%' }} className="px-2 text-right">
-                  <span className="font-bold border-b-2 border-black pb-1 inline-block">{calculateWeekTotal(week).toFixed(2)}</span>
+                <div className="flex w-full justify-end">
+                    <div style={{ width: '12%' }} className="px-2 text-right">
+                      <span className="font-bold border-b-2 border-black pb-1 inline-block">{calculateWeekTotal(week).toFixed(2)}</span>
+                    </div>
                 </div>
             </div>
           </div>
         ))}
-        <div className="flex w-full mt-8">
-            <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
-            <div style={{ width: '10%' }} className="px-2 text-right">
-              <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
+        <div className="flex justify-between w-full mt-8">
+            <div className="flex w-full">
+                <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
+                <div style={{ width: '10%' }} className="px-2 text-right">
+                  <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
+                </div>
             </div>
-            <div style={{ width: 'calc(8% + 10% + 8%)' }} />
-            <div style={{ width: '12%' }} className="px-2 text-right">
-              <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 inline-block">{monthTotal.toFixed(2)}</span>
+            <div className="flex w-full justify-end">
+                <div style={{ width: '12%' }} className="px-2 text-right">
+                  <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 inline-block">{monthTotal.toFixed(2)}</span>
+                </div>
             </div>
         </div>
         <div className="flex justify-end">
