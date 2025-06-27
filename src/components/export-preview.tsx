@@ -198,7 +198,7 @@ export default function ExportPreview() {
     data.push(['', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2), '', '']);
 
     const worksheetData = [
-      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
+      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})],
       [],
       headerRow1,
       headerRow2,
@@ -320,8 +320,8 @@ export default function ExportPreview() {
         </div>
 
         <div className="bg-white p-8 rounded-md shadow-md printable-area">
-          <header className="flex justify-between items-start mb-4 border-b pb-4 border-black">
-            <h1 className="text-xl font-bold">
+          <header className="flex justify-between items-start mb-4 pb-4">
+            <h1 className="text-xl font-bold font-body">
               {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
             </h1>
             <div className="text-right font-semibold">{user?.displayName || user?.email || employeeName}</div>
@@ -330,9 +330,9 @@ export default function ExportPreview() {
           <main>
             {relevantWeeks.map((week, weekIndex) => (
               <div key={weekIndex} className="mb-6">
-                <Table className="border-t border-x border-black [&_tr]:border-black">
+                <Table className="border border-black [&_tr]:border-black">
                   <TableHeader>
-                    <TableRow className="bg-table-header hover:bg-table-header border-b-0 text-black">
+                    <TableRow className="bg-table-header hover:bg-table-header text-black">
                       <TableHead rowSpan={2} className="w-[8%] align-middle text-center">
                         {t('export_preview.headerWeek')}
                       </TableHead>
@@ -419,7 +419,7 @@ export default function ExportPreview() {
                 </div>
               </div>
             ))}
-            <div className="flex justify-end mt-8 border-t-2 border-black pt-2">
+            <div className="flex justify-end mt-8 pt-2">
                 <span className="mr-4 font-bold">{t('export_preview.footerTotalHours')}</span>
                 <span className="border-b-4 border-double border-black pb-1 pl-8 font-bold">{monthTotal.toFixed(2)}</span>
             </div>
