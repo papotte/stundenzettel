@@ -30,8 +30,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Save, Lightbulb } from "lucide-react";
-import { cn, timeStringToMinutes } from "@/lib/utils";
+import { Calendar as CalendarIcon, Save, Lightbulb, AlertTriangle } from "lucide-react";
+import { cn, timeStringToMinutes, formatHoursAndMinutes } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/types";
 import { Separator } from "./ui/separator";
 import { useMemo } from "react";
@@ -40,6 +40,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 const formSchema = z.object({
   location: z.string().min(2, {
@@ -88,6 +90,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
   const { watch, setValue } = form;
   const startTimeValue = watch("startTime");
   const endTimeValue = watch("endTime");
+  const pauseDurationValue = watch("pauseDuration");
   const travelTimeValue = watch("travelTime");
 
   const pauseSuggestion = useMemo(() => {
@@ -111,6 +114,27 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       return null;
     }
   }, [startTimeValue, endTimeValue, travelTimeValue]);
+
+  const { workDurationInMinutes, totalCompensatedMinutes } = useMemo(() => {
+    try {
+        const start = parse(startTimeValue, "HH:mm", new Date());
+        const end = parse(endTimeValue, "HH:mm", new Date());
+        if (end <= start) return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 };
+
+        const workDuration = differenceInMinutes(end, start);
+        const pauseInMinutes = timeStringToMinutes(pauseDurationValue);
+        const travelInMinutes = (travelTimeValue || 0) * 60;
+
+        const total = workDuration - pauseInMinutes + travelInMinutes;
+
+        return {
+            workDurationInMinutes: workDuration,
+            totalCompensatedMinutes: total > 0 ? total : 0
+        };
+    } catch (e) {
+        return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 };
+    }
+  }, [startTimeValue, endTimeValue, pauseDurationValue, travelTimeValue]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -296,6 +320,23 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                     </FormItem>
                   )}
                 />
+            </div>
+
+            <div className="space-y-4 pt-4">
+                <Separator />
+                <div className="flex justify-between items-center font-medium">
+                    <span className="text-muted-foreground">Total Compensated Time:</span>
+                    <span className="text-lg text-primary">{formatHoursAndMinutes(totalCompensatedMinutes)}</span>
+                </div>
+                {workDurationInMinutes > 10 * 60 && (
+                    <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Warning: Exceeds 10 Hours</AlertTitle>
+                        <AlertDescription>
+                            The work duration exceeds the legal maximum of 10 hours per day.
+                        </AlertDescription>
+                    </Alert>
+                )}
             </div>
 
 
