@@ -16,7 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download, Printer } from "lucide-react";
 import type { TimeEntry, UserSettings } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
+import { getTimeEntries, updateTimeEntry, addTimeEntry } from "@/services/time-entry-service";
 import { useAuth } from "@/hooks/use-auth";
 import { useTranslation } from "@/context/i18n-context";
 import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
@@ -37,6 +37,7 @@ export default function ExportPreview() {
   const [selectedMonth, setSelectedMonth] = useState<Date>();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+  const [newEntryDate, setNewEntryDate] = useState<Date | null>(null);
 
   const locale = useMemo(() => (language === 'de' ? de : enUS), [language]);
 
@@ -117,6 +118,13 @@ export default function ExportPreview() {
 
   const handleEditEntry = useCallback((entry: TimeEntry) => {
     setEditingEntry(entry);
+    setNewEntryDate(null);
+    setIsFormOpen(true);
+  }, []);
+
+  const handleAddNewEntry = useCallback((date: Date) => {
+    setEditingEntry(null);
+    setNewEntryDate(date);
     setIsFormOpen(true);
   }, []);
 
@@ -126,16 +134,31 @@ export default function ExportPreview() {
 
     setIsFormOpen(false);
     setEditingEntry(null);
+    setNewEntryDate(null);
 
     try {
-      await updateTimeEntry(entryWithUser.id, entryWithUser);
-      setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
-      toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', {location: entryWithUser.location})});
+      const existingEntry = entries.find(e => e.id === entryWithUser.id);
+      if (existingEntry) {
+          await updateTimeEntry(entryWithUser.id, entryWithUser);
+          setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
+          toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', {location: entryWithUser.location})});
+      } else {
+          const newId = await addTimeEntry(entryWithUser);
+          const newEntry = {...entryWithUser, id: newId};
+          setEntries(prev => [newEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
+          toast({ title: t('toasts.entryAddedTitle'), description: t('toasts.entryAddedDescription', {location: entryWithUser.location})});
+      }
     } catch (error) {
       console.error("Error saving entry:", error);
       toast({ title: t('toasts.saveFailedTitle'), description: t('toasts.saveFailedDescription'), variant: "destructive" });
     }
   }, [user, entries, t, toast]);
+
+  const handleCloseForm = () => {
+      setIsFormOpen(false);
+      setEditingEntry(null);
+      setNewEntryDate(null);
+  };
   
   if (isLoading || !selectedMonth || !userSettings) {
     return (
@@ -213,18 +236,19 @@ export default function ExportPreview() {
               calculateWeekTotal={calculateWeekTotal}
               getLocationDisplayName={getLocationDisplayName}
               onEdit={handleEditEntry}
+              onAdd={handleAddNewEntry}
           />
         </CardContent>
       </Card>
 
-      <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Sheet open={isFormOpen} onOpenChange={(open) => !open && handleCloseForm()}>
         <SheetContent className="w-full max-w-none sm:max-w-md flex flex-col">
-          {userSettings && editingEntry && (
+          {userSettings && isFormOpen && (
             <TimeEntryForm
               entry={editingEntry}
-              selectedDate={editingEntry.startTime}
+              selectedDate={editingEntry?.startTime || newEntryDate!}
               onSave={handleSaveEntry}
-              onClose={() => setIsFormOpen(false)}
+              onClose={handleCloseForm}
               userSettings={userSettings}
             />
           )}
