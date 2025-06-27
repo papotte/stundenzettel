@@ -149,8 +149,8 @@ export default function TimeTracker() {
   const handleSaveEntry = async (entryData: Omit<TimeEntry, 'userId'>) => {
     if (!user) return;
 
-    // The entryData from the form is the single source of truth.
-    // No automatic calculations are performed.
+    // The entryData from the form is now the single source of truth.
+    // No automatic calculations will be performed on save.
     const entryWithUser = { ...entryData, userId: user.uid };
 
     setIsFormOpen(false);
