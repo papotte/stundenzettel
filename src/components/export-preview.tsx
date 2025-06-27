@@ -21,7 +21,6 @@ import {
   TableRow,
   TableHead,
   TableCell,
-  TableFooter,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
@@ -147,7 +146,7 @@ export default function ExportPreview() {
         null, null, null, null, null
     ];
     
-    const data: (string | number)[][] = [];
+    const data: (string | number | null)[][] = [];
 
     relevantWeeks.forEach(week => {
       week.forEach(day => {
@@ -413,14 +412,11 @@ export default function ExportPreview() {
                       )});
                     })}
                   </TableBody>
-                  <TableFooter>
-                    <TableRow className="border-none">
-                      <TableCell colSpan={7} className="text-right font-medium">{t('export_preview.footerTotalPerWeek')}</TableCell>
-                      <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
-                      <TableCell colSpan={2}></TableCell>
-                    </TableRow>
-                  </TableFooter>
                 </Table>
+                <div className="flex justify-end mt-2 text-sm">
+                  <span className="mr-4 font-medium">{t('export_preview.footerTotalPerWeek')}</span>
+                  <span className="font-bold w-36 text-right">{calculateWeekTotal(week).toFixed(2)}</span>
+                </div>
               </div>
             ))}
             <div className="flex justify-end mt-8 border-t-2 border-black pt-2">
@@ -433,5 +429,3 @@ export default function ExportPreview() {
     </Card>
   );
 }
-
-    
