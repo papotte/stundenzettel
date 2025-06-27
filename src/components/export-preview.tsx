@@ -140,7 +140,7 @@ export default function ExportPreview() {
         t('export_preview.headerDate'),
         t('export_preview.headerLocation'),
         t('export_preview.headerWorkTime'),
-        null,
+        '',
         t('export_preview.headerPauseDuration'),
         t('export_preview.headerTravelTime'),
         t('export_preview.headerCompensatedTime'),
@@ -149,10 +149,10 @@ export default function ExportPreview() {
     ];
 
     const headerRow2 = [
-        null, null, null,
+        '', '', '',
         t('export_preview.headerFrom'),
         t('export_preview.headerTo'),
-        null, null, null, null, null
+        '', '', '', '', '',
     ];
     
     const data: (string | number | null)[][] = [];
