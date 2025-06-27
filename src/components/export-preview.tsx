@@ -16,7 +16,7 @@ import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
-import type { TimeEntry } from "@/lib/types";
+import type { TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTimeEntries } from "@/services/time-entry-service";
@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useTranslation } from "@/context/i18n-context";
 import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
 import TimesheetPreview from "./timesheet-preview";
+import { getUserSettings } from "@/services/user-settings-service";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -39,6 +40,7 @@ export default function ExportPreview() {
   const { user } = useAuth();
   const { t, language } = useTranslation();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
 
@@ -49,10 +51,14 @@ export default function ExportPreview() {
     const fetchAndSetEntries = async () => {
       setIsLoading(true);
       try {
-        const fetchedEntries = await getTimeEntries(user.uid);
+        const [fetchedEntries, settings] = await Promise.all([
+          getTimeEntries(user.uid),
+          getUserSettings(user.uid),
+        ]);
         setEntries(fetchedEntries);
+        setUserSettings(settings);
       } catch (error) {
-        console.error("Failed to load time entries from Firestore.", error);
+        console.error("Failed to load initial data from Firestore.", error);
       }
       setSelectedMonth(new Date());
       setIsLoading(false);
@@ -97,7 +103,24 @@ export default function ExportPreview() {
   };
 
   const handleExport = () => {
-    if (!selectedMonth) return;
+    if (!selectedMonth || !userSettings) return;
+    
+    // Format company header for Excel
+    const companyName = userSettings?.companyName || '';
+    const email = userSettings?.companyEmail || '';
+    const phone1 = userSettings?.companyPhone1 || '';
+    const phone2 = userSettings?.companyPhone2 || '';
+    const fax = userSettings?.companyFax || '';
+
+    const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
+    const contactParts = [
+      companyName,
+      email,
+      phoneNumbers ? `Tel.: ${phoneNumbers}` : '',
+      fax ? `FAX: ${fax}` : ''
+    ].filter(Boolean);
+
+    const companyHeader = contactParts.length > 0 ? t('export_preview.headerCompany', { details: contactParts.join(' ') }) : null;
     
     const weeksInMonth = getWeeksForMonth(selectedMonth);
     const weekHasEntries = (week: Date[]): boolean => {
@@ -172,35 +195,44 @@ export default function ExportPreview() {
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
-      data.push(['', '', '', '', '', t('export_preview.footerTotalPerWeek'), '', '', '', weeklyTotal.toFixed(2)]);
+      data.push([null, null, null, null, null, t('export_preview.footerTotalPerWeek'), null, null, null, weeklyTotal.toFixed(2)]);
       data.push([]); // Empty row
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', t('export_preview.footerTotalHours'), '', '', '', monthTotal.toFixed(2)]);
+    data.push([null, null, null, null, null, t('export_preview.footerTotalHours'), null, null, null, monthTotal.toFixed(2)]);
+    
+    const signatureRow = [null, null, null, null, null, null, null, null, null, t('export_preview.signatureLine')];
 
     const worksheetData = [
+      ...(companyHeader ? [[companyHeader]] : []),
+      ...(companyHeader ? [[]] : []),
       [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})],
       [],
       headerRow1,
       headerRow2,
-      ...data
+      ...data,
+      [], [], [],
+      signatureRow
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     
     if (!worksheet['!merges']) worksheet['!merges'] = [];
     worksheet['!merges'].push(
-      { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } }, // Week
-      { s: { r: 2, c: 1 }, e: { r: 3, c: 1 } }, // Date
-      { s: { r: 2, c: 2 }, e: { r: 3, c: 2 } }, // Location
-      { s: { r: 2, c: 3 }, e: { r: 2, c: 4 } }, // Work Time
-      { s: { r: 2, c: 5 }, e: { r: 3, c: 5 } }, // Pause
-      { s: { r: 2, c: 6 }, e: { r: 3, c: 6 } }, // Travel
-      { s: { r: 2, c: 7 }, e: { r: 3, c: 7 } }, // Compensated
-      { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }, // Driver
-      { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }
+      { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } }, // Week
+      { s: { r: 4, c: 1 }, e: { r: 5, c: 1 } }, // Date
+      { s: { r: 4, c: 2 }, e: { r: 5, c: 2 } }, // Location
+      { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } }, // Work Time
+      { s: { r: 4, c: 5 }, e: { r: 5, c: 5 } }, // Pause
+      { s: { r: 4, c: 6 }, e: { r: 5, c: 6 } }, // Travel
+      { s: { r: 4, c: 7 }, e: { r: 5, c: 7 } }, // Compensated
+      { s: { r: 4, c: 8 }, e: { r: 5, c: 8 } }, // Driver
+      { s: { r: 4, c: 9 }, e: { r: 5, c: 9 } }  // Mileage
     );
+    if (companyHeader) {
+      worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }); // Company Header
+    }
     
     const headerBaseStyle = { fill: { fgColor: { rgb: "99CCFF" } }, font: { bold: true, color: { rgb: "000000" } }, alignment: { vertical: 'center' } };
     const headerStyles = {
@@ -209,7 +241,7 @@ export default function ExportPreview() {
         center: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'center'}},
     };
 
-    for (let R = 2; R <= 3; ++R) {
+    for (let R = 4; R <= 5; ++R) {
         for (let C = 0; C <= 9; ++C) {
             const address = XLSX.utils.encode_cell({ r: R, c: C });
             const cell = worksheet[address];
@@ -232,7 +264,7 @@ export default function ExportPreview() {
     data.forEach((rowData, index) => {
         const firstCell = rowData[0];
         if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
-            const address = `A${index + 5}`;
+            const address = `A${index + 7}`;
             if (worksheet[address]) {
                 if (!worksheet[address].s) worksheet[address].s = {};
                 worksheet[address].s.fill = dayColStyle.fill;
@@ -251,7 +283,7 @@ export default function ExportPreview() {
     XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM", { locale })}.xlsx`);
   };
   
-  if (isLoading || !selectedMonth) {
+  if (isLoading || !selectedMonth || !userSettings) {
     return (
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">
@@ -315,6 +347,7 @@ export default function ExportPreview() {
             entries={entries}
             t={t}
             locale={locale}
+            userSettings={userSettings}
         />
       </CardContent>
     </Card>

@@ -14,4 +14,9 @@ export interface UserSettings {
   defaultStartTime: string;
   defaultEndTime: string;
   language: 'en' | 'de';
+  companyName?: string;
+  companyEmail?: string;
+  companyPhone1?: string;
+  companyPhone2?: string;
+  companyFax?: string;
 }

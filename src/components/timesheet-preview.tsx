@@ -19,9 +19,10 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import type { TimeEntry } from "@/lib/types";
+import type { TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
+import TimesheetHeader from "./timesheet-header";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -39,9 +40,10 @@ interface TimesheetPreviewProps {
     entries: TimeEntry[];
     t: (key: string, replacements?: Record<string, string | number>) => string;
     locale: Locale;
+    userSettings: UserSettings | null;
 }
 
-export default function TimesheetPreview({ selectedMonth, user, entries, t, locale }: TimesheetPreviewProps) {
+export default function TimesheetPreview({ selectedMonth, user, entries, t, locale, userSettings }: TimesheetPreviewProps) {
   const weeksInMonth = useMemo(
     () => getWeeksForMonth(selectedMonth),
     [selectedMonth]
@@ -96,6 +98,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
     
   return (
     <div className="bg-white p-8 rounded-md shadow-md printable-area font-body">
+      <TimesheetHeader userSettings={userSettings} t={t} />
       <header className="flex justify-between items-start mb-4">
         <h1 className="text-xl font-bold">
           {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
@@ -129,7 +132,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                 </TableRow>
                  <TableRow className="bg-table-header hover:bg-table-header text-black border-b border-black">
                     <TableHead className="text-right">{t('export_preview.headerFrom')}</TableHead>
-                    <TableHead className="text-right border-r border-black">{t('export_preview.headerTo')}</TableHead>
+                    <TableHead className="text-right">{t('export_preview.headerTo')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -178,7 +181,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                       {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
                       <TableCell className="border-r border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
                       <TableCell className="text-right">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
-                      <TableCell className="text-right border-r border-black">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
+                      <TableCell className="text-right">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
                       <TableCell className="text-right border-r border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
                       <TableCell className="text-right border-r border-black">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                       <TableCell className="text-right border-r border-black">{compensatedHours.toFixed(2)}</TableCell>
@@ -190,24 +193,24 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
               </TableBody>
             </Table>
             <div className="flex w-full mt-2 text-sm">
-                <div style={{ flex: '0 0 calc(8% + 10% + 18% + 14%)' }} />
-                <div style={{ flex: '0 0 10%' }} className="px-4 text-right">
+                <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
+                <div style={{ width: '10%' }} className="px-2 text-right">
                   <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
                 </div>
-                 <div style={{ flex: '0 0 calc(8% + 10% + 8%)' }} />
-                <div style={{ flex: '0 0 12%' }} className="px-4 text-right">
+                <div style={{ width: 'calc(8% + 10% + 8%)' }} />
+                <div style={{ width: '12%' }} className="px-2 text-right">
                   <span className="font-bold border-b-2 border-black pb-1 inline-block">{calculateWeekTotal(week).toFixed(2)}</span>
                 </div>
             </div>
           </div>
         ))}
         <div className="flex w-full mt-8">
-            <div style={{ flex: '0 0 calc(8% + 10% + 18% + 14%)' }} />
-            <div style={{ flex: '0 0 10%' }} className="px-4 text-right">
+            <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
+            <div style={{ width: '10%' }} className="px-2 text-right">
               <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
             </div>
-            <div style={{ flex: '0 0 calc(8% + 10% + 8%)' }} />
-            <div style={{ flex: '0 0 12%' }} className="px-4 text-right">
+            <div style={{ width: 'calc(8% + 10% + 8%)' }} />
+            <div style={{ width: '12%' }} className="px-2 text-right">
               <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 inline-block">{monthTotal.toFixed(2)}</span>
             </div>
         </div>
