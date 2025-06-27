@@ -578,6 +578,7 @@ export default function TimeTracker() {
                         onSave={handleSaveEntry}
                         selectedDate={selectedDate}
                         onClose={() => setIsFormOpen(false)}
+                        userSettings={userSettings}
                       />}
                     </SheetContent>
                   </Sheet>

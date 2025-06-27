@@ -1,7 +1,7 @@
 import type { UserSettings } from '@/lib/types';
 
 let userSettings: { [userId: string]: UserSettings } = {
-    'mock-user-1': { defaultWorkHours: 8 },
+    'mock-user-1': { defaultWorkHours: 7 },
     'mock-user-2': { defaultWorkHours: 7.5 },
 };
 

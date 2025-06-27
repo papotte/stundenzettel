@@ -30,17 +30,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Save, Lightbulb, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, Save, Lightbulb, AlertTriangle, MapPin, Loader2 } from "lucide-react";
 import { cn, timeStringToMinutes, formatHoursAndMinutes } from "@/lib/utils";
-import type { TimeEntry } from "@/lib/types";
+import type { TimeEntry, UserSettings } from "@/lib/types";
 import { Separator } from "./ui/separator";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 
 const SPECIAL_LOCATIONS = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"];
 
@@ -72,16 +75,30 @@ interface TimeEntryFormProps {
   selectedDate: Date;
   onSave: (data: Omit<TimeEntry, 'userId'>) => void;
   onClose: () => void;
+  userSettings: UserSettings | null;
 }
 
-export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: TimeEntryFormProps) {
+export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, userSettings }: TimeEntryFormProps) {
+  const { toast } = useToast();
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+
+  const defaultStartTime = "09:00";
+  let defaultEndTime = "17:00";
+
+  if (userSettings) {
+      const [startHours, startMinutes] = defaultStartTime.split(':').map(Number);
+      const startDate = set(new Date(), { hours: startHours, minutes: startMinutes });
+      const endDate = addMinutes(startDate, userSettings.defaultWorkHours * 60);
+      defaultEndTime = format(endDate, "HH:mm");
+  }
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       location: entry?.location || "",
       date: entry?.startTime || selectedDate,
-      startTime: entry ? format(entry.startTime, "HH:mm") : "07:00",
-      endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : "14:00",
+      startTime: entry ? format(entry.startTime, "HH:mm") : defaultStartTime,
+      endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : defaultEndTime,
       pauseDuration: entry?.pauseDuration ? format(addMinutes(new Date(0), entry.pauseDuration), "HH:mm") : "00:00",
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
@@ -150,6 +167,57 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     }
   }, [startTimeValue, endTimeValue, pauseDurationValue, travelTimeValue, isSpecialEntry]);
 
+  const handleGetCurrentLocation = async () => {
+    if (isFetchingLocation) return;
+    if (navigator.geolocation) {
+      setIsFetchingLocation(true);
+      toast({
+        title: "Fetching location...",
+        description: "Please wait while we get your address.",
+      });
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const result = await reverseGeocode({ latitude, longitude });
+            form.setValue('location', result.address, { shouldValidate: true });
+            toast({
+              title: "Location fetched!",
+              description: `Your location has been set to "${result.address}".`,
+              className: "bg-accent text-accent-foreground",
+            });
+          } catch (error) {
+            console.error("Error getting address", error);
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            toast({
+              title: "Could not get address",
+              description: errorMessage,
+              variant: "destructive",
+            });
+            form.setValue('location', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`, { shouldValidate: true });
+          } finally {
+            setIsFetchingLocation(false);
+          }
+        },
+        (error) => {
+          console.error("Error getting location", error);
+          toast({
+            title: "Could not get your coordinates",
+            description: "Please ensure location services are enabled and permission is granted in your browser.",
+            variant: "destructive",
+          });
+          setIsFetchingLocation(false);
+        }
+      );
+    } else {
+      toast({
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const [startHours, startMinutes] = values.startTime.split(":").map(Number);
@@ -181,191 +249,207 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
         </SheetDescription>
       </SheetHeader>
       <div className="flex-1 overflow-y-auto p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Office, Home" {...field} disabled={isSpecialEntry} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex gap-4">
+        <TooltipProvider>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="startTime"
+                name="location"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Start time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <div className="relative flex items-center">
+                        <FormControl>
+                            <Input placeholder="e.g., Office, Home" {...field} disabled={isSpecialEntry} className="pr-10" />
+                        </FormControl>
+                        {!isSpecialEntry && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" type="button" onClick={handleGetCurrentLocation} aria-label="Get current location" disabled={isFetchingLocation} className="absolute right-0 mr-1 h-8 w-8">
+                                    {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                                </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Get current location</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <FormField
                 control={form.control}
-                name="endTime"
+                name="date"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>End time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {!isSpecialEntry && (
-              <>
-                <Separator />
-                <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="pauseDuration"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pause</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                          <div className="h-6 flex items-center">
-                            {pauseSuggestion && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-auto p-1 text-primary hover:bg-primary/10"
-                                        onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
-                                    >
-                                        <Lightbulb className="mr-1 h-4 w-4" />
-                                        Suggest: {pauseSuggestion.minutes} min
-                                    </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                    <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
-                                    </TooltipContent>
-                                </Tooltip>
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground"
                             )}
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="travelTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Travel Time (hours)</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="isDriver"
-                      render={({ field }) => (
-                        <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>
-                              Driver
-                            </FormLabel>
-                            <FormDescription>
-                              Were you the designated driver?
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                </div>
-              </>
-            )}
-
-            <div className="space-y-4 pt-4">
-                <Separator />
-                <div className="flex justify-between items-center font-medium">
-                    <span className="text-muted-foreground">Total Compensated Time:</span>
-                    <span className="text-lg text-primary">{formatHoursAndMinutes(totalCompensatedMinutes)}</span>
-                </div>
-                {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (
-                    <Alert variant="destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Warning: Exceeds 10 Hours</AlertTitle>
-                        <AlertDescription>
-                            The work duration exceeds the legal maximum of 10 hours per day.
-                        </AlertDescription>
-                    </Alert>
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
                 )}
-            </div>
+              />
+              <div className="flex gap-4">
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Start time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>End time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              {!isSpecialEntry && (
+                <>
+                  <Separator />
+                  <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
+                  <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="pauseDuration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pause</FormLabel>
+                            <FormControl>
+                              <Input type="time" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            <div className="h-6 flex items-center">
+                              {pauseSuggestion && (
+                                  <Tooltip>
+                                      <TooltipTrigger asChild>
+                                      <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-auto p-1 text-primary hover:bg-primary/10"
+                                          onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
+                                      >
+                                          <Lightbulb className="mr-1 h-4 w-4" />
+                                          Suggest: {pauseSuggestion.minutes} min
+                                      </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                      <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
+                                      </TooltipContent>
+                                  </Tooltip>
+                              )}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="travelTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Travel Time (hours)</FormLabel>
+                            <FormControl>
+                              <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="isDriver"
+                        render={({ field }) => (
+                          <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>
+                                Driver
+                              </FormLabel>
+                              <FormDescription>
+                                Were you the designated driver?
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                  </div>
+                </>
+              )}
+
+              <div className="space-y-4 pt-4">
+                  <Separator />
+                  <div className="flex justify-between items-center font-medium">
+                      <span className="text-muted-foreground">Total Compensated Time:</span>
+                      <span className="text-lg text-primary">{formatHoursAndMinutes(totalCompensatedMinutes)}</span>
+                  </div>
+                  {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (
+                      <Alert variant="destructive">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertTitle>Warning: Exceeds 10 Hours</AlertTitle>
+                          <AlertDescription>
+                              The work duration exceeds the legal maximum of 10 hours per day.
+                          </AlertDescription>
+                      </Alert>
+                  )}
+              </div>
 
 
-            <SheetFooter className="pt-6">
-                <SheetClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
-                </SheetClose>
-                <Button type="submit">
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Entry
-                </Button>
-            </SheetFooter>
-          </form>
-        </Form>
+              <SheetFooter className="pt-6">
+                  <SheetClose asChild>
+                      <Button type="button" variant="outline">Cancel</Button>
+                  </SheetClose>
+                  <Button type="submit">
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Entry
+                  </Button>
+              </SheetFooter>
+            </form>
+          </Form>
+        </TooltipProvider>
       </div>
     </>
   );
