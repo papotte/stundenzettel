@@ -132,8 +132,7 @@ export default function ExportPreview() {
       t('export_preview.headerLocation'),
       t('export_preview.headerFrom'),
       t('export_preview.headerTo'),
-      t('export_preview.headerPauseTime'),
-      t('export_preview.headerPauseDecimal'),
+      t('export_preview.headerPauseDuration'),
       t('export_preview.headerTravelTime'),
       t('export_preview.headerCompensatedTime'),
       t('export_preview.headerDriver'),
@@ -159,7 +158,6 @@ export default function ExportPreview() {
                     }
                 }
                 const pauseDecimal = formatDecimalHours(entry.pauseDuration);
-                const pauseTime = entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : '';
                 
                 data.push([
                     dayOfWeekMap[getDay(day)],
@@ -167,7 +165,6 @@ export default function ExportPreview() {
                     getLocationDisplayName(entry.location),
                     entry.startTime ? format(entry.startTime, 'HH:mm') : '',
                     entry.endTime ? format(entry.endTime, 'HH:mm') : '',
-                    pauseTime,
                     parseFloat(pauseDecimal),
                     entry.travelTime || '',
                     parseFloat(compensatedHours.toFixed(2)),
@@ -178,21 +175,21 @@ export default function ExportPreview() {
                 data.push([
                     dayOfWeekMap[getDay(day)],
                     format(day, 'd/M/yyyy'),
-                    '', '', '', '', '', '', '', '',
+                    '', '', '', '', '', '', '',
                 ]);
             }
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
-      data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
+      data.push(['', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
       data.push([]); // Empty row
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2)]);
+    data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2)]);
 
     const worksheetData = [
-      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
+      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', user?.displayName || employeeName],
       [],
       header,
       ...data
@@ -203,7 +200,7 @@ export default function ExportPreview() {
     const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true } };
     const dayColStyle = { fill: { fgColor: { rgb: "DDEBF7" } } };
 
-    const headerRef = `A3:J3`;
+    const headerRef = `A3:I3`;
     const headerRange = XLSX.utils.decode_range(headerRef);
     for(let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
         const address = XLSX.utils.encode_cell({r: headerRange.s.r, c: C});
@@ -224,7 +221,7 @@ export default function ExportPreview() {
 
     const colWidths = [
         { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 8 }, { wch: 8 }, 
-        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 8 }
+        { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 8 }
     ];
     worksheet['!cols'] = colWidths;
 
@@ -307,26 +304,13 @@ export default function ExportPreview() {
                     <TableRow className="bg-secondary hover:bg-secondary">
                       <TableHead className="w-[8%]">{t('export_preview.headerWeek')}</TableHead>
                       <TableHead className="w-[12%]">{t('export_preview.headerDate')}</TableHead>
-                      <TableHead className="w-[15%]">{t('export_preview.headerLocation')}</TableHead>
-                      <TableHead colSpan={2} className="text-center">
-                        {t('export_preview.headerWorkTime')}
-                      </TableHead>
-                      <TableHead colSpan={2} className="text-center">{t('export_preview.headerPause')}</TableHead>
-                      <TableHead className="w-[10%]">{t('export_preview.headerTravelTime')}</TableHead>
-                      <TableHead className="w-[10%]">{t('export_preview.headerCompensatedTime')}</TableHead>
-                      <TableHead className="w-[8%]">{t('export_preview.headerDriver')}</TableHead>
-                    </TableRow>
-                    <TableRow className="bg-secondary hover:bg-secondary">
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                      <TableHead className="w-[7%] text-center border-l">{t('export_preview.headerFrom')}</TableHead>
-                      <TableHead className="w-[7%] text-center">{t('export_preview.headerTo')}</TableHead>
-                      <TableHead className="w-[7%] text-center border-l">{t('export_preview.headerPauseTime')}</TableHead>
-                      <TableHead className="w-[7%] text-center">{t('export_preview.headerPauseDecimal')}</TableHead>
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
+                      <TableHead className="w-[20%]">{t('export_preview.headerLocation')}</TableHead>
+                      <TableHead className="w-[8%] text-center">{t('export_preview.headerFrom')}</TableHead>
+                      <TableHead className="w-[8%] text-center">{t('export_preview.headerTo')}</TableHead>
+                      <TableHead className="w-[12%] text-center">{t('export_preview.headerPauseDuration')}</TableHead>
+                      <TableHead className="w-[10%] text-center">{t('export_preview.headerTravelTime')}</TableHead>
+                      <TableHead className="w-[12%] text-center">{t('export_preview.headerCompensatedTime')}</TableHead>
+                      <TableHead className="w-[8%] text-center">{t('export_preview.headerDriver')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -345,7 +329,6 @@ export default function ExportPreview() {
                               <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
                               <TableCell className="text-muted-foreground">..................................................</TableCell>
-                              <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
@@ -376,7 +359,6 @@ export default function ExportPreview() {
                           <TableCell>{getLocationDisplayName(entry.location)}</TableCell>
                           <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
                           <TableCell className="text-center">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-center">{entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : ''}</TableCell>
                           <TableCell className="text-center">{formatDecimalHours(entry.pauseDuration)}</TableCell>
                           <TableCell className="text-center">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                           <TableCell className="text-center">{compensatedHours.toFixed(2)}</TableCell>
@@ -387,7 +369,7 @@ export default function ExportPreview() {
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                        <TableCell colSpan={8} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
+                        <TableCell colSpan={7} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
                         <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
                         <TableCell colSpan={1}></TableCell>
                     </TableRow>
