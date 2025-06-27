@@ -236,10 +236,10 @@ export const dictionaries = {
     },
     // Special Locations
     special_locations: {
-      SICK_LEAVE: "Krankheitstag",
-      PTO: "Urlaubstag",
+      SICK_LEAVE: "Krankschreibung",
+      PTO: "Urlaub",
       BANK_HOLIDAY: "Feiertag",
-      TIME_OFF_IN_LIEU: "Freizeitausgleich",
+      TIME_OFF_IN_LIEU: "Stundenabbau",
     },
     // Time Entry Card
     time_entry_card: {
