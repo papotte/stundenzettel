@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+const SPECIAL_LOCATIONS = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"];
 
 const formSchema = z.object({
   location: z.string().min(2, {
@@ -87,13 +88,19 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     },
   });
 
-  const { watch, setValue } = form;
+  const { watch, setValue, getValues } = form;
   const startTimeValue = watch("startTime");
   const endTimeValue = watch("endTime");
   const pauseDurationValue = watch("pauseDuration");
   const travelTimeValue = watch("travelTime");
+  const locationValue = watch("location");
+
+  const isSpecialEntry = useMemo(() => {
+    return SPECIAL_LOCATIONS.includes(getValues("location"));
+  }, [locationValue, getValues]);
 
   const pauseSuggestion = useMemo(() => {
+    if (isSpecialEntry) return null;
     try {
       const start = parse(startTimeValue, "HH:mm", new Date());
       const end = parse(endTimeValue, "HH:mm", new Date());
@@ -113,7 +120,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     } catch (e) {
       return null;
     }
-  }, [startTimeValue, endTimeValue, travelTimeValue]);
+  }, [startTimeValue, endTimeValue, travelTimeValue, isSpecialEntry]);
 
   const { workDurationInMinutes, totalCompensatedMinutes } = useMemo(() => {
     try {
@@ -122,9 +129,16 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
         if (end <= start) return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 };
 
         const workDuration = differenceInMinutes(end, start);
+        
+        if (isSpecialEntry) {
+            return {
+                workDurationInMinutes: workDuration,
+                totalCompensatedMinutes: workDuration,
+            };
+        }
+
         const pauseInMinutes = timeStringToMinutes(pauseDurationValue);
         const travelInMinutes = (travelTimeValue || 0) * 60;
-
         const total = workDuration - pauseInMinutes + travelInMinutes;
 
         return {
@@ -134,7 +148,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     } catch (e) {
         return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 };
     }
-  }, [startTimeValue, endTimeValue, pauseDurationValue, travelTimeValue]);
+  }, [startTimeValue, endTimeValue, pauseDurationValue, travelTimeValue, isSpecialEntry]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -143,15 +157,17 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
 
     const startTime = set(values.date, { hours: startHours, minutes: startMinutes, seconds: 0, milliseconds: 0 });
     const endTime = set(values.date, { hours: endHours, minutes: endMinutes, seconds: 0, milliseconds: 0 });
+    
+    const finalIsSpecial = SPECIAL_LOCATIONS.includes(values.location);
 
     const finalEntry: Omit<TimeEntry, 'userId'> = {
       id: entry?.id || Date.now().toString(),
       location: values.location,
       startTime,
       endTime,
-      pauseDuration: timeStringToMinutes(values.pauseDuration),
-      travelTime: values.travelTime,
-      isDriver: values.isDriver,
+      pauseDuration: finalIsSpecial ? 0 : timeStringToMinutes(values.pauseDuration),
+      travelTime: finalIsSpecial ? 0 : values.travelTime,
+      isDriver: finalIsSpecial ? false : values.isDriver,
     };
     onSave(finalEntry);
   }
@@ -174,7 +190,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                 <FormItem>
                   <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Office, Home" {...field} />
+                    <Input placeholder="e.g., Office, Home" {...field} disabled={isSpecialEntry} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -243,81 +259,83 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
               />
             </div>
             
-            <Separator />
-
-            <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
-
-            <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="pauseDuration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pause</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                       <div className="h-6 flex items-center">
-                        {pauseSuggestion && (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-auto p-1 text-primary hover:bg-primary/10 -ml-1"
-                                    onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
-                                >
-                                    <Lightbulb className="mr-1 h-4 w-4" />
-                                    Suggest: {pauseSuggestion.minutes} min
-                                </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="travelTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Travel Time (hours)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="isDriver"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Driver
-                        </FormLabel>
-                         <FormDescription>
-                          Were you the designated driver?
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-            </div>
+            {!isSpecialEntry && (
+              <>
+                <Separator />
+                <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="pauseDuration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pause</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                          <div className="h-6 flex items-center">
+                            {pauseSuggestion && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-auto p-1 text-primary hover:bg-primary/10"
+                                        onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
+                                    >
+                                        <Lightbulb className="mr-1 h-4 w-4" />
+                                        Suggest: {pauseSuggestion.minutes} min
+                                    </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                    <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="travelTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Travel Time (hours)</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="isDriver"
+                      render={({ field }) => (
+                        <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Driver
+                            </FormLabel>
+                            <FormDescription>
+                              Were you the designated driver?
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                </div>
+              </>
+            )}
 
             <div className="space-y-4 pt-4">
                 <Separator />
@@ -325,7 +343,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                     <span className="text-muted-foreground">Total Compensated Time:</span>
                     <span className="text-lg text-primary">{formatHoursAndMinutes(totalCompensatedMinutes)}</span>
                 </div>
-                {workDurationInMinutes > 10 * 60 && (
+                {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (
                     <Alert variant="destructive">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertTitle>Warning: Exceeds 10 Hours</AlertTitle>
