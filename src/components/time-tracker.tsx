@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, isSameDay, startOfDay, addMinutes, subDays, differenceInMinutes, set, addHours } from "date-fns";
+import { format, isSameDay, set, addHours, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import {
   Clock,
   Play,
@@ -19,6 +19,7 @@ import {
   Landmark,
   Hourglass,
   LogOut,
+  BarChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +52,7 @@ import { useToast } from "@/hooks/use-toast";
 import TimeEntryForm from "./time-entry-form";
 import TimeEntryCard from "./time-entry-card";
 import type { TimeEntry } from "@/lib/types";
-import { formatDuration } from "@/lib/utils";
+import { formatHoursAndMinutes, formatDuration } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -316,15 +317,47 @@ export default function TimeTracker() {
     [entries, selectedDate]
   );
   
-  const totalDayDuration = useMemo(() =>
-    filteredEntries.reduce((total, entry) => {
-      if (entry.endTime) {
-        return total + (entry.endTime.getTime() - entry.startTime.getTime());
-      }
-      return total;
-    }, 0) / 1000,
-    [filteredEntries]
-  );
+  const calculateTotalCompensatedMinutes = useCallback((entriesToSum: TimeEntry[]): number => {
+    return entriesToSum.reduce((total, entry) => {
+        if (!entry.endTime) return total;
+
+        const workMinutes = differenceInMinutes(entry.endTime, entry.startTime);
+        
+        const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday"].includes(entry.location);
+        if (isNonWorkEntry) {
+            return total + workMinutes;
+        }
+        
+        if (entry.location === "Time Off in Lieu") {
+            return total;
+        }
+        
+        const travelMinutes = (entry.travelTime || 0) * 60;
+        const pauseMinutes = entry.pauseDuration || 0;
+
+        return total + workMinutes - pauseMinutes + travelMinutes;
+    }, 0);
+  }, []);
+
+  const { dailyTotal, weeklyTotal, monthlyTotal } = useMemo(() => {
+    if (!selectedDate || !entries.length) {
+      return { dailyTotal: 0, weeklyTotal: 0, monthlyTotal: 0 };
+    }
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+
+    const weekEntries = entries.filter(entry => isWithinInterval(entry.startTime, { start: weekStart, end: weekEnd }));
+    const monthEntries = entries.filter(entry => isWithinInterval(entry.startTime, { start: monthStart, end: monthEnd }));
+
+    return {
+      dailyTotal: calculateTotalCompensatedMinutes(filteredEntries),
+      weeklyTotal: calculateTotalCompensatedMinutes(weekEntries),
+      monthlyTotal: calculateTotalCompensatedMinutes(monthEntries),
+    };
+  }, [entries, selectedDate, filteredEntries, calculateTotalCompensatedMinutes]);
+
 
   const openNewEntryForm = useCallback(() => {
     setEditingEntry(null);
@@ -519,7 +552,7 @@ export default function TimeTracker() {
                               ? "Today's Entries"
                               : selectedDate ? `Entries for ${format(selectedDate, "PPP")}` : "Loading..."}
                           </CardTitle>
-                          <div className="text-lg font-bold text-primary">{formatDuration(totalDayDuration)}</div>
+                          <div className="text-lg font-bold text-primary">{formatHoursAndMinutes(dailyTotal)}</div>
                       </div>
                   </CardHeader>
                   <CardContent>
@@ -547,8 +580,36 @@ export default function TimeTracker() {
                       )}
                   </CardContent>
               </Card>
-
             </div>
+            
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <BarChart className="h-5 w-5 text-primary" />
+                        <CardTitle>Hours Summary</CardTitle>
+                    </div>
+                    <CardDescription>
+                        Total compensated hours for periods related to the selected date.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Selected Day</p>
+                            <p className="text-2xl font-bold">{formatHoursAndMinutes(dailyTotal)}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">This Week</p>
+                            <p className="text-2xl font-bold">{formatHoursAndMinutes(weeklyTotal)}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">This Month</p>
+                            <p className="text-2xl font-bold">{formatHoursAndMinutes(monthlyTotal)}</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
           </div>
         </main>
       </div>
