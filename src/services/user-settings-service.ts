@@ -2,23 +2,18 @@ import * as firestoreService from './user-settings-service.firestore';
 import * as localService from './user-settings-service.local';
 import type { UserSettings } from '@/lib/types';
 
-interface UserSettingsService {
-    getUserSettings: (userId: string) => Promise<UserSettings>;
-    setUserSettings: (userId: string, settings: UserSettings) => Promise<void>;
-}
+const useMockService = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
 
-let service: UserSettingsService;
-
-const useMockService = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' || !process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const service = useMockService ? localService : firestoreService;
 
 if (useMockService) {
   console.log("Using local user settings service for testing.");
-  service = localService;
-} else {
-  service = firestoreService;
 }
 
-export const { 
-  getUserSettings,
-  setUserSettings,
-} = service;
+export const getUserSettings = (userId: string): Promise<UserSettings> => {
+  return service.getUserSettings(userId);
+};
+
+export const setUserSettings = (userId: string, settings: UserSettings): Promise<void> => {
+    return service.setUserSettings(userId, settings);
+};

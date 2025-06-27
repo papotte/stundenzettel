@@ -45,7 +45,7 @@ const mockUsers = [
   { uid: 'mock-user-2', email: 'user2@example.com', displayName: 'Max Mustermann' },
 ]
 
-const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' || !process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
