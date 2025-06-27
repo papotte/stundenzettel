@@ -41,6 +41,28 @@ export const exportToExcel = async ({
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Stundenzettel");
 
+  // --- PAGE SETUP & HEADERS/FOOTERS ---
+  const companyName = userSettings?.companyName || '';
+  const email = userSettings?.companyEmail || '';
+  const phone1 = userSettings?.companyPhone1 || '';
+  const phone2 = userSettings?.companyPhone2 || '';
+  const fax = userSettings?.companyFax || '';
+  const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
+  const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
+  
+  let headerString = "";
+  if (contactParts.length > 0) {
+      const companyHeaderString = t('export_preview.headerCompany') + " " + contactParts.join(' ');
+      headerString = `&L&B${companyHeaderString}&R&B${t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}`;
+  } else {
+      headerString = `&R&B${t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}`;
+  }
+  worksheet.headerFooter.oddHeader = headerString;
+
+  const signatureString = t('export_preview.signatureLine');
+  worksheet.headerFooter.oddFooter = `&R${signatureString}_________________________`;
+
+
   // --- STYLES ---
   const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF99CCFF' } };
   const dayColFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF99CCFF' } };
@@ -66,31 +88,7 @@ export const exportToExcel = async ({
       { key: 'mileage', width: 12 },
   ];
 
-  // --- COMPANY HEADER ---
-  const companyName = userSettings?.companyName || '';
-  const email = userSettings?.companyEmail || '';
-  const phone1 = userSettings?.companyPhone1 || '';
-  const phone2 = userSettings?.companyPhone2 || '';
-  const fax = userSettings?.companyFax || '';
-  const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
-  const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
-  if (contactParts.length > 0) {
-      const companyHeader = t('export_preview.headerCompany') + " " + contactParts.join(' ');
-      worksheet.mergeCells('A1:J1');
-      const companyCell = worksheet.getCell('A1');
-      companyCell.value = companyHeader;
-      companyCell.font = { size: 10 };
-      companyCell.alignment = { horizontal: 'left' };
-      worksheet.addRow([]); // blank row
-  }
-
-  // --- TITLE HEADER ---
-  const titleRow = worksheet.addRow([]);
-  worksheet.mergeCells(`A${titleRow.number}:J${titleRow.number}`);
-  titleRow.getCell('A').value = t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })});
-  titleRow.getCell('A').font = { bold: true, size: 12 };
-  titleRow.getCell('A').alignment = { horizontal: 'left' };
-
+  // --- IN-SHEET USER NAME ---
   const userRow = worksheet.addRow([]);
   worksheet.mergeCells(`A${userRow.number}:J${userRow.number}`);
   userRow.getCell('A').value = user?.displayName || user?.email;
@@ -234,23 +232,12 @@ export const exportToExcel = async ({
     worksheet.addRow([]); // Blank row for spacing
   });
 
-  // --- FOOTER ---
+  // --- GRAND TOTAL ---
   const grandTotalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalHours'), '', monthTotal, '', '']);
   grandTotalRow.getCell(8).numFmt = '0.00';
   grandTotalRow.getCell(6).font = { bold: true };
   grandTotalRow.getCell(8).font = { bold: true };
   grandTotalRow.getCell(8).border = { bottom: { style: 'double' } };
-
-  worksheet.addRow([]);
-  worksheet.addRow([]);
-  worksheet.addRow([]);
-
-  const signatureRow = worksheet.addRow(['', '', '', '', '', '', '', t('export_preview.signatureLine')]);
-  worksheet.mergeCells(`H${signatureRow.number}:J${signatureRow.number}`);
-  const signatureCell = worksheet.getCell(`H${signatureRow.number}`);
-  signatureCell.border = { top: { style: 'thin' } };
-  signatureCell.alignment = { horizontal: 'left' };
-  
 
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer();
