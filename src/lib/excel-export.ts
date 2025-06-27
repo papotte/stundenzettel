@@ -1,4 +1,3 @@
-
 import ExcelJS from "exceljs";
 import { format, getDay, isSameMonth, differenceInMinutes, type Locale } from "date-fns";
 import type { User } from "firebase/auth";
@@ -51,12 +50,11 @@ export const exportToExcel = async ({
   const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
 
   if (contactParts.length > 0) {
-    const companyHeaderString = t('export_preview.headerCompany') + " " + contactParts.join(' ');
     worksheet.headerFooter.oddHeader = `&L${t('export_preview.headerCompany')}&R${contactParts.join(' ')}`;
   }
 
   const signatureString = t('export_preview.signatureLine');
-  worksheet.headerFooter.oddFooter = `&C${signatureString}`;
+  worksheet.headerFooter.oddFooter = `&R${signatureString}`;
 
 
   // --- STYLES ---
@@ -82,7 +80,7 @@ export const exportToExcel = async ({
     { key: 'travel', width: 8 },
     { key: 'compensated', width: 12 },
     { key: 'driver', width: 5 },
-    { key: 'mileage', width: 12 },
+    { key: 'mileage', width: 10 },
   ];
 
   // --- IN-SHEET TITLE AND USER NAME ---
@@ -115,6 +113,7 @@ export const exportToExcel = async ({
     // --- RENDER TABLE HEADERS FOR THE WEEK ---
     const headerRow1Num = worksheet.rowCount + 1;
     const headerRow2Num = headerRow1Num + 1;
+    
     const headerRow1 = worksheet.getRow(headerRow1Num);
     headerRow1.values = [
       t('export_preview.headerWeek'),
@@ -128,7 +127,9 @@ export const exportToExcel = async ({
       t('export_preview.headerDriver'),
       t('export_preview.headerMileage'),
     ];
-    worksheet.getRow(headerRow2Num).values = ['', '', '', t('export_preview.headerFrom'), t('export_preview.headerTo')];
+    
+    const headerRow2 = worksheet.getRow(headerRow2Num);
+    headerRow2.values = ['', '', '', t('export_preview.headerFrom'), t('export_preview.headerTo')];
 
     worksheet.mergeCells(headerRow1Num, 1, headerRow2Num, 1);
     worksheet.mergeCells(headerRow1Num, 2, headerRow2Num, 2);
@@ -140,18 +141,18 @@ export const exportToExcel = async ({
     worksheet.mergeCells(headerRow1Num, 9, headerRow2Num, 9);
     worksheet.mergeCells(headerRow1Num, 10, headerRow2Num, 10);
 
-    [headerRow1Num, headerRow2Num].forEach(rowNum => {
-      worksheet.getRow(rowNum).eachCell({ includeEmpty: true }, (cell) => {
+    // Apply styles to header rows
+    [headerRow1, headerRow2].forEach(row => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
         cell.fill = headerFill;
         cell.font = headerFont;
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
         cell.border = allBorders;
-        cell.alignment = { vertical: 'middle', horizontal: 'left' };
       });
-    });    
-
-    worksheet.getCell(headerRow1Num, 3).alignment = { vertical: 'middle', horizontal: 'left' };
-    worksheet.getCell(headerRow1Num, 1).alignment = { vertical: 'middle', horizontal: 'left' };
-    worksheet.getCell(headerRow1Num, 2).alignment = { vertical: 'middle', horizontal: 'left' };
+    });
+    // Remove border between von/bis
+    worksheet.getCell(headerRow2Num, 4).border = { top: defaultBorder, left: defaultBorder, bottom: defaultBorder };
+    worksheet.getCell(headerRow2Num, 5).border = { top: defaultBorder, right: defaultBorder, bottom: defaultBorder };
 
     // --- RENDER DATA ROWS FOR THE WEEK ---
     week.forEach(day => {
@@ -159,8 +160,25 @@ export const exportToExcel = async ({
       const isSunday = getDay(day) === 0;
       const startRowForDay = worksheet.rowCount + 1;
 
+      if (!isSameMonth(day, selectedMonth)) return;
+
+      const applyRowStyles = (row: ExcelJS.Row) => {
+        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            let border: Partial<ExcelJS.Borders> = {};
+            if (colNumber === 4) { // von
+                border = { top: defaultBorder, left: defaultBorder, bottom: defaultBorder };
+            } else if (colNumber === 5) { // bis
+                border = { top: defaultBorder, right: defaultBorder, bottom: defaultBorder };
+            } else {
+                border = allBorders;
+            }
+            cell.border = border;
+            cell.alignment = { vertical: 'middle' };
+        });
+      };
+
       if (dayEntries.length > 0) {
-        dayEntries.forEach((entry, entryIndex) => {
+        dayEntries.forEach((entry) => {
           let compensatedHours = 0;
           if (entry.endTime) {
             const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
@@ -175,8 +193,8 @@ export const exportToExcel = async ({
           const pauseDecimal = parseFloat(formatDecimalHours(entry.pauseDuration));
 
           const rowData = [
-            entryIndex === 0 ? dayOfWeekMap[getDay(day)] : '',
-            entryIndex === 0 ? format(day, 'dd.MM.yyyy') : '',
+            '', // Weekday gets merged
+            '', // Date gets merged
             getLocationDisplayName(entry.location),
             entry.startTime ? format(entry.startTime, 'HH:mm') : '',
             entry.endTime ? format(entry.endTime, 'HH:mm') : '',
@@ -187,31 +205,35 @@ export const exportToExcel = async ({
             '', // Mileage
           ];
           const dataRow = worksheet.addRow(rowData);
-
-          dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-            cell.border = allBorders;
-            cell.alignment = { vertical: 'middle' };
-            if ([2, 4, 5, 6, 7, 8].includes(colNumber)) {
-              cell.alignment.horizontal = 'right';
-            } else {
-              cell.alignment.horizontal = 'left';
-            }
-            if ([6, 7, 8].includes(colNumber)) {
-              cell.numFmt = '0.00';
-            }
-          });
-          dataRow.getCell(1).fill = dayColFill;
+          applyRowStyles(dataRow);
+           // Set specific alignments after applying common styles
+          dataRow.getCell(3).alignment.horizontal = 'left';
+          dataRow.getCell(4).alignment.horizontal = 'right';
+          dataRow.getCell(5).alignment.horizontal = 'right';
+          dataRow.getCell(6).alignment.horizontal = 'right';
+          dataRow.getCell(7).alignment.horizontal = 'right';
+          dataRow.getCell(8).alignment.horizontal = 'right';
+          dataRow.getCell(9).alignment.horizontal = 'left';
+          dataRow.getCell(6).numFmt = '0.00';
+          dataRow.getCell(7).numFmt = '0.00';
+          dataRow.getCell(8).numFmt = '0.00';
         });
 
-        if (dayEntries.length > 1) {
-          worksheet.mergeCells(startRowForDay, 1, startRowForDay + dayEntries.length - 1, 1);
-          worksheet.mergeCells(startRowForDay, 2, startRowForDay + dayEntries.length - 1, 2);
-          worksheet.getCell(startRowForDay, 1).alignment = { vertical: 'middle', horizontal: 'left' };
-          worksheet.getCell(startRowForDay, 2).alignment = { vertical: 'middle', horizontal: 'right' };
-        }
+        // Set and merge weekday and date cells
+        const dayCell = worksheet.getCell(startRowForDay, 1);
+        dayCell.value = dayOfWeekMap[getDay(day)];
+        dayCell.fill = dayColFill;
+        dayCell.alignment = { vertical: 'middle', horizontal: 'left' };
+        worksheet.mergeCells(startRowForDay, 1, startRowForDay + dayEntries.length - 1, 1);
+
+        const dateCell = worksheet.getCell(startRowForDay, 2);
+        dateCell.value = format(day, 'dd.MM.yyyy');
+        dateCell.alignment = { vertical: 'middle', horizontal: 'right' };
+        worksheet.mergeCells(startRowForDay, 2, startRowForDay + dayEntries.length - 1, 2);
+
       } else if (!isSunday) {
         const emptyRow = worksheet.addRow([dayOfWeekMap[getDay(day)], format(day, 'dd.MM.yyyy'), '', '', '', '', '', '', '', '']);
-        emptyRow.eachCell({ includeEmpty: true }, cell => cell.border = allBorders);
+        applyRowStyles(emptyRow);
         emptyRow.getCell(1).fill = dayColFill;
         emptyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
         emptyRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'right' };
@@ -220,18 +242,30 @@ export const exportToExcel = async ({
 
     // --- RENDER WEEKLY TOTAL ---
     const weeklyTotal = calculateWeekTotal(week);
-    const totalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalPerWeek'), '', '', '', weeklyTotal]);
-    totalRow.getCell(10).numFmt = '0.00';
-    totalRow.getCell(10).border = { bottom: { style: 'medium' } };
+    const totalRow = worksheet.addRow([]);
+    const totalLabelCell = totalRow.getCell(7);
+    totalLabelCell.value = t('export_preview.footerTotalPerWeek');
+    totalLabelCell.alignment = { horizontal: 'right' };
+    const totalValueCell = totalRow.getCell(8);
+    totalValueCell.value = weeklyTotal;
+    totalValueCell.numFmt = '0.00';
+    totalValueCell.border = { bottom: { style: 'medium', color: { argb: 'FF000000' } } };
+    totalValueCell.alignment = { horizontal: 'right' };
 
     worksheet.addRow([]); // Blank row for spacing
   });
 
   // --- GRAND TOTAL ---
-  const grandTotalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalHours'), '', '', '', monthTotal]);
-  grandTotalRow.getCell(10).numFmt = '0.00';
-  grandTotalRow.getCell(10).border = { bottom: { style: 'double' } };
-
+  const grandTotalRow = worksheet.addRow([]);
+  const grandTotalLabelCell = grandTotalRow.getCell(7);
+  grandTotalLabelCell.value = t('export_preview.footerTotalHours');
+  grandTotalLabelCell.alignment = { horizontal: 'right' };
+  const grandTotalValueCell = grandTotalRow.getCell(8);
+  grandTotalValueCell.value = monthTotal;
+  grandTotalValueCell.numFmt = '0.00';
+  grandTotalValueCell.border = { bottom: { style: 'double', color: { argb: 'FF000000' } } };
+  grandTotalValueCell.alignment = { horizontal: 'right' };
+  
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
