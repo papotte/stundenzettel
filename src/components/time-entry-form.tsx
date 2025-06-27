@@ -253,7 +253,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                   name="pauseDuration"
                   render={({ field }) => (
                     <FormItem>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2">
                             <FormLabel>Pause</FormLabel>
                              {pauseSuggestion && (
                                 <Tooltip>
@@ -302,7 +302,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                   control={form.control}
                   name="isDriver"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-end space-x-3 rounded-md border p-3">
+                    <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
