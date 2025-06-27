@@ -14,24 +14,17 @@ import {
 import { de, enUS } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableFooter,
-} from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
-import type { TimeEntry } from "@/lib/types";
+import type { TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTimeEntries } from "@/services/time-entry-service";
 import { useAuth } from "@/hooks/use-auth";
 import { useTranslation } from "@/context/i18n-context";
 import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
+import TimesheetPreview from "./timesheet-preview";
+import { getUserSettings } from "@/services/user-settings-service";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -47,9 +40,9 @@ export default function ExportPreview() {
   const { user } = useAuth();
   const { t, language } = useTranslation();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
-  const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   const locale = useMemo(() => (language === 'de' ? de : enUS), [language]);
 
@@ -58,21 +51,20 @@ export default function ExportPreview() {
     const fetchAndSetEntries = async () => {
       setIsLoading(true);
       try {
-        const fetchedEntries = await getTimeEntries(user.uid);
+        const [fetchedEntries, settings] = await Promise.all([
+          getTimeEntries(user.uid),
+          getUserSettings(user.uid),
+        ]);
         setEntries(fetchedEntries);
+        setUserSettings(settings);
       } catch (error) {
-        console.error("Failed to load time entries from Firestore.", error);
+        console.error("Failed to load initial data from Firestore.", error);
       }
       setSelectedMonth(new Date());
       setIsLoading(false);
     };
     fetchAndSetEntries();
   }, [user]);
-
-  const weeksInMonth = useMemo(
-    () => (selectedMonth ? getWeeksForMonth(selectedMonth) : []),
-    [selectedMonth]
-  );
 
   const getEntriesForDay = useCallback((day: Date) => {
     return entries
@@ -103,20 +95,6 @@ export default function ExportPreview() {
     return totalMinutes / 60;
   }, [selectedMonth, getEntriesForDay]);
 
-  const weekHasEntries = useCallback((week: Date[]): boolean => {
-    if (!selectedMonth) return false;
-    return week.some(day => {
-      return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
-    });
-  }, [selectedMonth, getEntriesForDay]);
-
-  const relevantWeeks = useMemo(() => weeksInMonth.filter(weekHasEntries), [weeksInMonth, weekHasEntries]);
-  
-  const monthTotal = useMemo(() => {
-    if (!selectedMonth) return 0;
-    return relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
-  }, [relevantWeeks, calculateWeekTotal, selectedMonth]);
-
   const getLocationDisplayName = (location: string) => {
     if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
       return t(`special_locations.${location}`);
@@ -125,21 +103,55 @@ export default function ExportPreview() {
   };
 
   const handleExport = () => {
-    if (!selectedMonth) return;
-    const header = [
-      t('export_preview.headerWeek'),
-      t('export_preview.headerDate'),
-      t('export_preview.headerLocation'),
-      t('export_preview.headerFrom'),
-      t('export_preview.headerTo'),
-      t('export_preview.headerPauseTime'),
-      t('export_preview.headerPauseDecimal'),
-      t('export_preview.headerTravelTime'),
-      t('export_preview.headerCompensatedTime'),
-      t('export_preview.headerDriver'),
+    if (!selectedMonth || !userSettings) return;
+    
+    // Format company header for Excel
+    const companyName = userSettings?.companyName || '';
+    const email = userSettings?.companyEmail || '';
+    const phone1 = userSettings?.companyPhone1 || '';
+    const phone2 = userSettings?.companyPhone2 || '';
+    const fax = userSettings?.companyFax || '';
+
+    const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
+    const contactParts = [
+      companyName,
+      email,
+      phoneNumbers ? `Tel.: ${phoneNumbers}` : '',
+      fax ? `FAX: ${fax}` : ''
+    ].filter(Boolean);
+
+    const companyHeader = contactParts.length > 0 ? t('export_preview.headerCompany', { details: contactParts.join(' ') }) : null;
+    
+    const weeksInMonth = getWeeksForMonth(selectedMonth);
+    const weekHasEntries = (week: Date[]): boolean => {
+      return week.some(day => {
+        return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
+      });
+    };
+    const relevantWeeks = weeksInMonth.filter(weekHasEntries);
+    const monthTotal = relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
+
+    const headerRow1 = [
+        t('export_preview.headerWeek'),
+        t('export_preview.headerDate'),
+        t('export_preview.headerLocation'),
+        t('export_preview.headerWorkTime'),
+        null,
+        t('export_preview.headerPauseDuration'),
+        t('export_preview.headerTravelTime'),
+        t('export_preview.headerCompensatedTime'),
+        t('export_preview.headerDriver'),
+        t('export_preview.headerMileage'),
+    ];
+
+    const headerRow2 = [
+        null, null, null,
+        t('export_preview.headerFrom'),
+        t('export_preview.headerTo'),
+        null, null, null, null, null
     ];
     
-    const data: (string | number)[][] = [];
+    const data: (string | number | null)[][] = [];
 
     relevantWeeks.forEach(week => {
       week.forEach(day => {
@@ -159,7 +171,6 @@ export default function ExportPreview() {
                     }
                 }
                 const pauseDecimal = formatDecimalHours(entry.pauseDuration);
-                const pauseTime = entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : '';
                 
                 data.push([
                     dayOfWeekMap[getDay(day)],
@@ -167,11 +178,11 @@ export default function ExportPreview() {
                     getLocationDisplayName(entry.location),
                     entry.startTime ? format(entry.startTime, 'HH:mm') : '',
                     entry.endTime ? format(entry.endTime, 'HH:mm') : '',
-                    pauseTime,
                     parseFloat(pauseDecimal),
                     entry.travelTime || '',
                     parseFloat(compensatedHours.toFixed(2)),
                     entry.isDriver ? t('export_preview.driverMark') : '',
+                    '',
                 ]);
               });
             } else if (getDay(day) !== 0 && getDay(day) !== 6) { // Not Sunday or Saturday
@@ -184,37 +195,76 @@ export default function ExportPreview() {
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
-      data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
+      data.push([null, null, null, null, null, t('export_preview.footerTotalPerWeek'), null, null, null, weeklyTotal.toFixed(2)]);
       data.push([]); // Empty row
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2)]);
+    data.push([null, null, null, null, null, t('export_preview.footerTotalHours'), null, null, null, monthTotal.toFixed(2)]);
+    
+    const signatureRow = [null, null, null, null, null, null, null, null, null, t('export_preview.signatureLine')];
 
     const worksheetData = [
-      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
+      ...(companyHeader ? [[companyHeader]] : []),
+      ...(companyHeader ? [[]] : []),
+      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})],
       [],
-      header,
-      ...data
+      headerRow1,
+      headerRow2,
+      ...data,
+      [], [], [],
+      signatureRow
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     
-    const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true } };
-    const dayColStyle = { fill: { fgColor: { rgb: "DDEBF7" } } };
-
-    const headerRef = `A3:J3`;
-    const headerRange = XLSX.utils.decode_range(headerRef);
-    for(let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-        const address = XLSX.utils.encode_cell({r: headerRange.s.r, c: C});
-        if(!worksheet[address]) continue;
-        worksheet[address].s = headerStyle;
+    if (!worksheet['!merges']) worksheet['!merges'] = [];
+    worksheet['!merges'].push(
+      { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } }, // Week
+      { s: { r: 4, c: 1 }, e: { r: 5, c: 1 } }, // Date
+      { s: { r: 4, c: 2 }, e: { r: 5, c: 2 } }, // Location
+      { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } }, // Work Time
+      { s: { r: 4, c: 5 }, e: { r: 5, c: 5 } }, // Pause
+      { s: { r: 4, c: 6 }, e: { r: 5, c: 6 } }, // Travel
+      { s: { r: 4, c: 7 }, e: { r: 5, c: 7 } }, // Compensated
+      { s: { r: 4, c: 8 }, e: { r: 5, c: 8 } }, // Driver
+      { s: { r: 4, c: 9 }, e: { r: 5, c: 9 } }  // Mileage
+    );
+    if (companyHeader) {
+      worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }); // Company Header
     }
     
+    const headerBaseStyle = { fill: { fgColor: { rgb: "99CCFF" } }, font: { bold: true, color: { rgb: "000000" } }, alignment: { vertical: 'center' } };
+    const headerStyles = {
+        left: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'left'}},
+        right: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'right'}},
+        center: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'center'}},
+    };
+
+    for (let R = 4; R <= 5; ++R) {
+        for (let C = 0; C <= 9; ++C) {
+            const address = XLSX.utils.encode_cell({ r: R, c: C });
+            const cell = worksheet[address];
+            if (!cell) continue;
+
+            let style;
+            if ([1, 3, 4, 5, 6, 7].includes(C)) {
+                style = headerStyles.right;
+            } else if (C === 8) {
+                style = headerStyles.center;
+            } else {
+                style = headerStyles.left;
+            }
+            cell.s = style;
+        }
+    }
+    
+    const dayColStyle = { fill: { fgColor: { rgb: "99CCFF" } } };
+
     data.forEach((rowData, index) => {
         const firstCell = rowData[0];
         if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
-            const address = `A${index + 4}`;
+            const address = `A${index + 7}`;
             if (worksheet[address]) {
                 if (!worksheet[address].s) worksheet[address].s = {};
                 worksheet[address].s.fill = dayColStyle.fill;
@@ -224,16 +274,16 @@ export default function ExportPreview() {
 
     const colWidths = [
         { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 8 }, { wch: 8 }, 
-        { wch: 12 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 8 }
+        { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 8 }, { wch: 20 }
     ];
     worksheet['!cols'] = colWidths;
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stundenzettel");
-    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy", { locale })}.xlsx`);
+    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM", { locale })}.xlsx`);
   };
   
-  if (isLoading || !selectedMonth) {
+  if (isLoading || !selectedMonth || !userSettings) {
     return (
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">
@@ -246,7 +296,7 @@ export default function ExportPreview() {
             <Skeleton className="h-10 w-36" />
           </div>
           <div className="bg-white p-8 rounded-md shadow-md printable-area">
-            <header className="flex justify-between items-start mb-4 border-b pb-4">
+            <header className="flex justify-between items-start mb-4">
                 <Skeleton className="h-7 w-2/5" />
                 <Skeleton className="h-7 w-1/4" />
             </header>
@@ -274,7 +324,7 @@ export default function ExportPreview() {
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h2 className="text-2xl font-bold text-center font-headline">
+            <h2 className="text-2xl font-bold">
               {format(selectedMonth, "MMMM yyyy", { locale })}
             </h2>
             <Button
@@ -291,120 +341,14 @@ export default function ExportPreview() {
           </Button>
         </div>
 
-        <div className="bg-white p-8 rounded-md shadow-md printable-area">
-          <header className="flex justify-between items-start mb-4 border-b pb-4">
-            <h1 className="text-xl font-bold font-headline">
-              {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
-            </h1>
-            <div className="text-right font-semibold">{user?.displayName || user?.email || employeeName}</div>
-          </header>
-
-          <main>
-            {relevantWeeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="mb-6">
-                <Table className="border">
-                  <TableHeader>
-                    <TableRow className="bg-secondary hover:bg-secondary">
-                      <TableHead className="w-[8%]">{t('export_preview.headerWeek')}</TableHead>
-                      <TableHead className="w-[12%]">{t('export_preview.headerDate')}</TableHead>
-                      <TableHead className="w-[15%]">{t('export_preview.headerLocation')}</TableHead>
-                      <TableHead colSpan={2} className="text-center">
-                        {t('export_preview.headerWorkTime')}
-                      </TableHead>
-                      <TableHead colSpan={2} className="text-center">{t('export_preview.headerPause')}</TableHead>
-                      <TableHead className="w-[10%]">{t('export_preview.headerTravelTime')}</TableHead>
-                      <TableHead className="w-[10%]">{t('export_preview.headerCompensatedTime')}</TableHead>
-                      <TableHead className="w-[8%]">{t('export_preview.headerDriver')}</TableHead>
-                    </TableRow>
-                    <TableRow className="bg-secondary hover:bg-secondary">
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                      <TableHead className="w-[7%] text-center border-l">{t('export_preview.headerFrom')}</TableHead>
-                      <TableHead className="w-[7%] text-center">{t('export_preview.headerTo')}</TableHead>
-                      <TableHead className="w-[7%] text-center border-l">{t('export_preview.headerPauseTime')}</TableHead>
-                      <TableHead className="w-[7%] text-center">{t('export_preview.headerPauseDecimal')}</TableHead>
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                      <TableHead></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {week.map((day) => {
-                       if (!isSameMonth(day, selectedMonth)) {
-                        return null;
-                      }
-
-                      const dayEntries = getEntriesForDay(day);
-                      const isSunday = getDay(day) === 0;
-
-                      if (dayEntries.length === 0) {
-                        if (isSunday) return null; // Don't render empty Sundays
-                        return (
-                           <TableRow key={day.toISOString()}>
-                              <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell>
-                              <TableCell>{format(day, "d/M/yyyy")}</TableCell>
-                              <TableCell className="text-muted-foreground">..................................................</TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                              <TableCell></TableCell>
-                            </TableRow>
-                        )
-                      }
-                      
-                      return dayEntries.map((entry, entryIndex) => {
-                         let compensatedHours = 0;
-                         if (entry.endTime) {
-                            const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
-                            const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
-                            if (isCompensatedSpecialDay) {
-                                compensatedHours = workDuration / 60;
-                            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-                                const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
-                                compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
-                            }
-                         }
-
-                        return (
-                        <TableRow key={entry.id}>
-                          {entryIndex === 0 ? <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell> : <TableCell className="bg-secondary"></TableCell>}
-                          {entryIndex === 0 ? <TableCell>{format(day, "d/M/yyyy")}</TableCell> : <TableCell></TableCell>}
-                          <TableCell>{getLocationDisplayName(entry.location)}</TableCell>
-                          <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-center">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-center">{entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : ''}</TableCell>
-                          <TableCell className="text-center">{formatDecimalHours(entry.pauseDuration)}</TableCell>
-                          <TableCell className="text-center">{(entry.travelTime || 0).toFixed(2)}</TableCell>
-                          <TableCell className="text-center">{compensatedHours.toFixed(2)}</TableCell>
-                          <TableCell className="text-center">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
-                        </TableRow>
-                      )});
-                    })}
-                  </TableBody>
-                  <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={8} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
-                        <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
-                        <TableCell colSpan={1}></TableCell>
-                    </TableRow>
-                  </TableFooter>
-                </Table>
-              </div>
-            ))}
-            <div className="flex justify-end mt-8">
-                <div className="w-1/3">
-                    <div className="flex justify-between font-bold text-lg border-b-2 border-black pb-1">
-                        <span>{t('export_preview.footerTotalHours')}</span>
-                        <span>{monthTotal.toFixed(2)}</span>
-                    </div>
-                </div>
-            </div>
-          </main>
-        </div>
+        <TimesheetPreview
+            selectedMonth={selectedMonth}
+            user={user}
+            entries={entries}
+            t={t}
+            locale={locale}
+            userSettings={userSettings}
+        />
       </CardContent>
     </Card>
   );

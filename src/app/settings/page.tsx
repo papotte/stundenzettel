@@ -31,12 +31,18 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { UserSettings } from '@/lib/types';
 import { useTranslation } from '@/context/i18n-context';
+import { Separator } from '@/components/ui/separator';
 
 const settingsFormSchema = z.object({
   defaultWorkHours: z.coerce.number().min(1, 'Must be at least 1 hour').max(10, 'Cannot be more than 10 hours'),
   defaultStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   defaultEndTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   language: z.enum(['en', 'de']),
+  companyName: z.string().optional(),
+  companyEmail: z.string().email().optional().or(z.literal('')),
+  companyPhone1: z.string().optional(),
+  companyPhone2: z.string().optional(),
+  companyFax: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
@@ -56,6 +62,11 @@ export default function SettingsPage() {
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
       language: language,
+      companyName: '',
+      companyEmail: '',
+      companyPhone1: '',
+      companyPhone2: '',
+      companyFax: '',
     },
   });
 
@@ -229,6 +240,82 @@ export default function SettingsPage() {
                       <FormDescription>
                         {t('settings.languageDescription')}
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              <CardContent>
+                <Separator />
+              </CardContent>
+              <CardHeader className="pt-0">
+                  <CardTitle>{t('settings.companyDetailsTitle')}</CardTitle>
+                  <CardDescription>{t('settings.companyDetailsDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                 <FormField
+                  control={form.control}
+                  name="companyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('settings.companyNameLabel')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder="TimeWise Inc." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="companyEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('settings.companyEmailLabel')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder="info@timewise.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="companyPhone1"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('settings.companyPhone1Label')}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. +49 123 456789" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="companyPhone2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('settings.companyPhone2Label')}</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. +49 987 654321" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                 <FormField
+                  control={form.control}
+                  name="companyFax"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('settings.companyFaxLabel')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. +49 123 456780" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -7,6 +7,11 @@ const defaultSettings: UserSettings = {
   defaultStartTime: "09:00",
   defaultEndTime: "17:00",
   language: "en",
+  companyName: "",
+  companyEmail: "",
+  companyPhone1: "",
+  companyPhone2: "",
+  companyFax: "",
 };
 
 export const getUserSettings = async (userId: string): Promise<UserSettings> => {
