@@ -7,10 +7,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslation } from '@/context/i18n-context';
 
 export default function ExportPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
    useEffect(() => {
     if (!loading && !user) {
@@ -28,7 +30,7 @@ export default function ExportPage() {
         <Button asChild variant="outline" className="mb-4 print:hidden">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Tracker
+            {t('export_page.backButton')}
           </Link>
         </Button>
         <ExportPreview />

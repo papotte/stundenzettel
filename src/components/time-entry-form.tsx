@@ -44,8 +44,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
-
-const SPECIAL_LOCATIONS = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"];
+import { useTranslation } from "@/context/i18n-context";
+import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
 
 const formSchema = z.object({
   location: z.string().min(2, {
@@ -80,6 +80,7 @@ interface TimeEntryFormProps {
 
 export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, userSettings }: TimeEntryFormProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   const defaultStartTime = userSettings?.defaultStartTime || "09:00";
@@ -106,7 +107,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
   const locationValue = watch("location");
 
   const isSpecialEntry = useMemo(() => {
-    return SPECIAL_LOCATIONS.includes(getValues("location"));
+    return SPECIAL_LOCATION_KEYS.includes(getValues("location") as any);
   }, [locationValue, getValues]);
 
   const pauseSuggestion = useMemo(() => {
@@ -165,8 +166,8 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
     if (navigator.geolocation) {
       setIsFetchingLocation(true);
       toast({
-        title: "Fetching location...",
-        description: "Please wait while we get your address.",
+        title: t('time_entry_form.locationFetchToastTitle'),
+        description: t('time_entry_form.locationFetchToastDescription'),
       });
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -175,15 +176,15 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
             const result = await reverseGeocode({ latitude, longitude });
             form.setValue('location', result.address, { shouldValidate: true });
             toast({
-              title: "Location fetched!",
-              description: `Your location has been set to "${result.address}".`,
+              title: t('time_entry_form.locationFetchedToastTitle'),
+              description: t('time_entry_form.locationFetchedToastDescription', { address: result.address }),
               className: "bg-accent text-accent-foreground",
             });
           } catch (error) {
             console.error("Error getting address", error);
             const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
             toast({
-              title: "Could not get address",
+              title: t('time_entry_form.locationErrorToastTitle'),
               description: errorMessage,
               variant: "destructive",
             });
@@ -195,8 +196,8 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
         (error) => {
           console.error("Error getting location", error);
           toast({
-            title: "Could not get your coordinates",
-            description: "Please ensure location services are enabled and permission is granted in your browser.",
+            title: t('time_entry_form.locationCoordsErrorToastTitle'),
+            description: t('time_entry_form.locationCoordsErrorToastDescription'),
             variant: "destructive",
           });
           setIsFetchingLocation(false);
@@ -204,8 +205,8 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
       );
     } else {
       toast({
-        title: "Geolocation not supported",
-        description: "Your browser does not support geolocation.",
+        title: t('time_entry_form.geolocationNotSupportedToastTitle'),
+        description: t('time_entry_form.geolocationNotSupportedToastDescription'),
         variant: "destructive",
       });
     }
@@ -219,7 +220,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
     const startTime = set(values.date, { hours: startHours, minutes: startMinutes, seconds: 0, milliseconds: 0 });
     const endTime = set(values.date, { hours: endHours, minutes: endMinutes, seconds: 0, milliseconds: 0 });
     
-    const finalIsSpecial = SPECIAL_LOCATIONS.includes(values.location);
+    const finalIsSpecial = SPECIAL_LOCATION_KEYS.includes(values.location as any);
 
     const finalEntry: Omit<TimeEntry, 'userId'> = {
       id: entry?.id || Date.now().toString(),
@@ -233,12 +234,19 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
     onSave(finalEntry);
   }
 
+  const locationDisplayName = useMemo(() => {
+    if (isSpecialEntry) {
+      return t(`special_locations.${entry?.location}`);
+    }
+    return entry?.location || "";
+  }, [entry, isSpecialEntry, t]);
+
   return (
     <>
       <SheetHeader className="px-6 pt-6">
-        <SheetTitle>{entry ? "Edit" : "Add"} Time Entry</SheetTitle>
+        <SheetTitle>{entry ? t('time_entry_form.editTitle') : t('time_entry_form.addTitle')}</SheetTitle>
         <SheetDescription>
-          {entry ? "Update the details of your time entry." : "Manually add a new time entry for your records."}
+          {entry ? t('time_entry_form.editDescription') : t('time_entry_form.addDescription')}
         </SheetDescription>
       </SheetHeader>
       <div className="flex-1 overflow-y-auto p-6">
@@ -248,12 +256,14 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
               <FormField
                 control={form.control}
                 name="location"
-                render={({ field }) => (
+                render={({ field }) => {
+                  const displayValue = isSpecialEntry ? locationDisplayName : field.value;
+                  return (
                   <FormItem>
-                    <FormLabel>Location</FormLabel>
+                    <FormLabel>{t('time_entry_form.locationLabel')}</FormLabel>
                     <div className="relative flex items-center">
                         <FormControl>
-                            <Input placeholder="e.g., Office, Home" {...field} disabled={isSpecialEntry} className="pr-10" />
+                            <Input placeholder={t('time_entry_form.locationPlaceholder')} {...field} value={displayValue} disabled={isSpecialEntry} className="pr-10" />
                         </FormControl>
                         {!isSpecialEntry && (
                             <Tooltip>
@@ -263,21 +273,21 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                                 </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Get current location</p>
+                                    <p>{t('tracker.getLocationTooltip')}</p>
                                 </TooltipContent>
                             </Tooltip>
                         )}
                     </div>
                     <FormMessage />
                   </FormItem>
-                )}
+                )}}
               />
               <FormField
                 control={form.control}
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
+                    <FormLabel>{t('time_entry_form.dateLabel')}</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -289,7 +299,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            {field.value ? format(field.value, "PPP") : <span>{t('time_entry_form.pickDate')}</span>}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -312,7 +322,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                   name="startTime"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel>Start time</FormLabel>
+                      <FormLabel>{t('time_entry_form.startTimeLabel')}</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -325,7 +335,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                   name="endTime"
                   render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel>End time</FormLabel>
+                      <FormLabel>{t('time_entry_form.endTimeLabel')}</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
@@ -338,38 +348,38 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
               {!isSpecialEntry && (
                 <>
                   <Separator />
-                  <p className="text-sm font-medium text-muted-foreground">Optional Details</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('time_entry_form.optionalDetailsTitle')}</p>
                   <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="pauseDuration"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Pause</FormLabel>
+                           <FormItem>
+                            <FormLabel>{t('time_entry_form.pauseLabel')}</FormLabel>
                             <FormControl>
                               <Input type="time" {...field} />
                             </FormControl>
-                            <FormMessage />
-                            <div className="h-6 flex items-center">
-                              {pauseSuggestion && (
-                                  <Tooltip>
-                                      <TooltipTrigger asChild>
-                                      <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-auto p-1 text-primary hover:bg-primary/10"
-                                          onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
-                                      >
-                                          <Lightbulb className="mr-1 h-4 w-4" />
-                                          Suggest: {pauseSuggestion.minutes} min
-                                      </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                      <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
-                                      </TooltipContent>
-                                  </Tooltip>
-                              )}
+                             <FormMessage />
+                            <div className="pt-2">
+                            {pauseSuggestion && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-auto p-1 text-primary hover:bg-primary/10"
+                                        onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
+                                    >
+                                        <Lightbulb className="mr-1 h-4 w-4" />
+                                        {t('time_entry_form.pauseSuggestion', { minutes: pauseSuggestion.minutes })}
+                                    </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                    <p>{t('time_entry_form.pauseSuggestionTooltip', { hours: pauseSuggestion.reason, minutes: pauseSuggestion.minutes })}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
                             </div>
                           </FormItem>
                         )}
@@ -379,9 +389,9 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                         name="travelTime"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Travel Time (hours)</FormLabel>
+                            <FormLabel>{t('time_entry_form.travelTimeLabel')}</FormLabel>
                             <FormControl>
-                              <Input type="number" step="0.25" placeholder="e.g. 1.5" {...field} />
+                              <Input type="number" step="0.25" placeholder={t('time_entry_form.travelTimePlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -392,7 +402,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                     control={form.control}
                     name="isDriver"
                     render={({ field }) => (
-                      <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
+                      <FormItem className="col-span-2 flex flex-row items-center space-x-3 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
                             checked={field.value}
@@ -401,10 +411,10 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel>
-                            Driver
+                            {t('time_entry_form.driverLabel')}
                           </FormLabel>
                           <FormDescription>
-                            Were you the designated driver?
+                            {t('time_entry_form.driverDescription')}
                           </FormDescription>
                         </div>
                       </FormItem>
@@ -416,15 +426,15 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
               <div className="space-y-4 pt-4">
                   <Separator />
                   <div className="flex justify-between items-center font-medium">
-                      <span className="text-muted-foreground">Total Compensated Time:</span>
+                      <span className="text-muted-foreground">{t('time_entry_form.totalTimeLabel')}</span>
                       <span className="text-lg text-primary">{formatHoursAndMinutes(totalCompensatedMinutes)}</span>
                   </div>
                   {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (
                       <Alert variant="destructive">
                           <AlertTriangle className="h-4 w-4" />
-                          <AlertTitle>Warning: Exceeds 10 Hours</AlertTitle>
+                          <AlertTitle>{t('time_entry_form.warning10HoursTitle')}</AlertTitle>
                           <AlertDescription>
-                              The work duration exceeds the legal maximum of 10 hours per day.
+                              {t('time_entry_form.warning10HoursDescription')}
                           </AlertDescription>
                       </Alert>
                   )}
@@ -433,11 +443,11 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
 
               <SheetFooter className="pt-6">
                   <SheetClose asChild>
-                      <Button type="button" variant="outline">Cancel</Button>
+                      <Button type="button" variant="outline">{t('time_entry_form.cancelButton')}</Button>
                   </SheetClose>
                   <Button type="submit">
                       <Save className="mr-2 h-4 w-4" />
-                      Save Entry
+                      {t('time_entry_form.saveButton')}
                   </Button>
               </SheetFooter>
             </form>

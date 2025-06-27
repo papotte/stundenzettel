@@ -17,16 +17,26 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useToast } from '@/hooks/use-toast';
 import { getUserSettings, setUserSettings } from '@/services/user-settings-service';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { UserSettings } from '@/lib/types';
+import { useTranslation } from '@/context/i18n-context';
 
 const settingsFormSchema = z.object({
   defaultWorkHours: z.coerce.number().min(1, 'Must be at least 1 hour').max(10, 'Cannot be more than 10 hours'),
   defaultStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   defaultEndTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  language: z.enum(['en', 'de']),
 });
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
@@ -35,6 +45,7 @@ export default function SettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { t, setLanguageState, language } = useTranslation();
   const [pageLoading, setPageLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -44,6 +55,7 @@ export default function SettingsPage() {
       defaultWorkHours: 7,
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
+      language: language,
     },
   });
 
@@ -62,8 +74,8 @@ export default function SettingsPage() {
         } catch (error) {
           console.error('Failed to fetch user settings', error);
           toast({
-            title: 'Error',
-            description: 'Could not load your settings.',
+            title: t('settings.errorLoadingTitle'),
+            description: t('settings.errorLoadingDescription'),
             variant: 'destructive',
           });
         } finally {
@@ -72,22 +84,23 @@ export default function SettingsPage() {
       };
       fetchSettings();
     }
-  }, [user, form, toast]);
+  }, [user, form, toast, t]);
 
   const onSubmit = async (data: SettingsFormValues) => {
     if (!user) return;
     setIsSaving(true);
     try {
       await setUserSettings(user.uid, data);
+      setLanguageState(data.language);
       toast({
-        title: 'Settings Saved',
-        description: 'Your new settings have been applied.',
+        title: t('settings.savedTitle'),
+        description: t('settings.savedDescription'),
       });
     } catch (error) {
       console.error('Failed to save user settings', error);
       toast({
-        title: 'Error',
-        description: 'Could not save your settings.',
+        title: t('settings.errorSavingTitle'),
+        description: t('settings.errorSavingDescription'),
         variant: 'destructive',
       });
     } finally {
@@ -106,20 +119,13 @@ export default function SettingsPage() {
                         <Skeleton className="h-4 w-full max-w-sm mt-2" />
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <Skeleton className="h-5 w-32" />
-                            <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-10 w-full" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Skeleton className="h-14 w-full" />
+                            <Skeleton className="h-14 w-full" />
                         </div>
-                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Skeleton className="h-5 w-24" />
-                                <Skeleton className="h-10 w-full" />
-                            </div>
-                             <div className="space-y-2">
-                                <Skeleton className="h-5 w-24" />
-                                <Skeleton className="h-10 w-full" />
-                            </div>
-                        </div>
+                        <Skeleton className="h-14 w-full" />
                     </CardContent>
                     <CardFooter>
                          <Skeleton className="h-10 w-24" />
@@ -140,47 +146,47 @@ export default function SettingsPage() {
         <Button asChild variant="outline" className="mb-8">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Tracker
+            {t('settings.backButton')}
           </Link>
         </Button>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <Card>
               <CardHeader>
-                <CardTitle>User Settings</CardTitle>
+                <CardTitle>{t('settings.title')}</CardTitle>
                 <CardDescription>
-                  Manage your personal application settings here.
+                  {t('settings.description')}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <FormField
                   control={form.control}
                   name="defaultWorkHours"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Default daily work hours</FormLabel>
+                      <FormLabel>{t('settings.defaultWorkHoursLabel')}</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.5" {...field} />
                       </FormControl>
                       <FormMessage />
                       <p className="text-sm text-muted-foreground pt-1">
-                        Used for Sick Leave, PTO, and Bank Holiday entries.
+                        {t('settings.defaultWorkHoursDescription')}
                       </p>
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <FormField
                       control={form.control}
                       name="defaultStartTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Default start time</FormLabel>
+                          <FormLabel>{t('settings.defaultStartTimeLabel')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
                            <FormDescription>
-                            Used for new time entries.
+                             {t('settings.timeUsageDescription')}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -191,18 +197,42 @@ export default function SettingsPage() {
                       name="defaultEndTime"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Default end time</FormLabel>
+                          <FormLabel>{t('settings.defaultEndTimeLabel')}</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
                            <FormDescription>
-                            Used for new time entries.
+                            {t('settings.timeUsageDescription')}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                 </div>
+                 <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('settings.languageLabel')}</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a language" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="en">{t('settings.languageEnglish')}</SelectItem>
+                          <SelectItem value="de">{t('settings.languageGerman')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {t('settings.languageDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
               <CardFooter>
                 <Button type="submit" disabled={isSaving}>
@@ -211,7 +241,7 @@ export default function SettingsPage() {
                   ) : (
                       <Save className="mr-2 h-4 w-4" />
                   )}
-                  Save Settings
+                  {t('settings.saveButton')}
                 </Button>
               </CardFooter>
             </Card>

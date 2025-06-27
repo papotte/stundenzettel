@@ -11,6 +11,7 @@ import {
   differenceInMinutes,
   getDay,
 } from "date-fns";
+import { de, enUS } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,8 @@ import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTimeEntries } from "@/services/time-entry-service";
 import { useAuth } from "@/hooks/use-auth";
+import { useTranslation } from "@/context/i18n-context";
+import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -42,10 +45,13 @@ const dayOfWeekMap: { [key: number]: string } = {
 
 export default function ExportPreview() {
   const { user } = useAuth();
+  const { t, language } = useTranslation();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
+
+  const locale = useMemo(() => (language === 'de' ? de : enUS), [language]);
 
   useEffect(() => {
     if (!user) return;
@@ -82,8 +88,8 @@ export default function ExportPreview() {
         getEntriesForDay(day).forEach((entry) => {
           if (entry.endTime) {
             const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
-            const compensatedMinutes = workDuration - (entry.pauseDuration || 0);
-            total += (compensatedMinutes / 60) + (entry.travelTime || 0);
+            const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
+            total += compensatedMinutes / 60;
           }
         });
       }
@@ -96,20 +102,26 @@ export default function ExportPreview() {
     return weeksInMonth.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
   }, [weeksInMonth, entries, selectedMonth]);
 
+  const getLocationDisplayName = (location: string) => {
+    if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
+      return t(`special_locations.${location}`);
+    }
+    return location;
+  };
 
   const handleExport = () => {
     if (!selectedMonth) return;
     const header = [
-      "Woche",
-      "Datum",
-      "Einsatzort",
-      "von",
-      "bis",
-      "Pause (time)",
-      "abzgl. Pause",
-      "zzgl. Fahrtzeit",
-      "vergütete AZ",
-      "Fahrer",
+      t('export_preview.headerWeek'),
+      t('export_preview.headerDate'),
+      t('export_preview.headerLocation'),
+      t('export_preview.headerFrom'),
+      t('export_preview.headerTo'),
+      t('export_preview.headerPauseTime'),
+      t('export_preview.headerPauseDecimal'),
+      t('export_preview.headerTravelTime'),
+      t('export_preview.headerCompensatedTime'),
+      t('export_preview.headerDriver'),
     ];
     
     const data: (string | number)[][] = [];
@@ -128,14 +140,14 @@ export default function ExportPreview() {
                 data.push([
                     dayOfWeekMap[getDay(day)],
                     format(day, 'd/M/yyyy'),
-                    entry.location,
+                    getLocationDisplayName(entry.location),
                     entry.startTime ? format(entry.startTime, 'HH:mm') : '',
                     entry.endTime ? format(entry.endTime, 'HH:mm') : '',
                     pauseTime,
                     parseFloat(pauseDecimal),
                     entry.travelTime || '',
                     parseFloat(compensatedHours.toFixed(2)),
-                    entry.isDriver ? 'F' : '',
+                    entry.isDriver ? t('export_preview.driverMark') : '',
                 ]);
               });
             } else if (getDay(day) !== 0) { // Not sunday
@@ -149,16 +161,16 @@ export default function ExportPreview() {
       });
       const weeklyTotal = calculateWeekTotal(week);
       if (weeklyTotal > 0 || week.some(d => isSameMonth(d, selectedMonth))) {
-        data.push(['', '', '', '', '', '', '', 'Gesamt pro Woche:', weeklyTotal.toFixed(2), '']);
+        data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
         data.push([]); // Empty row
       }
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', '', '', '', 'Stunden insgesamt:', monthTotal.toFixed(2)]);
+    data.push(['', '', '', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2)]);
 
     const worksheetData = [
-      [`Stundenzettel für den Monat: ${format(selectedMonth, "MMMM yyyy")}`, '', '', '', '', '', '', '', '', `Raquel Crespillo Andujar`],
+      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
       [],
       header,
       ...data
@@ -174,7 +186,7 @@ export default function ExportPreview() {
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stundenzettel");
-    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy")}.xlsx`);
+    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy", { locale })}.xlsx`);
   };
   
   if (isLoading || !selectedMonth) {
@@ -219,7 +231,7 @@ export default function ExportPreview() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <h2 className="text-2xl font-bold text-center font-headline">
-              {format(selectedMonth, "MMMM yyyy")}
+              {format(selectedMonth, "MMMM yyyy", { locale })}
             </h2>
             <Button
               variant="outline"
@@ -231,14 +243,14 @@ export default function ExportPreview() {
           </div>
           <Button onClick={handleExport} className="mt-4 sm:mt-0">
             <Download className="mr-2 h-4 w-4" />
-            Export to Excel
+            {t('export_preview.exportButton')}
           </Button>
         </div>
 
         <div className="bg-white p-8 rounded-md shadow-md printable-area">
           <header className="flex justify-between items-start mb-4 border-b pb-4">
             <h1 className="text-xl font-bold font-headline">
-              Stundenzettel für den Monat: {format(selectedMonth, "MMMM")}
+              {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
             </h1>
             <div className="text-right font-semibold">{user?.displayName || user?.email || employeeName}</div>
           </header>
@@ -254,25 +266,25 @@ export default function ExportPreview() {
                 <Table className="border">
                   <TableHeader>
                     <TableRow className="bg-secondary hover:bg-secondary">
-                      <TableHead className="w-[8%]">Woche</TableHead>
-                      <TableHead className="w-[12%]">Datum</TableHead>
-                      <TableHead className="w-[15%]">Einsatzort</TableHead>
+                      <TableHead className="w-[8%]">{t('export_preview.headerWeek')}</TableHead>
+                      <TableHead className="w-[12%]">{t('export_preview.headerDate')}</TableHead>
+                      <TableHead className="w-[15%]">{t('export_preview.headerLocation')}</TableHead>
                       <TableHead colSpan={2} className="text-center">
-                        tatsächliche Arbeitszeit
+                        {t('export_preview.headerWorkTime')}
                       </TableHead>
-                      <TableHead colSpan={2} className="text-center">Pause</TableHead>
-                      <TableHead className="w-[10%]">zzgl. Fahrtzeit</TableHead>
-                      <TableHead className="w-[10%]">vergütete AZ</TableHead>
-                      <TableHead className="w-[8%]">Fahrer</TableHead>
+                      <TableHead colSpan={2} className="text-center">{t('export_preview.headerPause')}</TableHead>
+                      <TableHead className="w-[10%]">{t('export_preview.headerTravelTime')}</TableHead>
+                      <TableHead className="w-[10%]">{t('export_preview.headerCompensatedTime')}</TableHead>
+                      <TableHead className="w-[8%]">{t('export_preview.headerDriver')}</TableHead>
                     </TableRow>
                     <TableRow className="bg-secondary hover:bg-secondary">
                       <TableHead></TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
-                      <TableHead className="w-[7%] text-center border-l">von</TableHead>
-                      <TableHead className="w-[7%] text-center">bis</TableHead>
-                      <TableHead className="w-[7%] text-center border-l">(time)</TableHead>
-                      <TableHead className="w-[7%] text-center">abzgl.</TableHead>
+                      <TableHead className="w-[7%] text-center border-l">{t('export_preview.headerFrom')}</TableHead>
+                      <TableHead className="w-[7%] text-center">{t('export_preview.headerTo')}</TableHead>
+                      <TableHead className="w-[7%] text-center border-l">{t('export_preview.headerPauseTime')}</TableHead>
+                      <TableHead className="w-[7%] text-center">{t('export_preview.headerPauseDecimal')}</TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
                       <TableHead></TableHead>
@@ -313,21 +325,21 @@ export default function ExportPreview() {
                         <TableRow key={entry.id}>
                           {entryIndex === 0 ? <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell> : <TableCell></TableCell>}
                           {entryIndex === 0 ? <TableCell>{format(day, "d/M/yyyy")}</TableCell> : <TableCell></TableCell>}
-                          <TableCell>{entry.location}</TableCell>
+                          <TableCell>{getLocationDisplayName(entry.location)}</TableCell>
                           <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
                           <TableCell className="text-center">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
                           <TableCell className="text-center">{entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : ''}</TableCell>
                           <TableCell className="text-center">{formatDecimalHours(entry.pauseDuration)}</TableCell>
                           <TableCell className="text-center">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                           <TableCell className="text-center">{compensatedHours.toFixed(2)}</TableCell>
-                          <TableCell className="text-center">{entry.isDriver ? 'F' : ''}</TableCell>
+                          <TableCell className="text-center">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
                         </TableRow>
                       )});
                     })}
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                        <TableCell colSpan={8} className="text-right font-bold">Gesamt pro Woche:</TableCell>
+                        <TableCell colSpan={8} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
                         <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
                         <TableCell colSpan={1}></TableCell>
                     </TableRow>
@@ -338,7 +350,7 @@ export default function ExportPreview() {
             <div className="flex justify-end mt-8">
                 <div className="w-1/3">
                     <div className="flex justify-between font-bold text-lg border-b-2 border-black pb-1">
-                        <span>Stunden insgesamt:</span>
+                        <span>{t('export_preview.footerTotalHours')}</span>
                         <span>{monthTotal.toFixed(2)}</span>
                     </div>
                 </div>

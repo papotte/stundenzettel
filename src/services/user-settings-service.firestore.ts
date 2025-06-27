@@ -6,6 +6,7 @@ const defaultSettings: UserSettings = {
   defaultWorkHours: 7,
   defaultStartTime: "09:00",
   defaultEndTime: "17:00",
+  language: "en",
 };
 
 export const getUserSettings = async (userId: string): Promise<UserSettings> => {
@@ -22,7 +23,7 @@ export const getUserSettings = async (userId: string): Promise<UserSettings> => 
   }
 };
 
-export const setUserSettings = async (userId: string, settings: UserSettings): Promise<void> => {
+export const setUserSettings = async (userId: string, settings: Partial<UserSettings>): Promise<void> => {
   if (!userId) throw new Error("User not authenticated");
   const docRef = doc(db, "users", userId, "settings", "general");
   await setDoc(docRef, settings, { merge: true });

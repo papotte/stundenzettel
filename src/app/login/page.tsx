@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Clock, TestTube2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/context/i18n-context';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -53,6 +54,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { loginAsMockUser } = useAuth();
+  const { t } = useTranslation();
 
   const handleAuthAction = async (action: (email: string, password: string) => Promise<UserCredential>) => {
     setLoading(true);
@@ -62,7 +64,7 @@ export default function LoginPage() {
       router.push('/');
     } catch (error: any) {
       toast({
-        title: 'Authentication Failed',
+        title: t('login.authFailedTitle'),
         description: error.message,
         variant: 'destructive',
       });
@@ -83,7 +85,7 @@ export default function LoginPage() {
       router.push('/');
     } catch (error: any) {
       toast({
-        title: 'Authentication Failed',
+        title: t('login.authFailedTitle'),
         description: error.message,
         variant: 'destructive',
       });
@@ -104,19 +106,19 @@ export default function LoginPage() {
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
             <div className="flex items-center gap-2 mb-4">
                 <TestTube2 className="h-8 w-8 text-primary" />
-                <h1 className="text-3xl font-bold tracking-tight font-headline">TimeWise Tracker (Test Mode)</h1>
+                <h1 className="text-3xl font-bold tracking-tight font-headline">{t('login.testMode')}</h1>
             </div>
             <Card className="w-full max-w-sm">
                 <CardHeader>
-                    <CardTitle>Select a Mock User</CardTitle>
+                    <CardTitle>{t('login.selectMockUser')}</CardTitle>
                     <CardDescription>
-                        Choose a user to log in as for local testing. Data is stored in-memory and will be reset on page reload.
+                        {t('login.mockUserDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {mockUsers.map(user => (
                         <Button key={user.uid} onClick={() => handleMockLogin(user)} className="w-full">
-                            Log in as {user.displayName}
+                            {t('login.loginAs', { displayName: user.displayName })}
                         </Button>
                     ))}
                 </CardContent>
@@ -129,35 +131,35 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
        <div className="flex items-center gap-2 mb-4">
             <Clock className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold tracking-tight font-headline">TimeWise Tracker</h1>
+            <h1 className="text-3xl font-bold tracking-tight font-headline">{t('login.title')}</h1>
         </div>
       <Tabs defaultValue="signin" className="w-full max-w-sm">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signin">Sign In</TabsTrigger>
-          <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <TabsTrigger value="signin">{t('login.signInTab')}</TabsTrigger>
+          <TabsTrigger value="signup">{t('login.signUpTab')}</TabsTrigger>
         </TabsList>
         <TabsContent value="signin">
           <Card>
             <CardHeader>
-              <CardTitle>Sign In</CardTitle>
+              <CardTitle>{t('login.signInTitle')}</CardTitle>
               <CardDescription>
-                Enter your credentials to access your time tracker.
+                {t('login.signInDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email-signin">Email</Label>
+                <Label htmlFor="email-signin">{t('login.emailLabel')}</Label>
                 <Input
                   id="email-signin"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder={t('login.emailPlaceholder')}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password-signin">Password</Label>
+                <Label htmlFor="password-signin">{t('login.passwordLabel')}</Label>
                 <Input 
                   id="password-signin" 
                   type="password" 
@@ -169,7 +171,7 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter>
               <Button onClick={handleSignIn} disabled={loading} className="w-full">
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? t('login.signingInButton') : t('login.signInButton')}
               </Button>
             </CardFooter>
           </Card>
@@ -177,25 +179,25 @@ export default function LoginPage() {
         <TabsContent value="signup">
           <Card>
             <CardHeader>
-              <CardTitle>Sign Up</CardTitle>
+              <CardTitle>{t('login.signUpTitle')}</CardTitle>
               <CardDescription>
-                Create a new account to start tracking your time.
+                {t('login.signUpDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email-signup">Email</Label>
+                <Label htmlFor="email-signup">{t('login.emailLabel')}</Label>
                 <Input
                   id="email-signup"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder={t('login.emailPlaceholder')}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password-signup">Password</Label>
+                <Label htmlFor="password-signup">{t('login.passwordLabel')}</Label>
                 <Input 
                   id="password-signup" 
                   type="password" 
@@ -207,7 +209,7 @@ export default function LoginPage() {
             </CardContent>
             <CardFooter>
               <Button onClick={handleSignUp} disabled={loading} className="w-full">
-                {loading ? 'Creating Account...' : 'Sign Up'}
+                {loading ? t('login.creatingAccountButton') : t('login.signUpButton')}
               </Button>
             </CardFooter>
           </Card>
@@ -220,13 +222,13 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-muted px-2 text-muted-foreground">
-                Or continue with
+                {t('login.continueWith')}
                 </span>
             </div>
         </div>
         <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
             <GoogleIcon className="mr-2 h-4 w-4" />
-            Sign in with Google
+            {t('login.signInWithGoogle')}
         </Button>
       </div>
     </div>

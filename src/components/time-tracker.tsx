@@ -67,10 +67,12 @@ import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, up
 import { Skeleton } from "./ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { getUserSettings } from "@/services/user-settings-service";
-
+import { useTranslation } from "@/context/i18n-context";
+import type { SpecialLocationKey } from "@/lib/constants";
 
 export default function TimeTracker() {
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null);
@@ -126,8 +128,8 @@ export default function TimeTracker() {
     if (!user) return;
     if (!location) {
       toast({
-        title: "Location required",
-        description: "Please enter a location to start tracking.",
+        title: t('toasts.locationRequiredTitle'),
+        description: t('toasts.locationRequiredDescription'),
         variant: "destructive",
       });
       return;
@@ -157,9 +159,6 @@ export default function TimeTracker() {
 
   const handleSaveEntry = async (entryData: Omit<TimeEntry, 'userId'>) => {
     if (!user) return;
-
-    // The entryData from the form is now the single source of truth.
-    // No automatic calculations will be performed on save.
     const entryWithUser = { ...entryData, userId: user.uid };
 
     setIsFormOpen(false);
@@ -170,16 +169,16 @@ export default function TimeTracker() {
       if (existingEntry) {
         await updateTimeEntry(entryWithUser.id, entryWithUser);
         setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
-        toast({ title: "Entry Updated", description: `Changes to "${entryWithUser.location}" have been saved.`});
+        toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', {location: entryWithUser.location})});
       } else {
         const newId = await addTimeEntry(entryWithUser);
         const newEntry = {...entryWithUser, id: newId};
         setEntries(prev => [newEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
-        toast({ title: "Entry Added", description: `New entry for "${entryWithUser.location}" created.`});
+        toast({ title: t('toasts.entryAddedTitle'), description: t('toasts.entryAddedDescription', {location: entryWithUser.location})});
       }
     } catch (error) {
       console.error("Error saving entry:", error);
-      toast({ title: "Save Failed", description: "There was a problem saving your entry.", variant: "destructive" });
+      toast({ title: t('toasts.saveFailedTitle'), description: t('toasts.saveFailedDescription'), variant: "destructive" });
     }
   };
 
@@ -193,10 +192,10 @@ export default function TimeTracker() {
     try {
       await deleteTimeEntry(user.uid, id);
       setEntries(entries.filter((entry) => entry.id !== id));
-      toast({ title: "Entry Deleted", variant: 'destructive'});
+      toast({ title: t('toasts.entryDeletedTitle'), variant: 'destructive'});
     } catch (error) {
       console.error("Error deleting entry:", error);
-      toast({ title: "Delete Failed", description: "There was a problem deleting your entry.", variant: "destructive" });
+      toast({ title: t('toasts.deleteFailedTitle'), description: t('toasts.deleteFailedDescription'), variant: "destructive" });
     }
   };
 
@@ -211,24 +210,25 @@ export default function TimeTracker() {
         setElapsedTime(0);
       }
       toast({
-        title: "Data Cleared",
-        description: "All your time entries have been removed from the database.",
+        title: t('toasts.dataClearedTitle'),
+        description: t('toasts.dataClearedDescription'),
       });
     } catch (error) {
       console.error("Error clearing data:", error);
-      toast({ title: "Clear Failed", description: "There was a problem clearing your data.", variant: "destructive" });
+      toast({ title: t('toasts.clearFailedTitle'), description: t('toasts.clearFailedDescription'), variant: "destructive" });
     }
   };
 
-  const handleAddSpecialEntry = async (location: string, isTimeOffInLieu: boolean) => {
+  const handleAddSpecialEntry = async (locationKey: SpecialLocationKey) => {
     if (!selectedDate || !user) return;
 
+    const isTimeOffInLieu = locationKey === 'TIME_OFF_IN_LIEU';
     const hours = isTimeOffInLieu ? 0 : (userSettings?.defaultWorkHours || 7);
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
     const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
 
     const newEntry: Omit<TimeEntry, 'id' | 'userId'> = {
-      location: location,
+      location: locationKey,
       startTime: startTime,
       endTime: endTime,
       pauseDuration: 0,
@@ -236,11 +236,11 @@ export default function TimeTracker() {
       isDriver: false,
     };
 
-    const entryExists = entries.some(e => isSameDay(e.startTime, selectedDate) && e.location === location);
+    const entryExists = entries.some(e => isSameDay(e.startTime, selectedDate) && e.location === locationKey);
     if (entryExists) {
       toast({
-        title: "Entry already exists",
-        description: `An entry for "${location}" on this day already exists.`,
+        title: t('toasts.entryExistsTitle'),
+        description: t('toasts.entryExistsDescription', { location: t(`special_locations.${locationKey}`) }),
         variant: "destructive",
       });
       return;
@@ -252,13 +252,13 @@ export default function TimeTracker() {
       const finalNewEntry = { ...entryWithUser, id: newId };
       setEntries(prev => [finalNewEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
       toast({
-        title: "Entry Added",
-        description: `New entry for "${location}" created.`,
+        title: t('toasts.entryAddedTitle'),
+        description: t('toasts.entryAddedDescription', { location: t(`special_locations.${locationKey}`) }),
         className: "bg-accent text-accent-foreground",
       });
     } catch (error) {
       console.error("Error adding special entry:", error);
-      toast({ title: "Save Failed", description: "There was a problem saving the special entry.", variant: "destructive" });
+      toast({ title: t('toasts.saveFailedTitle'), description: t('toasts.saveFailedDescription'), variant: "destructive" });
     }
   };
 
@@ -267,8 +267,8 @@ export default function TimeTracker() {
     if (navigator.geolocation) {
       setIsFetchingLocation(true);
       toast({
-        title: "Fetching location...",
-        description: "Please wait while we get your address.",
+        title: t('time_entry_form.locationFetchToastTitle'),
+        description: t('time_entry_form.locationFetchToastDescription'),
       });
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -277,15 +277,15 @@ export default function TimeTracker() {
             const result = await reverseGeocode({ latitude, longitude });
             setLocation(result.address);
             toast({
-              title: "Location fetched!",
-              description: `Your location has been set to "${result.address}".`,
+              title: t('time_entry_form.locationFetchedToastTitle'),
+              description: t('time_entry_form.locationFetchedToastDescription', { address: result.address }),
               className: "bg-accent text-accent-foreground",
             });
           } catch (error) {
             console.error("Error getting address", error);
             const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
             toast({
-              title: "Could not get address",
+              title: t('time_entry_form.locationErrorToastTitle'),
               description: errorMessage,
               variant: "destructive",
             });
@@ -298,8 +298,8 @@ export default function TimeTracker() {
         (error) => {
           console.error("Error getting location", error);
           toast({
-            title: "Could not get your coordinates",
-            description: "Please ensure location services are enabled and permission is granted in your browser.",
+            title: t('time_entry_form.locationCoordsErrorToastTitle'),
+            description: t('time_entry_form.locationCoordsErrorToastDescription'),
             variant: "destructive",
           });
           setIsFetchingLocation(false);
@@ -307,8 +307,8 @@ export default function TimeTracker() {
       );
     } else {
       toast({
-        title: "Geolocation not supported",
-        description: "Your browser does not support geolocation.",
+        title: t('time_entry_form.geolocationNotSupportedToastTitle'),
+        description: t('time_entry_form.geolocationNotSupportedToastDescription'),
         variant: "destructive",
       });
     }
@@ -342,12 +342,12 @@ export default function TimeTracker() {
 
         const workMinutes = differenceInMinutes(entry.endTime, entry.startTime);
         
-        const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday"].includes(entry.location);
+        const isNonWorkEntry = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
         if (isNonWorkEntry) {
             return total + workMinutes;
         }
         
-        if (entry.location === "Time Off in Lieu") {
+        if (entry.location === "TIME_OFF_IN_LIEU") {
             return total;
         }
         
@@ -390,13 +390,13 @@ export default function TimeTracker() {
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
           <div className="flex items-center gap-2">
             <Clock className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold tracking-tight font-headline">TimeWise Tracker</h1>
+            <h1 className="text-xl font-bold tracking-tight font-headline">{t('login.title')}</h1>
           </div>
           <div className="ml-auto flex items-center gap-2">
               <Button asChild variant="outline">
                 <Link href="/export">
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Preview & Export
+                  {t('tracker.headerExportLink')}
                 </Link>
               </Button>
               <AlertDialog>
@@ -405,29 +405,28 @@ export default function TimeTracker() {
                       <TooltipTrigger asChild>
                           <Button variant="destructive" size="icon">
                               <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Clear All Data</span>
+                              <span className="sr-only">{t('tracker.headerClearDataTooltip')}</span>
                           </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                          <p>Clear all data</p>
+                          <p>{t('tracker.headerClearDataTooltip')}</p>
                       </TooltipContent>
                   </Tooltip>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('tracker.clearDataAlertTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete all
-                      your time tracking data from the database.
+                      {t('tracker.clearDataAlertDescription')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t('tracker.clearDataAlertCancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleClearData}
                       className="bg-destructive hover:bg-destructive/90"
                     >
-                      Yes, delete everything
+                      {t('tracker.clearDataAlertConfirm')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -437,23 +436,23 @@ export default function TimeTracker() {
                   <Button asChild variant="ghost" size="icon">
                       <Link href="/settings">
                           <Cog className="h-4 w-4" />
-                          <span className="sr-only">Settings</span>
+                          <span className="sr-only">{t('tracker.headerSettingsTooltip')}</span>
                       </Link>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Settings</p>
+                  <p>{t('tracker.headerSettingsTooltip')}</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" onClick={handleSignOut}>
                     <LogOut className="h-4 w-4" />
-                    <span className="sr-only">Sign Out</span>
+                    <span className="sr-only">{t('tracker.headerSignOutTooltip')}</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Sign Out</p>
+                  <p>{t('tracker.headerSignOutTooltip')}</p>
                 </TooltipContent>
               </Tooltip>
           </div>
@@ -463,9 +462,9 @@ export default function TimeTracker() {
           <div className="mx-auto grid max-w-6xl gap-8">
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Live Time Tracking</CardTitle>
+                <CardTitle>{t('tracker.liveTrackingTitle')}</CardTitle>
                 <CardDescription>
-                  Start the timer to track your work as it happens.
+                  {t('tracker.liveTrackingDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -473,7 +472,7 @@ export default function TimeTracker() {
                   <div className="grid gap-4">
                     <div className="flex items-center justify-between rounded-lg bg-muted p-4">
                       <div>
-                        <p className="font-medium">{runningTimer.location}</p>
+                        <p className="font-medium">{t('tracker.runningTimerLocation', { location: runningTimer.location })}</p>
                       </div>
                       <p className="text-2xl font-bold font-mono tabular-nums tracking-wider text-primary">
                         {formatDuration(elapsedTime)}
@@ -482,7 +481,7 @@ export default function TimeTracker() {
                     <div className="flex">
                       <Button onClick={handleStopTimer} className="w-full bg-destructive hover:bg-destructive/90 transition-all duration-300">
                         <Pause className="mr-2 h-4 w-4" />
-                        Stop
+                        {t('tracker.stopButton')}
                       </Button>
                     </div>
                   </div>
@@ -490,25 +489,25 @@ export default function TimeTracker() {
                   <div className="grid gap-4">
                     <div className="flex w-full items-center gap-2">
                       <Input
-                        placeholder="Where are you working from?"
+                        placeholder={t('tracker.locationPlaceholder')}
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         className="flex-1"
                       />
                       <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label="Get current location" disabled={isFetchingLocation}>
+                            <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label={t('tracker.getLocationTooltip')} disabled={isFetchingLocation}>
                               {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Get current location</p>
+                            <p>{t('tracker.getLocationTooltip')}</p>
                           </TooltipContent>
                         </Tooltip>
                     </div>
                     <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300">
                       <Play className="mr-2 h-4 w-4" />
-                      Start Tracking
+                      {t('tracker.startButton')}
                     </Button>
                   </div>
                 )}
@@ -517,30 +516,30 @@ export default function TimeTracker() {
 
             <Card className="shadow-lg">
               <CardHeader>
-                  <CardTitle>Daily Actions</CardTitle>
+                  <CardTitle>{t('tracker.dailyActionsTitle')}</CardTitle>
                   <CardDescription>
-                      Quickly add entries for the selected day: {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
+                      {selectedDate ? t('tracker.dailyActionsDescription', { date: format(selectedDate, "PPP") }) : "Loading..."}
                   </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button onClick={() => handleAddSpecialEntry("Sick Leave", false)} variant="outline">
-                      <BedDouble className="mr-2 h-4 w-4" /> Sick Leave
+                  <Button onClick={() => handleAddSpecialEntry("SICK_LEAVE")} variant="outline">
+                      <BedDouble className="mr-2 h-4 w-4" /> {t('special_locations.SICK_LEAVE')}
                   </Button>
-                  <Button onClick={() => handleAddSpecialEntry("PTO", false)} variant="outline">
-                      <Plane className="mr-2 h-4 w-4" /> PTO
+                  <Button onClick={() => handleAddSpecialEntry("PTO")} variant="outline">
+                      <Plane className="mr-2 h-4 w-4" /> {t('special_locations.PTO')}
                   </Button>
-                  <Button onClick={() => handleAddSpecialEntry("Bank Holiday", false)} variant="outline">
-                      <Landmark className="mr-2 h-4 w-4" /> Bank Holiday
+                  <Button onClick={() => handleAddSpecialEntry("BANK_HOLIDAY")} variant="outline">
+                      <Landmark className="mr-2 h-4 w-4" /> {t('special_locations.BANK_HOLIDAY')}
                   </Button>
-                  <Button onClick={() => handleAddSpecialEntry("Time Off in Lieu", true)} variant="outline">
-                      <Hourglass className="mr-2 h-4 w-4" /> Time Off in Lieu
+                  <Button onClick={() => handleAddSpecialEntry("TIME_OFF_IN_LIEU")} variant="outline">
+                      <Hourglass className="mr-2 h-4 w-4" /> {t('special_locations.TIME_OFF_IN_LIEU')}
                   </Button>
               </CardContent>
             </Card>
 
             <div>
               <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold font-headline">Time Entries</h2>
+                <h2 className="text-2xl font-bold font-headline">{t('tracker.timeEntriesTitle')}</h2>
                 <div className="flex w-full items-center gap-2 sm:w-auto">
                   <div className="flex flex-1 items-center gap-1">
                     <Button variant="outline" size="icon" onClick={handlePreviousDay} aria-label="Previous day">
@@ -569,7 +568,7 @@ export default function TimeTracker() {
                   <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <SheetTrigger asChild>
                       <Button onClick={openNewEntryForm}>
-                        <Plus className="mr-2 h-4 w-4" /> Add
+                        <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')}
                       </Button>
                     </SheetTrigger>
                     <SheetContent className="w-full max-w-none sm:max-w-md flex flex-col">
@@ -590,8 +589,8 @@ export default function TimeTracker() {
                       <div className="flex justify-between items-center">
                           <CardTitle>
                               {selectedDate && isSameDay(selectedDate, new Date())
-                              ? "Today's Entries"
-                              : selectedDate ? `Entries for ${format(selectedDate, "PPP")}` : "Loading..."}
+                              ? t('tracker.todaysEntries')
+                              : selectedDate ? t('tracker.entriesForDate', { date: format(selectedDate, "PPP") }) : "Loading..."}
                           </CardTitle>
                           <div className="text-lg font-bold text-primary">{formatHoursAndMinutes(dailyTotal)}</div>
                       </div>
@@ -615,8 +614,8 @@ export default function TimeTracker() {
                       </div>
                       ) : (
                       <div className="text-center py-12">
-                          <p className="text-muted-foreground">No entries for this day.</p>
-                          <Button variant="link" onClick={openNewEntryForm} className="mt-2">Add your first entry</Button>
+                          <p className="text-muted-foreground">{t('tracker.noEntries')}</p>
+                          <Button variant="link" onClick={openNewEntryForm} className="mt-2">{t('tracker.addFirstEntryLink')}</Button>
                       </div>
                       )}
                   </CardContent>
@@ -627,24 +626,24 @@ export default function TimeTracker() {
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <BarChart className="h-5 w-5 text-primary" />
-                        <CardTitle>Hours Summary</CardTitle>
+                        <CardTitle>{t('tracker.summaryTitle')}</CardTitle>
                     </div>
                     <CardDescription>
-                        Total compensated hours for periods related to the selected date.
+                        {t('tracker.summaryDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">Selected Day</p>
+                            <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryDay')}</p>
                             <p className="text-2xl font-bold">{formatHoursAndMinutes(dailyTotal)}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">This Week</p>
+                            <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryWeek')}</p>
                             <p className="text-2xl font-bold">{formatHoursAndMinutes(weeklyTotal)}</p>
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">This Month</p>
+                            <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryMonth')}</p>
                             <p className="text-2xl font-bold">{formatHoursAndMinutes(monthlyTotal)}</p>
                         </div>
                     </div>

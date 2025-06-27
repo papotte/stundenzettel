@@ -13,4 +13,5 @@ export interface UserSettings {
   defaultWorkHours: number;
   defaultStartTime: string;
   defaultEndTime: string;
+  language: 'en' | 'de';
 }
