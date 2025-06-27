@@ -328,7 +328,7 @@ export default function ExportPreview() {
               <div key={weekIndex} className="mb-6">
                 <Table className="border">
                   <TableHeader>
-                    <TableRow className="bg-secondary hover:bg-secondary">
+                    <TableRow className="bg-secondary hover:bg-secondary border-b-0">
                       <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
                       <TableHead rowSpan={2} className="w-[12%] align-middle">{t('export_preview.headerDate')}</TableHead>
                       <TableHead rowSpan={2} className="w-[20%] align-middle">{t('export_preview.headerLocation')}</TableHead>
