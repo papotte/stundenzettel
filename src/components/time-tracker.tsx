@@ -22,6 +22,7 @@ import {
   BarChart,
   ChevronLeft,
   ChevronRight,
+  Cog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +54,7 @@ import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import TimeEntryForm from "./time-entry-form";
 import TimeEntryCard from "./time-entry-card";
-import type { TimeEntry } from "@/lib/types";
+import type { TimeEntry, UserSettings } from "@/lib/types";
 import { formatHoursAndMinutes, formatDuration } from "@/lib/utils";
 import {
   Tooltip,
@@ -65,6 +66,7 @@ import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
 import { Skeleton } from "./ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { getUserSettings } from "@/services/user-settings-service";
 
 
 export default function TimeTracker() {
@@ -78,29 +80,34 @@ export default function TimeTracker() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     setSelectedDate(new Date());
     if (!user) return;
 
-    const fetchEntries = async () => {
+    const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        const fetchedEntries = await getTimeEntries(user.uid);
+        const [fetchedEntries, settings] = await Promise.all([
+          getTimeEntries(user.uid),
+          getUserSettings(user.uid),
+        ]);
         setEntries(fetchedEntries);
+        setUserSettings(settings);
       } catch (error) {
-        console.error("Error fetching time entries:", error);
+        console.error("Error fetching initial data:", error);
         toast({
           title: "Failed to load data",
-          description: "Could not retrieve time entries from the database. Please check your Firebase configuration in the .env file.",
+          description: "Could not retrieve your data from the database. Please check your Firebase configuration.",
           variant: "destructive",
         });
       } finally {
         setIsLoading(false);
       }
     };
-    fetchEntries();
+    fetchInitialData();
   }, [user, toast]);
 
   useEffect(() => {
@@ -213,9 +220,10 @@ export default function TimeTracker() {
     }
   };
 
-  const handleAddSpecialEntry = async (location: string, hours: number) => {
+  const handleAddSpecialEntry = async (location: string, isTimeOffInLieu: boolean) => {
     if (!selectedDate || !user) return;
 
+    const hours = isTimeOffInLieu ? 0 : (userSettings?.defaultWorkHours || 7);
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
     const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
 
@@ -426,6 +434,19 @@ export default function TimeTracker() {
               </AlertDialog>
               <Tooltip>
                 <TooltipTrigger asChild>
+                  <Button asChild variant="ghost" size="icon">
+                      <Link href="/settings">
+                          <Cog className="h-4 w-4" />
+                          <span className="sr-only">Settings</span>
+                      </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Settings</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" onClick={handleSignOut}>
                     <LogOut className="h-4 w-4" />
                     <span className="sr-only">Sign Out</span>
@@ -502,16 +523,16 @@ export default function TimeTracker() {
                   </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button onClick={() => handleAddSpecialEntry("Sick Leave", 7)} variant="outline">
+                  <Button onClick={() => handleAddSpecialEntry("Sick Leave", false)} variant="outline">
                       <BedDouble className="mr-2 h-4 w-4" /> Sick Leave
                   </Button>
-                  <Button onClick={() => handleAddSpecialEntry("PTO", 7)} variant="outline">
+                  <Button onClick={() => handleAddSpecialEntry("PTO", false)} variant="outline">
                       <Plane className="mr-2 h-4 w-4" /> PTO
                   </Button>
-                  <Button onClick={() => handleAddSpecialEntry("Bank Holiday", 7)} variant="outline">
+                  <Button onClick={() => handleAddSpecialEntry("Bank Holiday", false)} variant="outline">
                       <Landmark className="mr-2 h-4 w-4" /> Bank Holiday
                   </Button>
-                  <Button onClick={() => handleAddSpecialEntry("Time Off in Lieu", 0)} variant="outline">
+                  <Button onClick={() => handleAddSpecialEntry("Time Off in Lieu", true)} variant="outline">
                       <Hourglass className="mr-2 h-4 w-4" /> Time Off in Lieu
                   </Button>
               </CardContent>
