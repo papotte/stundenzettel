@@ -127,7 +127,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                   <TableHead rowSpan={2} className="w-[8%] text-center align-middle border-r border-black">{t('export_preview.headerDriver')}</TableHead>
                   <TableHead rowSpan={2} className="w-[12%] text-right align-middle">{t('export_preview.headerMileage')}</TableHead>
                 </TableRow>
-                 <TableRow className="bg-table-header hover:bg-table-header text-black">
+                 <TableRow className="bg-table-header hover:bg-table-header text-black border-b border-black">
                     <TableHead className="text-right">{t('export_preview.headerFrom')}</TableHead>
                     <TableHead className="text-right border-r border-black">{t('export_preview.headerTo')}</TableHead>
                 </TableRow>
@@ -190,8 +190,8 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
               </TableBody>
             </Table>
             <div className="flex w-full mt-2 text-sm">
-                <div style={{ width: 'calc(8% + 10% + 18% + 14% + 10% - 1px)' }} />
-                <div style={{ width: 'calc(8% + 10%)' }} className="flex justify-between">
+                <div style={{ width: 'calc(8% + 10% + 18% + 14% - 1px)' }} />
+                <div style={{ width: 'calc(10% + 8% + 10% + 8% + 12%)' }} className="flex justify-between">
                   <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
                   <span className="font-bold border-b-2 border-black pb-1">{calculateWeekTotal(week).toFixed(2)}</span>
                 </div>
@@ -199,8 +199,8 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
           </div>
         ))}
         <div className="flex w-full mt-8">
-            <div style={{ width: 'calc(8% + 10% + 18% + 14% + 10% - 1px)' }} />
-            <div style={{ width: 'calc(8% + 10%)' }} className="flex justify-between">
+            <div style={{ width: 'calc(8% + 10% + 18% + 14% - 1px)' }} />
+            <div style={{ width: 'calc(10% + 8% + 10% + 8% + 12%)' }} className="flex justify-between">
               <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
               <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2">{monthTotal.toFixed(2)}</span>
             </div>
