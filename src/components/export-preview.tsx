@@ -391,8 +391,8 @@ export default function ExportPreview() {
 
                         return (
                         <TableRow key={entry.id}>
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-secondary font-medium align-top">{dayOfWeekMap[getDay(day)]}</TableCell>}
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-top">{format(day, "d/M/yyyy")}</TableCell>}
+                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-secondary font-medium align-middle">{dayOfWeekMap[getDay(day)]}</TableCell>}
+                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle">{format(day, "d/M/yyyy")}</TableCell>}
                           <TableCell>{getLocationDisplayName(entry.location)}</TableCell>
                           <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
                           <TableCell className="text-center">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
