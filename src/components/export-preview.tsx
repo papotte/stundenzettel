@@ -14,14 +14,6 @@ import {
 import { de, enUS } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Download } from "lucide-react";
 import type { TimeEntry } from "@/lib/types";
@@ -31,6 +23,7 @@ import { getTimeEntries } from "@/services/time-entry-service";
 import { useAuth } from "@/hooks/use-auth";
 import { useTranslation } from "@/context/i18n-context";
 import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
+import TimesheetPreview from "./timesheet-preview";
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: "Mo",
@@ -48,7 +41,6 @@ export default function ExportPreview() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
-  const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
 
   const locale = useMemo(() => (language === 'de' ? de : enUS), [language]);
 
@@ -67,11 +59,6 @@ export default function ExportPreview() {
     };
     fetchAndSetEntries();
   }, [user]);
-
-  const weeksInMonth = useMemo(
-    () => (selectedMonth ? getWeeksForMonth(selectedMonth) : []),
-    [selectedMonth]
-  );
 
   const getEntriesForDay = useCallback((day: Date) => {
     return entries
@@ -102,20 +89,6 @@ export default function ExportPreview() {
     return totalMinutes / 60;
   }, [selectedMonth, getEntriesForDay]);
 
-  const weekHasEntries = useCallback((week: Date[]): boolean => {
-    if (!selectedMonth) return false;
-    return week.some(day => {
-      return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
-    });
-  }, [selectedMonth, getEntriesForDay]);
-
-  const relevantWeeks = useMemo(() => weeksInMonth.filter(weekHasEntries), [weeksInMonth, weekHasEntries]);
-  
-  const monthTotal = useMemo(() => {
-    if (!selectedMonth) return 0;
-    return relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
-  }, [relevantWeeks, calculateWeekTotal, selectedMonth]);
-
   const getLocationDisplayName = (location: string) => {
     if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
       return t(`special_locations.${location}`);
@@ -125,6 +98,15 @@ export default function ExportPreview() {
 
   const handleExport = () => {
     if (!selectedMonth) return;
+    
+    const weeksInMonth = getWeeksForMonth(selectedMonth);
+    const weekHasEntries = (week: Date[]): boolean => {
+      return week.some(day => {
+        return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
+      });
+    };
+    const relevantWeeks = weeksInMonth.filter(weekHasEntries);
+    const monthTotal = relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
 
     const headerRow1 = [
         t('export_preview.headerWeek'),
@@ -207,7 +189,6 @@ export default function ExportPreview() {
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     
-    // Define merges for the two-row header
     if (!worksheet['!merges']) worksheet['!merges'] = [];
     worksheet['!merges'].push(
       { s: { r: 2, c: 0 }, e: { r: 3, c: 0 } }, // Week
@@ -218,7 +199,7 @@ export default function ExportPreview() {
       { s: { r: 2, c: 6 }, e: { r: 3, c: 6 } }, // Travel
       { s: { r: 2, c: 7 }, e: { r: 3, c: 7 } }, // Compensated
       { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }, // Driver
-      { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }  // New Column
+      { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }
     );
     
     const headerBaseStyle = { fill: { fgColor: { rgb: "99CCFF" } }, font: { bold: true, color: { rgb: "000000" } }, alignment: { vertical: 'center' } };
@@ -228,21 +209,19 @@ export default function ExportPreview() {
         center: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'center'}},
     };
 
-    // Apply style to header cells
     for (let R = 2; R <= 3; ++R) {
         for (let C = 0; C <= 9; ++C) {
             const address = XLSX.utils.encode_cell({ r: R, c: C });
             const cell = worksheet[address];
             if (!cell) continue;
 
-            let style = headerStyles.left;
-            // Columns aligned right
-            if ([1, 3, 4, 5, 6, 7, 9].includes(C)) {
+            let style;
+            if ([1, 3, 4, 5, 6, 7].includes(C)) {
                 style = headerStyles.right;
-            } 
-            // Columns aligned center
-            else if (C === 8) {
+            } else if (C === 8) {
                 style = headerStyles.center;
+            } else {
+                style = headerStyles.left;
             }
             cell.s = style;
         }
@@ -250,7 +229,6 @@ export default function ExportPreview() {
     
     const dayColStyle = { fill: { fgColor: { rgb: "99CCFF" } } };
 
-    // Apply style to day column in data rows
     data.forEach((rowData, index) => {
         const firstCell = rowData[0];
         if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
@@ -270,7 +248,7 @@ export default function ExportPreview() {
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stundenzettel");
-    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy", { locale })}.xlsx`);
+    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM", { locale })}.xlsx`);
   };
   
   if (isLoading || !selectedMonth) {
@@ -331,119 +309,14 @@ export default function ExportPreview() {
           </Button>
         </div>
 
-        <div className="bg-white p-8 rounded-md shadow-md printable-area">
-          <header className="flex justify-between items-start mb-4">
-            <h1 className="text-xl font-bold">
-              {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
-            </h1>
-            <div className="text-right font-semibold">{user?.displayName || user?.email || employeeName}</div>
-          </header>
-
-          <main>
-            {relevantWeeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="mb-6">
-                <Table className="border border-black">
-                  <TableHeader>
-                    <TableRow className="bg-table-header hover:bg-table-header text-black border-black border-b">
-                      <TableHead rowSpan={2} className="w-[8%] align-middle text-left border-r border-black">
-                        {t('export_preview.headerWeek')}
-                      </TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] align-middle text-right border-r border-black">
-                        {t('export_preview.headerDate')}
-                      </TableHead>
-                      <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-r border-black">
-                        {t('export_preview.headerLocation')}
-                      </TableHead>
-                      <TableHead colSpan={2} className="w-[14%] text-center border-r border-black">
-                        {t('export_preview.headerWorkTime')}
-                      </TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerPauseDuration')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[8%] text-right align-middle border-r border-black">{t('export_preview.headerTravelTime')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerCompensatedTime')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[8%] text-center align-middle border-r border-black">{t('export_preview.headerDriver')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[12%] text-right align-middle">{t('export_preview.headerMileage')}</TableHead>
-                    </TableRow>
-                     <TableRow className="bg-table-header hover:bg-table-header text-black border-black border-b">
-                        <TableHead className="text-right border-r border-black">{t('export_preview.headerFrom')}</TableHead>
-                        <TableHead className="text-right border-r border-black">{t('export_preview.headerTo')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {week.map((day) => {
-                       if (!isSameMonth(day, selectedMonth)) {
-                        return null;
-                      }
-
-                      const dayEntries = getEntriesForDay(day);
-                      const isSunday = getDay(day) === 0;
-
-                      if (dayEntries.length === 0) {
-                        if (isSunday) return null; // Don't render empty Sundays
-                        return (
-                           <TableRow key={day.toISOString()} className="border-b border-black">
-                              <TableCell className="bg-table-header font-medium border-r border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>
-                              <TableCell className="border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>
-                              <TableCell className="text-muted-foreground border-r border-black text-left"></TableCell>
-                              <TableCell className="border-r border-black text-right"></TableCell>
-                              <TableCell className="border-r border-black text-right"></TableCell>
-                              <TableCell className="border-r border-black text-right"></TableCell>
-                              <TableCell className="border-r border-black text-right"></TableCell>
-                              <TableCell className="border-r border-black text-right"></TableCell>
-                              <TableCell className="border-r border-black text-center"></TableCell>
-                              <TableCell className="text-right"></TableCell>
-                            </TableRow>
-                        )
-                      }
-                      
-                      return dayEntries.map((entry, entryIndex) => {
-                         let compensatedHours = 0;
-                         if (entry.endTime) {
-                            const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
-                            const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
-                            if (isCompensatedSpecialDay) {
-                                compensatedHours = workDuration / 60;
-                            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-                                const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
-                                compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
-                            }
-                         }
-
-                        return (
-                        <TableRow key={entry.id} className="border-b border-black">
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-table-header font-medium align-middle border-r border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>}
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
-                          <TableCell className="border-r border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
-                          <TableCell className="text-right border-r border-black">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-right border-r border-black">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-right border-r border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
-                          <TableCell className="text-right border-r border-black">{(entry.travelTime || 0).toFixed(2)}</TableCell>
-                          <TableCell className="text-right border-r border-black">{compensatedHours.toFixed(2)}</TableCell>
-                          <TableCell className="text-center border-r border-black">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
-                          <TableCell className="text-right"></TableCell>
-                        </TableRow>
-                      )});
-                    })}
-                  </TableBody>
-                </Table>
-                <div className="flex justify-end mt-2 text-sm">
-                  <span className="mr-4 font-medium">{t('export_preview.footerTotalPerWeek')}</span>
-                  <span className="font-bold w-36 text-right border-b-2 border-black pb-2">{calculateWeekTotal(week).toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-            <div className="flex justify-end mt-8">
-                <span className="mr-4 font-bold">{t('export_preview.footerTotalHours')}</span>
-                <span className="font-bold w-36 text-right border-b-[3px] [border-bottom-style:double] border-black pb-2">{monthTotal.toFixed(2)}</span>
-            </div>
-            <div className="mt-24 text-sm">
-                <div className="border-t border-black w-72"></div>
-                <p className="mt-2">{t('export_preview.signatureLine')}</p>
-            </div>
-          </main>
-        </div>
+        <TimesheetPreview
+            selectedMonth={selectedMonth}
+            user={user}
+            entries={entries}
+            t={t}
+            locale={locale}
+        />
       </CardContent>
     </Card>
   );
 }
-
-    
