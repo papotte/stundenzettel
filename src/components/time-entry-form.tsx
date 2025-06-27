@@ -79,8 +79,8 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     defaultValues: {
       location: entry?.location || "",
       date: entry?.startTime || selectedDate,
-      startTime: entry ? format(entry.startTime, "HH:mm") : "09:00",
-      endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : "10:00",
+      startTime: entry ? format(entry.startTime, "HH:mm") : "07:00",
+      endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : "14:00",
       pauseDuration: entry?.pauseDuration ? format(addMinutes(new Date(0), entry.pauseDuration), "HH:mm") : "00:00",
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
@@ -253,34 +253,31 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                   name="pauseDuration"
                   render={({ field }) => (
                     <FormItem>
-                        <div className="flex items-center justify-between gap-2">
-                            <FormLabel>Pause</FormLabel>
-                             {pauseSuggestion && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-auto p-1 text-primary hover:bg-primary/10"
-                                        onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
-                                    >
-                                        <Lightbulb className="mr-1 h-4 w-4" />
-                                        Suggest: {pauseSuggestion.minutes} min
-                                    </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                    <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            )}
-                        </div>
+                      <FormLabel>Pause</FormLabel>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Add your total pause time here.
-                      </FormDescription>
+                       <div className="h-6 flex items-center">
+                        {pauseSuggestion && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-1 text-primary hover:bg-primary/10 -ml-1"
+                                    onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
+                                >
+                                    <Lightbulb className="mr-1 h-4 w-4" />
+                                    Suggest: {pauseSuggestion.minutes} min
+                                </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

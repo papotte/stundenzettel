@@ -148,14 +148,11 @@ export default function TimeTracker() {
 
   const handleSaveEntry = async (entryData: Omit<TimeEntry, 'userId'>) => {
     if (!user) return;
-    const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"].includes(entryData.location);
-    
-    let entryWithUser = { ...entryData, userId: user.uid };
-    
-    if (isNonWorkEntry) {
-      entryWithUser.pauseDuration = 0;
-    }
-    
+
+    // The entryData from the form is now the single source of truth.
+    // No automatic calculations will be performed on save.
+    const entryWithUser = { ...entryData, userId: user.uid };
+
     setIsFormOpen(false);
     setEditingEntry(null);
 
