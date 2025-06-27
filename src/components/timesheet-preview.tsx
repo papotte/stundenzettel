@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useCallback } from "react";
@@ -6,10 +5,9 @@ import type { User } from "firebase/auth";
 import {
   format,
   isSameMonth,
-  isSameDay,
-  differenceInMinutes,
   getDay,
   Locale,
+  differenceInMinutes,
 } from "date-fns";
 import {
   Table,
@@ -21,7 +19,6 @@ import {
 } from "@/components/ui/table";
 import type { TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
-import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
 import TimesheetHeader from "./timesheet-header";
 
 const dayOfWeekMap: { [key: number]: string } = {
@@ -41,41 +38,16 @@ interface TimesheetPreviewProps {
     t: (key: string, replacements?: Record<string, string | number>) => string;
     locale: Locale;
     userSettings: UserSettings | null;
+    getEntriesForDay: (day: Date) => TimeEntry[];
+    calculateWeekTotal: (week: Date[]) => number;
+    getLocationDisplayName: (location: string) => string;
 }
 
-export default function TimesheetPreview({ selectedMonth, user, entries, t, locale, userSettings }: TimesheetPreviewProps) {
+export default function TimesheetPreview({ selectedMonth, user, entries, t, locale, userSettings, getEntriesForDay, calculateWeekTotal, getLocationDisplayName }: TimesheetPreviewProps) {
   const weeksInMonth = useMemo(
     () => getWeeksForMonth(selectedMonth),
     [selectedMonth]
   );
-
-  const getEntriesForDay = useCallback((day: Date) => {
-    return entries
-      .filter((entry) => entry.startTime && isSameDay(entry.startTime, day))
-      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-  }, [entries]);
-
-  const calculateWeekTotal = useCallback((week: Date[]) => {
-    let totalMinutes = 0;
-    week.forEach((day) => {
-      if (isSameMonth(day, selectedMonth)) {
-        getEntriesForDay(day).forEach((entry) => {
-          if (entry.endTime) {
-            const workMinutes = differenceInMinutes(entry.endTime, entry.startTime);
-            const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
-
-            if (isCompensatedSpecialDay) {
-                totalMinutes += workMinutes;
-            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-                const compensatedMinutes = workMinutes - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
-                totalMinutes += compensatedMinutes > 0 ? compensatedMinutes : 0;
-            }
-          }
-        });
-      }
-    });
-    return totalMinutes / 60;
-  }, [selectedMonth, getEntriesForDay]);
 
   const weekHasEntries = useCallback((week: Date[]): boolean => {
     return week.some(day => {
@@ -89,13 +61,6 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
     return relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
   }, [relevantWeeks, calculateWeekTotal]);
 
-  const getLocationDisplayName = (location: string) => {
-    if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
-      return t(`special_locations.${location}`);
-    }
-    return location;
-  };
-    
   return (
     <div className="bg-white p-8 rounded-md shadow-md printable-area font-body">
       <TimesheetHeader userSettings={userSettings} t={t} />
@@ -111,7 +76,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
           <div key={weekIndex} className="mb-6">
             <Table className="border-collapse border border-black">
               <TableHeader>
-                <TableRow className="bg-table-header hover:bg-table-header text-black border-b border-black">
+                <TableRow className="bg-table-header hover:bg-table-header text-black">
                   <TableHead rowSpan={2} className="w-[8%] align-middle text-left border-r border-black">
                     {t('export_preview.headerWeek')}
                   </TableHead>
@@ -121,16 +86,16 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                   <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-r border-black">
                     {t('export_preview.headerLocation')}
                   </TableHead>
-                  <TableHead colSpan={2} className="w-[14%] text-center border-r border-black">
+                  <TableHead colSpan={2} className="w-[14%] text-center border-b-2 border-black">
                     {t('export_preview.headerWorkTime')}
                   </TableHead>
-                  <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerPauseDuration')}</TableHead>
+                  <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-l border-r border-black">{t('export_preview.headerPauseDuration')}</TableHead>
                   <TableHead rowSpan={2} className="w-[8%] text-right align-middle border-r border-black">{t('export_preview.headerTravelTime')}</TableHead>
                   <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerCompensatedTime')}</TableHead>
                   <TableHead rowSpan={2} className="w-[8%] text-center align-middle border-r border-black">{t('export_preview.headerDriver')}</TableHead>
                   <TableHead rowSpan={2} className="w-[12%] text-right align-middle">{t('export_preview.headerMileage')}</TableHead>
                 </TableRow>
-                 <TableRow className="bg-table-header hover:bg-table-header text-black border-b border-black">
+                 <TableRow className="bg-table-header hover:bg-table-header text-black border-b-2 border-black">
                     <TableHead className="text-right">{t('export_preview.headerFrom')}</TableHead>
                     <TableHead className="text-right">{t('export_preview.headerTo')}</TableHead>
                 </TableRow>
@@ -152,8 +117,8 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                           <TableCell className="border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>
                           <TableCell className="text-muted-foreground border-r border-black text-left"></TableCell>
                           <TableCell className="text-right"></TableCell>
-                          <TableCell className="text-right border-r border-black"></TableCell>
-                          <TableCell className="text-right border-r border-black"></TableCell>
+                          <TableCell className="text-right"></TableCell>
+                          <TableCell className="text-right border-l border-r border-black"></TableCell>
                           <TableCell className="text-right border-r border-black"></TableCell>
                           <TableCell className="text-right border-r border-black"></TableCell>
                           <TableCell className="text-center border-r border-black"></TableCell>
@@ -181,8 +146,8 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                       {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
                       <TableCell className="border-r border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
                       <TableCell className="text-right">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
-                      <TableCell className="text-right border-r border-black">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
-                      <TableCell className="text-right border-r border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
+                      <TableCell className="text-right">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
+                      <TableCell className="text-right border-l border-r border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
                       <TableCell className="text-right border-r border-black">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                       <TableCell className="text-right border-r border-black">{compensatedHours.toFixed(2)}</TableCell>
                       <TableCell className="text-center border-r border-black">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
@@ -192,32 +157,26 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                 })}
               </TableBody>
             </Table>
-            <div className="flex justify-between w-full mt-2 text-sm">
-                <div className="flex w-full">
-                    <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
-                    <div style={{ width: '10%' }} className="px-2 text-right">
-                      <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
-                    </div>
+            <div className="flex w-full mt-2 text-sm">
+                <div style={{ flex: '0 0 calc(8% + 10% + 18% + 14%)' }} /> {/* Spacers */}
+                <div className="text-right" style={{ flex: '0 0 10%' }}>
+                  <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
                 </div>
-                <div className="flex w-full justify-end">
-                    <div style={{ width: '12%' }} className="px-2 text-right">
-                      <span className="font-bold border-b-2 border-black pb-1 inline-block">{calculateWeekTotal(week).toFixed(2)}</span>
-                    </div>
+                <div style={{ flex: '0 0 calc(8% + 10% + 8%)' }} /> {/* Spacers */}
+                <div className="text-right" style={{ flex: '0 0 12%' }}>
+                  <span className="font-bold border-b-2 border-black pb-1 inline-block">{calculateWeekTotal(week).toFixed(2)}</span>
                 </div>
             </div>
           </div>
         ))}
-        <div className="flex justify-between w-full mt-8">
-            <div className="flex w-full">
-                <div style={{ width: 'calc(8% + 10% + 18% + 14% + 1rem)' }} />
-                <div style={{ width: '10%' }} className="px-2 text-right">
-                  <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
-                </div>
+        <div className="flex w-full mt-8">
+            <div style={{ flex: '0 0 calc(8% + 10% + 18% + 14%)' }} /> {/* Spacers */}
+            <div className="text-right" style={{ flex: '0 0 10%' }}>
+              <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
             </div>
-            <div className="flex w-full justify-end">
-                <div style={{ width: '12%' }} className="px-2 text-right">
-                  <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 inline-block">{monthTotal.toFixed(2)}</span>
-                </div>
+            <div style={{ flex: '0 0 calc(8% + 10% + 8%)' }} /> {/* Spacers */}
+            <div className="text-right" style={{ flex: '0 0 12%' }}>
+              <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 inline-block">{monthTotal.toFixed(2)}</span>
             </div>
         </div>
         <div className="flex justify-end">
