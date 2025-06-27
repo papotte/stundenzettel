@@ -42,8 +42,8 @@ export const exportToExcel = async ({
   const worksheet = workbook.addWorksheet("Stundenzettel");
 
   // --- STYLES ---
-  const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFD7FF' } };
-  const dayColFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFD7FF' } };
+  const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF99CCFF' } };
+  const dayColFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF99CCFF' } };
   const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FF000000' } };
   const allBorders: Partial<ExcelJS.Borders> = {
       top: { style: 'thin', color: { argb: 'FF000000' } },
@@ -56,14 +56,14 @@ export const exportToExcel = async ({
   worksheet.columns = [
       { key: 'week', width: 5 },
       { key: 'date', width: 12 },
-      { key: 'location', width: 30 },
+      { key: 'location', width: 40 },
       { key: 'from', width: 8 },
       { key: 'to', width: 8 },
       { key: 'pause', width: 12 },
       { key: 'travel', width: 12 },
       { key: 'compensated', width: 12 },
       { key: 'driver', width: 8 },
-      { key: 'mileage', width: 20 },
+      { key: 'mileage', width: 12 },
   ];
 
   // --- COMPANY HEADER ---
