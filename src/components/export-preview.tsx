@@ -11,6 +11,7 @@ import {
   differenceInMinutes,
   getDay,
 } from "date-fns";
+import { de, enUS } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,11 +45,13 @@ const dayOfWeekMap: { [key: number]: string } = {
 
 export default function ExportPreview() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState<Date>();
   const [employeeName, setEmployeeName] = useState("Raquel Crespillo Andujar");
+
+  const locale = useMemo(() => (language === 'de' ? de : enUS), [language]);
 
   useEffect(() => {
     if (!user) return;
@@ -167,7 +170,7 @@ export default function ExportPreview() {
     data.push(['', '', '', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2)]);
 
     const worksheetData = [
-      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy")}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
+      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
       [],
       header,
       ...data
@@ -183,7 +186,7 @@ export default function ExportPreview() {
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Stundenzettel");
-    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy")}.xlsx`);
+    XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM_yyyy", { locale })}.xlsx`);
   };
   
   if (isLoading || !selectedMonth) {
@@ -228,7 +231,7 @@ export default function ExportPreview() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <h2 className="text-2xl font-bold text-center font-headline">
-              {format(selectedMonth, "MMMM yyyy")}
+              {format(selectedMonth, "MMMM yyyy", { locale })}
             </h2>
             <Button
               variant="outline"
@@ -247,7 +250,7 @@ export default function ExportPreview() {
         <div className="bg-white p-8 rounded-md shadow-md printable-area">
           <header className="flex justify-between items-start mb-4 border-b pb-4">
             <h1 className="text-xl font-bold font-headline">
-              {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM")})}
+              {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
             </h1>
             <div className="text-right font-semibold">{user?.displayName || user?.email || employeeName}</div>
           </header>
