@@ -151,20 +151,7 @@ export default function TimeTracker() {
     
     let entryWithUser = { ...entryData, userId: user.uid };
     
-    if (!isNonWorkEntry && entryWithUser.endTime) {
-      const workDurationInMinutes = differenceInMinutes(entryWithUser.endTime, entryWithUser.startTime);
-      const travelTimeInMinutes = (entryWithUser.travelTime || 0) * 60;
-      const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
-      
-      let requiredPause = 0;
-      if (totalActivityInMinutes > 9 * 60) {
-        requiredPause = 45;
-      } else if (totalActivityInMinutes > 6 * 60) {
-        requiredPause = 30;
-      }
-      
-      entryWithUser.pauseDuration = requiredPause;
-    } else if (isNonWorkEntry) {
+    if (isNonWorkEntry) {
       entryWithUser.pauseDuration = 0;
     }
     
