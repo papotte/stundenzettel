@@ -50,14 +50,10 @@ export const exportToExcel = async ({
   const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
   const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
   
-  let headerString = "";
   if (contactParts.length > 0) {
-      const companyHeaderString = t('export_preview.headerCompany') + " " + contactParts.join(' ');
-      headerString = `&L&B${companyHeaderString}&R&B${t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}`;
-  } else {
-      headerString = `&R&B${t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}`;
+    const companyHeaderString = t('export_preview.headerCompany') + " " + contactParts.join(' ');
+    worksheet.headerFooter.oddHeader = `&L&B${companyHeaderString}`;
   }
-  worksheet.headerFooter.oddHeader = headerString;
 
   const signatureString = t('export_preview.signatureLine');
   worksheet.headerFooter.oddFooter = `&R${signatureString}_________________________`;
@@ -88,12 +84,14 @@ export const exportToExcel = async ({
       { key: 'mileage', width: 12 },
   ];
 
-  // --- IN-SHEET USER NAME ---
-  const userRow = worksheet.addRow([]);
-  worksheet.mergeCells(`A${userRow.number}:J${userRow.number}`);
-  userRow.getCell('A').value = user?.displayName || user?.email;
-  userRow.getCell('A').font = { bold: true, size: 10 };
-  userRow.getCell('A').alignment = { horizontal: 'right' };
+  // --- IN-SHEET TITLE AND USER NAME ---
+  const titleRow = worksheet.addRow([]);
+  titleRow.getCell('A').value = t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })});
+  titleRow.getCell('A').font = { bold: true, size: 12 };
+
+  titleRow.getCell('J').value = user?.displayName || user?.email;
+  titleRow.getCell('J').font = { bold: true, size: 10 };
+  titleRow.getCell('J').alignment = { horizontal: 'right' };
   
   worksheet.addRow([]); // blank row
 
