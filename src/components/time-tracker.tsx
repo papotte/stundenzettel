@@ -148,10 +148,13 @@ export default function TimeTracker() {
 
   const handleSaveEntry = async (entryData: Omit<TimeEntry, 'userId'>) => {
     if (!user) return;
-    const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"].includes(entryData.location);
     
+    // We create the final entry object directly from the form data.
+    // No automatic calculations are performed on the pause duration.
     let entryWithUser = { ...entryData, userId: user.uid };
     
+    // The only exception is for special non-work entries, where pause is irrelevant.
+    const isNonWorkEntry = ["Sick Leave", "PTO", "Bank Holiday", "Time Off in Lieu"].includes(entryData.location);
     if (isNonWorkEntry) {
       entryWithUser.pauseDuration = 0;
     }

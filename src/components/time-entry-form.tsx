@@ -79,8 +79,8 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
     defaultValues: {
       location: entry?.location || "",
       date: entry?.startTime || selectedDate,
-      startTime: entry ? format(entry.startTime, "HH:mm") : "09:00",
-      endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : "10:00",
+      startTime: entry ? format(entry.startTime, "HH:mm") : "07:00",
+      endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : "14:00",
       pauseDuration: entry?.pauseDuration ? format(addMinutes(new Date(0), entry.pauseDuration), "HH:mm") : "00:00",
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
