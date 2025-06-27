@@ -1,21 +1,23 @@
 import type { UserSettings } from '@/lib/types';
 
-let userSettings: { [userId: string]: UserSettings } = {
-    'mock-user-1': { defaultWorkHours: 7 },
-    'mock-user-2': { defaultWorkHours: 7.5 },
+let userSettings: { [userId: string]: Partial<UserSettings> } = {
+    'mock-user-1': { defaultWorkHours: 7, defaultStartTime: "09:00", defaultEndTime: "17:00" },
+    'mock-user-2': { defaultWorkHours: 7.5, defaultStartTime: "08:30", defaultEndTime: "16:30" },
 };
 
 const defaultSettings: UserSettings = {
   defaultWorkHours: 7,
+  defaultStartTime: "09:00",
+  defaultEndTime: "17:00",
 };
 
 export const getUserSettings = async (userId: string): Promise<UserSettings> => {
     if (userSettings[userId]) {
-        return userSettings[userId];
+        return { ...defaultSettings, ...userSettings[userId] };
     }
     return defaultSettings;
 };
 
-export const setUserSettings = async (userId: string, settings: UserSettings): Promise<void> => {
-    userSettings[userId] = settings;
+export const setUserSettings = async (userId: string, settings: Partial<UserSettings>): Promise<void> => {
+    userSettings[userId] = { ...userSettings[userId], ...settings };
 };

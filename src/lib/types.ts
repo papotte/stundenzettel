@@ -11,4 +11,6 @@ export interface TimeEntry {
 
 export interface UserSettings {
   defaultWorkHours: number;
+  defaultStartTime: string;
+  defaultEndTime: string;
 }
