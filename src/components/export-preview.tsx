@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   addMonths,
   subMonths,
@@ -74,33 +74,48 @@ export default function ExportPreview() {
     [selectedMonth]
   );
 
-  const getEntriesForDay = (day: Date) => {
+  const getEntriesForDay = useCallback((day: Date) => {
     return entries
       .filter((entry) => entry.startTime && isSameDay(entry.startTime, day))
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-  };
+  }, [entries]);
 
-  const calculateWeekTotal = (week: Date[]) => {
+  const calculateWeekTotal = useCallback((week: Date[]) => {
     if (!selectedMonth) return 0;
-    let total = 0;
+    let totalMinutes = 0;
     week.forEach((day) => {
       if (isSameMonth(day, selectedMonth)) {
         getEntriesForDay(day).forEach((entry) => {
           if (entry.endTime) {
-            const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
-            const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
-            total += compensatedMinutes / 60;
+            const workMinutes = differenceInMinutes(entry.endTime, entry.startTime);
+            const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
+
+            if (isCompensatedSpecialDay) {
+                totalMinutes += workMinutes;
+            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
+                const compensatedMinutes = workMinutes - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
+                totalMinutes += compensatedMinutes > 0 ? compensatedMinutes : 0;
+            }
           }
         });
       }
     });
-    return total;
-  };
+    return totalMinutes / 60;
+  }, [selectedMonth, getEntriesForDay]);
+
+  const weekHasEntries = useCallback((week: Date[]): boolean => {
+    if (!selectedMonth) return false;
+    return week.some(day => {
+      return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
+    });
+  }, [selectedMonth, getEntriesForDay]);
+
+  const relevantWeeks = useMemo(() => weeksInMonth.filter(weekHasEntries), [weeksInMonth, weekHasEntries]);
   
   const monthTotal = useMemo(() => {
     if (!selectedMonth) return 0;
-    return weeksInMonth.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
-  }, [weeksInMonth, entries, selectedMonth]);
+    return relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
+  }, [relevantWeeks, calculateWeekTotal, selectedMonth]);
 
   const getLocationDisplayName = (location: string) => {
     if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
@@ -126,14 +141,23 @@ export default function ExportPreview() {
     
     const data: (string | number)[][] = [];
 
-    weeksInMonth.forEach(week => {
+    relevantWeeks.forEach(week => {
       week.forEach(day => {
         if (isSameMonth(day, selectedMonth)) {
             const dayEntries = getEntriesForDay(day);
             if (dayEntries.length > 0) {
               dayEntries.forEach(entry => {
-                const workDuration = entry.endTime ? differenceInMinutes(entry.endTime, entry.startTime) : 0;
-                const compensatedHours = entry.endTime ? (workDuration - (entry.pauseDuration || 0)) / 60 + (entry.travelTime || 0) : 0;
+                let compensatedHours = 0;
+                if (entry.endTime) {
+                    const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
+                    const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
+                    if (isCompensatedSpecialDay) {
+                        compensatedHours = workDuration / 60;
+                    } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
+                        const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
+                        compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
+                    }
+                }
                 const pauseDecimal = formatDecimalHours(entry.pauseDuration);
                 const pauseTime = entry.pauseDuration ? `${String(Math.floor(entry.pauseDuration / 60)).padStart(2, '0')}:${String(entry.pauseDuration % 60).padStart(2, '0')}` : '';
                 
@@ -150,7 +174,7 @@ export default function ExportPreview() {
                     entry.isDriver ? t('export_preview.driverMark') : '',
                 ]);
               });
-            } else if (getDay(day) !== 0) { // Not sunday
+            } else if (getDay(day) !== 0 && getDay(day) !== 6) { // Not Sunday or Saturday
                 data.push([
                     dayOfWeekMap[getDay(day)],
                     format(day, 'd/M/yyyy'),
@@ -160,10 +184,8 @@ export default function ExportPreview() {
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
-      if (weeklyTotal > 0 || week.some(d => isSameMonth(d, selectedMonth))) {
-        data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
-        data.push([]); // Empty row
-      }
+      data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
+      data.push([]); // Empty row
     });
 
     data.push([]);
@@ -177,6 +199,28 @@ export default function ExportPreview() {
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    
+    const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true } };
+    const dayColStyle = { fill: { fgColor: { rgb: "DDEBF7" } } };
+
+    const headerRef = `A3:J3`;
+    const headerRange = XLSX.utils.decode_range(headerRef);
+    for(let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
+        const address = XLSX.utils.encode_cell({r: headerRange.s.r - 1, c: C});
+        if(!worksheet[address]) continue;
+        worksheet[address].s = headerStyle;
+    }
+    
+    data.forEach((rowData, index) => {
+        const firstCell = rowData[0];
+        if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
+            const address = `A${index + 4}`;
+            if (worksheet[address]) {
+                if (!worksheet[address].s) worksheet[address].s = {};
+                worksheet[address].s.fill = dayColStyle.fill;
+            }
+        }
+    });
 
     const colWidths = [
         { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 8 }, { wch: 8 }, 
@@ -256,12 +300,7 @@ export default function ExportPreview() {
           </header>
 
           <main>
-            {weeksInMonth.map((week, weekIndex) => {
-              if (!week.some(d => isSameMonth(d, selectedMonth))) {
-                return null;
-              }
-
-              return (
+            {relevantWeeks.map((week, weekIndex) => (
               <div key={weekIndex} className="mb-6">
                 <Table className="border">
                   <TableHeader>
@@ -318,8 +357,17 @@ export default function ExportPreview() {
                       }
                       
                       return dayEntries.map((entry, entryIndex) => {
-                         const workDuration = entry.endTime ? differenceInMinutes(entry.endTime, entry.startTime) : 0;
-                         const compensatedHours = entry.endTime ? (workDuration - (entry.pauseDuration || 0)) / 60 + (entry.travelTime || 0) : 0;
+                         let compensatedHours = 0;
+                         if (entry.endTime) {
+                            const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
+                            const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
+                            if (isCompensatedSpecialDay) {
+                                compensatedHours = workDuration / 60;
+                            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
+                                const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
+                                compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
+                            }
+                         }
 
                         return (
                         <TableRow key={entry.id}>
@@ -346,7 +394,7 @@ export default function ExportPreview() {
                   </TableFooter>
                 </Table>
               </div>
-            )})}
+            ))}
             <div className="flex justify-end mt-8">
                 <div className="w-1/3">
                     <div className="flex justify-between font-bold text-lg border-b-2 border-black pb-1">

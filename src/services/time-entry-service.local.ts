@@ -45,13 +45,23 @@ let entries: TimeEntry[] = [
      {
         id: '5',
         userId: 'mock-user-1',
-        location: 'Workshop Prep',
+        location: 'Prenzlau',
         startTime: set(new Date(), { hours: 7, minutes: 0, seconds: 0, milliseconds: 0 }),
         endTime: set(new Date(), { hours: 15, minutes: 0, seconds: 0, milliseconds: 0 }),
         pauseDuration: 30,
         travelTime: 1,
         isDriver: true,
-    }
+    },
+    {
+       id: '6',
+       userId: 'mock-user-1',
+       location: 'Büro',
+       startTime: set(new Date(), { hours: 15, minutes: 30, seconds: 0, milliseconds: 0 }),
+       endTime: set(new Date(), { hours: 15, minutes: 45, seconds: 0, milliseconds: 0 }),
+       pauseDuration: 0,
+       travelTime: 0,
+       isDriver: false,
+   }
 ];
 
 export const addTimeEntry = async (entry: Omit<TimeEntry, 'id'>): Promise<string> => {
