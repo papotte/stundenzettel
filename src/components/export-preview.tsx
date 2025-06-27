@@ -405,20 +405,18 @@ export default function ExportPreview() {
                       )});
                     })}
                   </TableBody>
+                  <TableFooter>
+                    <TableRow className="border-b-0 hover:bg-transparent">
+                      <TableCell colSpan={9} className="text-right font-medium">{t('export_preview.footerTotalPerWeek')}</TableCell>
+                      <TableCell className="text-center font-medium"><span className="border-b-2 border-black pb-1">{calculateWeekTotal(week).toFixed(2)}</span></TableCell>
+                    </TableRow>
+                  </TableFooter>
                 </Table>
-                <div className="flex justify-end items-center mt-2">
-                  <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
-                  <div className="w-[12%] ml-4 px-4 text-center">
-                    <span className="border-b-2 border-black pb-1">{calculateWeekTotal(week).toFixed(2)}</span>
-                  </div>
-                </div>
               </div>
             ))}
-            <div className="flex justify-end items-center mt-8">
-                <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
-                <div className="w-[12%] ml-4 px-4 text-center">
-                    <span className="border-b-2 border-double border-black pb-1">{monthTotal.toFixed(2)}</span>
-                </div>
+            <div className="flex justify-end mt-8 font-bold">
+                <span className="mr-4">{t('export_preview.footerTotalHours')}</span>
+                <span className="border-b-2 border-double border-black pb-1 px-4">{monthTotal.toFixed(2)}</span>
             </div>
           </main>
         </div>
