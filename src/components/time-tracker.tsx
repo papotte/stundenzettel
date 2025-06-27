@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, isSameDay, set, addHours, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { format, isSameDay, set, addHours, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, addDays, subDays } from "date-fns";
 import {
   Clock,
   Play,
@@ -20,6 +20,8 @@ import {
   Hourglass,
   LogOut,
   BarChart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -309,6 +311,18 @@ export default function TimeTracker() {
     // The auth context and page guard will handle redirection
   };
 
+  const handlePreviousDay = () => {
+    if (selectedDate) {
+      setSelectedDate(subDays(selectedDate, 1));
+    }
+  };
+
+  const handleNextDay = () => {
+    if (selectedDate) {
+      setSelectedDate(addDays(selectedDate, 1));
+    }
+  };
+
   const filteredEntries = useMemo(() =>
     selectedDate ? entries.filter((entry) => isSameDay(entry.startTime, selectedDate)) : [],
     [entries, selectedDate]
@@ -506,27 +520,35 @@ export default function TimeTracker() {
             <div>
               <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-bold font-headline">Time Entries</h2>
-                <div className="flex items-center gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={(date) => date && setSelectedDate(date)}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                <div className="flex w-full items-center gap-2 sm:w-auto">
+                  <div className="flex flex-1 items-center gap-1">
+                    <Button variant="outline" size="icon" onClick={handlePreviousDay} aria-label="Previous day">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => date && setSelectedDate(date)}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Button variant="outline" size="icon" onClick={handleNextDay} aria-label="Next day">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <SheetTrigger asChild>
                       <Button onClick={openNewEntryForm}>
-                        <Plus className="mr-2 h-4 w-4" /> Add Entry
+                        <Plus className="mr-2 h-4 w-4" /> Add
                       </Button>
                     </SheetTrigger>
                     <SheetContent className="w-full max-w-none sm:max-w-md flex flex-col">
