@@ -1,0 +1,27 @@
+import { db } from "@/lib/firebase";
+import type { UserSettings } from "@/lib/types";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+
+const defaultSettings: UserSettings = {
+  defaultWorkHours: 7,
+};
+
+export const getUserSettings = async (userId: string): Promise<UserSettings> => {
+  if (!userId) return defaultSettings;
+  const docRef = doc(db, "users", userId, "settings", "general");
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return docSnap.data() as UserSettings;
+  } else {
+    // If no settings exist, create them with default values
+    await setUserSettings(userId, defaultSettings);
+    return defaultSettings;
+  }
+};
+
+export const setUserSettings = async (userId: string, settings: UserSettings): Promise<void> => {
+  if (!userId) throw new Error("User not authenticated");
+  const docRef = doc(db, "users", userId, "settings", "general");
+  await setDoc(docRef, settings);
+};

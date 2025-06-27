@@ -8,3 +8,7 @@ export interface TimeEntry {
   travelTime?: number; // in decimal hours
   isDriver?: boolean;
 }
+
+export interface UserSettings {
+  defaultWorkHours: number;
+}
