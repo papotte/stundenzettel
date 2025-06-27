@@ -54,7 +54,7 @@ export const exportToExcel = async ({
   }
 
   const signatureString = t('export_preview.signatureLine');
-  worksheet.headerFooter.oddFooter = `&R${signatureString}`;
+  worksheet.headerFooter.oddFooter = `&C${signatureString}`;
 
 
   // --- STYLES ---
@@ -73,14 +73,14 @@ export const exportToExcel = async ({
   worksheet.columns = [
     { key: 'week', width: 5 },
     { key: 'date', width: 12 },
-    { key: 'location', width: 30 },
-    { key: 'from', width: 8 },
-    { key: 'to', width: 8 },
+    { key: 'location', width: 24 },
+    { key: 'from', width: 12 },
+    { key: 'to', width: 12 },
     { key: 'pause', width: 8 },
     { key: 'travel', width: 8 },
     { key: 'compensated', width: 12 },
     { key: 'driver', width: 5 },
-    { key: 'mileage', width: 10 },
+    { key: 'mileage', width: 12 },
   ];
 
   // --- IN-SHEET TITLE AND USER NAME ---
@@ -149,7 +149,7 @@ export const exportToExcel = async ({
       row.eachCell({ includeEmpty: true }, (cell) => {
         cell.fill = headerFill;
         cell.font = headerFont;
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.alignment = { vertical: 'middle', horizontal: 'left' };
         cell.border = allBorders;
       });
     });
@@ -260,8 +260,7 @@ export const exportToExcel = async ({
     worksheet.mergeCells(totalRow.number, 1, totalRow.number, 6);
     const totalLabelCell = totalRow.getCell(7);
     totalLabelCell.value = t('export_preview.footerTotalPerWeek');
-    totalLabelCell.alignment = { horizontal: 'right' };
-    const totalValueCell = totalRow.getCell(8);
+    const totalValueCell = totalRow.getCell(10);
     totalValueCell.value = weeklyTotal;
     totalValueCell.numFmt = '0.00';
     totalValueCell.border = { bottom: { style: 'medium', color: { argb: 'FF000000' } } };
@@ -275,8 +274,7 @@ export const exportToExcel = async ({
   worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 6);
   const grandTotalLabelCell = grandTotalRow.getCell(7);
   grandTotalLabelCell.value = t('export_preview.footerTotalHours');
-  grandTotalLabelCell.alignment = { horizontal: 'right' };
-  const grandTotalValueCell = grandTotalRow.getCell(8);
+  const grandTotalValueCell = grandTotalRow.getCell(10);
   grandTotalValueCell.value = monthTotal;
   grandTotalValueCell.numFmt = '0.00';
   grandTotalValueCell.border = { bottom: { style: 'double', color: { argb: 'FF000000' } } };
