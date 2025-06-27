@@ -101,11 +101,12 @@ export default function ExportPreview() {
     window.print();
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!selectedMonth || !userSettings) return;
     
-    exportToExcel({
+    await exportToExcel({
       selectedMonth,
+      user,
       userSettings,
       entries,
       t,
