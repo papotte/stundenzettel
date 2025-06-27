@@ -137,13 +137,14 @@ export default function ExportPreview() {
         t('export_preview.headerTravelTime'),
         t('export_preview.headerCompensatedTime'),
         t('export_preview.headerDriver'),
+        t('export_preview.headerMileage'),
     ];
 
     const headerRow2 = [
         null, null, null,
         t('export_preview.headerFrom'),
         t('export_preview.headerTo'),
-        null, null, null, null
+        null, null, null, null, null
     ];
     
     const data: (string | number)[][] = [];
@@ -177,27 +178,28 @@ export default function ExportPreview() {
                     entry.travelTime || '',
                     parseFloat(compensatedHours.toFixed(2)),
                     entry.isDriver ? t('export_preview.driverMark') : '',
+                    '',
                 ]);
               });
             } else if (getDay(day) !== 0 && getDay(day) !== 6) { // Not Sunday or Saturday
                 data.push([
                     dayOfWeekMap[getDay(day)],
                     format(day, 'd/M/yyyy'),
-                    '', '', '', '', '', '', '',
+                    '', '', '', '', '', '', '', '',
                 ]);
             }
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
-      data.push(['', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '']);
+      data.push(['', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '', '']);
       data.push([]); // Empty row
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2)]);
+    data.push(['', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2), '', '']);
 
     const worksheetData = [
-      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', user?.displayName || employeeName],
+      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM yyyy", { locale })}), '', '', '', '', '', '', '', '', user?.displayName || employeeName],
       [],
       headerRow1,
       headerRow2,
@@ -216,7 +218,8 @@ export default function ExportPreview() {
       { s: { r: 2, c: 5 }, e: { r: 3, c: 5 } }, // Pause
       { s: { r: 2, c: 6 }, e: { r: 3, c: 6 } }, // Travel
       { s: { r: 2, c: 7 }, e: { r: 3, c: 7 } }, // Compensated
-      { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }  // Driver
+      { s: { r: 2, c: 8 }, e: { r: 3, c: 8 } }, // Driver
+      { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }  // New Column
     );
     
     const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true }, alignment: { vertical: 'center', horizontal: 'center' } };
@@ -224,12 +227,14 @@ export default function ExportPreview() {
 
     // Apply style to all header cells
     for (let R = 2; R <= 3; ++R) {
-        for (let C = 0; C <= 8; ++C) {
+        for (let C = 0; C <= 9; ++C) {
             const address = XLSX.utils.encode_cell({ r: R, c: C });
             const cell = worksheet[address];
             if (cell) {
               if (!cell.s) cell.s = {};
               cell.s = { ...cell.s, ...headerStyle };
+            } else {
+              worksheet[address] = { s: headerStyle };
             }
         }
     }
@@ -248,7 +253,7 @@ export default function ExportPreview() {
 
     const colWidths = [
         { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 8 }, { wch: 8 }, 
-        { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 8 }
+        { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 8 }, { wch: 20 }
     ];
     worksheet['!cols'] = colWidths;
 
@@ -330,13 +335,14 @@ export default function ExportPreview() {
                   <TableHeader>
                     <TableRow className="bg-secondary hover:bg-secondary border-b-0">
                       <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[12%] align-middle">{t('export_preview.headerDate')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[20%] align-middle">{t('export_preview.headerLocation')}</TableHead>
-                      <TableHead colSpan={2} className="w-[16%] text-center">{t('export_preview.headerWorkTime')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerPauseDuration')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] text-center align-middle">{t('export_preview.headerTravelTime')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerCompensatedTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[10%] align-middle">{t('export_preview.headerDate')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[18%] align-middle">{t('export_preview.headerLocation')}</TableHead>
+                      <TableHead colSpan={2} className="w-[14%] text-center">{t('export_preview.headerWorkTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[10%] text-center align-middle">{t('export_preview.headerPauseDuration')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[8%] text-center align-middle">{t('export_preview.headerTravelTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[10%] text-center align-middle">{t('export_preview.headerCompensatedTime')}</TableHead>
                       <TableHead rowSpan={2} className="w-[8%] text-center align-middle">{t('export_preview.headerDriver')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerMileage')}</TableHead>
                     </TableRow>
                      <TableRow className="bg-secondary hover:bg-secondary">
                         <TableHead className="text-center">{t('export_preview.headerFrom')}</TableHead>
@@ -359,6 +365,7 @@ export default function ExportPreview() {
                               <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
                               <TableCell className="text-muted-foreground">..................................................</TableCell>
+                              <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
                               <TableCell></TableCell>
@@ -393,6 +400,7 @@ export default function ExportPreview() {
                           <TableCell className="text-center">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                           <TableCell className="text-center">{compensatedHours.toFixed(2)}</TableCell>
                           <TableCell className="text-center">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
+                          <TableCell></TableCell>
                         </TableRow>
                       )});
                     })}
@@ -401,7 +409,7 @@ export default function ExportPreview() {
                     <TableRow>
                         <TableCell colSpan={7} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
                         <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
-                        <TableCell colSpan={1}></TableCell>
+                        <TableCell colSpan={2}></TableCell>
                     </TableRow>
                   </TableFooter>
                 </Table>
