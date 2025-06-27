@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -91,17 +92,11 @@ body {
 
 @media print {
   @page {
-    size: landscape;
+    size: portrait;
   }
 
   body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-  }
-
-  .printable-area {
-    transform: scale(0.8);
-    transform-origin: top left;
-    width: 125%;
   }
 }
