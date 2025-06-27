@@ -108,7 +108,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
           <div key={weekIndex} className="mb-6">
             <Table className="border-collapse border border-black">
               <TableHeader>
-                <TableRow className="bg-table-header hover:bg-table-header text-black">
+                <TableRow className="bg-table-header hover:bg-table-header text-black border-b border-black">
                   <TableHead rowSpan={2} className="w-[8%] align-middle text-left border-r border-black">
                     {t('export_preview.headerWeek')}
                   </TableHead>
@@ -118,7 +118,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                   <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-r border-black">
                     {t('export_preview.headerLocation')}
                   </TableHead>
-                  <TableHead colSpan={2} className="w-[14%] text-center border-b border-black">
+                  <TableHead colSpan={2} className="w-[14%] text-center border-b border-r border-black">
                     {t('export_preview.headerWorkTime')}
                   </TableHead>
                   <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerPauseDuration')}</TableHead>
@@ -190,19 +190,25 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
               </TableBody>
             </Table>
             <div className="flex w-full mt-2 text-sm">
-                <div style={{ width: 'calc(8% + 10% + 18% + 14% - 1px)' }} />
-                <div style={{ width: 'calc(10% + 8% + 10% + 8% + 12%)' }} className="flex justify-between">
+                <div style={{ flex: '0 0 calc(8% + 10% + 18% + 14%)' }} />
+                <div style={{ flex: '0 0 10%' }} className="px-4 text-right">
                   <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
-                  <span className="font-bold border-b-2 border-black pb-1">{calculateWeekTotal(week).toFixed(2)}</span>
+                </div>
+                 <div style={{ flex: '0 0 calc(8% + 10% + 8%)' }} />
+                <div style={{ flex: '0 0 12%' }} className="px-4 text-right">
+                  <span className="font-bold border-b-2 border-black pb-1 inline-block">{calculateWeekTotal(week).toFixed(2)}</span>
                 </div>
             </div>
           </div>
         ))}
         <div className="flex w-full mt-8">
-            <div style={{ width: 'calc(8% + 10% + 18% + 14% - 1px)' }} />
-            <div style={{ width: 'calc(10% + 8% + 10% + 8% + 12%)' }} className="flex justify-between">
+            <div style={{ flex: '0 0 calc(8% + 10% + 18% + 14%)' }} />
+            <div style={{ flex: '0 0 10%' }} className="px-4 text-right">
               <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
-              <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2">{monthTotal.toFixed(2)}</span>
+            </div>
+            <div style={{ flex: '0 0 calc(8% + 10% + 8%)' }} />
+            <div style={{ flex: '0 0 12%' }} className="px-4 text-right">
+              <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 inline-block">{monthTotal.toFixed(2)}</span>
             </div>
         </div>
         <div className="flex justify-end">
