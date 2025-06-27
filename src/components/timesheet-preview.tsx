@@ -144,7 +144,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                   if (dayEntries.length === 0) {
                     if (isSunday) return null; // Don't render empty Sundays
                     return (
-                       <TableRow key={day.toISOString()} className="border-b border-black">
+                       <TableRow key={day.toISOString()} className="border-b-0">
                           <TableCell className="bg-table-header font-medium border-r border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>
                           <TableCell className="border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>
                           <TableCell className="text-muted-foreground border-r border-black text-left"></TableCell>
@@ -173,7 +173,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                      }
 
                     return (
-                    <TableRow key={entry.id} className="border-b border-black">
+                    <TableRow key={entry.id} className="border-b-0">
                       {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-table-header font-medium align-middle border-r border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>}
                       {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
                       <TableCell className="border-r border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
@@ -189,17 +189,23 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                 })}
               </TableBody>
             </Table>
-            <div className="flex justify-between mt-2 text-sm">
-              <span className="font-medium">{t('export_preview.footerTotalPerWeek')}</span>
-              <div className="w-36 text-right">
-                  <span className="font-bold border-b-2 border-black pb-2">{calculateWeekTotal(week).toFixed(2)}</span>
-              </div>
+            <div className="flex w-full mt-2 text-sm">
+                <div style={{ width: 'calc(8% + 10% + 18% + 14%)' }} />
+                <div style={{ width: 'calc(10% + 8% + 10%)' }} className="font-medium text-right pr-4">
+                  {t('export_preview.footerTotalPerWeek')}
+                </div>
+                <div style={{ width: 'calc(8% + 12%)' }} className="text-right">
+                    <span className="font-bold border-b-2 border-black pb-1">{calculateWeekTotal(week).toFixed(2)}</span>
+                </div>
             </div>
           </div>
         ))}
-        <div className="flex justify-between mt-8">
-            <span className="font-bold">{t('export_preview.footerTotalHours')}</span>
-             <div className="w-36 text-right">
+        <div className="flex w-full mt-8">
+            <div style={{ width: 'calc(8% + 10% + 18% + 14%)' }} />
+            <div style={{ width: 'calc(10% + 8% + 10%)' }} className="font-bold text-right pr-4">
+              {t('export_preview.footerTotalHours')}
+            </div>
+            <div style={{ width: 'calc(8% + 12%)' }} className="text-right">
                 <span className="font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2">{monthTotal.toFixed(2)}</span>
             </div>
         </div>

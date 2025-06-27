@@ -172,12 +172,12 @@ export default function ExportPreview() {
         }
       });
       const weeklyTotal = calculateWeekTotal(week);
-      data.push(['', '', '', '', '', '', t('export_preview.footerTotalPerWeek'), weeklyTotal.toFixed(2), '', '']);
+      data.push(['', '', '', '', '', t('export_preview.footerTotalPerWeek'), '', '', '', weeklyTotal.toFixed(2)]);
       data.push([]); // Empty row
     });
 
     data.push([]);
-    data.push(['', '', '', '', '', '', t('export_preview.footerTotalHours'), monthTotal.toFixed(2), '', '']);
+    data.push(['', '', '', '', '', t('export_preview.footerTotalHours'), '', '', '', monthTotal.toFixed(2)]);
 
     const worksheetData = [
       [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})],
