@@ -1,8 +1,9 @@
+
 "use client";
 
 import React from "react";
 import { format, differenceInMinutes } from "date-fns";
-import { Edit, Trash2, Clock, CarFront, Timer, BedDouble, Plane, Landmark, Hourglass } from "lucide-react";
+import { Edit, Trash2, Clock, CarFront, Timer, BedDouble, Plane, Landmark, Hourglass, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -120,6 +121,12 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
                   {format(entry.startTime, "p")} - {entry.endTime ? format(entry.endTime, "p") : "Now"}
                 </span>
               </div>
+              {entry.pauseDuration && entry.pauseDuration > 0 ? (
+                <div className="flex items-center">
+                  <Coffee className="mr-1.5 h-3.5 w-3.5" />
+                  <span>{entry.pauseDuration}m pause</span>
+                </div>
+              ) : null}
               {entry.travelTime && entry.travelTime > 0 ? (
                 <div className="flex items-center">
                   <Timer className="mr-1.5 h-3.5 w-3.5" />
