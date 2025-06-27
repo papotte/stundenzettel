@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 import { Edit, Trash2, Clock, CarFront, Timer, BedDouble, Plane, Landmark, Hourglass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,11 +33,30 @@ const SpecialIcons: { [key: string]: React.ElementType } = {
 };
 
 export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCardProps) {
-  const durationInSeconds = entry.endTime
-    ? (entry.endTime.getTime() - entry.startTime.getTime()) / 1000
-    : 0;
-
   const SpecialIcon = SpecialIcons[entry.location];
+
+  const calculateCompensatedSeconds = () => {
+    if (!entry.endTime) {
+      // Handle running timer case
+      const runningSeconds = (new Date().getTime() - entry.startTime.getTime()) / 1000;
+      return runningSeconds;
+    };
+    
+    const workDurationInMinutes = differenceInMinutes(entry.endTime, entry.startTime);
+
+    if (SpecialIcon || entry.location === "Time Off in Lieu") {
+      // For special entries, the duration is just the time between start and end.
+      return workDurationInMinutes * 60;
+    }
+
+    const pauseInMinutes = entry.pauseDuration || 0;
+    const travelInMinutes = (entry.travelTime || 0) * 60;
+    const totalCompensatedMinutes = workDurationInMinutes - pauseInMinutes + travelInMinutes;
+    
+    return totalCompensatedMinutes > 0 ? totalCompensatedMinutes * 60 : 0;
+  };
+  
+  const totalCompensatedSeconds = calculateCompensatedSeconds();
 
   if (SpecialIcon) {
     return (
@@ -50,7 +69,7 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
             </div>
             <div className="flex items-center gap-2">
               <p className="font-mono text-lg font-medium text-primary tabular-nums">
-                {durationInSeconds > 0 ? formatDuration(durationInSeconds) : "—"}
+                {totalCompensatedSeconds > 0 ? formatDuration(totalCompensatedSeconds) : "—"}
               </p>
               <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
                 <Edit className="h-4 w-4" />
@@ -117,7 +136,7 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
           </div>
           <div className="flex items-center gap-2">
             <p className="font-mono text-lg font-medium text-primary tabular-nums">
-              {formatDuration(durationInSeconds)}
+              {formatDuration(totalCompensatedSeconds)}
             </p>
             <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
               <Edit className="h-4 w-4" />
