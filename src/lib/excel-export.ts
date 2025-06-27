@@ -1,6 +1,7 @@
 
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { format, getDay, isSameMonth, differenceInMinutes, type Locale } from "date-fns";
+import type { User } from "firebase/auth";
 import type { TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ const dayOfWeekMap: { [key: number]: string } = {
 
 interface ExportParams {
   selectedMonth: Date;
+  user: User | null;
   userSettings: UserSettings;
   entries: TimeEntry[];
   t: (key: string, replacements?: Record<string, string | number>) => string;
@@ -25,8 +27,9 @@ interface ExportParams {
   getLocationDisplayName: (location: string) => string;
 }
 
-export const exportToExcel = ({
+export const exportToExcel = async ({
   selectedMonth,
+  user,
   userSettings,
   entries,
   t,
@@ -35,33 +38,73 @@ export const exportToExcel = ({
   calculateWeekTotal,
   getLocationDisplayName,
 }: ExportParams) => {
-  // Format company header for Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Stundenzettel");
+
+  // --- STYLES ---
+  const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFD7FF' } };
+  const dayColFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFD7FF' } };
+  const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FF000000' } };
+  const allBorders: Partial<ExcelJS.Borders> = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } },
+  };
+
+  // --- COLUMN WIDTHS ---
+  worksheet.columns = [
+      { key: 'week', width: 5 },
+      { key: 'date', width: 12 },
+      { key: 'location', width: 30 },
+      { key: 'from', width: 8 },
+      { key: 'to', width: 8 },
+      { key: 'pause', width: 12 },
+      { key: 'travel', width: 12 },
+      { key: 'compensated', width: 12 },
+      { key: 'driver', width: 8 },
+      { key: 'mileage', width: 20 },
+  ];
+
+  let currentRow = 1;
+
+  // --- COMPANY HEADER ---
   const companyName = userSettings?.companyName || '';
   const email = userSettings?.companyEmail || '';
   const phone1 = userSettings?.companyPhone1 || '';
   const phone2 = userSettings?.companyPhone2 || '';
   const fax = userSettings?.companyFax || '';
-
   const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
-  const contactParts = [
-    companyName,
-    email,
-    phoneNumbers ? `Tel.: ${phoneNumbers}` : '',
-    fax ? `FAX: ${fax}` : ''
-  ].filter(Boolean);
+  const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
+  if (contactParts.length > 0) {
+      const companyHeader = t('export_preview.headerCompany') + " " + contactParts.join(' ');
+      worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
+      const companyCell = worksheet.getCell(`A${currentRow}`);
+      companyCell.value = companyHeader;
+      companyCell.font = { size: 10 };
+      companyCell.alignment = { horizontal: 'left' };
+      currentRow += 2; // Add a blank row after
+  }
 
-  const companyHeader = contactParts.length > 0 ? t('export_preview.headerCompany', { details: contactParts.join(' ') }) : null;
-  
-  const weeksInMonth = getWeeksForMonth(selectedMonth);
-  const weekHasEntries = (week: Date[]): boolean => {
-    return week.some(day => {
-      return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
-    });
-  };
-  const relevantWeeks = weeksInMonth.filter(weekHasEntries);
-  const monthTotal = relevantWeeks.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
+  // --- TITLE HEADER ---
+  worksheet.mergeCells(`A${currentRow}:J${currentRow}`);
+  const titleCell = worksheet.getCell(`A${currentRow}`);
+  titleCell.value = t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })});
+  titleCell.font = { bold: true, size: 12 };
+  titleCell.alignment = { horizontal: 'left' };
 
-  const headerRow1 = [
+  worksheet.mergeCells(`A${currentRow+1}:J${currentRow+1}`);
+  const userCell = worksheet.getCell(`A${currentRow+1}`);
+  userCell.value = user?.displayName || user?.email;
+  userCell.font = { bold: true, size: 10 };
+  userCell.alignment = { horizontal: 'right' };
+  currentRow += 3; // Add blank row after
+
+  // --- TABLE HEADERS ---
+  const headerRow1Num = currentRow;
+  const headerRow2Num = currentRow + 1;
+  const headerRow1 = worksheet.getRow(headerRow1Num);
+  headerRow1.values = [
       t('export_preview.headerWeek'),
       t('export_preview.headerDate'),
       t('export_preview.headerLocation'),
@@ -73,22 +116,50 @@ export const exportToExcel = ({
       t('export_preview.headerDriver'),
       t('export_preview.headerMileage'),
   ];
+  worksheet.getRow(headerRow2Num).values = ['', '', '', t('export_preview.headerFrom'), t('export_preview.headerTo')];
 
-  const headerRow2 = [
-      '', '', '',
-      t('export_preview.headerFrom'),
-      t('export_preview.headerTo'),
-      '', '', '', '', '',
-  ];
+  // Merging header cells
+  worksheet.mergeCells(headerRow1Num, 1, headerRow2Num, 1);
+  worksheet.mergeCells(headerRow1Num, 2, headerRow2Num, 2);
+  worksheet.mergeCells(headerRow1Num, 3, headerRow2Num, 3);
+  worksheet.mergeCells(headerRow1Num, 4, headerRow1Num, 5);
+  worksheet.mergeCells(headerRow1Num, 6, headerRow2Num, 6);
+  worksheet.mergeCells(headerRow1Num, 7, headerRow2Num, 7);
+  worksheet.mergeCells(headerRow1Num, 8, headerRow2Num, 8);
+  worksheet.mergeCells(headerRow1Num, 9, headerRow2Num, 9);
+  worksheet.mergeCells(headerRow1Num, 10, headerRow2Num, 10);
   
-  const data: (string | number | null)[][] = [];
+  // Style header cells
+  [headerRow1Num, headerRow2Num].forEach(rowNum => {
+      worksheet.getRow(rowNum).eachCell({ includeEmpty: true }, cell => {
+          cell.fill = headerFill;
+          cell.font = headerFont;
+          cell.border = allBorders;
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+  });
+  
+  // Specific alignments for headers
+  worksheet.getCell(headerRow1Num, 3).alignment = { vertical: 'middle', horizontal: 'left' }; // Location
+  worksheet.getCell(headerRow1Num, 1).alignment = { vertical: 'middle', horizontal: 'left' }; // Week
+  worksheet.getCell(headerRow1Num, 2).alignment = { vertical: 'middle', horizontal: 'left' }; // Date
 
-  relevantWeeks.forEach(week => {
+  currentRow += 2;
+
+  // --- DATA ROWS ---
+  const weeksInMonth = getWeeksForMonth(selectedMonth);
+  const monthTotal = weeksInMonth.reduce((acc, week) => acc + calculateWeekTotal(week), 0);
+
+  weeksInMonth.forEach(week => {
+    let weekHasRenderedData = false;
     week.forEach(day => {
       if (isSameMonth(day, selectedMonth)) {
-          const dayEntries = getEntriesForDay(day);
-          if (dayEntries.length > 0) {
-            dayEntries.forEach(entry => {
+        const dayEntries = getEntriesForDay(day);
+        const isSunday = getDay(day) === 0;
+
+        if (dayEntries.length > 0) {
+            weekHasRenderedData = true;
+            dayEntries.forEach((entry, entryIndex) => {
               let compensatedHours = 0;
               if (entry.endTime) {
                   const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
@@ -100,136 +171,81 @@ export const exportToExcel = ({
                       compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
                   }
               }
-              const pauseDecimal = formatDecimalHours(entry.pauseDuration);
+              const pauseDecimal = parseFloat(formatDecimalHours(entry.pauseDuration));
               
-              data.push([
-                  dayOfWeekMap[getDay(day)],
-                  format(day, 'd/M/yyyy'),
+              const rowData = [
+                  entryIndex === 0 ? dayOfWeekMap[getDay(day)] : '',
+                  entryIndex === 0 ? format(day, 'dd.MM.yyyy') : '',
                   getLocationDisplayName(entry.location),
                   entry.startTime ? format(entry.startTime, 'HH:mm') : '',
                   entry.endTime ? format(entry.endTime, 'HH:mm') : '',
-                  parseFloat(pauseDecimal),
-                  entry.travelTime || '',
-                  parseFloat(compensatedHours.toFixed(2)),
+                  pauseDecimal,
+                  entry.travelTime || 0,
+                  compensatedHours,
                   entry.isDriver ? t('export_preview.driverMark') : '',
-                  '',
-              ]);
+                  '', // Mileage
+              ];
+              const dataRow = worksheet.addRow(rowData);
+
+              dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                  cell.border = allBorders;
+                  cell.alignment = { vertical: 'middle' };
+                  if ([2, 4, 5, 6, 7, 8].includes(colNumber)) {
+                      cell.alignment.horizontal = 'right';
+                  } else {
+                      cell.alignment.horizontal = 'left';
+                  }
+                  if ([6, 7, 8].includes(colNumber)) {
+                    cell.numFmt = '0.00';
+                  }
+              });
+
+              dataRow.getCell(1).fill = dayColFill;
+              currentRow++;
             });
-          } else if (getDay(day) !== 0 && getDay(day) !== 6) { // Not Sunday or Saturday
-              data.push([
-                  dayOfWeekMap[getDay(day)],
-                  format(day, 'd/M/yyyy'),
-                  '', '', '', '', '', '', '', '',
-              ]);
-          }
+        } else if (!isSunday) {
+            weekHasRenderedData = true;
+            const emptyRow = worksheet.addRow([dayOfWeekMap[getDay(day)], format(day, 'dd.MM.yyyy'), '', '', '', '', '', '', '', '']);
+            emptyRow.eachCell({ includeEmpty: true }, cell => cell.border = allBorders);
+            emptyRow.getCell(1).fill = dayColFill;
+            emptyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+            emptyRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' };
+            currentRow++;
+        }
       }
     });
-    const weeklyTotal = calculateWeekTotal(week);
-    data.push([null, null, null, null, null, t('export_preview.footerTotalPerWeek'), null, null, null, weeklyTotal.toFixed(2)]);
-    data.push([]); // Empty row
+    
+    if (weekHasRenderedData) {
+        const weeklyTotal = calculateWeekTotal(week);
+        const totalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalPerWeek'), '', weeklyTotal, '', '']);
+        totalRow.getCell(8).numFmt = '0.00';
+        totalRow.getCell(6).font = { bold: true };
+        totalRow.getCell(8).font = { bold: true };
+        worksheet.addRow([]);
+        currentRow += 2;
+    }
   });
 
-  data.push([]);
-  data.push([null, null, null, null, null, t('export_preview.footerTotalHours'), null, null, null, monthTotal.toFixed(2)]);
+  // --- FOOTER ---
+  const grandTotalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalHours'), '', monthTotal, '', '']);
+  grandTotalRow.getCell(8).numFmt = '0.00';
+  grandTotalRow.getCell(6).font = { bold: true };
+  grandTotalRow.getCell(8).font = { bold: true };
+
+  currentRow += 5; // spacing
+  const signatureRow = worksheet.addRow(['', '', '', '', '', '', '', '', t('export_preview.signatureLine')]);
+  signatureRow.getCell(9).border = { top: { style: 'thin', color: { argb: 'FF000000' } } };
   
-  const signatureRow = [null, null, null, null, null, null, null, null, null, t('export_preview.signatureLine')];
 
-  const worksheetData: (string | number | null)[][] = [];
-  if (companyHeader) {
-    worksheetData.push([companyHeader]);
-    worksheetData.push([]);
-  }
-  worksheetData.push([t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})]);
-  worksheetData.push([]);
-  worksheetData.push(headerRow1);
-  worksheetData.push(headerRow2);
-  worksheetData.push(...data);
-  worksheetData.push([], [], [], signatureRow);
-
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-  
-  const mainHeaderRow = companyHeader ? 4 : 2;
-  const dataStartRow = companyHeader ? 6 : 4;
-  
-  if (!worksheet['!merges']) worksheet['!merges'] = [];
-
-  // Company Header Merge
-  if (companyHeader) {
-    worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } });
-  }
-  // Timesheet Title Merge
-  worksheet['!merges'].push({ s: { r: mainHeaderRow - 2, c: 0 }, e: { r: mainHeaderRow - 2, c: 9 } });
-
-  // Main Header Merges
-  worksheet['!merges'].push(
-    { s: { r: mainHeaderRow, c: 0 }, e: { r: mainHeaderRow + 1, c: 0 } }, // Week
-    { s: { r: mainHeaderRow, c: 1 }, e: { r: mainHeaderRow + 1, c: 1 } }, // Date
-    { s: { r: mainHeaderRow, c: 2 }, e: { r: mainHeaderRow + 1, c: 2 } }, // Location
-    { s: { r: mainHeaderRow, c: 3 }, e: { r: mainHeaderRow, c: 4 } },     // Work Time
-    { s: { r: mainHeaderRow, c: 5 }, e: { r: mainHeaderRow + 1, c: 5 } }, // Pause
-    { s: { r: mainHeaderRow, c: 6 }, e: { r: mainHeaderRow + 1, c: 6 } }, // Travel
-    { s: { r: mainHeaderRow, c: 7 }, e: { r: mainHeaderRow + 1, c: 7 } }, // Compensated
-    { s: { r: mainHeaderRow, c: 8 }, e: { r: mainHeaderRow + 1, c: 8 } }, // Driver
-    { s: { r: mainHeaderRow, c: 9 }, e: { r: mainHeaderRow + 1, c: 9 } }  // Mileage
-  );
-  
-  // --- STYLING ---
-  const companyHeaderStyle = { font: { sz: 10 }, alignment: { horizontal: 'left' } };
-  const titleStyle = { font: { bold: true, sz: 12 }, alignment: { horizontal: 'left' } };
-  const headerBaseStyle = { fill: { fgColor: { rgb: "99CCFF" } }, font: { bold: true, color: { rgb: "000000" } }, alignment: { vertical: 'center' } };
-  const headerStyles = {
-      left: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'left'}},
-      right: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'right'}},
-      center: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'center'}},
-  };
-
-  if (companyHeader) {
-      const companyHeaderCellAddress = XLSX.utils.encode_cell({ r: 0, c: 0 });
-      if(worksheet[companyHeaderCellAddress]) worksheet[companyHeaderCellAddress].s = companyHeaderStyle;
-  }
-  
-  const titleCellAddress = XLSX.utils.encode_cell({r: mainHeaderRow - 2, c: 0});
-  if(worksheet[titleCellAddress]) worksheet[titleCellAddress].s = titleStyle;
-
-  // Apply styles after ensuring cells exist
-  for (let R = mainHeaderRow; R <= mainHeaderRow + 1; ++R) {
-      for (let C = 0; C <= 9; ++C) {
-          const address = XLSX.utils.encode_cell({ r: R, c: C });
-          if (!worksheet[address]) {
-            // Create a placeholder cell if it doesn't exist, e.g. for merged cells
-            worksheet[address] = { v: '' };
-          }
-          let style;
-          if ([1, 3, 4, 5, 6, 7, 9].includes(C)) {
-              style = headerStyles.right;
-          } else if (C === 8) {
-              style = headerStyles.center;
-          } else {
-              style = headerStyles.left;
-          }
-          worksheet[address].s = style;
-      }
-  }
-  
-  const dayColStyle = { fill: { fgColor: { rgb: "99CCFF" } }, alignment: { horizontal: 'left' } };
-
-  data.forEach((rowData, index) => {
-      const firstCell = rowData[0];
-      if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
-          const address = XLSX.utils.encode_cell({ r: index + dataStartRow, c: 0 });
-          if (worksheet[address]) {
-              worksheet[address].s = dayColStyle;
-          }
-      }
-  });
-
-  const colWidths = [
-      { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 8 }, { wch: 8 }, 
-      { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 8 }, { wch: 20 }
-  ];
-  worksheet['!cols'] = colWidths;
-
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Stundenzettel");
-  XLSX.writeFile(workbook, `Stundenzettel_${format(selectedMonth, "MMMM", { locale })}.xlsx`);
+  // --- SAVE FILE ---
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Stundenzettel_${user?.displayName || 'Export'}_${format(selectedMonth, "yyyy-MM")}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 };
