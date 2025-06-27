@@ -49,50 +49,51 @@ export const exportToExcel = async ({
   const fax = userSettings?.companyFax || '';
   const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
   const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
-  
+
   if (contactParts.length > 0) {
     const companyHeaderString = t('export_preview.headerCompany') + " " + contactParts.join(' ');
-    worksheet.headerFooter.oddHeader = `&L&B${companyHeaderString}`;
+    worksheet.headerFooter.oddHeader = `&L${t('export_preview.headerCompany')}&R${contactParts.join(' ')}`;
   }
 
   const signatureString = t('export_preview.signatureLine');
-  worksheet.headerFooter.oddFooter = `&R${signatureString}_________________________`;
+  worksheet.headerFooter.oddFooter = `&C${signatureString}`;
 
 
   // --- STYLES ---
   const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF99CCFF' } };
   const dayColFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF99CCFF' } };
-  const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FF000000' } };
+  const headerFont: Partial<ExcelJS.Font> = { bold: false, color: { argb: 'FF000000' } };
+  const defaultBorder: ExcelJS.Border = { style: 'thin', color: { argb: 'FF000000' } };
   const allBorders: Partial<ExcelJS.Borders> = {
-      top: { style: 'thin', color: { argb: 'FF000000' } },
-      left: { style: 'thin', color: { argb: 'FF000000' } },
-      bottom: { style: 'thin', color: { argb: 'FF000000' } },
-      right: { style: 'thin', color: { argb: 'FF000000' } },
+    top: defaultBorder,
+    left: defaultBorder,
+    bottom: defaultBorder,
+    right: defaultBorder,
   };
 
   // --- COLUMN WIDTHS ---
   worksheet.columns = [
-      { key: 'week', width: 5 },
-      { key: 'date', width: 12 },
-      { key: 'location', width: 40 },
-      { key: 'from', width: 8 },
-      { key: 'to', width: 8 },
-      { key: 'pause', width: 12 },
-      { key: 'travel', width: 12 },
-      { key: 'compensated', width: 12 },
-      { key: 'driver', width: 8 },
-      { key: 'mileage', width: 12 },
+    { key: 'week', width: 5 },
+    { key: 'date', width: 12 },
+    { key: 'location', width: 24 },
+    { key: 'from', width: 12 },
+    { key: 'to', width: 12 },
+    { key: 'pause', width: 8 },
+    { key: 'travel', width: 8 },
+    { key: 'compensated', width: 12 },
+    { key: 'driver', width: 5 },
+    { key: 'mileage', width: 12 },
   ];
 
   // --- IN-SHEET TITLE AND USER NAME ---
   const titleRow = worksheet.addRow([]);
-  titleRow.getCell('A').value = t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })});
+  titleRow.getCell('A').value = t('export_preview.timesheetTitle', { month: format(selectedMonth, "MMMM", { locale }) });
   titleRow.getCell('A').font = { bold: true, size: 12 };
 
   titleRow.getCell('J').value = user?.displayName || user?.email;
   titleRow.getCell('J').font = { bold: true, size: 10 };
   titleRow.getCell('J').alignment = { horizontal: 'right' };
-  
+
   worksheet.addRow([]); // blank row
 
   // --- DATA ROWS ---
@@ -101,14 +102,14 @@ export const exportToExcel = async ({
 
   weeksInMonth.forEach(week => {
     const weekHasContent = week.some(day => {
-        if (!isSameMonth(day, selectedMonth)) return false;
-        const dayEntries = getEntriesForDay(day);
-        const isSunday = getDay(day) === 0;
-        return dayEntries.length > 0 || !isSunday;
+      if (!isSameMonth(day, selectedMonth)) return false;
+      const dayEntries = getEntriesForDay(day);
+      const isSunday = getDay(day) === 0;
+      return dayEntries.length > 0 || !isSunday;
     });
 
     if (!weekHasContent) {
-        return;
+      return;
     }
 
     // --- RENDER TABLE HEADERS FOR THE WEEK ---
@@ -116,16 +117,16 @@ export const exportToExcel = async ({
     const headerRow2Num = headerRow1Num + 1;
     const headerRow1 = worksheet.getRow(headerRow1Num);
     headerRow1.values = [
-        t('export_preview.headerWeek'),
-        t('export_preview.headerDate'),
-        t('export_preview.headerLocation'),
-        t('export_preview.headerWorkTime'),
-        '',
-        t('export_preview.headerPauseDuration'),
-        t('export_preview.headerTravelTime'),
-        t('export_preview.headerCompensatedTime'),
-        t('export_preview.headerDriver'),
-        t('export_preview.headerMileage'),
+      t('export_preview.headerWeek'),
+      t('export_preview.headerDate'),
+      t('export_preview.headerLocation'),
+      t('export_preview.headerWorkTime'),
+      '',
+      t('export_preview.headerPauseDuration'),
+      t('export_preview.headerTravelTime'),
+      t('export_preview.headerCompensatedTime'),
+      t('export_preview.headerDriver'),
+      t('export_preview.headerMileage'),
     ];
     worksheet.getRow(headerRow2Num).values = ['', '', '', t('export_preview.headerFrom'), t('export_preview.headerTo')];
 
@@ -138,104 +139,98 @@ export const exportToExcel = async ({
     worksheet.mergeCells(headerRow1Num, 8, headerRow2Num, 8);
     worksheet.mergeCells(headerRow1Num, 9, headerRow2Num, 9);
     worksheet.mergeCells(headerRow1Num, 10, headerRow2Num, 10);
-    
+
     [headerRow1Num, headerRow2Num].forEach(rowNum => {
-        worksheet.getRow(rowNum).eachCell({ includeEmpty: true }, (cell) => {
-            cell.fill = headerFill;
-            cell.font = headerFont;
-            cell.border = allBorders;
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        });
-    });
-    
+      worksheet.getRow(rowNum).eachCell({ includeEmpty: true }, (cell) => {
+        cell.fill = headerFill;
+        cell.font = headerFont;
+        cell.border = allBorders;
+        cell.alignment = { vertical: 'middle', horizontal: 'left' };
+      });
+    });    
+
     worksheet.getCell(headerRow1Num, 3).alignment = { vertical: 'middle', horizontal: 'left' };
     worksheet.getCell(headerRow1Num, 1).alignment = { vertical: 'middle', horizontal: 'left' };
-    worksheet.getCell(headerRow1Num, 2).alignment = { vertical: 'middle', horizontal: 'right' };
+    worksheet.getCell(headerRow1Num, 2).alignment = { vertical: 'middle', horizontal: 'left' };
 
     // --- RENDER DATA ROWS FOR THE WEEK ---
     week.forEach(day => {
-      if (isSameMonth(day, selectedMonth)) {
-        const dayEntries = getEntriesForDay(day);
-        const isSunday = getDay(day) === 0;
-        const startRowForDay = worksheet.rowCount + 1;
+      const dayEntries = getEntriesForDay(day);
+      const isSunday = getDay(day) === 0;
+      const startRowForDay = worksheet.rowCount + 1;
 
-        if (dayEntries.length > 0) {
-            dayEntries.forEach((entry, entryIndex) => {
-              let compensatedHours = 0;
-              if (entry.endTime) {
-                  const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
-                  const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
-                  if (isCompensatedSpecialDay) {
-                      compensatedHours = workDuration / 60;
-                  } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-                      const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
-                      compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
-                  }
-              }
-              const pauseDecimal = parseFloat(formatDecimalHours(entry.pauseDuration));
-              
-              const rowData = [
-                  entryIndex === 0 ? dayOfWeekMap[getDay(day)] : '',
-                  entryIndex === 0 ? format(day, 'dd.MM.yyyy') : '',
-                  getLocationDisplayName(entry.location),
-                  entry.startTime ? format(entry.startTime, 'HH:mm') : '',
-                  entry.endTime ? format(entry.endTime, 'HH:mm') : '',
-                  pauseDecimal,
-                  entry.travelTime || 0,
-                  compensatedHours,
-                  entry.isDriver ? t('export_preview.driverMark') : '',
-                  '', // Mileage
-              ];
-              const dataRow = worksheet.addRow(rowData);
-
-              dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-                  cell.border = allBorders;
-                  cell.alignment = { vertical: 'middle' };
-                  if ([2, 4, 5, 6, 7, 8].includes(colNumber)) {
-                      cell.alignment.horizontal = 'right';
-                  } else {
-                      cell.alignment.horizontal = 'left';
-                  }
-                  if ([6, 7, 8].includes(colNumber)) {
-                    cell.numFmt = '0.00';
-                  }
-              });
-              dataRow.getCell(1).fill = dayColFill;
-            });
-            
-            if (dayEntries.length > 1) {
-                worksheet.mergeCells(startRowForDay, 1, startRowForDay + dayEntries.length - 1, 1);
-                worksheet.mergeCells(startRowForDay, 2, startRowForDay + dayEntries.length - 1, 2);
-                worksheet.getCell(startRowForDay, 1).alignment = { vertical: 'middle', horizontal: 'left' };
-                worksheet.getCell(startRowForDay, 2).alignment = { vertical: 'middle', horizontal: 'right' };
+      if (dayEntries.length > 0) {
+        dayEntries.forEach((entry, entryIndex) => {
+          let compensatedHours = 0;
+          if (entry.endTime) {
+            const workDuration = differenceInMinutes(entry.endTime, entry.startTime);
+            const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
+            if (isCompensatedSpecialDay) {
+              compensatedHours = workDuration / 60;
+            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
+              const compensatedMinutes = workDuration - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
+              compensatedHours = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0;
             }
-        } else if (!isSunday) {
-            const emptyRow = worksheet.addRow([dayOfWeekMap[getDay(day)], format(day, 'dd.MM.yyyy'), '', '', '', '', '', '', '', '']);
-            emptyRow.eachCell({ includeEmpty: true }, cell => cell.border = allBorders);
-            emptyRow.getCell(1).fill = dayColFill;
-            emptyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
-            emptyRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'right' };
+          }
+          const pauseDecimal = parseFloat(formatDecimalHours(entry.pauseDuration));
+
+          const rowData = [
+            entryIndex === 0 ? dayOfWeekMap[getDay(day)] : '',
+            entryIndex === 0 ? format(day, 'dd.MM.yyyy') : '',
+            getLocationDisplayName(entry.location),
+            entry.startTime ? format(entry.startTime, 'HH:mm') : '',
+            entry.endTime ? format(entry.endTime, 'HH:mm') : '',
+            pauseDecimal,
+            entry.travelTime || 0,
+            compensatedHours,
+            entry.isDriver ? t('export_preview.driverMark') : '',
+            '', // Mileage
+          ];
+          const dataRow = worksheet.addRow(rowData);
+
+          dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            cell.border = allBorders;
+            cell.alignment = { vertical: 'middle' };
+            if ([2, 4, 5, 6, 7, 8].includes(colNumber)) {
+              cell.alignment.horizontal = 'right';
+            } else {
+              cell.alignment.horizontal = 'left';
+            }
+            if ([6, 7, 8].includes(colNumber)) {
+              cell.numFmt = '0.00';
+            }
+          });
+          dataRow.getCell(1).fill = dayColFill;
+        });
+
+        if (dayEntries.length > 1) {
+          worksheet.mergeCells(startRowForDay, 1, startRowForDay + dayEntries.length - 1, 1);
+          worksheet.mergeCells(startRowForDay, 2, startRowForDay + dayEntries.length - 1, 2);
+          worksheet.getCell(startRowForDay, 1).alignment = { vertical: 'middle', horizontal: 'left' };
+          worksheet.getCell(startRowForDay, 2).alignment = { vertical: 'middle', horizontal: 'right' };
         }
+      } else if (!isSunday) {
+        const emptyRow = worksheet.addRow([dayOfWeekMap[getDay(day)], format(day, 'dd.MM.yyyy'), '', '', '', '', '', '', '', '']);
+        emptyRow.eachCell({ includeEmpty: true }, cell => cell.border = allBorders);
+        emptyRow.getCell(1).fill = dayColFill;
+        emptyRow.getCell(1).alignment = { vertical: 'middle', horizontal: 'left' };
+        emptyRow.getCell(2).alignment = { vertical: 'middle', horizontal: 'right' };
       }
     });
-    
+
     // --- RENDER WEEKLY TOTAL ---
     const weeklyTotal = calculateWeekTotal(week);
-    const totalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalPerWeek'), '', weeklyTotal, '', '']);
-    totalRow.getCell(8).numFmt = '0.00';
-    totalRow.getCell(6).font = { bold: true };
-    totalRow.getCell(8).font = { bold: true };
-    totalRow.getCell(8).border = { bottom: { style: 'thin' } };
-    
+    const totalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalPerWeek'), '', '', '', weeklyTotal]);
+    totalRow.getCell(10).numFmt = '0.00';
+    totalRow.getCell(10).border = { bottom: { style: 'medium' } };
+
     worksheet.addRow([]); // Blank row for spacing
   });
 
   // --- GRAND TOTAL ---
-  const grandTotalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalHours'), '', monthTotal, '', '']);
-  grandTotalRow.getCell(8).numFmt = '0.00';
-  grandTotalRow.getCell(6).font = { bold: true };
-  grandTotalRow.getCell(8).font = { bold: true };
-  grandTotalRow.getCell(8).border = { bottom: { style: 'double' } };
+  const grandTotalRow = worksheet.addRow(['', '', '', '', '', t('export_preview.footerTotalHours'), '', '', '', monthTotal]);
+  grandTotalRow.getCell(10).numFmt = '0.00';
+  grandTotalRow.getCell(10).border = { bottom: { style: 'double' } };
 
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer();

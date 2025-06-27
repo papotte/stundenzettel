@@ -108,6 +108,9 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
               </TableHeader>
               <TableBody>
                 {week.map((day) => {
+                   if (!isSameMonth(day, selectedMonth)) {
+                    return null;
+                  }
 
                   const dayEntries = getEntriesForDay(day);
                   const isSunday = getDay(day) === 0;
