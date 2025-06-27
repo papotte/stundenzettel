@@ -191,8 +191,8 @@ export default function ExportPreview() {
 
   return (
     <>
-      <Card className="shadow-lg">
-        <CardContent className="p-4 sm:p-6">
+      <Card className="shadow-lg print:shadow-none print:border-none">
+        <CardContent className="p-4 sm:p-6 print:p-0">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 print:hidden">
             <div className="flex items-center gap-4">
               <Button
