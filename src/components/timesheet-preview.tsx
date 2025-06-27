@@ -56,9 +56,10 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
 
   const weekHasEntries = useCallback((week: Date[]): boolean => {
     return week.some(day => {
-      return isSameMonth(day, selectedMonth) && getEntriesForDay(day).length > 0;
+      const isWorkingDay = getDay(day) !== 0;
+      return isSameMonth(day, selectedMonth) && isWorkingDay
     });
-  }, [selectedMonth, getEntriesForDay]);
+  }, [selectedMonth]);
 
   const relevantWeeks = useMemo(() => weeksInMonth.filter(weekHasEntries), [weeksInMonth, weekHasEntries]);
   
@@ -81,28 +82,28 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
           <div key={weekIndex} className="mb-6 print:mb-3">
             <Table className="border-collapse border border-black">
               <TableHeader>
-                <TableRow className="bg-table-header hover:bg-table-header text-black border-b-2 border-black">
-                  <TableHead rowSpan={2} className="w-[8%] align-middle text-left border-r border-black print:p-1 print:h-auto">
+                <TableRow className="bg-table-header hover:bg-table-header text-left text-black border-b-0 border-black">
+                  <TableHead rowSpan={2} className="w-[5%] align-middle border-r border-black print:p-1 print:h-auto">
                     {t('export_preview.headerWeek')}
                   </TableHead>
-                  <TableHead rowSpan={2} className="w-[10%] align-middle text-right border-r border-black print:p-1 print:h-auto">
+                  <TableHead rowSpan={2} className="w-[8%] align-middle border-r border-black print:p-1 print:h-auto">
                     {t('export_preview.headerDate')}
                   </TableHead>
-                  <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-r border-black print:p-1 print:h-auto">
+                  <TableHead rowSpan={2} className="w-auto text-left border-r border-black print:p-1 print:h-auto">
                     {t('export_preview.headerLocation')}
                   </TableHead>
-                  <TableHead colSpan={2} className="w-[14%] text-center border-b border-black print:p-1 print:h-auto">
+                  <TableHead colSpan={2} className="w-[18%] print:p-1 print:h-auto">
                     {t('export_preview.headerWorkTime')}
                   </TableHead>
-                  <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-l border-r border-black print:p-1 print:h-auto">{t('export_preview.headerPauseDuration')}</TableHead>
-                  <TableHead rowSpan={2} className="w-[8%] text-right align-middle border-r border-black print:p-1 print:h-auto">{t('export_preview.headerTravelTime')}</TableHead>
-                  <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black print:p-1 print:h-auto">{t('export_preview.headerCompensatedTime')}</TableHead>
-                  <TableHead rowSpan={2} className="w-[8%] text-center align-middle border-r border-black print:p-1 print:h-auto">{t('export_preview.headerDriver')}</TableHead>
-                  <TableHead rowSpan={2} className="w-[12%] text-right align-middle print:p-1 print:h-auto">{t('export_preview.headerMileage')}</TableHead>
+                  <TableHead rowSpan={2} className="w-[8%] align-middle border-l border-r border-black print:p-1 print:h-auto">{t('export_preview.headerPauseDuration')}</TableHead>
+                  <TableHead rowSpan={2} className="w-[8%] align-middle border-r border-black print:p-1 print:h-auto">{t('export_preview.headerTravelTime')}</TableHead>
+                  <TableHead rowSpan={2} className="w-[8%] align-middle border-r border-black print:p-1 print:h-auto">{t('export_preview.headerCompensatedTime')}</TableHead>
+                  <TableHead rowSpan={2} className="w-[5%] align-middle border-r border-black print:p-1 print:h-auto">{t('export_preview.headerDriver')}</TableHead>
+                  <TableHead rowSpan={2} className="w-[8%] align-middle print:p-1 print:h-auto">{t('export_preview.headerMileage')}</TableHead>
                 </TableRow>
-                 <TableRow className="bg-table-header hover:bg-table-header text-black border-b-2 border-black">
-                    <TableHead className="text-right border-r-0 border-b-2 border-black print:p-1 print:h-auto">{t('export_preview.headerFrom')}</TableHead>
-                    <TableHead className="text-right border-b-2 border-black print:p-1 print:h-auto">{t('export_preview.headerTo')}</TableHead>
+                 <TableRow className="bg-table-header hover:bg-table-header text-black border-b border-black">
+                    <TableHead className="border-r-0 print:p-1 print:h-auto">{t('export_preview.headerFrom')}</TableHead>
+                    <TableHead className="print:p-1 print:h-auto">{t('export_preview.headerTo')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -132,7 +133,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                           <TableCell className="text-right border-l border-r border-black print:p-1"></TableCell>
                           <TableCell className="text-right border-r border-black print:p-1"></TableCell>
                           <TableCell className="text-right border-r border-black print:p-1"></TableCell>
-                          <TableCell className="text-center border-r border-black print:p-1"></TableCell>
+                          <TableCell className="text-left border-r border-black print:p-1"></TableCell>
                           <TableCell className="text-right print:p-1"></TableCell>
                         </TableRow>
                     )
@@ -173,28 +174,25 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                       <TableCell className="text-right border-l border-r border-black print:p-1">{formatDecimalHours(entry.pauseDuration)}</TableCell>
                       <TableCell className="text-right border-r border-black print:p-1">{(entry.travelTime || 0).toFixed(2)}</TableCell>
                       <TableCell className="text-right border-r border-black print:p-1">{compensatedHours.toFixed(2)}</TableCell>
-                      <TableCell className="text-center border-r border-black print:p-1">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
+                      <TableCell className="text-left border-r border-black print:p-1">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
                       <TableCell className="text-right print:p-1"></TableCell>
                     </TableRow>
                   )});
                 })}
               </TableBody>
             </Table>
-             <div className="flex w-full mt-2 text-sm justify-between print:text-xs print:mt-1">
-                <div style={{ flex: `0 0 calc(8% + 10% + 18% + 14%)`, paddingRight: '1rem' }} />
-                <div className="text-right font-medium" style={{ flex: `0 0 calc(10% + 8% + 10%)`, paddingRight: '1rem' }}>{t('export_preview.footerTotalPerWeek')}</div>
-                <div className="text-right font-bold border-b-2 border-black pb-1 print:pb-0.5" style={{ flex: '0 0 calc(8% + 12%)' }}>{calculateWeekTotal(week).toFixed(2)}</div>
+             <div className="flex w-1/2 mt-2 justify-self-end justify-between print:text-xs print:mt-1">
+                <div className="text-right">{t('export_preview.footerTotalPerWeek')}</div>
+                <div className="text-right w-[20%] border-b-2 border-black pb-1 print:pb-0.5">{calculateWeekTotal(week).toFixed(2)}</div>
             </div>
           </div>
         ))}
-        <div className="flex w-full mt-8 justify-between print:text-xs print:mt-4">
-            <div style={{ flex: `0 0 calc(8% + 10% + 18% + 14%)`, paddingRight: '1rem' }} />
-            <div className="text-right font-bold" style={{ flex: `0 0 calc(10% + 8% + 10%)`, paddingRight: '1rem' }}>{t('export_preview.footerTotalHours')}</div>
-            <div className="text-right font-bold border-b-[3px] [border-bottom-style:double] border-black pb-2 print:pb-1" style={{ flex: '0 0 calc(8% + 12%)' }}>{monthTotal.toFixed(2)}</div>
+        <div className="flex w-1/2 mt-8 justify-between justify-self-end print:text-xs print:mt-4">
+            <div className="text-right">{t('export_preview.footerTotalHours')}</div>
+            <div className="text-right border-b-4 border-double border-black pb-2 print:pb-1" style={{ flex: '0 0 calc(8% + 12%)' }}>{monthTotal.toFixed(2)}</div>
         </div>
-        <div className="flex justify-end">
-          <div className="mt-24 text-sm text-right print:text-xs print:mt-12">
-              <div className="border-t border-black w-72"></div>
+        <div className="flex w-1/2 justify-end">
+          <div className="mt-24 text-right print:text-sm print:mt-12">
               <p className="mt-2">{t('export_preview.signatureLine')}</p>
           </div>
         </div>

@@ -169,7 +169,7 @@ export const dictionaries = {
       exportButton: "Export to Excel",
       exportPdfButton: "Download PDF",
       timesheetTitle: "Timesheet for the month: {month}",
-      headerCompany: "Name and Phone / Radio: {details}",
+      headerCompany: "Name and Phone / Radio:",
       headerWeek: "Week",
       headerDate: "Date",
       headerLocation: "Location",
@@ -185,7 +185,7 @@ export const dictionaries = {
       driverMark: "D",
       locationNotFound: "Location not found",
       headerMileage: "Mileage/Expenses",
-      signatureLine: "Signature",
+      signatureLine: "Signature:",
     }
   },
   de: {
@@ -357,7 +357,7 @@ export const dictionaries = {
       exportButton: "Nach Excel exportieren",
       exportPdfButton: "PDF herunterladen",
       timesheetTitle: "Stundenzettel für den Monat: {month}",
-      headerCompany: "Name und Telefon / Funk: {details}",
+      headerCompany: "Name und Telefon / Funk:",
       headerWeek: "Woche",
       headerDate: "Datum",
       headerLocation: "Einsatzort",
@@ -373,7 +373,7 @@ export const dictionaries = {
       driverMark: "F",
       locationNotFound: "Ort nicht gefunden",
       headerMileage: "km eig. PKW/Verpfl.",
-      signatureLine: "Unterschrift",
+      signatureLine: "Unterschrift:",
     }
   },
 };
