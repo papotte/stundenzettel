@@ -425,15 +425,15 @@ export default function ExportPreview() {
                     })}
                   </TableBody>
                 </Table>
-                <div className="flex justify-end mt-2 text-sm border-b-2 border-black pb-2">
+                <div className="flex justify-end mt-2 text-sm">
                   <span className="mr-4 font-medium">{t('export_preview.footerTotalPerWeek')}</span>
-                  <span className="font-bold w-36 text-right">{calculateWeekTotal(week).toFixed(2)}</span>
+                  <span className="font-bold w-36 text-right border-b-2 border-black pb-2">{calculateWeekTotal(week).toFixed(2)}</span>
                 </div>
               </div>
             ))}
-            <div className="flex justify-end mt-8 border-b-2 border-double border-black pb-2">
+            <div className="flex justify-end mt-8">
                 <span className="mr-4 font-bold">{t('export_preview.footerTotalHours')}</span>
-                <span className="font-bold w-36 text-right">{monthTotal.toFixed(2)}</span>
+                <span className="font-bold w-36 text-right border-b-[3px] [border-bottom-style:double] border-black pb-2">{monthTotal.toFixed(2)}</span>
             </div>
             <div className="mt-24 text-sm">
                 <div className="border-t border-black w-72"></div>
@@ -445,3 +445,5 @@ export default function ExportPreview() {
     </Card>
   );
 }
+
+    
