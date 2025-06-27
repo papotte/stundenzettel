@@ -208,36 +208,48 @@ export default function ExportPreview() {
     
     const signatureRow = [null, null, null, null, null, null, null, null, null, t('export_preview.signatureLine')];
 
-    const worksheetData = [
-      ...(companyHeader ? [[companyHeader]] : []),
-      ...(companyHeader ? [[]] : []),
-      [t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})],
-      [],
-      headerRow1,
-      headerRow2,
-      ...data,
-      [], [], [],
-      signatureRow
-    ];
+    const worksheetData: (string | number | null)[][] = [];
+    if (companyHeader) {
+      worksheetData.push([companyHeader]);
+      worksheetData.push([]);
+    }
+    worksheetData.push([t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})]);
+    worksheetData.push([]);
+    worksheetData.push(headerRow1);
+    worksheetData.push(headerRow2);
+    worksheetData.push(...data);
+    worksheetData.push([], [], [], signatureRow);
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     
-    if (!worksheet['!merges']) worksheet['!merges'] = [];
-    worksheet['!merges'].push(
-      { s: { r: 4, c: 0 }, e: { r: 5, c: 0 } }, // Week
-      { s: { r: 4, c: 1 }, e: { r: 5, c: 1 } }, // Date
-      { s: { r: 4, c: 2 }, e: { r: 5, c: 2 } }, // Location
-      { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } }, // Work Time
-      { s: { r: 4, c: 5 }, e: { r: 5, c: 5 } }, // Pause
-      { s: { r: 4, c: 6 }, e: { r: 5, c: 6 } }, // Travel
-      { s: { r: 4, c: 7 }, e: { r: 5, c: 7 } }, // Compensated
-      { s: { r: 4, c: 8 }, e: { r: 5, c: 8 } }, // Driver
-      { s: { r: 4, c: 9 }, e: { r: 5, c: 9 } }  // Mileage
-    );
-    if (companyHeader) {
-      worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }); // Company Header
-    }
+    const mainHeaderRow = companyHeader ? 4 : 2;
+    const dataStartRow = companyHeader ? 6 : 4;
     
+    if (!worksheet['!merges']) worksheet['!merges'] = [];
+
+    // Company Header Merge
+    if (companyHeader) {
+      worksheet['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } });
+    }
+    // Timesheet Title Merge
+    worksheet['!merges'].push({ s: { r: mainHeaderRow - 2, c: 0 }, e: { r: mainHeaderRow - 2, c: 9 } });
+
+    // Main Header Merges
+    worksheet['!merges'].push(
+      { s: { r: mainHeaderRow, c: 0 }, e: { r: mainHeaderRow + 1, c: 0 } }, // Week
+      { s: { r: mainHeaderRow, c: 1 }, e: { r: mainHeaderRow + 1, c: 1 } }, // Date
+      { s: { r: mainHeaderRow, c: 2 }, e: { r: mainHeaderRow + 1, c: 2 } }, // Location
+      { s: { r: mainHeaderRow, c: 3 }, e: { r: mainHeaderRow, c: 4 } },     // Work Time
+      { s: { r: mainHeaderRow, c: 5 }, e: { r: mainHeaderRow + 1, c: 5 } }, // Pause
+      { s: { r: mainHeaderRow, c: 6 }, e: { r: mainHeaderRow + 1, c: 6 } }, // Travel
+      { s: { r: mainHeaderRow, c: 7 }, e: { r: mainHeaderRow + 1, c: 7 } }, // Compensated
+      { s: { r: mainHeaderRow, c: 8 }, e: { r: mainHeaderRow + 1, c: 8 } }, // Driver
+      { s: { r: mainHeaderRow, c: 9 }, e: { r: mainHeaderRow + 1, c: 9 } }  // Mileage
+    );
+    
+    // --- STYLING ---
+    const companyHeaderStyle = { font: { sz: 10 }, alignment: { horizontal: 'left' } };
+    const titleStyle = { font: { bold: true, sz: 12 }, alignment: { horizontal: 'left' } };
     const headerBaseStyle = { fill: { fgColor: { rgb: "99CCFF" } }, font: { bold: true, color: { rgb: "000000" } }, alignment: { vertical: 'center' } };
     const headerStyles = {
         left: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'left'}},
@@ -245,14 +257,22 @@ export default function ExportPreview() {
         center: {...headerBaseStyle, alignment: {...headerBaseStyle.alignment, horizontal: 'center'}},
     };
 
-    for (let R = 4; R <= 5; ++R) {
+    if (companyHeader) {
+        const companyHeaderCell = XLSX.utils.encode_cell({ r: 0, c: 0 });
+        if(worksheet[companyHeaderCell]) worksheet[companyHeaderCell].s = companyHeaderStyle;
+    }
+    
+    const titleCell = XLSX.utils.encode_cell({r: mainHeaderRow - 2, c: 0});
+    if(worksheet[titleCell]) worksheet[titleCell].s = titleStyle;
+
+    for (let R = mainHeaderRow; R <= mainHeaderRow + 1; ++R) {
         for (let C = 0; C <= 9; ++C) {
             const address = XLSX.utils.encode_cell({ r: R, c: C });
             const cell = worksheet[address];
             if (!cell) continue;
 
             let style;
-            if ([1, 3, 4, 5, 6, 7].includes(C)) {
+            if ([1, 3, 4, 5, 6, 7, 9].includes(C)) {
                 style = headerStyles.right;
             } else if (C === 8) {
                 style = headerStyles.center;
@@ -263,15 +283,14 @@ export default function ExportPreview() {
         }
     }
     
-    const dayColStyle = { fill: { fgColor: { rgb: "99CCFF" } } };
+    const dayColStyle = { fill: { fgColor: { rgb: "99CCFF" } }, alignment: { horizontal: 'left' } };
 
     data.forEach((rowData, index) => {
         const firstCell = rowData[0];
         if (Object.values(dayOfWeekMap).includes(firstCell as string)) {
-            const address = `A${index + 7}`;
+            const address = XLSX.utils.encode_cell({ r: index + dataStartRow, c: 0 });
             if (worksheet[address]) {
-                if (!worksheet[address].s) worksheet[address].s = {};
-                worksheet[address].s.fill = dayColStyle.fill;
+                worksheet[address].s = dayColStyle;
             }
         }
     });
