@@ -1,9 +1,10 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format, set, parse, addMinutes } from "date-fns";
+import { format, set, parse, addMinutes, differenceInMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -29,10 +30,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Save } from "lucide-react";
+import { Calendar as CalendarIcon, Save, Lightbulb } from "lucide-react";
 import { cn, timeStringToMinutes } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/types";
 import { Separator } from "./ui/separator";
+import { useMemo } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const formSchema = z.object({
   location: z.string().min(2, {
@@ -77,6 +84,34 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
       isDriver: entry?.isDriver || false,
     },
   });
+
+  const { watch, setValue } = form;
+  const startTimeValue = watch("startTime");
+  const endTimeValue = watch("endTime");
+  const travelTimeValue = watch("travelTime");
+
+  const pauseSuggestion = useMemo(() => {
+    try {
+      const start = parse(startTimeValue, "HH:mm", new Date());
+      const end = parse(endTimeValue, "HH:mm", new Date());
+      if (end <= start) return null;
+
+      const workDurationInMinutes = differenceInMinutes(end, start);
+      const travelTimeInMinutes = (travelTimeValue || 0) * 60;
+      const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
+
+      if (totalActivityInMinutes > 9 * 60) {
+        return { minutes: 45, timeString: '00:45', reason: '9 hours' };
+      }
+      if (totalActivityInMinutes > 6 * 60) {
+        return { minutes: 30, timeString: '00:30', reason: '6 hours' };
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }, [startTimeValue, endTimeValue, travelTimeValue]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const [startHours, startMinutes] = values.startTime.split(":").map(Number);
@@ -194,12 +229,33 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose }: 
                   name="pauseDuration"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pause</FormLabel>
+                        <div className="flex items-center justify-between">
+                            <FormLabel>Pause</FormLabel>
+                             {pauseSuggestion && (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-auto p-1 text-primary hover:bg-primary/10"
+                                        onClick={() => setValue('pauseDuration', pauseSuggestion.timeString, { shouldValidate: true })}
+                                    >
+                                        <Lightbulb className="mr-1 h-4 w-4" />
+                                        Suggest: {pauseSuggestion.minutes} min
+                                    </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                    <p>Activity over {pauseSuggestion.reason}. Recommended pause: {pauseSuggestion.minutes} mins.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )}
+                        </div>
                       <FormControl>
                         <Input type="time" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Auto-calculated on save if needed.
+                        Add your total pause time here.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
