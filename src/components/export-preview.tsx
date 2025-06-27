@@ -206,7 +206,7 @@ export default function ExportPreview() {
     const headerRef = `A3:J3`;
     const headerRange = XLSX.utils.decode_range(headerRef);
     for(let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-        const address = XLSX.utils.encode_cell({r: headerRange.s.r - 1, c: C});
+        const address = XLSX.utils.encode_cell({r: headerRange.s.r, c: C});
         if(!worksheet[address]) continue;
         worksheet[address].s = headerStyle;
     }
@@ -342,7 +342,7 @@ export default function ExportPreview() {
                         if (isSunday) return null; // Don't render empty Sundays
                         return (
                            <TableRow key={day.toISOString()}>
-                              <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell>
+                              <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
                               <TableCell className="text-muted-foreground">..................................................</TableCell>
                               <TableCell></TableCell>
@@ -371,7 +371,7 @@ export default function ExportPreview() {
 
                         return (
                         <TableRow key={entry.id}>
-                          {entryIndex === 0 ? <TableCell>{dayOfWeekMap[getDay(day)]}</TableCell> : <TableCell></TableCell>}
+                          {entryIndex === 0 ? <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell> : <TableCell className="bg-secondary"></TableCell>}
                           {entryIndex === 0 ? <TableCell>{format(day, "d/M/yyyy")}</TableCell> : <TableCell></TableCell>}
                           <TableCell>{getLocationDisplayName(entry.location)}</TableCell>
                           <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
