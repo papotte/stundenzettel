@@ -16,7 +16,7 @@ body {
     --popover-foreground: 120 25% 20%;
     --primary: 140 45% 40%;
     --primary-foreground: 140 25% 95%;
-    --secondary: 210 40% 96%;
+    --secondary: 210 40% 90%;
     --secondary-foreground: 210 25% 20%;
     --muted: 210 40% 96%;
     --muted-foreground: 120 15% 45%;
@@ -41,6 +41,7 @@ body {
     --sidebar-accent-foreground: 210 29% 24%;
     --sidebar-border: 0 0% 92%;
     --sidebar-ring: 203 100% 41%;
+    --table-header: 210 100% 80%;
   }
   .dark {
     --background: 140 10% 12%;
@@ -75,6 +76,7 @@ body {
     --sidebar-accent-foreground: 210 20% 96%;
     --sidebar-border: 210 29% 15%;
     --sidebar-ring: 203 100% 41%;
+    --table-header: 210 80% 30%;
   }
 }
 

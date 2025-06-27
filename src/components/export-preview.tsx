@@ -222,8 +222,8 @@ export default function ExportPreview() {
       { s: { r: 2, c: 9 }, e: { r: 3, c: 9 } }  // New Column
     );
     
-    const headerStyle = { fill: { fgColor: { rgb: "DDEBF7" } }, font: { bold: true }, alignment: { vertical: 'center', horizontal: 'center' } };
-    const dayColStyle = { fill: { fgColor: { rgb: "DDEBF7" } } };
+    const headerStyle = { fill: { fgColor: { rgb: "99CCFF" } }, font: { bold: true }, alignment: { vertical: 'center', horizontal: 'center' } };
+    const dayColStyle = { fill: { fgColor: { rgb: "99CCFF" } } };
 
     // Apply style to all header cells
     for (let R = 2; R <= 3; ++R) {
@@ -333,7 +333,7 @@ export default function ExportPreview() {
               <div key={weekIndex} className="mb-6">
                 <Table className="border">
                   <TableHeader>
-                    <TableRow className="bg-secondary hover:bg-secondary border-b-0">
+                    <TableRow className="bg-table-header hover:bg-table-header border-b-0">
                       <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
                       <TableHead rowSpan={2} className="w-[10%] align-middle">{t('export_preview.headerDate')}</TableHead>
                       <TableHead rowSpan={2} className="w-[18%] align-middle">{t('export_preview.headerLocation')}</TableHead>
@@ -344,7 +344,7 @@ export default function ExportPreview() {
                       <TableHead rowSpan={2} className="w-[8%] text-center align-middle">{t('export_preview.headerDriver')}</TableHead>
                       <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerMileage')}</TableHead>
                     </TableRow>
-                     <TableRow className="bg-secondary hover:bg-secondary">
+                     <TableRow className="bg-table-header hover:bg-table-header">
                         <TableHead className="text-center">{t('export_preview.headerFrom')}</TableHead>
                         <TableHead className="text-center">{t('export_preview.headerTo')}</TableHead>
                     </TableRow>
@@ -362,7 +362,7 @@ export default function ExportPreview() {
                         if (isSunday) return null; // Don't render empty Sundays
                         return (
                            <TableRow key={day.toISOString()}>
-                              <TableCell className="bg-secondary font-medium">{dayOfWeekMap[getDay(day)]}</TableCell>
+                              <TableCell className="bg-table-header font-medium">{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell>{format(day, "d/M/yyyy")}</TableCell>
                               <TableCell className="text-muted-foreground">..................................................</TableCell>
                               <TableCell></TableCell>
@@ -391,7 +391,7 @@ export default function ExportPreview() {
 
                         return (
                         <TableRow key={entry.id}>
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-secondary font-medium align-middle">{dayOfWeekMap[getDay(day)]}</TableCell>}
+                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-table-header font-medium align-middle">{dayOfWeekMap[getDay(day)]}</TableCell>}
                           {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle">{format(day, "d/M/yyyy")}</TableCell>}
                           <TableCell>{getLocationDisplayName(entry.location)}</TableCell>
                           <TableCell className="text-center">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
