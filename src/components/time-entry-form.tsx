@@ -82,15 +82,8 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
   const { toast } = useToast();
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
-  const defaultStartTime = "09:00";
-  let defaultEndTime = "17:00";
-
-  if (userSettings) {
-      const [startHours, startMinutes] = defaultStartTime.split(':').map(Number);
-      const startDate = set(new Date(), { hours: startHours, minutes: startMinutes });
-      const endDate = addMinutes(startDate, userSettings.defaultWorkHours * 60);
-      defaultEndTime = format(endDate, "HH:mm");
-  }
+  const defaultStartTime = userSettings?.defaultStartTime || "09:00";
+  const defaultEndTime = userSettings?.defaultEndTime || "17:00";
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

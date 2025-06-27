@@ -16,7 +16,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { getUserSettings, setUserSettings } from '@/services/user-settings-service';
 import Link from 'next/link';
@@ -25,6 +25,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const settingsFormSchema = z.object({
   defaultWorkHours: z.coerce.number().min(1, 'Must be at least 1 hour').max(10, 'Cannot be more than 10 hours'),
+  defaultStartTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  defaultEndTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
 });
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
@@ -40,6 +42,8 @@ export default function SettingsPage() {
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
       defaultWorkHours: 7,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
     },
   });
 
@@ -101,10 +105,20 @@ export default function SettingsPage() {
                         <Skeleton className="h-8 w-48" />
                         <Skeleton className="h-4 w-full max-w-sm mt-2" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-6">
                         <div className="space-y-2">
                             <Skeleton className="h-5 w-32" />
                             <Skeleton className="h-10 w-full" />
+                        </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Skeleton className="h-5 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                             <div className="space-y-2">
+                                <Skeleton className="h-5 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
                         </div>
                     </CardContent>
                     <CardFooter>
@@ -155,6 +169,40 @@ export default function SettingsPage() {
                     </FormItem>
                   )}
                 />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                   <FormField
+                      control={form.control}
+                      name="defaultStartTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Default start time</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                           <FormDescription>
+                            Used for new time entries.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="defaultEndTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Default end time</FormLabel>
+                          <FormControl>
+                            <Input type="time" {...field} />
+                          </FormControl>
+                           <FormDescription>
+                            Used for new time entries.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
               </CardContent>
               <CardFooter>
                 <Button type="submit" disabled={isSaving}>

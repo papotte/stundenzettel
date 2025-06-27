@@ -4,6 +4,8 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const defaultSettings: UserSettings = {
   defaultWorkHours: 7,
+  defaultStartTime: "09:00",
+  defaultEndTime: "17:00",
 };
 
 export const getUserSettings = async (userId: string): Promise<UserSettings> => {
@@ -12,7 +14,7 @@ export const getUserSettings = async (userId: string): Promise<UserSettings> => 
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return docSnap.data() as UserSettings;
+    return { ...defaultSettings, ...docSnap.data() } as UserSettings;
   } else {
     // If no settings exist, create them with default values
     await setUserSettings(userId, defaultSettings);
@@ -23,5 +25,5 @@ export const getUserSettings = async (userId: string): Promise<UserSettings> => 
 export const setUserSettings = async (userId: string, settings: UserSettings): Promise<void> => {
   if (!userId) throw new Error("User not authenticated");
   const docRef = doc(db, "users", userId, "settings", "general");
-  await setDoc(docRef, settings);
+  await setDoc(docRef, settings, { merge: true });
 };
