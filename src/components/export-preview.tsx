@@ -331,7 +331,7 @@ export default function ExportPreview() {
           <main>
             {relevantWeeks.map((week, weekIndex) => (
               <div key={weekIndex} className="mb-6">
-                <Table className="border-t border-x border-black [&_tr]:border-black">
+                <Table className="border border-black [&_tr]:border-black">
                   <TableHeader>
                     <TableRow className="bg-table-header hover:bg-table-header border-b-0 text-black">
                       <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
@@ -364,7 +364,7 @@ export default function ExportPreview() {
                            <TableRow key={day.toISOString()} className="border-black">
                               <TableCell className="bg-table-header font-medium border-black">{dayOfWeekMap[getDay(day)]}</TableCell>
                               <TableCell className="border-black">{format(day, "d/M/yyyy")}</TableCell>
-                              <TableCell className="text-muted-foreground border-black">..................................................</TableCell>
+                              <TableCell className="text-muted-foreground border-black"></TableCell>
                               <TableCell className="border-black"></TableCell>
                               <TableCell className="border-black"></TableCell>
                               <TableCell className="border-black"></TableCell>
@@ -405,18 +405,20 @@ export default function ExportPreview() {
                       )});
                     })}
                   </TableBody>
-                  <TableFooter>
-                    <TableRow className="border-b-0 hover:bg-transparent">
-                      <TableCell colSpan={9} className="text-right font-medium">{t('export_preview.footerTotalPerWeek')}</TableCell>
-                      <TableCell className="text-center font-medium"><span className="border-b-2 border-black pb-1">{calculateWeekTotal(week).toFixed(2)}</span></TableCell>
-                    </TableRow>
-                  </TableFooter>
                 </Table>
+                <div className="flex justify-end mt-8">
+                  <div className="w-1/3">
+                      <div className="flex justify-between pb-1">
+                          <span>{t('export_preview.footerTotalPerWeek')}</span>
+                          <span className="border-b-2 border-black pb-1 pl-8">{calculateWeekTotal(week).toFixed(2)}</span>
+                      </div>
+                  </div>
+                </div>
               </div>
             ))}
-            <div className="flex justify-end mt-8 font-bold">
+            <div className="flex justify-end mt-8">
                 <span className="mr-4">{t('export_preview.footerTotalHours')}</span>
-                <span className="border-b-2 border-double border-black pb-1 px-4">{monthTotal.toFixed(2)}</span>
+                <span className="border-b-2 border-double border-black pb-1 pl-8">{monthTotal.toFixed(2)}</span>
             </div>
           </main>
         </div>
