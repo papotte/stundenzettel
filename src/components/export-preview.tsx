@@ -331,7 +331,7 @@ export default function ExportPreview() {
           <main>
             {relevantWeeks.map((week, weekIndex) => (
               <div key={weekIndex} className="mb-6">
-                <Table className="border-t border-x border-black [&_tr]:border-black">
+                <Table className="border border-black [&_tr]:border-black">
                   <TableHeader>
                     <TableRow className="bg-table-header hover:bg-table-header border-b-0 text-black">
                       <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
@@ -405,14 +405,15 @@ export default function ExportPreview() {
                       )});
                     })}
                   </TableBody>
-                  <TableFooter className="border-t-0 bg-transparent">
-                    <TableRow className="hover:bg-transparent border-b-0">
-                        <TableCell colSpan={7} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
-                        <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
-                        <TableCell colSpan={2}></TableCell>
-                    </TableRow>
-                  </TableFooter>
                 </Table>
+                <div className="flex justify-end mt-8">
+                  <div className="w-1/3">
+                      <div className="flex justify-between font-bold text-lg border-b-2 border-black pb-1">
+                          <span>{t('export_preview.footerTotalPerWeek')}</span>
+                          <span class="border-b-2">{calculateWeekTotal(week).toFixed(2)}</span>
+                      </div>
+                  </div>
+                </div>
               </div>
             ))}
             <div className="flex justify-end mt-8">
