@@ -5,6 +5,16 @@ let entries: TimeEntry[] = [
     {
         id: '1',
         userId: 'mock-user-1',
+        location: 'On-site Installation',
+        startTime: set(subDays(new Date(), 3), { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 }),
+        endTime: set(subDays(new Date(), 3), { hours: 16, minutes: 0, seconds: 0, milliseconds: 0 }),
+        pauseDuration: 30,
+        travelTime: 1,
+        isDriver: false,
+    },
+    {
+        id: '2',
+        userId: 'mock-user-1',
         location: 'Office Work',
         startTime: set(subDays(new Date(), 1), { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 }),
         endTime: set(subDays(new Date(), 1), { hours: 17, minutes: 30, seconds: 0, milliseconds: 0 }),
@@ -13,7 +23,7 @@ let entries: TimeEntry[] = [
         isDriver: false,
     },
     {
-        id: '2',
+        id: '3',
         userId: 'mock-user-1',
         location: 'Client Meeting',
         startTime: set(subDays(new Date(), 2), { hours: 10, minutes: 0, seconds: 0, milliseconds: 0 }),
@@ -23,7 +33,7 @@ let entries: TimeEntry[] = [
         isDriver: true,
     },
     {
-        id: '3',
+        id: '4',
         userId: 'mock-user-2',
         location: 'Home Office',
         startTime: set(subDays(new Date(), 1), { hours: 8, minutes: 15, seconds: 0, milliseconds: 0 }),
@@ -33,14 +43,14 @@ let entries: TimeEntry[] = [
         isDriver: false,
     },
      {
-        id: '4',
+        id: '5',
         userId: 'mock-user-1',
         location: 'Workshop Prep',
-        startTime: set(new Date(), { hours: 13, minutes: 0, seconds: 0, milliseconds: 0 }),
+        startTime: set(new Date(), { hours: 7, minutes: 0, seconds: 0, milliseconds: 0 }),
         endTime: set(new Date(), { hours: 15, minutes: 0, seconds: 0, milliseconds: 0 }),
-        pauseDuration: 0,
-        travelTime: 0,
-        isDriver: false,
+        pauseDuration: 30,
+        travelTime: 1,
+        isDriver: true,
     }
 ];
 
