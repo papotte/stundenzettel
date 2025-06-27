@@ -15,7 +15,7 @@ import { de, enUS } from "date-fns/locale";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Printer } from "lucide-react";
 import type { TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,6 +100,10 @@ export default function ExportPreview() {
       return t(`special_locations.${location}`);
     }
     return location;
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleExport = () => {
@@ -335,10 +339,16 @@ export default function ExportPreview() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={handleExport} className="mt-4 sm:mt-0">
-            <Download className="mr-2 h-4 w-4" />
-            {t('export_preview.exportButton')}
-          </Button>
+          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <Button onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
+              {t('export_preview.exportButton')}
+            </Button>
+            <Button onClick={handlePrint} variant="outline">
+              <Printer className="mr-2 h-4 w-4" />
+              {t('export_preview.exportPdfButton')}
+            </Button>
+          </div>
         </div>
 
         <TimesheetPreview

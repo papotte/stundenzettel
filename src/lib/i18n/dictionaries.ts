@@ -167,6 +167,7 @@ export const dictionaries = {
     // Export Preview Component
     export_preview: {
       exportButton: "Export to Excel",
+      exportPdfButton: "Download PDF",
       timesheetTitle: "Timesheet for the month: {month}",
       headerCompany: "Name and Phone / Radio: {details}",
       headerWeek: "Week",
@@ -354,6 +355,7 @@ export const dictionaries = {
     // Export Preview Component
     export_preview: {
       exportButton: "Nach Excel exportieren",
+      exportPdfButton: "PDF herunterladen",
       timesheetTitle: "Stundenzettel für den Monat: {month}",
       headerCompany: "Name und Telefon / Funk: {details}",
       headerWeek: "Woche",
