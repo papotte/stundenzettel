@@ -57,7 +57,7 @@ export default function ExportPreview() {
       try {
         const fetchedEntries = await getTimeEntries(user.uid);
         setEntries(fetchedEntries);
-      } catch (error) => {
+      } catch (error) {
         console.error("Failed to load time entries from Firestore.", error);
       }
       setSelectedMonth(new Date());
