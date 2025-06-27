@@ -331,9 +331,9 @@ export default function ExportPreview() {
           <main>
             {relevantWeeks.map((week, weekIndex) => (
               <div key={weekIndex} className="mb-6">
-                <Table className="border">
+                <Table className="border border-black [&_tr]:border-black">
                   <TableHeader>
-                    <TableRow className="bg-table-header hover:bg-table-header border-b-0">
+                    <TableRow className="bg-table-header hover:bg-table-header border-b-0 text-black">
                       <TableHead rowSpan={2} className="w-[8%] align-middle">{t('export_preview.headerWeek')}</TableHead>
                       <TableHead rowSpan={2} className="w-[10%] align-middle">{t('export_preview.headerDate')}</TableHead>
                       <TableHead rowSpan={2} className="w-[18%] align-middle">{t('export_preview.headerLocation')}</TableHead>
@@ -344,7 +344,7 @@ export default function ExportPreview() {
                       <TableHead rowSpan={2} className="w-[8%] text-center align-middle">{t('export_preview.headerDriver')}</TableHead>
                       <TableHead rowSpan={2} className="w-[12%] text-center align-middle">{t('export_preview.headerMileage')}</TableHead>
                     </TableRow>
-                     <TableRow className="bg-table-header hover:bg-table-header">
+                     <TableRow className="bg-table-header hover:bg-table-header text-black">
                         <TableHead className="text-center">{t('export_preview.headerFrom')}</TableHead>
                         <TableHead className="text-center">{t('export_preview.headerTo')}</TableHead>
                     </TableRow>
@@ -405,8 +405,8 @@ export default function ExportPreview() {
                       )});
                     })}
                   </TableBody>
-                  <TableFooter>
-                    <TableRow>
+                  <TableFooter className="border-t-0 bg-transparent">
+                    <TableRow className="hover:bg-transparent">
                         <TableCell colSpan={7} className="text-right font-bold">{t('export_preview.footerTotalPerWeek')}</TableCell>
                         <TableCell className="text-center font-bold">{calculateWeekTotal(week).toFixed(2)}</TableCell>
                         <TableCell colSpan={2}></TableCell>
