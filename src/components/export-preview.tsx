@@ -237,11 +237,11 @@ export default function ExportPreview() {
 
             let style = headerStyles.left;
             // Columns aligned right
-            if ([1, 5, 6, 7, 9].includes(C) || (R === 3 && [3, 4].includes(C))) {
+            if ([1, 3, 4, 5, 6, 7, 9].includes(C)) {
                 style = headerStyles.right;
             } 
             // Columns aligned center
-            else if (C === 8 || (R === 2 && C === 3)) {
+            else if (C === 8) {
                 style = headerStyles.center;
             }
             cell.s = style;
@@ -342,30 +342,30 @@ export default function ExportPreview() {
           <main>
             {relevantWeeks.map((week, weekIndex) => (
               <div key={weekIndex} className="mb-6">
-                <Table className="border-t border-x border-black">
+                <Table className="border border-black">
                   <TableHeader>
                     <TableRow className="bg-table-header hover:bg-table-header text-black border-black border-b">
-                      <TableHead rowSpan={2} className="w-[8%] align-middle text-left border-black">
+                      <TableHead rowSpan={2} className="w-[8%] align-middle text-left border-r border-black">
                         {t('export_preview.headerWeek')}
                       </TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] align-middle text-right border-black">
+                      <TableHead rowSpan={2} className="w-[10%] align-middle text-right border-r border-black">
                         {t('export_preview.headerDate')}
                       </TableHead>
-                      <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-black">
+                      <TableHead rowSpan={2} className="w-[18%] align-middle text-left border-r border-black">
                         {t('export_preview.headerLocation')}
                       </TableHead>
-                      <TableHead colSpan={2} className="w-[14%] text-center border-black">
+                      <TableHead colSpan={2} className="w-[14%] text-center border-r border-black">
                         {t('export_preview.headerWorkTime')}
                       </TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-black">{t('export_preview.headerPauseDuration')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[8%] text-right align-middle border-black">{t('export_preview.headerTravelTime')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-black">{t('export_preview.headerCompensatedTime')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[8%] text-center align-middle border-black">{t('export_preview.headerDriver')}</TableHead>
-                      <TableHead rowSpan={2} className="w-[12%] text-right align-middle border-black">{t('export_preview.headerMileage')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerPauseDuration')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[8%] text-right align-middle border-r border-black">{t('export_preview.headerTravelTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[10%] text-right align-middle border-r border-black">{t('export_preview.headerCompensatedTime')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[8%] text-center align-middle border-r border-black">{t('export_preview.headerDriver')}</TableHead>
+                      <TableHead rowSpan={2} className="w-[12%] text-right align-middle">{t('export_preview.headerMileage')}</TableHead>
                     </TableRow>
                      <TableRow className="bg-table-header hover:bg-table-header text-black border-black border-b">
-                        <TableHead className="text-right border-black">{t('export_preview.headerFrom')}</TableHead>
-                        <TableHead className="text-right border-black">{t('export_preview.headerTo')}</TableHead>
+                        <TableHead className="text-right border-r border-black">{t('export_preview.headerFrom')}</TableHead>
+                        <TableHead className="text-right border-r border-black">{t('export_preview.headerTo')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -381,16 +381,16 @@ export default function ExportPreview() {
                         if (isSunday) return null; // Don't render empty Sundays
                         return (
                            <TableRow key={day.toISOString()} className="border-b border-black">
-                              <TableCell className="bg-table-header font-medium border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>
-                              <TableCell className="border-black text-right">{format(day, "d/M/yyyy")}</TableCell>
-                              <TableCell className="text-muted-foreground border-black text-left"></TableCell>
-                              <TableCell className="border-black text-right"></TableCell>
-                              <TableCell className="border-black text-right"></TableCell>
-                              <TableCell className="border-black text-right"></TableCell>
-                              <TableCell className="border-black text-right"></TableCell>
-                              <TableCell className="border-black text-right"></TableCell>
-                              <TableCell className="border-black text-center"></TableCell>
-                              <TableCell className="border-black text-right"></TableCell>
+                              <TableCell className="bg-table-header font-medium border-r border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>
+                              <TableCell className="border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>
+                              <TableCell className="text-muted-foreground border-r border-black text-left"></TableCell>
+                              <TableCell className="border-r border-black text-right"></TableCell>
+                              <TableCell className="border-r border-black text-right"></TableCell>
+                              <TableCell className="border-r border-black text-right"></TableCell>
+                              <TableCell className="border-r border-black text-right"></TableCell>
+                              <TableCell className="border-r border-black text-right"></TableCell>
+                              <TableCell className="border-r border-black text-center"></TableCell>
+                              <TableCell className="text-right"></TableCell>
                             </TableRow>
                         )
                       }
@@ -410,30 +410,34 @@ export default function ExportPreview() {
 
                         return (
                         <TableRow key={entry.id} className="border-b border-black">
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-table-header font-medium align-middle border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>}
-                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
-                          <TableCell className="border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
-                          <TableCell className="text-right border-black">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-right border-black">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
-                          <TableCell className="text-right border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
-                          <TableCell className="text-right border-black">{(entry.travelTime || 0).toFixed(2)}</TableCell>
-                          <TableCell className="text-right border-black">{compensatedHours.toFixed(2)}</TableCell>
-                          <TableCell className="text-center border-black">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
-                          <TableCell className="border-black text-right"></TableCell>
+                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="bg-table-header font-medium align-middle border-r border-black text-left">{dayOfWeekMap[getDay(day)]}</TableCell>}
+                          {entryIndex === 0 && <TableCell rowSpan={dayEntries.length} className="align-middle border-r border-black text-right">{format(day, "d/M/yyyy")}</TableCell>}
+                          <TableCell className="border-r border-black text-left">{getLocationDisplayName(entry.location)}</TableCell>
+                          <TableCell className="text-right border-r border-black">{entry.startTime ? format(entry.startTime, 'HH:mm') : ''}</TableCell>
+                          <TableCell className="text-right border-r border-black">{entry.endTime ? format(entry.endTime, 'HH:mm') : ''}</TableCell>
+                          <TableCell className="text-right border-r border-black">{formatDecimalHours(entry.pauseDuration)}</TableCell>
+                          <TableCell className="text-right border-r border-black">{(entry.travelTime || 0).toFixed(2)}</TableCell>
+                          <TableCell className="text-right border-r border-black">{compensatedHours.toFixed(2)}</TableCell>
+                          <TableCell className="text-center border-r border-black">{entry.isDriver ? t('export_preview.driverMark') : ''}</TableCell>
+                          <TableCell className="text-right"></TableCell>
                         </TableRow>
                       )});
                     })}
                   </TableBody>
                 </Table>
-                <div className="flex justify-end mt-2 text-sm">
+                <div className="flex justify-end mt-2 text-sm border-b-2 border-black pb-2">
                   <span className="mr-4 font-medium">{t('export_preview.footerTotalPerWeek')}</span>
                   <span className="font-bold w-36 text-right">{calculateWeekTotal(week).toFixed(2)}</span>
                 </div>
               </div>
             ))}
-            <div className="flex justify-end mt-4 pt-4">
+            <div className="flex justify-end mt-8 border-b-2 border-double border-black pb-2">
                 <span className="mr-4 font-bold">{t('export_preview.footerTotalHours')}</span>
-                <span className="font-bold">{monthTotal.toFixed(2)}</span>
+                <span className="font-bold w-36 text-right">{monthTotal.toFixed(2)}</span>
+            </div>
+            <div className="mt-24 text-sm">
+                <div className="border-t border-black w-72"></div>
+                <p className="mt-2">{t('export_preview.signatureLine')}</p>
             </div>
           </main>
         </div>

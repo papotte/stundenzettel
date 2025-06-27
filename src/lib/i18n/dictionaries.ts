@@ -1,3 +1,4 @@
+
 export const dictionaries = {
   en: {
     // Login Page
@@ -175,6 +176,7 @@ export const dictionaries = {
       driverMark: "D",
       locationNotFound: "Location not found",
       headerMileage: "Mileage/Expenses",
+      signatureLine: "Signature",
     }
   },
   de: {
@@ -353,6 +355,7 @@ export const dictionaries = {
       driverMark: "F",
       locationNotFound: "Ort nicht gefunden",
       headerMileage: "km eig. PKW/Verpfl.",
+      signatureLine: "Unterschrift",
     }
   },
 };
