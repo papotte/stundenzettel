@@ -31,7 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, Save, Lightbulb, AlertTriangle, MapPin, Loader2 } from "lucide-react";
-import { cn, timeStringToMinutes, formatHoursAndMinutes } from "@/lib/utils";
+import { cn, timeStringToMinutes, formatHoursAndMinutes, formatMinutesToTimeInput } from "@/lib/utils";
 import type { TimeEntry, UserSettings } from "@/lib/types";
 import { Separator } from "./ui/separator";
 import { useMemo, useState } from "react";
@@ -92,7 +92,7 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
       date: entry?.startTime || selectedDate,
       startTime: entry ? format(entry.startTime, "HH:mm") : defaultStartTime,
       endTime: entry?.endTime ? format(entry.endTime, "HH:mm") : defaultEndTime,
-      pauseDuration: entry?.pauseDuration ? format(addMinutes(new Date(0), entry.pauseDuration), "HH:mm") : "00:00",
+      pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration),
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
     },
@@ -387,29 +387,29 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="isDriver"
-                        render={({ field }) => (
-                          <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>
-                                Driver
-                              </FormLabel>
-                              <FormDescription>
-                                Were you the designated driver?
-                              </FormDescription>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
                   </div>
+                  <FormField
+                    control={form.control}
+                    name="isDriver"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2 flex flex-row items-end space-x-3 rounded-md border p-3">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Driver
+                          </FormLabel>
+                          <FormDescription>
+                            Were you the designated driver?
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 </>
               )}
 
