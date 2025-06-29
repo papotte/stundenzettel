@@ -32,6 +32,7 @@ Follow these instructions to set up and run the project in your local developmen
 
 - [Node.js](https://nodejs.org/) (version 20 or later recommended)
 - [npm](https://www.npmjs.com/) (usually comes with Node.js)
+- [Firebase CLI](https://firebase.google.com/docs/cli) (for deploying rules)
 
 ### 1. Installation
 
@@ -113,23 +114,21 @@ The application will be available at [http://localhost:9002](http://localhost:90
 
 ---
 
-## Deploying to Production (Firebase App Hosting)
+## Deploying to Production (Firebase)
+
+Deploying your application involves two main steps: deploying the app itself with **App Hosting**, and deploying the **Firestore Security Rules**.
+
+### 1. Set Your Secrets for App Hosting
 
 When you deploy your application to Firebase App Hosting, the variables in your local `.env.local` file are **not** automatically used. For security, you must set these values as secrets in your Firebase project.
 
-You can do this using the Firebase CLI in your terminal.
-
-### 1. Set Your Secrets
-
-For each variable in your `.env.local` file, run the following command, replacing `SECRET_NAME` and `your_value_here` accordingly.
+You can do this using the Firebase CLI in your terminal. For each variable in your `.env.local` file, run the following command, replacing `SECRET_NAME` and `your_value_here` accordingly.
 
 ```bash
 firebase apphosting:secrets:set SECRET_NAME
 ```
 
-When prompted, enter the secret value (`your_value_here`).
-
-You will need to set the following secrets:
+When prompted, enter the secret value (`your_value_here`). You will need to set the following secrets:
 
 *   `NEXT_PUBLIC_ENVIRONMENT` (set this to `production`)
 *   `NEXT_PUBLIC_FIREBASE_API_KEY`
@@ -141,7 +140,6 @@ You will need to set the following secrets:
 *   `GOOGLE_MAPS_API_KEY`
 
 **Example:**
-
 ```bash
 # This command will prompt you to enter the value for your API key
 firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
@@ -149,13 +147,22 @@ firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
 
 ### 2. Deploy Your Application
 
-After setting all your secrets, deploy your application to Firebase App Hosting for the changes to take effect:
+After setting all your secrets, deploy your application to Firebase App Hosting:
 
 ```bash
 firebase deploy --only apphosting
 ```
 
-Your application will now run in production mode, using the secret keys you configured.
+### 3. Deploy Firestore Security Rules
+
+Your database is protected by security rules. This project includes a `firestore.rules` file that you must deploy to your project.
+
+From your project's root directory, run the following command:
+
+```bash
+firebase deploy --only firestore:rules
+```
+This will publish the rules that allow users to read and write their own time entries.
 
 ---
 
@@ -163,14 +170,22 @@ Your application will now run in production mode, using the secret keys you conf
 
 ### Error: `Firestore... 400 (Bad Request)` or Permission Errors
 
-This error usually means that the necessary Google Cloud APIs are not enabled for your project, or a billing account is not linked.
+This error usually means that either the necessary Google Cloud APIs are not enabled, or your Firestore security rules are blocking access.
 
 **Solution:**
 
-1.  Make sure you are logged into the Google account associated with your Firebase project.
-2.  Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
-3.  Navigate to **APIs & Services > Library**.
-4.  Search for and enable the following two APIs if they are not already active:
-    *   **Cloud Firestore API**
-    *   **Identity Toolkit API** (required for Firebase Authentication)
-5.  **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account. You won't be charged as long as you stay within the Firebase "Spark" plan's free limits.
+1.  **Enable Cloud APIs:**
+    *   Make sure you are logged into the Google account associated with your Firebase project.
+    *   Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
+    *   Navigate to **APIs & Services > Library**.
+    *   Search for and enable the following two APIs if they are not already active:
+        *   **Cloud Firestore API**
+        *   **Identity Toolkit API** (required for Firebase Authentication)
+    *   **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
+
+2.  **Deploy Security Rules:**
+    *   If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
+    *   Run the following command from your project directory:
+        ```bash
+        firebase deploy --only firestore:rules
+        ```
