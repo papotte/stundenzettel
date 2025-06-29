@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -8,7 +9,6 @@ import {
   UserCredential,
   GoogleAuthProvider,
   signInWithPopup,
-  User,
   setPersistence,
   browserLocalPersistence,
 } from 'firebase/auth';
@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Clock, TestTube2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from '@/context/i18n-context';
+import type { AuthenticatedUser } from '@/lib/types';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -40,12 +41,12 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-const mockUsers = [
+const mockUsers: AuthenticatedUser[] = [
   { uid: 'mock-user-1', email: 'user1@example.com', displayName: 'Raquel Crespillo Andujar' },
   { uid: 'mock-user-2', email: 'user2@example.com', displayName: 'Max Mustermann' },
 ]
 
-const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -58,6 +59,15 @@ export default function LoginPage() {
 
   const handleAuthAction = async (action: (email: string, password: string) => Promise<UserCredential>) => {
     setLoading(true);
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
+      toast({
+        title: t('toasts.configurationErrorTitle'),
+        description: t('toasts.configurationErrorDescription'),
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
     try {
       await setPersistence(auth, browserLocalPersistence);
       await action(email, password);
@@ -78,6 +88,15 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
+      toast({
+        title: t('toasts.configurationErrorTitle'),
+        description: t('toasts.configurationErrorDescription'),
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
     const provider = new GoogleAuthProvider();
     try {
       await setPersistence(auth, browserLocalPersistence);
@@ -94,9 +113,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleMockLogin = (user: any) => {
+  const handleMockLogin = (user: AuthenticatedUser) => {
     if (loginAsMockUser) {
-        loginAsMockUser(user as User);
+        loginAsMockUser(user);
         router.push('/');
     }
   }
@@ -118,7 +137,7 @@ export default function LoginPage() {
                 <CardContent className="space-y-4">
                     {mockUsers.map(user => (
                         <Button key={user.uid} onClick={() => handleMockLogin(user)} className="w-full">
-                            {t('login.loginAs', { displayName: user.displayName })}
+                            {t('login.loginAs', { displayName: user.displayName || user.email! })}
                         </Button>
                     ))}
                 </CardContent>

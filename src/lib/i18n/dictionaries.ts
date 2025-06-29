@@ -130,6 +130,8 @@ export const dictionaries = {
       clearFailedDescription: "There was a problem clearing your data.",
       entryExistsTitle: "Entry already exists",
       entryExistsDescription: "An entry for \"{location}\" on this day already exists.",
+      configurationErrorTitle: "Configuration Error",
+      configurationErrorDescription: "Firebase is not configured correctly. Please check your environment variables.",
     },
     // Settings Page
     settings: {
@@ -318,6 +320,8 @@ export const dictionaries = {
       clearFailedDescription: "Beim Löschen Ihrer Daten ist ein Problem aufgetreten.",
       entryExistsTitle: "Eintrag existiert bereits",
       entryExistsDescription: "Ein Eintrag für \"{location}\" an diesem Tag existiert bereits.",
+      configurationErrorTitle: "Konfigurationsfehler",
+      configurationErrorDescription: "Firebase ist nicht korrekt konfiguriert. Bitte überprüfen Sie Ihre Umgebungsvariablen.",
     },
     // Settings Page
     settings: {

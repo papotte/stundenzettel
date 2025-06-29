@@ -10,7 +10,7 @@ A Next.js application for effortless time tracking, designed for Firebase Studio
 - Daily, weekly, and monthly time summaries.
 - Export timesheets to professionally formatted Excel and PDF files.
 - English and German language support.
-- Mock mode for local development without Firebase.
+- Test mode for local development without Firebase.
 
 ## Tech Stack
 
@@ -43,36 +43,51 @@ npm install
 
 ### 2. Environment Configuration
 
-The application can run in two modes: **Mock Mode** (for local development without external services) or **Firebase Mode** (requires a Firebase project).
+The application can run in two modes: **Local Mode** (using mock data) or **Firebase Mode** (connecting to your Firebase project). You switch between them using an environment variable in a `.env.local` file.
 
-#### Option A: Running in Mock Mode (Recommended for UI development)
+#### Local Mode (for Test & Development)
 
-To run the app with pre-populated sample data without connecting to any external services, create a `.env.local` file in the root of your project and add the following line:
+For local development and testing, you can use mock data without connecting to any external services. This is the recommended mode for UI development.
+
+Create a `.env.local` file in the root of your project and set the environment to `test` or `development`:
 
 ```env
-NEXT_PUBLIC_USE_MOCKS=true
+# For local testing and development with mock data
+NEXT_PUBLIC_ENVIRONMENT=development
+```
+or
+```env
+NEXT_PUBLIC_ENVIRONMENT=test
 ```
 
-This will automatically load sample data and bypass the Firebase login screen.
+This will automatically load pre-populated sample data and let you select a mock user on the login screen, bypassing the Firebase authentication.
 
-#### Option B: Running with Firebase and Google Cloud
+#### Firebase Mode (for Production)
 
-To use the full features of the application, you need to connect it to your own Firebase project and enable the Google Maps Geocoding API.
+To connect to a live Firebase backend, you'll need your project credentials.
 
-1.  **Create a `.env.local` file** in the root of the project.
-2.  **Set up Firebase:**
+1.  **Create a `.env.local` file** in the root of your project.
+2.  **Set the environment** to `production` (or any value other than `test` or `development`).
+    ```env
+    # For a production environment connecting to Firebase
+    NEXT_PUBLIC_ENVIRONMENT=production
+    ```
+3.  **Add Firebase Credentials:**
     *   Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
     *   In your project, go to Project Settings and add a new Web App.
     *   Copy the Firebase configuration credentials into your `.env.local` file.
-3.  **Set up Google Maps Geocoding API:**
+4.  **Add Google Maps API Key:**
     *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
     *   In the same project used for Firebase, navigate to "APIs & Services" > "Library" and enable the **Geocoding API**.
     *   Navigate to "APIs & Services" > "Credentials" and create a new API Key.
     *   Add this API key to your `.env.local` file.
 
-Your `.env.local` file should look like this:
+Your final `.env.local` file for Firebase Mode should look like this:
 
 ```env
+# Set to 'production' to use Firebase
+NEXT_PUBLIC_ENVIRONMENT=production
+
 # Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -86,8 +101,6 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
 
-**Note:** Do not set `NEXT_PUBLIC_USE_MOCKS=true` if you are configuring Firebase credentials.
-
 ### 3. Run the Development Server
 
 Start the Next.js development server:
@@ -97,3 +110,49 @@ npm run dev
 ```
 
 The application will be available at [http://localhost:9002](http://localhost:9002).
+
+---
+
+## Deploying to Production (Firebase App Hosting)
+
+When you deploy your application to Firebase App Hosting, the variables in your local `.env.local` file are **not** automatically used. For security, you must set these values as secrets in your Firebase project.
+
+You can do this using the Firebase CLI in your terminal.
+
+### 1. Set Your Secrets
+
+For each variable in your `.env.local` file, run the following command, replacing `SECRET_NAME` and `your_value_here` accordingly.
+
+```bash
+firebase apphosting:secrets:set SECRET_NAME
+```
+
+When prompted, enter the secret value (`your_value_here`).
+
+You will need to set the following secrets:
+
+*   `NEXT_PUBLIC_ENVIRONMENT` (set this to `production`)
+*   `NEXT_PUBLIC_FIREBASE_API_KEY`
+*   `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+*   `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+*   `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+*   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+*   `NEXT_PUBLIC_FIREBASE_APP_ID`
+*   `GOOGLE_MAPS_API_KEY`
+
+**Example:**
+
+```bash
+# This command will prompt you to enter the value for your API key
+firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
+```
+
+### 2. Deploy Your Application
+
+After setting all your secrets, deploy your application to Firebase App Hosting for the changes to take effect:
+
+```bash
+firebase deploy --only apphosting
+```
+
+Your application will now run in production mode, using the secret keys you configured.

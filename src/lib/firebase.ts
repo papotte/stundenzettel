@@ -15,7 +15,7 @@ let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
 
-const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
 
 if (useMocks) {
   // If in mock mode, create placeholder objects to avoid crashing on import.
@@ -24,18 +24,22 @@ if (useMocks) {
   db = {} as Firestore;
   auth = {} as Auth;
 } else {
-  // Only initialize if API key is present.
-  if (firebaseConfig.apiKey) {
+  // In a non-mock environment, check if all Firebase config keys are present.
+  const missingConfigKeys = Object.entries(firebaseConfig)
+    .filter(([, value]) => !value)
+    .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
+
+  if (missingConfigKeys.length > 0) {
+    console.error(`Firebase configuration is incomplete. The following environment variables are missing: ${missingConfigKeys.join(", ")}. Please set these as secrets in your Firebase Hosting environment. Refer to the README.md for instructions.`);
+    // Set dummy objects to prevent app from crashing on import
+    app = {} as FirebaseApp;
+    db = {} as Firestore;
+    auth = {} as Auth;
+  } else {
       app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
       db = getFirestore(app);
       auth = getAuth(app);
-  } else {
-      console.warn("Firebase config not found, and not in mock mode. Firebase features will be disabled. Create a .env.local file with your Firebase credentials to enable them.");
-      app = {} as FirebaseApp;
-      db = {} as Firestore;
-      auth = {} as Auth;
   }
 }
-
 
 export { db, auth };

@@ -1,7 +1,6 @@
 import ExcelJS from "exceljs";
 import { format, getDay, isSameMonth, differenceInMinutes, type Locale } from "date-fns";
-import type { User } from "firebase/auth";
-import type { TimeEntry, UserSettings } from "@/lib/types";
+import type { AuthenticatedUser, TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 
 const dayOfWeekMap: { [key: number]: string } = {
@@ -16,7 +15,7 @@ const dayOfWeekMap: { [key: number]: string } = {
 
 interface ExportParams {
   selectedMonth: Date;
-  user: User | null;
+  user: AuthenticatedUser | null;
   userSettings: UserSettings;
   entries: TimeEntry[];
   t: (key: string, replacements?: Record<string, string | number>) => string;
