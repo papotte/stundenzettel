@@ -26,10 +26,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, TestTube2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from '@/context/i18n-context';
 import type { AuthenticatedUser } from '@/lib/types';
+
+const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M7 9L9 15L12 11L15 15L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>
+);
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -124,7 +131,7 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
             <div className="flex items-center gap-2 mb-4">
-                <TestTube2 className="h-8 w-8 text-primary" />
+                <TimeWiseIcon className="h-8 w-8 text-primary" />
                 <h1 className="text-3xl font-bold tracking-tight font-headline">{t('login.testMode')}</h1>
             </div>
             <Card className="w-full max-w-sm">
@@ -149,7 +156,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
        <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-8 w-8 text-primary" />
+            <TimeWiseIcon className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold tracking-tight font-headline">{t('login.title')}</h1>
         </div>
       <Tabs defaultValue="signin" className="w-full max-w-sm">

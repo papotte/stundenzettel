@@ -4,7 +4,6 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth as firebaseAuth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock } from 'lucide-react';
 import type { AuthenticatedUser } from '@/lib/types';
 
 interface AuthContextType {
@@ -13,6 +12,14 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   loginAsMockUser?: (user: AuthenticatedUser | null) => void;
 }
+
+const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M7 9L9 15L12 11L15 15L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>
+);
 
 const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
 const MOCK_USER_STORAGE_KEY = 'mockUser';
@@ -95,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         {loading ? (
              <div className="flex items-center justify-center h-screen bg-background">
                 <div className="flex flex-col items-center space-y-4">
-                    <Clock className="h-12 w-12 text-primary animate-spin" />
+                    <TimeWiseIcon className="h-12 w-12 text-primary animate-spin" />
                     <p className="text-muted-foreground">Loading TimeWise Tracker...</p>
                 </div>
             </div>
