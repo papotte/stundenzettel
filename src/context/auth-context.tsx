@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     if (useMocks) {
         loginAsMockUser(null);
-    } else {
+    } else if (firebaseAuth && typeof firebaseAuth.onAuthStateChanged === 'function') {
         await firebaseSignOut(firebaseAuth);
     }
   };
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     // Guard against using a non-initialized auth object
-    if (!firebaseAuth || !firebaseAuth.onAuthStateChanged) {
+    if (!firebaseAuth || typeof firebaseAuth.onAuthStateChanged !== 'function') {
         console.warn("Firebase Auth is not initialized. Skipping auth state listener.");
         setLoading(false);
         return;

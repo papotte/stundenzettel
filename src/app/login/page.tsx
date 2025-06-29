@@ -59,7 +59,7 @@ export default function LoginPage() {
 
   const handleAuthAction = async (action: (email: string, password: string) => Promise<UserCredential>) => {
     setLoading(true);
-    if (auth?.type !== 'auth') {
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
       toast({
         title: t('toasts.configurationErrorTitle'),
         description: t('toasts.configurationErrorDescription'),
@@ -88,7 +88,7 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    if (auth?.type !== 'auth') {
+    if (!auth || typeof auth.onAuthStateChanged !== 'function') {
       toast({
         title: t('toasts.configurationErrorTitle'),
         description: t('toasts.configurationErrorDescription'),
