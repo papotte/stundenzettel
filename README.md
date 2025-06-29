@@ -10,7 +10,7 @@ A Next.js application for effortless time tracking, designed for Firebase Studio
 - Daily, weekly, and monthly time summaries.
 - Export timesheets to professionally formatted Excel and PDF files.
 - English and German language support.
-- Mock mode for local development without Firebase.
+- Test mode for local development without Firebase.
 
 ## Tech Stack
 
@@ -43,36 +43,44 @@ npm install
 
 ### 2. Environment Configuration
 
-The application can run in two modes: **Mock Mode** (for local development without external services) or **Firebase Mode** (requires a Firebase project).
+The application can run in two modes: **Test Mode** (for local development without external services) or **Firebase Mode** (which connects to your Firebase project). You can switch between them using an environment variable.
 
-#### Option A: Running in Mock Mode (Recommended for UI development)
+#### Option A: Running in Test Mode (Recommended for UI development)
 
 To run the app with pre-populated sample data without connecting to any external services, create a `.env.local` file in the root of your project and add the following line:
 
 ```env
-NEXT_PUBLIC_USE_MOCKS=true
+NEXT_PUBLIC_ENVIRONMENT=test
 ```
 
-This will automatically load sample data and bypass the Firebase login screen.
+This will automatically load sample data and let you select a mock user, bypassing the Firebase login screen.
 
-#### Option B: Running with Firebase and Google Cloud
+#### Option B: Running with Firebase (Production/Development)
 
 To use the full features of the application, you need to connect it to your own Firebase project and enable the Google Maps Geocoding API.
 
 1.  **Create a `.env.local` file** in the root of the project.
-2.  **Set up Firebase:**
+2.  **Set the environment** to `development` or `production` (or leave it unset).
+    ```env
+    # For a development environment
+    NEXT_PUBLIC_ENVIRONMENT=development
+    ```
+3.  **Set up Firebase:**
     *   Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
     *   In your project, go to Project Settings and add a new Web App.
     *   Copy the Firebase configuration credentials into your `.env.local` file.
-3.  **Set up Google Maps Geocoding API:**
+4.  **Set up Google Maps Geocoding API:**
     *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
     *   In the same project used for Firebase, navigate to "APIs & Services" > "Library" and enable the **Geocoding API**.
     *   Navigate to "APIs & Services" > "Credentials" and create a new API Key.
     *   Add this API key to your `.env.local` file.
 
-Your `.env.local` file should look like this:
+Your final `.env.local` file for Firebase should look like this:
 
 ```env
+# Set to 'development' or 'production' to use Firebase
+NEXT_PUBLIC_ENVIRONMENT=development
+
 # Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
@@ -85,8 +93,6 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 # Used for the "Get current location" feature
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
-
-**Note:** Do not set `NEXT_PUBLIC_USE_MOCKS=true` if you are configuring Firebase credentials.
 
 ### 3. Run the Development Server
 

@@ -2,12 +2,12 @@ import * as firestoreService from './time-entry-service.firestore';
 import * as localService from './time-entry-service.local';
 import type { TimeEntry } from '@/lib/types';
 
-const useMockService = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+const useMockService = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test';
 
 const service = useMockService ? localService : firestoreService;
 
 if (useMockService) {
-  console.log("Using local time entry service for testing.");
+  console.log("Using local time entry service for testing (NEXT_PUBLIC_ENVIRONMENT=test).");
 }
 
 export const addTimeEntry = (entry: Omit<TimeEntry, 'id'>): Promise<string> => {

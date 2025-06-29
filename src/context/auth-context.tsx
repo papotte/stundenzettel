@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
@@ -14,7 +13,7 @@ interface AuthContextType {
   loginAsMockUser?: (user: User | null) => void;
 }
 
-const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
+const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test';
 const MOCK_USER_STORAGE_KEY = 'mockUser';
 
 export const AuthContext = createContext<AuthContextType>({
