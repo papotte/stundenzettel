@@ -108,8 +108,8 @@ export default function TimeTracker() {
       } catch (error) {
         console.error("Error fetching initial data:", error);
         toast({
-          title: "Failed to load data",
-          description: "Could not retrieve your data from the database. Please check your Firebase configuration.",
+          title: t('toasts.databaseErrorTitle'),
+          description: t('toasts.databaseConnectionError'),
           variant: "destructive",
         });
       } finally {
@@ -117,7 +117,7 @@ export default function TimeTracker() {
       }
     };
     fetchInitialData();
-  }, [user, toast]);
+  }, [user, toast, t]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;

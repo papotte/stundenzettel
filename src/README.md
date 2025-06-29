@@ -151,17 +151,9 @@ When prompted, enter the secret value (`your_value_here`). You will need to set 
 firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
 ```
 
-### 2. Deploy Your Application
+### 2. Deploy Firestore Security Rules
 
-After setting all your secrets, deploy your application to Firebase App Hosting:
-
-```bash
-firebase deploy --only apphosting
-```
-
-### 3. Deploy Firestore Security Rules
-
-Your database is protected by security rules. This project includes a `firestore.rules` file that you must deploy to your project.
+Your database is protected by security rules. This project includes a `firestore.rules` file that you must deploy to your project. **This is a critical step to allow your app to read and write data.**
 
 From your project's root directory, run the following command:
 
@@ -169,6 +161,14 @@ From your project's root directory, run the following command:
 firebase deploy --only firestore:rules
 ```
 This will publish the rules that allow users to read and write their own time entries.
+
+### 3. Deploy Your Application
+
+After setting all your secrets and deploying your security rules, deploy your application to Firebase App Hosting:
+
+```bash
+firebase deploy --only apphosting
+```
 
 ---
 

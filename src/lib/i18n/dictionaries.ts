@@ -132,6 +132,8 @@ export const dictionaries = {
       entryExistsDescription: "An entry for \"{location}\" on this day already exists.",
       configurationErrorTitle: "Configuration Error",
       configurationErrorDescription: "Firebase is not configured correctly. Please check your environment variables.",
+      databaseErrorTitle: "Database Connection Error",
+      databaseConnectionError: "Could not connect to the database. Please see the 'Troubleshooting' section in the README.md file.",
     },
     // Settings Page
     settings: {
@@ -322,6 +324,8 @@ export const dictionaries = {
       entryExistsDescription: "Ein Eintrag für \"{location}\" an diesem Tag existiert bereits.",
       configurationErrorTitle: "Konfigurationsfehler",
       configurationErrorDescription: "Firebase ist nicht korrekt konfiguriert. Bitte überprüfen Sie Ihre Umgebungsvariablen.",
+      databaseErrorTitle: "Datenbank-Verbindungsfehler",
+      databaseConnectionError: "Verbindung zur Datenbank fehlgeschlagen. Bitte lesen Sie den Abschnitt 'Fehlerbehebung' in der README.md-Datei.",
     },
     // Settings Page
     settings: {
