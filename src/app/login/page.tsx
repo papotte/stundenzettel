@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -58,6 +59,15 @@ export default function LoginPage() {
 
   const handleAuthAction = async (action: (email: string, password: string) => Promise<UserCredential>) => {
     setLoading(true);
+    if (auth?.type !== 'auth') {
+      toast({
+        title: t('toasts.configurationErrorTitle'),
+        description: t('toasts.configurationErrorDescription'),
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
     try {
       await setPersistence(auth, browserLocalPersistence);
       await action(email, password);
@@ -78,6 +88,15 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    if (auth?.type !== 'auth') {
+      toast({
+        title: t('toasts.configurationErrorTitle'),
+        description: t('toasts.configurationErrorDescription'),
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
     const provider = new GoogleAuthProvider();
     try {
       await setPersistence(auth, browserLocalPersistence);
