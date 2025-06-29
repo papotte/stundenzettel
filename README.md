@@ -8,7 +8,7 @@ A Next.js application for effortless time tracking, designed for Firebase Studio
 - Manual time entry and editing.
 - Special entry types for Sick Leave, PTO, and Bank Holidays.
 - Daily, weekly, and monthly time summaries.
-- Export timesheets to professionally formatted Excel files.
+- Export timesheets to professionally formatted Excel and PDF files.
 - English and German language support.
 - Mock mode for local development without Firebase.
 
@@ -43,17 +43,23 @@ npm install
 
 ### 2. Environment Configuration
 
-The application can run in two modes: **Mock Mode** (default, no external services needed) or **Firebase Mode** (requires a Firebase project and Google Cloud credentials).
+The application can run in two modes: **Mock Mode** (for local development without external services) or **Firebase Mode** (requires a Firebase project).
 
-#### Option A: Running in Mock Mode (Recommended for quick start)
+#### Option A: Running in Mock Mode (Recommended for UI development)
 
-To run the app with pre-populated sample data without connecting to any external services, no configuration is needed. The app will automatically start in mock mode if Firebase credentials are not provided.
+To run the app with pre-populated sample data without connecting to any external services, create a `.env.local` file in the root of your project and add the following line:
+
+```env
+NEXT_PUBLIC_USE_MOCKS=true
+```
+
+This will automatically load sample data and bypass the Firebase login screen.
 
 #### Option B: Running with Firebase and Google Cloud
 
 To use the full features of the application, you need to connect it to your own Firebase project and enable the Google Maps Geocoding API.
 
-1.  **Create a `.env.local` file** in the root of the project by copying the empty `.env` file.
+1.  **Create a `.env.local` file** in the root of the project.
 2.  **Set up Firebase:**
     *   Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
     *   In your project, go to Project Settings and add a new Web App.
@@ -79,6 +85,8 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 # Used for the "Get current location" feature
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
+
+**Note:** Do not set `NEXT_PUBLIC_USE_MOCKS=true` if you are configuring Firebase credentials.
 
 ### 3. Run the Development Server
 

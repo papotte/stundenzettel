@@ -14,7 +14,7 @@ interface AuthContextType {
   loginAsMockUser?: (user: User | null) => void;
 }
 
-const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' || !process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true';
 const MOCK_USER_STORAGE_KEY = 'mockUser';
 
 export const AuthContext = createContext<AuthContextType>({
