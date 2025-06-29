@@ -110,3 +110,49 @@ npm run dev
 ```
 
 The application will be available at [http://localhost:9002](http://localhost:9002).
+
+---
+
+## Deploying to Production (Firebase App Hosting)
+
+When you deploy your application to Firebase App Hosting, the variables in your local `.env.local` file are **not** automatically used. For security, you must set these values as secrets in your Firebase project.
+
+You can do this using the Firebase CLI in your terminal.
+
+### 1. Set Your Secrets
+
+For each variable in your `.env.local` file, run the following command, replacing `SECRET_NAME` and `your_value_here` accordingly.
+
+```bash
+firebase apphosting:secrets:set SECRET_NAME
+```
+
+When prompted, enter the secret value (`your_value_here`).
+
+You will need to set the following secrets:
+
+*   `NEXT_PUBLIC_ENVIRONMENT` (set this to `production`)
+*   `NEXT_PUBLIC_FIREBASE_API_KEY`
+*   `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+*   `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+*   `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+*   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+*   `NEXT_PUBLIC_FIREBASE_APP_ID`
+*   `GOOGLE_MAPS_API_KEY`
+
+**Example:**
+
+```bash
+# This command will prompt you to enter the value for your API key
+firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
+```
+
+### 2. Deploy Your Application
+
+After setting all your secrets, deploy your application to Firebase App Hosting for the changes to take effect:
+
+```bash
+firebase deploy --only apphosting
+```
+
+Your application will now run in production mode, using the secret keys you configured.
