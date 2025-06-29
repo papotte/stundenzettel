@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth as firebaseAuth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock } from 'lucide-react';
@@ -13,7 +13,7 @@ interface AuthContextType {
   loginAsMockUser?: (user: User | null) => void;
 }
 
-const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test';
+const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
 const MOCK_USER_STORAGE_KEY = 'mockUser';
 
 export const AuthContext = createContext<AuthContextType>({
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (useMocks) {
         loginAsMockUser(null);
     } else {
-        await firebaseAuth.signOut();
+        await firebaseSignOut(firebaseAuth);
     }
   };
 
@@ -59,6 +59,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
+    // Guard against using a non-initialized auth object
+    if (!firebaseAuth.onAuthStateChanged) {
+        console.warn("Firebase Auth is not initialized. Skipping auth state listener.");
+        setLoading(false);
+        return;
+    }
+
     const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
       setUser(user);
       setLoading(false);

@@ -15,7 +15,7 @@ let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
 
-const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test';
+const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
 
 if (useMocks) {
   // If in mock mode, create placeholder objects to avoid crashing on import.
