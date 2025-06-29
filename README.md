@@ -156,3 +156,21 @@ firebase deploy --only apphosting
 ```
 
 Your application will now run in production mode, using the secret keys you configured.
+
+---
+
+## Troubleshooting
+
+### Error: `Firestore... 400 (Bad Request)` or Permission Errors
+
+This error usually means that the necessary Google Cloud APIs are not enabled for your project, or a billing account is not linked.
+
+**Solution:**
+
+1.  Make sure you are logged into the Google account associated with your Firebase project.
+2.  Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
+3.  Navigate to **APIs & Services > Library**.
+4.  Search for and enable the following two APIs if they are not already active:
+    *   **Cloud Firestore API**
+    *   **Identity Toolkit API** (required for Firebase Authentication)
+5.  **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account. You won't be charged as long as you stay within the Firebase "Spark" plan's free limits.
