@@ -97,6 +97,11 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
+# (Optional) Firestore Database ID
+# Only needed if you are NOT using the "(default)" database in Firestore.
+# Most projects can leave this line out.
+NEXT_PUBLIC_FIREBASE_DATABASE_ID=your_custom_database_id
+
 # Google Maps Geocoding API Key
 # Used for the "Get current location" feature
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
@@ -138,6 +143,7 @@ When prompted, enter the secret value (`your_value_here`). You will need to set 
 *   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
 *   `NEXT_PUBLIC_FIREBASE_APP_ID`
 *   `GOOGLE_MAPS_API_KEY`
+*   `NEXT_PUBLIC_FIREBASE_DATABASE_ID` (Optional: Only if you use a non-default database)
 
 **Example:**
 ```bash

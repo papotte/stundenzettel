@@ -25,9 +25,10 @@ if (useMocks) {
   auth = {} as Auth;
 } else {
   // In a non-mock environment, check if all Firebase config keys are present.
-  const missingConfigKeys = Object.entries(firebaseConfig)
-    .filter(([, value]) => !value)
-    .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
+  const requiredConfigKeys = Object.keys(firebaseConfig) as Array<keyof typeof firebaseConfig>;
+  const missingConfigKeys = requiredConfigKeys
+    .filter((key) => !firebaseConfig[key])
+    .map((key) => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
 
   if (missingConfigKeys.length > 0) {
     console.error(`Firebase configuration is incomplete. The following environment variables are missing: ${missingConfigKeys.join(", ")}. Please set these as secrets in your Firebase Hosting environment. Refer to the README.md for instructions.`);
@@ -37,7 +38,9 @@ if (useMocks) {
     auth = {} as Auth;
   } else {
       app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-      db = getFirestore(app);
+      // Connect to a specific database if NEXT_PUBLIC_FIREBASE_DATABASE_ID is set,
+      // otherwise, it will connect to the default '(default)' database.
+      db = getFirestore(app, process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID);
       auth = getAuth(app);
   }
 }
