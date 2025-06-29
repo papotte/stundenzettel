@@ -20,3 +20,9 @@ export interface UserSettings {
   companyPhone2?: string;
   companyFax?: string;
 }
+
+export interface AuthenticatedUser {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+}

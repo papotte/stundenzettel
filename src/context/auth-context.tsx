@@ -5,12 +5,13 @@ import { onAuthStateChanged, User, signOut as firebaseSignOut } from 'firebase/a
 import { auth as firebaseAuth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Clock } from 'lucide-react';
+import type { AuthenticatedUser } from '@/lib/types';
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthenticatedUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  loginAsMockUser?: (user: User | null) => void;
+  loginAsMockUser?: (user: AuthenticatedUser | null) => void;
 }
 
 const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
@@ -23,10 +24,10 @@ export const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loginAsMockUser = (user: User | null) => {
+  const loginAsMockUser = (user: AuthenticatedUser | null) => {
     if (user) {
       localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(user));
     } else {
@@ -60,14 +61,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     // Guard against using a non-initialized auth object
-    if (!firebaseAuth.onAuthStateChanged) {
+    if (!firebaseAuth || !firebaseAuth.onAuthStateChanged) {
         console.warn("Firebase Auth is not initialized. Skipping auth state listener.");
         setLoading(false);
         return;
     }
 
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+            uid: firebaseUser.uid,
+            displayName: firebaseUser.displayName,
+            email: firebaseUser.email,
+        });
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 

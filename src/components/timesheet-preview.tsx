@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useMemo, useCallback } from "react";
-import type { User } from "firebase/auth";
 import {
   format,
   isSameMonth,
@@ -20,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import type { TimeEntry, UserSettings } from "@/lib/types";
+import type { AuthenticatedUser, TimeEntry, UserSettings } from "@/lib/types";
 import { getWeeksForMonth, formatDecimalHours } from "@/lib/utils";
 import TimesheetHeader from "./timesheet-header";
 
@@ -36,7 +35,7 @@ const dayOfWeekMap: { [key: number]: string } = {
 
 interface TimesheetPreviewProps {
     selectedMonth: Date;
-    user: User | null;
+    user: AuthenticatedUser | null;
     entries: TimeEntry[];
     t: (key: string, replacements?: Record<string, string | number>) => string;
     locale: Locale;
@@ -92,7 +91,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                   <TableHead rowSpan={2} className="w-auto text-left border-r border-black print:p-1 print:h-auto">
                     {t('export_preview.headerLocation')}
                   </TableHead>
-                  <TableHead colSpan={2} className="w-[18%] print:p-1 print:h-auto">
+                  <TableHead colSpan={2} className="w-[18%] print:p-1 print:h-auto border-b border-black">
                     {t('export_preview.headerWorkTime')}
                   </TableHead>
                   <TableHead rowSpan={2} className="w-[8%] align-middle border-l border-r border-black print:p-1 print:h-auto">{t('export_preview.headerPauseDuration')}</TableHead>
@@ -191,7 +190,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
             <div className="text-right">{t('export_preview.footerTotalHours')}</div>
             <div className="text-right border-b-4 border-double border-black pb-2 print:pb-1" style={{ flex: '0 0 calc(8% + 12%)' }}>{monthTotal.toFixed(2)}</div>
         </div>
-        <div className="flex w-1/2 justify-end">
+        <div className="flex w-full justify-end">
           <div className="mt-24 text-right print:text-sm print:mt-12">
               <p className="mt-2">{t('export_preview.signatureLine')}</p>
           </div>

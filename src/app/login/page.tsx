@@ -8,7 +8,6 @@ import {
   UserCredential,
   GoogleAuthProvider,
   signInWithPopup,
-  User,
   setPersistence,
   browserLocalPersistence,
 } from 'firebase/auth';
@@ -29,6 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Clock, TestTube2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from '@/context/i18n-context';
+import type { AuthenticatedUser } from '@/lib/types';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -40,7 +40,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-const mockUsers = [
+const mockUsers: AuthenticatedUser[] = [
   { uid: 'mock-user-1', email: 'user1@example.com', displayName: 'Raquel Crespillo Andujar' },
   { uid: 'mock-user-2', email: 'user2@example.com', displayName: 'Max Mustermann' },
 ]
@@ -94,9 +94,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleMockLogin = (user: any) => {
+  const handleMockLogin = (user: AuthenticatedUser) => {
     if (loginAsMockUser) {
-        loginAsMockUser(user as User);
+        loginAsMockUser(user);
         router.push('/');
     }
   }
@@ -118,7 +118,7 @@ export default function LoginPage() {
                 <CardContent className="space-y-4">
                     {mockUsers.map(user => (
                         <Button key={user.uid} onClick={() => handleMockLogin(user)} className="w-full">
-                            {t('login.loginAs', { displayName: user.displayName })}
+                            {t('login.loginAs', { displayName: user.displayName || user.email! })}
                         </Button>
                     ))}
                 </CardContent>
