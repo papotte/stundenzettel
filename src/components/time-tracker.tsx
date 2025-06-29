@@ -5,7 +5,6 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { format, isSameDay, set, addHours, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, addDays, subDays } from "date-fns";
 import {
-  Clock,
   Play,
   Pause,
   Plus,
@@ -69,6 +68,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { getUserSettings } from "@/services/user-settings-service";
 import { useTranslation } from "@/context/i18n-context";
 import type { SpecialLocationKey } from "@/lib/constants";
+
+const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M7 9L9 15L12 11L15 15L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>
+);
 
 export default function TimeTracker() {
   const { user, signOut } = useAuth();
@@ -389,7 +396,7 @@ export default function TimeTracker() {
       <div className="flex min-h-screen w-full flex-col">
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
           <div className="flex items-center gap-2">
-            <Clock className="h-6 w-6 text-primary" />
+            <TimeWiseIcon className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-bold tracking-tight font-headline">{t('login.title')}</h1>
           </div>
           <div className="ml-auto flex items-center gap-2">

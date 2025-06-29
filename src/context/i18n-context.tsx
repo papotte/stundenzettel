@@ -6,7 +6,6 @@ import { getUserSettings } from '@/services/user-settings-service';
 import { dictionaries } from '@/lib/i18n/dictionaries';
 import type { UserSettings } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock } from 'lucide-react';
 
 type Language = keyof typeof dictionaries;
 
@@ -16,6 +15,14 @@ interface I18nContextType {
   setLanguageState: (lang: Language) => void;
   loading: boolean;
 }
+
+const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M7 9L9 15L12 11L15 15L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>
+);
 
 const I18nContext = createContext<I18nContextType | null>(null);
 
@@ -79,7 +86,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     return (
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="flex flex-col items-center space-y-4">
-          <Clock className="h-12 w-12 text-primary animate-spin" />
+          <TimeWiseIcon className="h-12 w-12 text-primary animate-spin" />
         </div>
       </div>
     );
