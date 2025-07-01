@@ -6,7 +6,7 @@ import type { UserSettings } from "@/lib/types";
 
 interface PdfExportParams {
   selectedMonth: Date;
-  user: AuthenticatedUser | null;
+  user: AuthenticatedUser;
   userSettings: UserSettings;
   t: (key: string, replacements?: Record<string, string | number>) => string;
 }
@@ -17,29 +17,38 @@ export const exportToPdf = async ({
   userSettings,
   t,
 }: PdfExportParams) => {
-  const printableArea = document.querySelector('.printable-area') as HTMLElement;
-  if (!printableArea) {
-    console.error("Printable area not found");
+  const printableArea = document.querySelector('.printable-area') as HTMLElement | null;
+  const headerElement = document.getElementById('pdf-header-section') as HTMLElement | null;
+  const mainElement = document.getElementById('pdf-main-section') as HTMLElement | null;
+  const footerElement = document.getElementById('pdf-footer-section') as HTMLElement | null;
+
+  if (!printableArea || !headerElement || !mainElement || !footerElement) {
+    console.error("Required elements for PDF export not found in the DOM.");
     return;
   }
 
-  // Hide elements not needed for the canvas capture
-  const header = printableArea.querySelector('header');
-  const footer = printableArea.querySelector('.signature-footer');
-  if(header) header.style.display = 'none';
-  if(footer) (footer as HTMLElement).style.display = 'none';
+  // Store original styles
+  const headerOriginalDisplay = headerElement.style.display;
+  const footerOriginalDisplay = footerElement.style.display;
+  const printableOriginalBg = printableArea.style.backgroundColor;
 
-  const canvas = await html2canvas(printableArea, {
+  // Temporarily modify for capture
+  headerElement.style.display = 'none';
+  footerElement.style.display = 'none';
+  printableArea.style.backgroundColor = 'white';
+
+  const canvas = await html2canvas(mainElement, {
     scale: 2, // Higher scale for better quality
     useCORS: true,
+    backgroundColor: 'white',
   });
 
-  // Restore hidden elements
-  if(header) header.style.display = '';
-  if(footer) (footer as HTMLElement).style.display = '';
+  // Restore original styles
+  headerElement.style.display = headerOriginalDisplay;
+  footerElement.style.display = footerOriginalDisplay;
+  printableArea.style.backgroundColor = printableOriginalBg;
 
   const imgData = canvas.toDataURL('image/png');
-
   const pdf = new jsPDF({
     orientation: 'p',
     unit: 'mm',
@@ -49,33 +58,28 @@ export const exportToPdf = async ({
   const pageHeight = pdf.internal.pageSize.getHeight();
   const pageWidth = pdf.internal.pageSize.getWidth();
   const margin = 10;
+  let cursorY = margin;
 
-  // --- HEADER ---
-  const companyName = userSettings?.companyName || '';
-  const email = userSettings?.companyEmail || '';
-  const phone1 = userSettings?.companyPhone1 || '';
-  const phone2 = userSettings?.companyPhone2 || '';
-  const fax = userSettings?.companyFax || '';
-  const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ');
-  const contactParts = [companyName, email, phoneNumbers ? `Tel.: ${phoneNumbers}` : '', fax ? `FAX: ${fax}` : ''].filter(Boolean);
-  
+  // --- PDF HEADER ---
+  const companyHeaderText = (headerElement.querySelector('div')?.textContent || '').replace('Name and Phone / Radio:', '').trim();
   pdf.setFontSize(8);
-  if (contactParts.length > 0) {
-    pdf.text(t('export_preview.headerCompany'), margin, margin);
-    pdf.text(contactParts.join(' '), pageWidth - margin, margin, { align: 'right' });
-  }
+  pdf.text(t('export_preview.headerCompany'), margin, cursorY);
+  pdf.text(companyHeaderText, pageWidth - margin, cursorY, { align: 'right' });
+  cursorY += 5;
 
-  // --- FOOTER ---
-  const signatureString = t('export_preview.signatureLine');
-  const signatureWidth = pdf.getStringUnitWidth(signatureString) * pdf.getFontSize() / pdf.internal.scaleFactor;
-  pdf.text(signatureString, pageWidth - margin - signatureWidth, pageHeight - margin - 10);
-  pdf.line(pageWidth - margin - signatureWidth - 2, pageHeight - margin - 12, pageWidth - margin, pageHeight - margin - 12);
-
-  // --- CONTENT ---
+  const titleText = headerElement.querySelector('h1')?.textContent || '';
+  const userText = headerElement.querySelector('div:last-child')?.textContent || '';
+  pdf.setFontSize(12);
+  pdf.text(titleText, margin, cursorY, { align: 'left' });
+  pdf.setFontSize(10);
+  pdf.text(userText, pageWidth - margin, cursorY, { align: 'right' });
+  cursorY += 10;
+  
+  // --- PDF CONTENT (CANVAS IMAGE) ---
   const imgWidth = canvas.width;
   const imgHeight = canvas.height;
   const contentWidth = pageWidth - (margin * 2);
-  const contentHeight = pageHeight - (margin * 2) - 20; // available height for image
+  const contentHeight = pageHeight - cursorY - 30; // available height for image, leave 30mm for footer
   
   const ratio = imgWidth / imgHeight;
   let finalImgWidth = contentWidth;
@@ -86,11 +90,17 @@ export const exportToPdf = async ({
     finalImgWidth = finalImgHeight * ratio;
   }
   
-  const x = (pageWidth - finalImgWidth) / 2;
-  const y = margin + 10;
+  pdf.addImage(imgData, 'PNG', margin, cursorY, finalImgWidth, finalImgHeight);
 
-  pdf.addImage(imgData, 'PNG', x, y, finalImgWidth, finalImgHeight);
+  // --- PDF FOOTER ---
+  const signatureString = footerElement.textContent || t('export_preview.signatureLine');
+  pdf.setFontSize(10);
+  const signatureX = pageWidth - margin - 80;
+  const signatureY = pageHeight - 20;
+  pdf.line(signatureX, signatureY, pageWidth - margin, signatureY); // Signature line
+  pdf.text(signatureString, signatureX + 40, signatureY + 5, { align: 'center'});
+
 
   // --- SAVE ---
-  pdf.save(`Stundenzettel_${user?.displayName || 'Export'}_${format(selectedMonth, "yyyy-MM")}.pdf`);
+  pdf.save(`Stundenzettel_${user.displayName || 'Export'}_${format(selectedMonth, "yyyy-MM")}.pdf`);
 };

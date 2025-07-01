@@ -68,15 +68,17 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
 
   return (
     <div className="bg-white p-8 rounded-md shadow-md printable-area font-body print:p-2 print:shadow-none print:text-xs">
-      <TimesheetHeader userSettings={userSettings} t={t} />
-      <header className="flex justify-between items-start mb-4 print:mb-2">
-        <h1 className="text-xl font-bold print:text-base">
-          {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
-        </h1>
-        <div className="text-right font-semibold print:text-sm">{user?.displayName || user?.email}</div>
-      </header>
+      <div id="pdf-header-section">
+        <TimesheetHeader userSettings={userSettings} t={t} />
+        <header className="flex justify-between items-start mb-4 print:mb-2">
+          <h1 className="text-xl font-bold print:text-base">
+            {t('export_preview.timesheetTitle', {month: format(selectedMonth, "MMMM", { locale })})}
+          </h1>
+          <div className="text-right font-semibold print:text-sm">{user?.displayName || user?.email}</div>
+        </header>
+      </div>
 
-      <main>
+      <main id="pdf-main-section">
         {relevantWeeks.map((week, weekIndex) => (
           <div key={weekIndex} className="mb-6 print:mb-3">
             <Table className="border-collapse border border-black">
@@ -190,7 +192,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
             <div className="text-right">{t('export_preview.footerTotalHours')}</div>
             <div className="text-right border-b-4 border-double border-black pb-2 print:pb-1" style={{ flex: '0 0 calc(8% + 12%)' }}>{monthTotal.toFixed(2)}</div>
         </div>
-        <div className="flex w-full justify-end">
+        <div id="pdf-footer-section" className="flex w-full justify-end">
           <div className="mt-24 text-right print:text-sm print:mt-12">
               <p className="mt-2">{t('export_preview.signatureLine')}</p>
           </div>

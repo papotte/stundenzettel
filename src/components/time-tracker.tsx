@@ -229,8 +229,12 @@ export default function TimeTracker() {
   const handleAddSpecialEntry = async (locationKey: SpecialLocationKey) => {
     if (!selectedDate || !user) return;
 
+    // Fetch latest settings just-in-time to ensure data is not stale.
+    const currentSettings = await getUserSettings(user.uid);
+    setUserSettings(currentSettings); // Update local state as well for consistency.
+
     const isTimeOffInLieu = locationKey === 'TIME_OFF_IN_LIEU';
-    const hours = isTimeOffInLieu ? 0 : (userSettings?.defaultWorkHours || 7);
+    const hours = isTimeOffInLieu ? 0 : (currentSettings.defaultWorkHours || 7);
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
     const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
 
