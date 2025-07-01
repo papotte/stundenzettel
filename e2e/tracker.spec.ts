@@ -121,8 +121,9 @@ test.describe('Core Tracker Functionality', () => {
       const today = new Date();
       const yesterday = new Date();
       yesterday.setDate(today.getDate() - 1);
-      // Check if the date in the button matches yesterday's date (e.g., "Mon, Jul 28, 2025")
-      await expect(dateDisplay).toContainText(yesterday.toLocaleDateString(undefined, { weekday: 'short' }));
+      // Check if the date in the button contains yesterday's day of the month.
+      // This is more robust than checking a full, locale-sensitive string.
+      await expect(dateDisplay).toContainText(String(yesterday.getDate()));
 
       // Add entry for yesterday
       await addManualEntry(page, "Work From Yesterday", "13:00", "14:00");
@@ -153,9 +154,12 @@ test.describe('Core Tracker Functionality', () => {
   // --- DAILY ACTIONS & SPECIAL ENTRIES ---
   test.describe('Daily Actions & Special Entries', () => {
     test('should add, edit, and delete a Sick Leave entry', async ({ page }) => {
+      // Since the mock user's language is German, we look for the German text.
+      const sickLeaveButtonText = 'Krankschreibung';
+      
       // Add
-      await page.getByRole('button', { name: 'Sick Leave' }).click();
-      const sickCard = page.locator('div:has-text("Sick Leave")');
+      await page.getByRole('button', { name: sickLeaveButtonText }).click();
+      const sickCard = page.locator(`div:has-text("${sickLeaveButtonText}")`);
       await expect(sickCard).toBeVisible();
       // Default work hours for mock user 1 is 7 hours
       await expect(sickCard.getByText('07:00:00')).toBeVisible();
@@ -176,20 +180,25 @@ test.describe('Core Tracker Functionality', () => {
     });
 
     test('should prevent adding a duplicate special entry', async ({ page }) => {
-      await page.getByRole('button', { name: 'PTO' }).click();
-      await expect(page.locator('div:has-text("Entry Added")')).toBeVisible();
+      // Since the mock user's language is German, we look for German text.
+      const ptoButtonText = 'Urlaub';
+      const entryAddedToastText = 'Eintrag hinzugefügt';
+      const entryExistsToastText = 'Ein Eintrag für "Urlaub" an diesem Tag existiert bereits.';
+
+      await page.getByRole('button', { name: ptoButtonText }).click();
+      await expect(page.locator(`div:has-text("${entryAddedToastText}")`)).toBeVisible();
 
       // Try to add it again
-      await page.getByRole('button', { name: 'PTO' }).click();
-      await expect(page.locator('div:has-text("An entry for \\"PTO\\" on this day already exists.")')).toBeVisible();
+      await page.getByRole('button', { name: ptoButtonText }).click();
+      await expect(page.locator(`div:has-text("${entryExistsToastText}")`)).toBeVisible();
     });
 
     test('should correctly sum hours from multiple entry types in daily summary', async ({ page }) => {
       // Manual entry: 2 hours
       await addManualEntry(page, 'Morning Work', '09:00', '11:00');
 
-      // Special entry: 7 hours (default for mock user 1)
-      await page.getByRole('button', { name: 'Sick Leave' }).click();
+      // Special entry: 7 hours (default for mock user 1), which is "Krankschreibung" in German
+      await page.getByRole('button', { name: 'Krankschreibung' }).click();
       
       // The summary total should be 2 + 7 = 9 hours.
       const summaryCard = page.locator('div.card:has-text("Hours Summary")');
