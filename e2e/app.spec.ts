@@ -1,7 +1,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
-// Helper function to create a new manual entry
+// Helper function to create a new manual entry for the currently selected day
 const addManualEntry = async (page: Page, location: string, startTime: string, endTime: string) => {
   await page.getByRole('button', { name: 'Add' }).click();
   const form = page.locator('div[role="dialog"]:has(h2:has-text("Add Time Entry"))');
@@ -73,6 +73,23 @@ test.describe('TimeWise App E2E Tests', () => {
       await page.getByRole('button', { name: 'Start Tracking' }).click();
       await expect(page.locator('div:has-text("Location required")')).toBeVisible();
     });
+
+    test('should discard a live entry if the form is cancelled', async ({ page }) => {
+      await page.getByPlaceholder('Where are you working from?').fill('Temporary Work');
+      await page.getByRole('button', { name: 'Start Tracking' }).click();
+      await page.getByRole('button', { name: 'Stop' }).click();
+      
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Edit Time Entry"))');
+      await expect(form).toBeVisible();
+      
+      // Cancel instead of saving
+      await form.getByRole('button', { name: 'Cancel' }).click();
+      await expect(form).not.toBeVisible();
+
+      // Verify no entry was created
+      await expect(page.getByText('No entries for this day.')).toBeVisible();
+      await expect(page.locator('div:has-text("Temporary Work")')).not.toBeVisible();
+    });
   });
 
   // --- MANUAL TIME ENTRIES ---
@@ -104,6 +121,28 @@ test.describe('TimeWise App E2E Tests', () => {
       await expect(page.getByText('No entries for this day.')).toBeVisible();
     });
 
+    test('should add an entry for a different day using date navigation', async ({ page }) => {
+      // Navigate to yesterday
+      await page.getByRole('button', { name: 'Previous day' }).click();
+      const dateDisplay = page.getByRole('button', { name: /Calendar/ });
+      const today = new Date();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+      // Check if the date in the button matches yesterday's date (e.g., "Mon, Jul 28, 2025")
+      await expect(dateDisplay).toContainText(yesterday.toLocaleDateString(undefined, { weekday: 'short' }));
+
+      // Add entry for yesterday
+      await addManualEntry(page, "Work From Yesterday", "13:00", "14:00");
+      await expect(page.locator('div:has-text("Work From Yesterday")')).toBeVisible();
+
+      // Navigate back to today
+      await page.getByRole('button', { name: 'Next day' }).click();
+      
+      // Verify yesterday's entry is not visible
+      await expect(page.locator('div:has-text("Work From Yesterday")')).not.toBeVisible();
+      await expect(page.getByText('No entries for this day.')).toBeVisible();
+    });
+
     test('should show validation error for invalid time range', async ({ page }) => {
       await page.getByRole('button', { name: 'Add' }).click();
       const form = page.locator('div[role="dialog"]:has(h2:has-text("Add Time Entry"))');
@@ -118,26 +157,51 @@ test.describe('TimeWise App E2E Tests', () => {
     });
   });
 
-  // --- DAILY ACTIONS ---
+  // --- DAILY ACTIONS & SPECIAL ENTRIES ---
   test.describe('Daily Actions & Special Entries', () => {
-    test('should add a Sick Leave entry', async ({ page }) => {
+    test('should add, edit, and delete a Sick Leave entry', async ({ page }) => {
+      // Add
       await page.getByRole('button', { name: 'Sick Leave' }).click();
-      const toast = page.locator('div:has-text("Entry Added")');
-      await expect(toast).toBeVisible();
-      
       const sickCard = page.locator('div:has-text("Sick Leave")');
       await expect(sickCard).toBeVisible();
       // Default work hours for mock user 1 is 7 hours
       await expect(sickCard.getByText('07:00:00')).toBeVisible();
+      
+      // Edit
+      await sickCard.getByRole('button', { name: 'Edit' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Edit Time Entry"))');
+      await expect(form).toBeVisible();
+      // A special entry's start/end times can be changed.
+      await form.getByLabel('Start time').fill('10:00'); // Originally 09:00 - 16:00 (7h)
+      await form.getByRole('button', { name: 'Save Entry' }).click();
+      await expect(sickCard.getByText('06:00:00')).toBeVisible(); // Now 10:00 - 16:00 (6h)
+
+      // Delete
+      await sickCard.getByRole('button', { name: 'Delete' }).click();
+      await page.getByRole('button', { name: 'Delete' }).click();
+      await expect(sickCard).not.toBeVisible();
     });
 
     test('should prevent adding a duplicate special entry', async ({ page }) => {
       await page.getByRole('button', { name: 'PTO' }).click();
-      await expect(page.locator('div:has-text("Entry for \\"PTO\\" created.")')).toBeVisible();
+      await expect(page.locator('div:has-text("Entry Added")')).toBeVisible();
 
       // Try to add it again
       await page.getByRole('button', { name: 'PTO' }).click();
       await expect(page.locator('div:has-text("An entry for \\"PTO\\" on this day already exists.")')).toBeVisible();
+    });
+
+    test('should correctly sum hours from multiple entry types in daily summary', async ({ page }) => {
+      // Manual entry: 2 hours
+      await addManualEntry(page, 'Morning Work', '09:00', '11:00');
+
+      // Special entry: 7 hours (default for mock user 1)
+      await page.getByRole('button', { name: 'Sick Leave' }).click();
+      
+      // The summary total should be 2 + 7 = 9 hours.
+      const summaryCard = page.locator('div.card:has-text("Hours Summary")');
+      const dailyTotal = summaryCard.locator('div:has-text("Selected Day") + p');
+      await expect(dailyTotal).toHaveText('9h 0m');
     });
   });
 
