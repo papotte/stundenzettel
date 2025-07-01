@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, isSameDay, set, addHours, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, addDays, subDays } from "date-fns";
+import { format, isSameDay, set, addMinutes, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, addDays, subDays } from "date-fns";
 import {
   Play,
   Pause,
@@ -236,7 +236,7 @@ export default function TimeTracker() {
     const isTimeOffInLieu = locationKey === 'TIME_OFF_IN_LIEU';
     const hours = isTimeOffInLieu ? 0 : (currentSettings.defaultWorkHours || 7);
     const startTime = set(selectedDate, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
-    const endTime = hours > 0 ? addHours(startTime, hours) : startTime;
+    const endTime = hours > 0 ? addMinutes(startTime, hours * 60) : startTime;
 
     const newEntry: Omit<TimeEntry, 'id' | 'userId'> = {
       location: locationKey,
