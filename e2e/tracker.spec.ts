@@ -183,6 +183,55 @@ test.describe('Core Tracker Functionality', () => {
       await expect(entryCard).toBeVisible();
       await expect(entryCard.getByText('05:00:00')).toBeVisible();
     });
+
+    test('should allow entry starting and/or ending at midnight', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      await form.getByLabel('Einsatzort').fill('Midnight Start');
+      await form.getByLabel('Startzeit').fill('00:00');
+      await form.getByLabel('Endzeit').fill('01:00');
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click();
+      const entryCard = page.locator('[data-location="Midnight Start"]');
+      await expect(entryCard).toBeVisible();
+      await expect(entryCard.getByText('01:00:00')).toBeVisible();
+    });
+
+    test('should not allow entry spanning midnight (end before start)', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      await form.getByLabel('Einsatzort').fill('Spanning Midnight');
+      await form.getByLabel('Startzeit').fill('23:00');
+      await form.getByLabel('Endzeit').fill('01:00');
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click();
+      await expect(form.getByText('End time must be after start time')).toBeVisible();
+    });
+
+    test('should allow entry with maximum allowed duration (10 hours)', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      await form.getByLabel('Einsatzort').fill('Max Duration');
+      await form.getByLabel('Startzeit').fill('08:00');
+      await form.getByLabel('Endzeit').fill('18:00');
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click();
+      const entryCard = page.locator('[data-location="Max Duration"]');
+      await expect(entryCard).toBeVisible();
+      await expect(entryCard.getByText('10:00:00')).toBeVisible();
+    });
+
+    test('should not allow entry with duration greater than 10 hours', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      await form.getByLabel('Einsatzort').fill('Too Long');
+      await form.getByLabel('Startzeit').fill('08:00');
+      await form.getByLabel('Endzeit').fill('19:00');
+      // Should show a validation error (if enforced by your app)
+      await expect(form.getByText(/Warnung/i)).toBeVisible();
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click();
+    });
   });
 
   // --- DAILY ACTIONS & SPECIAL ENTRIES ---
@@ -212,6 +261,26 @@ test.describe('Core Tracker Functionality', () => {
       await expect(sickCard).not.toBeVisible();
     });
 
+    test('should correctly calculate total for special entries (Urlaub, Feiertag, Stundenabbau)', async ({ page }) => {
+      // Urlaub (PTO)
+      await page.getByRole('button', { name: 'Urlaub' }).click();
+      const ptoCard = page.locator('[data-testid="time-entry-card-pto"]');
+      await expect(ptoCard).toBeVisible();
+      await expect(ptoCard.getByText('07:00:00')).toBeVisible();
+
+      // Feiertag (Bank Holiday)
+      await page.getByRole('button', { name: 'Feiertag' }).click();
+      const holidayCard = page.locator('[data-testid="time-entry-card-bank_holiday"]');
+      await expect(holidayCard).toBeVisible();
+      await expect(holidayCard.getByText('07:00:00')).toBeVisible();
+
+      // Stundenabbau (Time Off in Lieu)
+      await page.getByRole('button', { name: 'Stundenabbau' }).click();
+      const toilCard = page.locator('[data-testid="time-entry-card-time_off_in_lieu"]');
+      await expect(toilCard).toBeVisible();
+      await expect(toilCard.getByText('—')).toBeVisible();
+    });
+    
     test('should prevent adding a duplicate special entry', async ({ page }) => {
       const ptoButtonText = 'Urlaub';
       const entryAddedToastText = 'Eintrag hinzugefügt';
