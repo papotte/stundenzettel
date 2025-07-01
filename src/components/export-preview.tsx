@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
@@ -26,6 +25,7 @@ import { exportToExcel } from "@/lib/excel-export";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import TimeEntryForm from "./time-entry-form";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 export default function ExportPreview() {
   const { user } = useAuth();
@@ -217,14 +217,45 @@ export default function ExportPreview() {
               </Button>
             </div>
             <div className="flex items-center gap-2 mt-4 sm:mt-0">
-              <Button onClick={handleExport} data-testid="export-preview-export-button">
-                <Download className="mr-2 h-4 w-4" />
-                {t('export_preview.exportButton')}
-              </Button>
-              <Button onClick={handlePdfExport} variant="outline" data-testid="export-preview-pdf-button">
-                <Printer className="mr-2 h-4 w-4" />
-                {t('export_preview.exportPdfButton')}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={handleExport}
+                      data-testid="export-preview-export-button"
+                      disabled={entries.length === 0}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      {t('export_preview.exportButton')}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {entries.length === 0 && (
+                  <TooltipContent side="top">
+                    {t('export_preview.noDataHint', { defaultValue: 'No data available for export in this month.' })}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={handlePdfExport}
+                      variant="outline"
+                      data-testid="export-preview-pdf-button"
+                      disabled={entries.length === 0}
+                    >
+                      <Printer className="mr-2 h-4 w-4" />
+                      {t('export_preview.exportPdfButton')}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {entries.length === 0 && (
+                  <TooltipContent side="top">
+                    {t('export_preview.noDataHint', { defaultValue: 'No data available for export in this month.' })}
+                  </TooltipContent>
+                )}
+              </Tooltip>
             </div>
           </div>
 

@@ -1,4 +1,3 @@
-
 export const dictionaries = {
   en: {
     // Login Page
@@ -190,6 +189,9 @@ export const dictionaries = {
       locationNotFound: "Location not found",
       headerMileage: "Mileage/Expenses",
       signatureLine: "Signature:",
+      noDataHint: "No data available for export in this month.",
+      noDataTitle: "No data to export",
+      noDataDescription: "There are no entries for the selected month. Please add entries before exporting."
     }
   },
   de: {
@@ -382,6 +384,9 @@ export const dictionaries = {
       locationNotFound: "Ort nicht gefunden",
       headerMileage: "km eig. PKW/Verpfl.",
       signatureLine: "Unterschrift:",
+      noDataHint: "Keine Daten für den Export in diesem Monat verfügbar.",
+      noDataTitle: "Keine Daten zum Exportieren",
+      noDataDescription: "Für den ausgewählten Monat sind keine Einträge vorhanden. Bitte fügen Sie Einträge hinzu, bevor Sie exportieren."
     }
   },
 };

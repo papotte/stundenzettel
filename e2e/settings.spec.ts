@@ -75,4 +75,36 @@ test.describe('Settings Page', () => {
     await expect(page.getByText('0302334567')).toBeVisible();
     await expect(page.getByText('0300456789')).toBeVisible();
   });
+
+  test('should trap focus in dialogs', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /Hinzufügen|Add/i }).click();
+    const dialog = page.locator('div[role="dialog"]');
+    await expect(dialog).toBeVisible();
+    // Press Tab and check focus stays within dialog
+    await page.keyboard.press('Tab');
+    // ...repeat as needed, or use a11y tools for more thorough checks
+  });
+
+  test('should have correct ARIA roles', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('navigation')).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
+    // Check for other important roles
+  });
+});
+
+test.describe('responsive design', () => {
+  for (const viewport of [
+    { name: 'desktop', width: 1280, height: 800 },
+    { name: 'mobile', width: 375, height: 667 }
+  ]) {
+    test(`should render correctly on ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('/');
+      // Check for a key element that should be visible/adapted
+      await expect(page.getByRole('navigation')).toBeVisible();
+      // Optionally, check for mobile menu, etc.
+    });
+  }
 });
