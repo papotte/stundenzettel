@@ -191,8 +191,15 @@ export const dictionaries = {
       signatureLine: "Signature:",
       noDataHint: "No data available for export in this month.",
       noDataTitle: "No data to export",
-      noDataDescription: "There are no entries for the selected month. Please add entries before exporting."
-    }
+      noDataDescription: "There are no entries for the selected month. Please add entries before exporting.",
+    },
+    // Bottom Navigation
+    bottomNav: {
+      home: "Home",
+      export: "Preview & Export",
+      settings: "Settings",
+      signOut: "Sign Out",
+    },
   },
   de: {
     // Login Page
@@ -386,8 +393,15 @@ export const dictionaries = {
       signatureLine: "Unterschrift:",
       noDataHint: "Keine Daten für den Export in diesem Monat verfügbar.",
       noDataTitle: "Keine Daten zum Exportieren",
-      noDataDescription: "Für den ausgewählten Monat sind keine Einträge vorhanden. Bitte fügen Sie Einträge hinzu, bevor Sie exportieren."
-    }
+      noDataDescription: "Für den ausgewählten Monat sind keine Einträge vorhanden. Bitte fügen Sie Einträge hinzu, bevor Sie exportieren.",
+    },
+    // Bottom Navigation
+    bottomNav: {
+      home: "Übersicht",
+      export: "Vorschau & Export",
+      settings: "Einstellungen",
+      signOut: "Abmelden",
+    },
   },
 };
 

@@ -323,7 +323,13 @@ test.describe('Core Tracker Functionality', () => {
 
     test('should have correct ARIA roles', async ({ page }) => {
       await page.goto('/');
-      await expect(page.getByRole('navigation')).toBeVisible();
+      // Top navigation should always be present
+      await expect(page.getByRole('navigation', { name: 'Top navigation' })).toBeVisible();
+      // Bottom navigation should be present on mobile
+      const viewport = await page.viewportSize();
+      if (viewport && viewport.width < 768) {
+        await expect(page.getByRole('navigation', { name: 'Bottom navigation' })).toBeVisible();
+      }
       await expect(page.getByRole('main')).toBeVisible();
       // Check for other important roles
     });
@@ -337,8 +343,12 @@ test.describe('Core Tracker Functionality', () => {
       test(`should render correctly on ${viewport.name}`, async ({ page }) => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         await page.goto('/');
-        // Check for a key element that should be visible/adapted
-        await expect(page.getByRole('navigation')).toBeVisible();
+        // Top navigation should always be present
+        await expect(page.getByRole('navigation', { name: 'Top navigation' })).toBeVisible();
+        // Bottom navigation should be present on mobile
+        if (viewport.width < 768) {
+          await expect(page.getByRole('navigation', { name: 'Bottom navigation' })).toBeVisible();
+        }
         // Optionally, check for mobile menu, etc.
       });
     }

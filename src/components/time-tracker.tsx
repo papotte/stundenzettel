@@ -1,35 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import Link from "next/link";
-import { format, isSameDay, set, addMinutes, differenceInMinutes, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, addDays, subDays } from "date-fns";
-import {
-  Play,
-  Pause,
-  Plus,
-  Calendar as CalendarIcon,
-  FileSpreadsheet,
-  MapPin,
-  Loader2,
-  Trash2,
-  BedDouble,
-  Plane,
-  Landmark,
-  Hourglass,
-  LogOut,
-  BarChart,
-  ChevronLeft,
-  ChevronRight,
-  Cog,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,39 +12,68 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { useToast } from "@/hooks/use-toast";
-import TimeEntryForm from "./time-entry-form";
-import TimeEntryCard from "./time-entry-card";
-import type { TimeEntry, UserSettings } from "@/lib/types";
-import { formatHoursAndMinutes, formatDuration } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { reverseGeocode } from "@/ai/flows/reverse-geocode-flow";
-import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
-import { Skeleton } from "./ui/skeleton";
-import { useAuth } from "@/hooks/use-auth";
-import { getUserSettings } from "@/services/user-settings-service";
 import { useTranslation } from "@/context/i18n-context";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import type { SpecialLocationKey } from "@/lib/constants";
+import type { TimeEntry, UserSettings } from "@/lib/types";
+import { formatDuration, formatHoursAndMinutes } from "@/lib/utils";
+import { addTimeEntry, deleteAllTimeEntries, deleteTimeEntry, getTimeEntries, updateTimeEntry } from "@/services/time-entry-service";
+import { getUserSettings } from "@/services/user-settings-service";
+import { addDays, addMinutes, differenceInMinutes, endOfMonth, endOfWeek, format, isSameDay, isWithinInterval, set, startOfMonth, startOfWeek, subDays } from "date-fns";
+import {
+  BarChart,
+  BedDouble,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Cog,
+  FileSpreadsheet,
+  Hourglass,
+  Landmark,
+  Loader2,
+  LogOut,
+  MapPin,
+  Pause,
+  Plane,
+  Play,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import TimeEntryCard from "./time-entry-card";
+import TimeEntryForm from "./time-entry-form";
+import { Skeleton } from "./ui/skeleton";
 
 const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
-        <path d="M7 9L9 15L12 11L15 15L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <circle cx="12" cy="12" r="1" fill="currentColor"/>
-    </svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M7 9L9 15L12 11L15 15L17 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="12" cy="12" r="1" fill="currentColor" />
+  </svg>
 );
 
 export default function TimeTracker() {
@@ -175,12 +175,12 @@ export default function TimeTracker() {
       if (existingEntry) {
         await updateTimeEntry(entryWithUser.id, entryWithUser);
         setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
-        toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', {location: entryWithUser.location})});
+        toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', { location: entryWithUser.location }) });
       } else {
         const newId = await addTimeEntry(entryWithUser);
-        const newEntry = {...entryWithUser, id: newId};
+        const newEntry = { ...entryWithUser, id: newId };
         setEntries(prev => [newEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
-        toast({ title: t('toasts.entryAddedTitle'), description: t('toasts.entryAddedDescription', {location: entryWithUser.location})});
+        toast({ title: t('toasts.entryAddedTitle'), description: t('toasts.entryAddedDescription', { location: entryWithUser.location }) });
       }
     } catch (error) {
       console.error("Error saving entry:", error);
@@ -198,7 +198,7 @@ export default function TimeTracker() {
     try {
       await deleteTimeEntry(user.uid, id);
       setEntries(entries.filter((entry) => entry.id !== id));
-      toast({ title: t('toasts.entryDeletedTitle'), variant: 'destructive'});
+      toast({ title: t('toasts.entryDeletedTitle'), variant: 'destructive' });
     } catch (error) {
       console.error("Error deleting entry:", error);
       toast({ title: t('toasts.deleteFailedTitle'), description: t('toasts.deleteFailedDescription'), variant: "destructive" });
@@ -345,26 +345,26 @@ export default function TimeTracker() {
     selectedDate ? entries.filter((entry) => isSameDay(entry.startTime, selectedDate)) : [],
     [entries, selectedDate]
   );
-  
+
   const calculateTotalCompensatedMinutes = useCallback((entriesToSum: TimeEntry[]): number => {
     return entriesToSum.reduce((total, entry) => {
-        if (!entry.endTime) return total;
+      if (!entry.endTime) return total;
 
-        const workMinutes = differenceInMinutes(entry.endTime, entry.startTime);
-        
-        const isNonWorkEntry = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
-        if (isNonWorkEntry) {
-            return total + workMinutes;
-        }
-        
-        if (entry.location === "TIME_OFF_IN_LIEU") {
-            return total;
-        }
-        
-        const travelMinutes = (entry.travelTime || 0) * 60;
-        const pauseMinutes = entry.pauseDuration || 0;
+      const workMinutes = differenceInMinutes(entry.endTime, entry.startTime);
 
-        return total + workMinutes - pauseMinutes + travelMinutes;
+      const isNonWorkEntry = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
+      if (isNonWorkEntry) {
+        return total + workMinutes;
+      }
+
+      if (entry.location === "TIME_OFF_IN_LIEU") {
+        return total;
+      }
+
+      const travelMinutes = (entry.travelTime || 0) * 60;
+      const pauseMinutes = entry.pauseDuration || 0;
+
+      return total + workMinutes - pauseMinutes + travelMinutes;
     }, 0);
   }, []);
 
@@ -402,69 +402,69 @@ export default function TimeTracker() {
             <TimeWiseIcon className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-bold tracking-tight font-headline">{t('login.title')}</h1>
           </div>
-          <div className="ml-auto flex items-center gap-2">
-              <Button asChild variant="outline">
-                <Link href="/export">
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  {t('tracker.headerExportLink')}
-                </Link>
-              </Button>
-              {(process.env.NEXT_PUBLIC_ENVIRONMENT === "development" || process.env.NEXT_PUBLIC_ENVIRONMENT === "test") && (
-                <AlertDialog>
-                  <Tooltip>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">{t('tracker.headerClearDataTooltip')}</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <TooltipContent>
-                      <p>{t('tracker.headerClearDataTooltip')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t('tracker.clearDataAlertTitle')}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t('tracker.clearDataAlertDescription')}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t('tracker.clearDataAlertCancel')}</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleClearData}
-                        className="bg-destructive hover:bg-destructive/90"
-                      >
-                        {t('tracker.clearDataAlertConfirm')}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button asChild variant="ghost" size="icon">
-                      <Link href="/settings">
-                          <Cog className="h-4 w-4" />
-                          <span className="sr-only">{t('tracker.headerSettingsTooltip')}</span>
-                      </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t('tracker.headerSettingsTooltip')}</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4" />
-                    <span className="sr-only">{t('tracker.headerSignOutTooltip')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t('tracker.headerSignOutTooltip')}</p>
-                </TooltipContent>
-              </Tooltip>
+          <div className="ml-auto flex items-center gap-2" role="navigation" aria-label="Top navigation">
+            <Button asChild variant="outline" className="hidden md:flex">
+              <Link href="/export">
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                {t('tracker.headerExportLink')}
+              </Link>
+            </Button>
+            {(process.env.NEXT_PUBLIC_ENVIRONMENT === "development" || process.env.NEXT_PUBLIC_ENVIRONMENT === "test") && (
+              <AlertDialog>
+                <Tooltip>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="icon">
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">{t('tracker.headerClearDataTooltip')}</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <TooltipContent>
+                    <p>{t('tracker.headerClearDataTooltip')}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t('tracker.clearDataAlertTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('tracker.clearDataAlertDescription')}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('tracker.clearDataAlertCancel')}</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleClearData}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      {t('tracker.clearDataAlertConfirm')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild variant="ghost" size="icon" className="hidden md:flex">
+                  <Link href="/settings">
+                    <Cog className="h-4 w-4" />
+                    <span className="sr-only">{t('tracker.headerSettingsTooltip')}</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('tracker.headerSettingsTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4" />
+                  <span className="sr-only">{t('tracker.headerSignOutTooltip')}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t('tracker.headerSignOutTooltip')}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </header>
 
@@ -505,15 +505,15 @@ export default function TimeTracker() {
                         className="flex-1"
                       />
                       <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label={t('tracker.getLocationTooltip')} disabled={isFetchingLocation}>
-                              {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('tracker.getLocationTooltip')}</p>
-                          </TooltipContent>
-                        </Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button variant="outline" size="icon" onClick={handleGetCurrentLocation} aria-label={t('tracker.getLocationTooltip')} disabled={isFetchingLocation}>
+                            {isFetchingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t('tracker.getLocationTooltip')}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <Button onClick={handleStartTimer} size="lg" className="w-full transition-all duration-300">
                       <Play className="mr-2 h-4 w-4" />
@@ -526,24 +526,24 @@ export default function TimeTracker() {
 
             <Card className="shadow-lg" data-testid="daily-actions-card">
               <CardHeader>
-                  <CardTitle>{t('tracker.dailyActionsTitle')}</CardTitle>
-                  <CardDescription>
-                      {selectedDate ? t('tracker.dailyActionsDescription', { date: format(selectedDate, "PPP") }) : "Loading..."}
-                  </CardDescription>
+                <CardTitle>{t('tracker.dailyActionsTitle')}</CardTitle>
+                <CardDescription>
+                  {selectedDate ? t('tracker.dailyActionsDescription', { date: format(selectedDate, "PPP") }) : "Loading..."}
+                </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button onClick={() => handleAddSpecialEntry("SICK_LEAVE")} variant="outline">
-                      <BedDouble className="mr-2 h-4 w-4" /> {t('special_locations.SICK_LEAVE')}
-                  </Button>
-                  <Button onClick={() => handleAddSpecialEntry("PTO")} variant="outline">
-                      <Plane className="mr-2 h-4 w-4" /> {t('special_locations.PTO')}
-                  </Button>
-                  <Button onClick={() => handleAddSpecialEntry("BANK_HOLIDAY")} variant="outline">
-                      <Landmark className="mr-2 h-4 w-4" /> {t('special_locations.BANK_HOLIDAY')}
-                  </Button>
-                  <Button onClick={() => handleAddSpecialEntry("TIME_OFF_IN_LIEU")} variant="outline">
-                      <Hourglass className="mr-2 h-4 w-4" /> {t('special_locations.TIME_OFF_IN_LIEU')}
-                  </Button>
+                <Button onClick={() => handleAddSpecialEntry("SICK_LEAVE")} variant="outline">
+                  <BedDouble className="mr-2 h-4 w-4" /> {t('special_locations.SICK_LEAVE')}
+                </Button>
+                <Button onClick={() => handleAddSpecialEntry("PTO")} variant="outline">
+                  <Plane className="mr-2 h-4 w-4" /> {t('special_locations.PTO')}
+                </Button>
+                <Button onClick={() => handleAddSpecialEntry("BANK_HOLIDAY")} variant="outline">
+                  <Landmark className="mr-2 h-4 w-4" /> {t('special_locations.BANK_HOLIDAY')}
+                </Button>
+                <Button onClick={() => handleAddSpecialEntry("TIME_OFF_IN_LIEU")} variant="outline">
+                  <Hourglass className="mr-2 h-4 w-4" /> {t('special_locations.TIME_OFF_IN_LIEU')}
+                </Button>
               </CardContent>
             </Card>
 
@@ -557,10 +557,10 @@ export default function TimeTracker() {
                     </Button>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full justify-start text-left font-normal"
-                          data-selected-date={selectedDate ? selectedDate.toISOString().slice(0,10) : undefined}
+                          data-selected-date={selectedDate ? selectedDate.toISOString().slice(0, 10) : undefined}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
@@ -597,71 +597,71 @@ export default function TimeTracker() {
                   </Sheet>
                 </div>
               </div>
-              
+
               <Card className="shadow-lg">
-                  <CardHeader>
-                      <div className="flex justify-between items-center">
-                          <CardTitle>
-                              {selectedDate && isSameDay(selectedDate, new Date())
-                              ? t('tracker.todaysEntries')
-                              : selectedDate ? t('tracker.entriesForDate', { date: format(selectedDate, "PPP") }) : "Loading..."}
-                          </CardTitle>
-                          <div className="text-lg font-bold text-primary">{formatHoursAndMinutes(dailyTotal)}</div>
-                      </div>
-                  </CardHeader>
-                  <CardContent>
-                      {isLoading ? (
-                        <div className="space-y-4">
-                          <Skeleton className="h-24 w-full" />
-                          <Skeleton className="h-24 w-full" />
-                        </div>
-                      ) : filteredEntries.length > 0 ? (
-                      <div className="space-y-4">
-                          {filteredEntries.map((entry) => (
-                          <TimeEntryCard
-                              key={entry.id}
-                              entry={entry}
-                              onEdit={handleEditEntry}
-                              onDelete={handleDeleteEntry}
-                          />
-                          ))}
-                      </div>
-                      ) : (
-                      <div className="text-center py-12">
-                          <p className="text-muted-foreground">{t('tracker.noEntries')}</p>
-                          <Button variant="link" onClick={openNewEntryForm} className="mt-2">{t('tracker.addFirstEntryLink')}</Button>
-                      </div>
-                      )}
-                  </CardContent>
-              </Card>
-            </div>
-            
-            <Card className="shadow-lg" data-testid="summary-card">
                 <CardHeader>
-                    <div className="flex items-center gap-2">
-                        <BarChart className="h-5 w-5 text-primary" />
-                        <CardTitle>{t('tracker.summaryTitle')}</CardTitle>
-                    </div>
-                    <CardDescription>
-                        {t('tracker.summaryDescription')}
-                    </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>
+                      {selectedDate && isSameDay(selectedDate, new Date())
+                        ? t('tracker.todaysEntries')
+                        : selectedDate ? t('tracker.entriesForDate', { date: format(selectedDate, "PPP") }) : "Loading..."}
+                    </CardTitle>
+                    <div className="text-lg font-bold text-primary">{formatHoursAndMinutes(dailyTotal)}</div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryDay')}</p>
-                            <p className="text-2xl font-bold">{formatHoursAndMinutes(dailyTotal)}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryWeek')}</p>
-                            <p className="text-2xl font-bold">{formatHoursAndMinutes(weeklyTotal)}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryMonth')}</p>
-                            <p className="text-2xl font-bold">{formatHoursAndMinutes(monthlyTotal)}</p>
-                        </div>
+                  {isLoading ? (
+                    <div className="space-y-4">
+                      <Skeleton className="h-24 w-full" />
+                      <Skeleton className="h-24 w-full" />
                     </div>
+                  ) : filteredEntries.length > 0 ? (
+                    <div className="space-y-4">
+                      {filteredEntries.map((entry) => (
+                        <TimeEntryCard
+                          key={entry.id}
+                          entry={entry}
+                          onEdit={handleEditEntry}
+                          onDelete={handleDeleteEntry}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">{t('tracker.noEntries')}</p>
+                      <Button variant="link" onClick={openNewEntryForm} className="mt-2">{t('tracker.addFirstEntryLink')}</Button>
+                    </div>
+                  )}
                 </CardContent>
+              </Card>
+            </div>
+
+            <Card className="shadow-lg" data-testid="summary-card">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <BarChart className="h-5 w-5 text-primary" />
+                  <CardTitle>{t('tracker.summaryTitle')}</CardTitle>
+                </div>
+                <CardDescription>
+                  {t('tracker.summaryDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryDay')}</p>
+                    <p className="text-2xl font-bold">{formatHoursAndMinutes(dailyTotal)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryWeek')}</p>
+                    <p className="text-2xl font-bold">{formatHoursAndMinutes(weeklyTotal)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('tracker.summaryMonth')}</p>
+                    <p className="text-2xl font-bold">{formatHoursAndMinutes(monthlyTotal)}</p>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
 
           </div>
