@@ -154,7 +154,7 @@ export default function SettingsPage() {
   return (
     <div className="bg-muted min-h-screen p-4 sm:p-8">
       <div className="max-w-xl mx-auto">
-        <Button asChild variant="outline" className="mb-8">
+        <Button asChild variant="outline" className="mb-8 hidden md:inline-flex">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('settings.backButton')}

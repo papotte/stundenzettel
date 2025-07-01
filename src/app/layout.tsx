@@ -1,8 +1,9 @@
-import type {Metadata} from 'next';
-import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import BottomNav from '@/components/ui/bottom-nav';
+import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/auth-context';
 import { I18nProvider } from '@/context/i18n-context';
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'TimeWise Tracker',
@@ -25,6 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <I18nProvider>
             {children}
+            <BottomNav />
             <Toaster />
           </I18nProvider>
         </AuthProvider>
