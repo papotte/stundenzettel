@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from '@/context/i18n-context';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function ExportPage() {
   const { user, loading } = useAuth();
@@ -26,16 +26,18 @@ export default function ExportPage() {
   }
   
   return (
-    <div className="bg-muted min-h-screen p-4 sm:p-8 print:p-0 print:bg-white">
-      <div className="max-w-7xl mx-auto print:max-w-none print:mx-0">
-        <Button asChild variant="outline" className="mb-4 print:hidden">
-          <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('export_page.backButton')}
-          </Link>
-        </Button>
-        <ExportPreview />
+    <TooltipProvider>
+      <div className="bg-muted min-h-screen p-4 sm:p-8 print:p-0 print:bg-white">
+        <div className="max-w-7xl mx-auto print:max-w-none print:mx-0">
+          <Button asChild variant="outline" className="mb-4 print:hidden hidden md:inline-flex">
+            <Link href="/">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('export_page.backButton')}
+            </Link>
+          </Button>
+          <ExportPreview />
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

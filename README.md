@@ -172,6 +172,39 @@ This will publish the rules that allow users to read and write their own time en
 
 ---
 
+## End-to-End Testing (Playwright)
+
+This project uses [Playwright](https://playwright.dev/) for end-to-end (E2E) testing. These tests launch a real browser and interact with the application just like a user would.
+
+### Running E2E Tests
+
+To run the E2E test suite, use the following command:
+
+```bash
+npm run test:e2e
+```
+
+This will automatically:
+1.  Start the development server.
+2.  Run all tests located in the `e2e/` directory.
+3.  Shut down the server once the tests are complete.
+
+The test report will be available in the `playwright-report` directory.
+
+### First-Time Setup & Dependencies
+
+When you run `npm install`, the necessary Playwright **browser binaries** are downloaded automatically.
+
+However, Playwright also requires certain **system-level dependencies** to run those browsers. In some environments (like a fresh Linux install or a container), you may need to install these manually. If your tests fail to launch a browser, run the following command from an interactive terminal to have Playwright attempt to install them for you:
+
+```bash
+npx playwright install --with-deps
+```
+
+This command may ask for administrative privileges (`sudo`) to install packages.
+
+---
+
 ## Troubleshooting
 
 ### Error: `Firestore... 400 (Bad Request)` or Permission Errors

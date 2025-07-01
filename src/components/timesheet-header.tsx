@@ -31,7 +31,7 @@ const TimesheetHeader = ({ userSettings, t }: TimesheetHeaderProps) => {
   const detailsString = contactParts.join(' ');
 
   return (
-    <div className="flex w-full justify-between text-sm mb-8 print:text-xs print:mb-2">
+    <div className="flex w-full justify-between text-sm mb-8 print:text-xs print:mb-2" data-testid="timesheet-header">
       <span>{t('export_preview.headerCompany')}</span>
       <span>{detailsString}</span>
     </div>

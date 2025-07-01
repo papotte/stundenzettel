@@ -6,11 +6,6 @@ let userSettings: { [userId: string]: Partial<UserSettings> } = {
         defaultStartTime: "09:00", 
         defaultEndTime: "17:00", 
         language: 'de',
-        companyName: 'ABD',
-        companyEmail: 'info@abd.de',
-        companyPhone1: '0301234567',
-        companyPhone2: '0302334567',
-        companyFax: '0300456789',
     },
     'mock-user-2': { 
         defaultWorkHours: 7.5, 

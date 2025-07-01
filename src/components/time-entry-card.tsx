@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -73,7 +72,7 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
 
   if (SpecialIcon) {
     return (
-      <Card className="transition-shadow hover:shadow-md">
+      <Card className="transition-shadow hover:shadow-md" data-testid={`time-entry-card-${entry.location.toLowerCase()}`} data-location={entry.location}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -121,7 +120,7 @@ export default function TimeEntryCard({ entry, onEdit, onDelete }: TimeEntryCard
   }
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className="transition-shadow hover:shadow-md" data-testid={`time-entry-card-${entry.id}`} data-location={entry.location}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="grid gap-1 flex-1">
