@@ -524,7 +524,7 @@ export default function TimeTracker() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
+            <Card className="shadow-lg" data-testid="daily-actions-card">
               <CardHeader>
                   <CardTitle>{t('tracker.dailyActionsTitle')}</CardTitle>
                   <CardDescription>
@@ -547,7 +547,7 @@ export default function TimeTracker() {
               </CardContent>
             </Card>
 
-            <div>
+            <div data-testid="time-entries-card">
               <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-bold font-headline">{t('tracker.timeEntriesTitle')}</h2>
                 <div className="flex w-full items-center gap-2 sm:w-auto">
@@ -557,7 +557,11 @@ export default function TimeTracker() {
                     </Button>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start text-left font-normal"
+                          data-selected-date={selectedDate ? selectedDate.toISOString().slice(0,10) : undefined}
+                        >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {selectedDate ? format(selectedDate, "PPP") : "Loading..."}
                         </Button>
@@ -632,7 +636,7 @@ export default function TimeTracker() {
               </Card>
             </div>
             
-            <Card className="shadow-lg">
+            <Card className="shadow-lg" data-testid="summary-card">
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <BarChart className="h-5 w-5 text-primary" />

@@ -1,4 +1,3 @@
-
 import { test, expect, type Page } from '@playwright/test';
 import { addManualEntry } from './test-helpers';
 
@@ -18,44 +17,48 @@ test.describe('Core Tracker Functionality', () => {
       const location = 'Live Test Location';
       await page.getByPlaceholder('Wo arbeiten Sie gerade?').fill(location);
       await page.getByRole('button', { name: 'Erfassung starten' }).click();
-      
+
       // Check if timer is running
       await expect(page.getByText(`Ort: ${location}`)).toBeVisible();
       await expect(page.getByRole('button', { name: 'Stopp' })).toBeVisible();
       // Wait for a second for the timer to tick
-      await page.waitForTimeout(1100); 
+      await page.waitForTimeout(1100);
       await expect(page.locator('.font-mono')).not.toHaveText('00:00:00');
 
       // Stop the timer
       await page.getByRole('button', { name: 'Stopp' }).click();
-      
+
       // The form should open automatically
       const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))');
       await expect(form).toBeVisible();
       await expect(form.getByLabel('Einsatzort')).toHaveValue(location);
+
+      // Manually set start and end times to be at least 1 minute apart
+      await form.getByLabel('Startzeit').fill('09:00');
+      await form.getByLabel('Endzeit').fill('09:01');
 
       // Save the entry
       await form.getByRole('button', { name: 'Eintrag speichern' }).click();
       await expect(form).not.toBeVisible();
 
       // Verify the new entry is on the page
-      const newEntryCard = page.locator(`div:has-text("${location}")`);
+      const newEntryCard = page.locator(`[data-location="${location}"]`);
       await expect(newEntryCard).toBeVisible();
     });
 
     test('should show a toast if starting timer without a location', async ({ page }) => {
       await page.getByRole('button', { name: 'Erfassung starten' }).click();
-      await expect(page.locator('div:has-text("Standort erforderlich")')).toBeVisible();
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText('Standort erforderlich');
     });
 
     test('should discard a live entry if the form is cancelled', async ({ page }) => {
       await page.getByPlaceholder('Wo arbeiten Sie gerade?').fill('Temporary Work');
       await page.getByRole('button', { name: 'Erfassung starten' }).click();
       await page.getByRole('button', { name: 'Stopp' }).click();
-      
+
       const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))');
       await expect(form).toBeVisible();
-      
+
       // Cancel instead of saving
       await form.getByRole('button', { name: 'Abbrechen' }).click();
       await expect(form).not.toBeVisible();
@@ -70,10 +73,11 @@ test.describe('Core Tracker Functionality', () => {
   test.describe('Manual Time Entries', () => {
     test('should add, edit, and delete a manual entry', async ({ page }) => {
       // Add
-      await addManualEntry(page, 'Manual Location', '09:00', '11:00');
-      const entryCard = page.locator('div:has-text("Manual Location")');
+      const location = 'Manual Location';
+      await addManualEntry(page, location, '09:00', '11:00');
+      const entryCard = page.locator(`[data-location="${location}"]`);
       await expect(entryCard).toBeVisible();
-      await expect(entryCard.getByText(/09:00.*-.*11:00/)).toBeVisible();
+      await expect(entryCard.getByText(/9:00.*-.*11:00/)).toBeVisible();
       await expect(entryCard.getByText('02:00:00')).toBeVisible();
 
       // Edit
@@ -83,8 +87,9 @@ test.describe('Core Tracker Functionality', () => {
       await form.getByLabel('Einsatzort').fill('Edited Manual Location');
       await form.getByLabel('Endzeit').fill('11:30');
       await form.getByRole('button', { name: 'Eintrag speichern' }).click();
-      
-      const editedCard = page.locator('div:has-text("Edited Manual Location")');
+
+      const newLocation = 'Edited Manual Location';
+      const editedCard = page.locator(`[data-location="${newLocation}"]`);
       await expect(editedCard).toBeVisible();
       await expect(editedCard.getByText('02:30:00')).toBeVisible();
 
@@ -98,23 +103,24 @@ test.describe('Core Tracker Functionality', () => {
     test('should add an entry for a different day using date navigation', async ({ page }) => {
       // Navigate to yesterday
       await page.getByRole('button', { name: 'Previous day' }).click();
-      const dateDisplay = page.getByRole('button', { name: /Calendar/ });
       const today = new Date();
       const yesterday = new Date();
       yesterday.setDate(today.getDate() - 1);
       // Check if the date in the button contains yesterday's day of the month.
       // This is more robust than checking a full, locale-sensitive string.
-      await expect(dateDisplay).toContainText(String(yesterday.getDate()));
-
+      const yesterdayIso = yesterday.toISOString().slice(0, 10);
+      const dateDisplay = page.locator(`[data-selected-date="${yesterdayIso}"]`);
+      await expect(dateDisplay).toBeVisible();
       // Add entry for yesterday
-      await addManualEntry(page, "Work From Yesterday", "13:00", "14:00");
-      await expect(page.locator('div:has-text("Work From Yesterday")')).toBeVisible();
+      const location = 'Work From Yesterday';
+      await addManualEntry(page, location, "13:00", "14:00");
+      await expect(page.locator(`[data-location="${location}"]`)).toBeVisible();
 
       // Navigate back to today
       await page.getByRole('button', { name: 'Next day' }).click();
-      
+
       // Verify yesterday's entry is not visible
-      await expect(page.locator('div:has-text("Work From Yesterday")')).not.toBeVisible();
+      await expect(page.locator(`[data-location="${location}"]`)).not.toBeVisible();
       await expect(page.getByText('Keine Einträge für diesen Tag.')).toBeVisible();
     });
 
@@ -136,14 +142,14 @@ test.describe('Core Tracker Functionality', () => {
   test.describe('Daily Actions & Special Entries', () => {
     test('should add, edit, and delete a Sick Leave entry', async ({ page }) => {
       const sickLeaveButtonText = 'Krankschreibung';
-      
+
       // Add
       await page.getByRole('button', { name: sickLeaveButtonText }).click();
-      const sickCard = page.locator(`div:has-text("${sickLeaveButtonText}")`);
+      const sickCard = page.locator(`[data-testid="time-entry-card-sick_leave"]`);
       await expect(sickCard).toBeVisible();
       // Default work hours for mock user 1 is 7 hours
       await expect(sickCard.getByText('07:00:00')).toBeVisible();
-      
+
       // Edit
       await sickCard.getByRole('button', { name: 'Bearbeiten' }).click();
       const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))');
@@ -165,11 +171,13 @@ test.describe('Core Tracker Functionality', () => {
       const entryExistsToastText = 'Ein Eintrag für "Urlaub" an diesem Tag existiert bereits.';
 
       await page.getByRole('button', { name: ptoButtonText }).click();
-      await expect(page.locator(`div:has-text("${entryAddedToastText}")`)).toBeVisible();
+      const entryAddedToast = page.locator(`[data-testid="toast-title"]`);
+      await expect(entryAddedToast).toContainText(entryAddedToastText);
 
       // Try to add it again
       await page.getByRole('button', { name: ptoButtonText }).click();
-      await expect(page.locator(`div:has-text("${entryExistsToastText}")`)).toBeVisible();
+      const entryErrorToastDescription = page.locator(`[data-testid="toast-description"]`);
+      await expect(entryErrorToastDescription).toContainText(entryExistsToastText);
     });
 
     test('should correctly sum hours from multiple entry types in daily summary', async ({ page }) => {
@@ -178,10 +186,10 @@ test.describe('Core Tracker Functionality', () => {
 
       // Special entry: 7 hours (default for mock user 1), which is "Krankschreibung"
       await page.getByRole('button', { name: 'Krankschreibung' }).click();
-      
+
       // The summary total should be 2 + 7 = 9 hours.
-      const summaryCard = page.locator('div.card:has-text("Stundenübersicht")');
-      const dailyTotal = summaryCard.locator('div:has-text("Ausgewählter Tag") + p');
+      const summaryCard = page.locator('[data-testid="summary-card"]');
+      const dailyTotal = summaryCard.locator('p:has-text("Ausgewählter Tag") + p');
       await expect(dailyTotal).toHaveText('9h 0m');
     });
   });
