@@ -23,7 +23,6 @@ import { SPECIAL_LOCATION_KEYS } from "@/lib/constants";
 import TimesheetPreview from "./timesheet-preview";
 import { getUserSettings } from "@/services/user-settings-service";
 import { exportToExcel } from "@/lib/excel-export";
-import { exportToPdf } from "@/lib/pdf-export";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import TimeEntryForm from "./time-entry-form";
 import { useToast } from "@/hooks/use-toast";
@@ -98,9 +97,8 @@ export default function ExportPreview() {
     return location;
   }, [t]);
 
-  const handlePdfExport = async () => {
-    if (!selectedMonth || !userSettings || !user) return;
-    await exportToPdf({ selectedMonth, user, userSettings, t });
+  const handlePdfExport = () => {
+    window.print();
   };
 
   const handleExport = async () => {
