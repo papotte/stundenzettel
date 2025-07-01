@@ -132,9 +132,56 @@ test.describe('Core Tracker Functionality', () => {
       await form.getByLabel('Startzeit').fill('14:00');
       await form.getByLabel('Endzeit').fill('13:00');
       await form.getByRole('button', { name: 'Eintrag speichern' }).click();
-
-      // Error message should be visible. Note: this message from Zod is not translated.
       await expect(form.getByText('End time must be after start time')).toBeVisible();
+    });
+
+    test('should show validation error for missing required fields', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      // Leave location empty
+      await form.getByLabel('Startzeit').fill('09:00');
+      await form.getByLabel('Endzeit').fill('11:00');
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click();
+      await expect(form.getByText('Location must be at least 2 characters.')).toBeVisible();
+    });
+
+    test('should show pause suggestion for 6h and 9h activity and allow applying it', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      await form.getByLabel('Einsatzort').fill('Long Day');
+      await form.getByLabel('Startzeit').fill('08:00');
+      await form.getByLabel('Endzeit').fill('14:00'); // 6h
+      // Should suggest 30 min pause
+      await expect(form.getByText(/Vorschlag: 30 Min/)).toBeVisible();
+      // Click the suggestion
+      await form.getByRole('button', { name: /Vorschlag: 30 Min/ }).click();
+      await expect(form.getByLabel('Pause')).toHaveValue('00:30');
+      // Now test for 9h suggestion
+      await form.getByLabel('Endzeit').fill('17:00'); // 9h
+      await expect(form.getByText(/Vorschlag: 45 Min/)).toBeVisible();
+      await form.getByRole('button', { name: /Vorschlag: 45 Min/ }).click();
+      await expect(form.getByLabel('Pause')).toHaveValue('00:45');
+    });
+
+    test('should correctly calculate total worked time with pause and travel', async ({ page }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click();
+      const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
+      await expect(form).toBeVisible();
+      await form.getByLabel('Einsatzort').fill('Calc Test');
+      await form.getByLabel('Startzeit').fill('08:00');
+      await form.getByLabel('Endzeit').fill('12:00'); // 4h
+      await form.getByLabel('Pause').fill('00:30'); // 30 min pause
+      await form.getByLabel('Fahrtzeit (Stunden)').fill('1.5'); // 1.5h travel
+      // Should show total compensated time: 4h - 0.5h + 1.5h = 5h
+      await expect(form.getByText('Vergütete Gesamtzeit:')).toBeVisible();
+      await expect(form.getByText('5h 0m')).toBeVisible();
+      // Save and check card
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click();
+      const entryCard = page.locator('[data-location="Calc Test"]');
+      await expect(entryCard).toBeVisible();
+      await expect(entryCard.getByText('05:00:00')).toBeVisible();
     });
   });
 
