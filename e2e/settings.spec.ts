@@ -18,7 +18,7 @@ test.describe('Settings Page', () => {
     // Change default work hours from 7 to 8.5
     await page.getByLabel('Tägliche Standardarbeitszeit').fill('8.5');
     await page.getByRole('button', { name: 'Einstellungen speichern' }).click();
-    await expect(page.getByText('Einstellungen gespeichert')).toBeVisible();
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText('Einstellungen gespeichert');
 
     // Go back and add a PTO day
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click();

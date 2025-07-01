@@ -26,11 +26,12 @@ test.describe('Export Page', () => {
     await expect(preview.getByText('10:00')).toBeVisible();
     await expect(preview.getByText('14:00')).toBeVisible();
     // 4 hours = 4.00
-    await expect(preview.getByText('4.00')).toBeVisible();
+    await expect(preview.getByTestId('timesheet-week-0-total')).toContainText('4.00');
+    await expect(preview.getByTestId('timesheet-month-total')).toContainText('4.00');
 
     // Navigate months
     const currentMonth = await page.locator('h2').textContent();
-    await page.getByRole('button', { name: 'ChevronRight' }).click();
+    await page.getByTestId('export-preview-next-month-button').click();
     const nextMonth = await page.locator('h2').textContent();
     expect(currentMonth).not.toEqual(nextMonth);
   });

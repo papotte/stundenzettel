@@ -78,10 +78,10 @@ export default function ExportPreview() {
             const isCompensatedSpecialDay = ["SICK_LEAVE", "PTO", "BANK_HOLIDAY"].includes(entry.location);
 
             if (isCompensatedSpecialDay) {
-                totalMinutes += workMinutes;
+              totalMinutes += workMinutes;
             } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-                const compensatedMinutes = workMinutes - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
-                totalMinutes += compensatedMinutes > 0 ? compensatedMinutes : 0;
+              const compensatedMinutes = workMinutes - (entry.pauseDuration || 0) + (entry.travelTime || 0) * 60;
+              totalMinutes += compensatedMinutes > 0 ? compensatedMinutes : 0;
             }
           }
         });
@@ -103,7 +103,7 @@ export default function ExportPreview() {
 
   const handleExport = async () => {
     if (!selectedMonth || !userSettings) return;
-    
+
     await exportToExcel({
       selectedMonth,
       user,
@@ -140,14 +140,14 @@ export default function ExportPreview() {
     try {
       const existingEntry = entries.find(e => e.id === entryWithUser.id);
       if (existingEntry) {
-          await updateTimeEntry(entryWithUser.id, entryWithUser);
-          setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
-          toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', {location: entryWithUser.location})});
+        await updateTimeEntry(entryWithUser.id, entryWithUser);
+        setEntries(entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)));
+        toast({ title: t('toasts.entryUpdatedTitle'), description: t('toasts.entryUpdatedDescription', { location: entryWithUser.location }) });
       } else {
-          const newId = await addTimeEntry(entryWithUser);
-          const newEntry = {...entryWithUser, id: newId};
-          setEntries(prev => [newEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
-          toast({ title: t('toasts.entryAddedTitle'), description: t('toasts.entryAddedDescription', {location: entryWithUser.location})});
+        const newId = await addTimeEntry(entryWithUser);
+        const newEntry = { ...entryWithUser, id: newId };
+        setEntries(prev => [newEntry, ...prev].sort((a, b) => b.startTime.getTime() - a.startTime.getTime()));
+        toast({ title: t('toasts.entryAddedTitle'), description: t('toasts.entryAddedDescription', { location: entryWithUser.location }) });
       }
     } catch (error) {
       console.error("Error saving entry:", error);
@@ -156,11 +156,11 @@ export default function ExportPreview() {
   }, [user, entries, t, toast]);
 
   const handleCloseForm = () => {
-      setIsFormOpen(false);
-      setEditingEntry(null);
-      setNewEntryDate(null);
+    setIsFormOpen(false);
+    setEditingEntry(null);
+    setNewEntryDate(null);
   };
-  
+
   if (isLoading || !selectedMonth || !userSettings) {
     return (
       <Card className="shadow-lg">
@@ -175,14 +175,14 @@ export default function ExportPreview() {
           </div>
           <div className="bg-white p-8 rounded-md shadow-md printable-area">
             <header className="flex justify-between items-start mb-4">
-                <Skeleton className="h-7 w-2/5" />
-                <Skeleton className="h-7 w-1/4" />
+              <Skeleton className="h-7 w-2/5" />
+              <Skeleton className="h-7 w-1/4" />
             </header>
             <main>
-                <div className="space-y-6">
-                    <Skeleton className="h-56 w-full" />
-                    <Skeleton className="h-56 w-full" />
-                </div>
+              <div className="space-y-6">
+                <Skeleton className="h-56 w-full" />
+                <Skeleton className="h-56 w-full" />
+              </div>
             </main>
           </div>
         </CardContent>
@@ -192,7 +192,7 @@ export default function ExportPreview() {
 
   return (
     <>
-      <Card className="shadow-lg print:shadow-none print:border-none">
+      <Card className="shadow-lg print:shadow-none print:border-none" data-testid="export-preview-card">
         <CardContent className="p-4 sm:p-6 print:p-0">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 print:hidden">
             <div className="flex items-center gap-4">
@@ -200,26 +200,28 @@ export default function ExportPreview() {
                 variant="outline"
                 size="icon"
                 onClick={() => setSelectedMonth(subMonths(selectedMonth, 1))}
+                data-testid="export-preview-previous-month-button"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-2xl font-bold" data-testid="export-preview-month">
                 {format(selectedMonth, "MMMM yyyy", { locale })}
               </h2>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setSelectedMonth(addMonths(selectedMonth, 1))}
+                data-testid="export-preview-next-month-button"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
             <div className="flex items-center gap-2 mt-4 sm:mt-0">
-              <Button onClick={handleExport}>
+              <Button onClick={handleExport} data-testid="export-preview-export-button">
                 <Download className="mr-2 h-4 w-4" />
                 {t('export_preview.exportButton')}
               </Button>
-              <Button onClick={handlePdfExport} variant="outline">
+              <Button onClick={handlePdfExport} variant="outline" data-testid="export-preview-pdf-button">
                 <Printer className="mr-2 h-4 w-4" />
                 {t('export_preview.exportPdfButton')}
               </Button>
@@ -227,17 +229,17 @@ export default function ExportPreview() {
           </div>
 
           <TimesheetPreview
-              selectedMonth={selectedMonth}
-              user={user}
-              entries={entries}
-              t={t}
-              locale={locale}
-              userSettings={userSettings}
-              getEntriesForDay={getEntriesForDay}
-              calculateWeekTotal={calculateWeekTotal}
-              getLocationDisplayName={getLocationDisplayName}
-              onEdit={handleEditEntry}
-              onAdd={handleAddNewEntry}
+            selectedMonth={selectedMonth}
+            user={user}
+            entries={entries}
+            t={t}
+            locale={locale}
+            userSettings={userSettings}
+            getEntriesForDay={getEntriesForDay}
+            calculateWeekTotal={calculateWeekTotal}
+            getLocationDisplayName={getLocationDisplayName}
+            onEdit={handleEditEntry}
+            onAdd={handleAddNewEntry}
           />
         </CardContent>
       </Card>
