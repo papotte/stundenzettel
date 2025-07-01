@@ -16,4 +16,28 @@ test.describe('Authentication', () => {
     await expect(page.getByRole('button', { name: 'Erfassung starten' })).toBeVisible();
     await expect(page.getByText('Heutige Einträge')).toBeVisible();
   });
+
+  test('should log out and redirect to login page', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /Log in as/ }).first().click();
+    await page.waitForURL('/');
+    // Click the logout button (icon with aria-label or tooltip 'Abmelden' or 'Sign Out')
+    await page.getByRole('button', { name: /Abmelden|Sign Out/ }).click();
+    // Should be redirected to login page
+    await expect(page.getByRole('heading', { name: /TimeWise Tracker/ })).toBeVisible();
+  });
+
+  test('should redirect to login if accessing protected pages when not logged in', async ({ page }) => {
+    // Try to access main tracker page
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: /TimeWise Tracker/ })).toBeVisible();
+
+    // Try to access settings page
+    await page.goto('/settings');
+    await expect(page.getByRole('heading', { name: /TimeWise Tracker/ })).toBeVisible();
+
+    // Try to access export page
+    await page.goto('/export');
+    await expect(page.getByRole('heading', { name: /TimeWise Tracker/ })).toBeVisible();
+  });
 });
