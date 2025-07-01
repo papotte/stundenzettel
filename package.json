@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
-    "dev:test": "NEXT_PUBLIC_ENVIRONMENT=test next dev --turbopack -p 9002",
+    "dev:test": "NEXT_PUBLIC_ENVIRONMENT=test next dev --turbopack -p 9003",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
