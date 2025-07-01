@@ -37,6 +37,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# IDEA
+.idea
+
 # project IDX
 /.firebase/
 /.idx/
