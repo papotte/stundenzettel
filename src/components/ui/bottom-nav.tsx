@@ -44,7 +44,11 @@ export default function BottomNav() {
           const isActive = pathname === href;
           return (
             <li key={href} className="flex-1">
-              <Link href={href} className="flex flex-col items-center justify-center h-full w-full">
+              <Link 
+                href={href} 
+                className="flex flex-col items-center justify-center h-full w-full"
+                {...(isActive ? { 'aria-current': 'page' } : {})}
+              >
                 <Icon className={`h-6 w-6 mb-1 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
                 <span className={`text-xs block ${isActive ? 'text-primary font-semibold' : 'text-gray-500'}`}>{t(labelKey, { defaultValue: labelDefault })}</span>
               </Link>

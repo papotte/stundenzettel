@@ -29,7 +29,7 @@ export default function ExportPage() {
     <TooltipProvider>
       <div className="bg-muted min-h-screen p-4 sm:p-8 print:p-0 print:bg-white">
         <div className="max-w-7xl mx-auto print:max-w-none print:mx-0">
-          <Button asChild variant="outline" className="mb-4 print:hidden">
+          <Button asChild variant="outline" className="mb-4 print:hidden hidden md:inline-flex">
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('export_page.backButton')}

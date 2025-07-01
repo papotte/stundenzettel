@@ -333,6 +333,20 @@ test.describe('Core Tracker Functionality', () => {
       await expect(page.getByRole('main')).toBeVisible();
       // Check for other important roles
     });
+
+    test('should set aria-current="page" on the active bottom nav item (mobile)', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 });
+      await page.goto('/');
+      // Home should be active
+      const homeLink = page.getByRole('navigation', { name: 'Bottom navigation' }).getByRole('link', { name: /Home|Übersicht/ });
+      await expect(homeLink).toHaveAttribute('aria-current', 'page');
+
+      // Go to export page
+      await page.getByRole('link', { name: /Preview & Export|Vorschau & Export/ }).click();
+      await page.waitForURL('/export');
+      const exportLink = page.getByRole('navigation', { name: 'Bottom navigation' }).getByRole('link', { name: /Export|Preview & Export|Vorschau & Export/ });
+      await expect(exportLink).toHaveAttribute('aria-current', 'page');
+    });
   });
 
   test.describe('responsive design', () => {
