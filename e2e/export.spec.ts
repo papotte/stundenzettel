@@ -3,31 +3,31 @@ import { test, expect, type Page } from '@playwright/test';
 
 // Helper function to create a new manual entry for the currently selected day
 const addManualEntry = async (page: Page, location: string, startTime: string, endTime: string) => {
-  await page.getByRole('button', { name: 'Add' }).click();
-  const form = page.locator('div[role="dialog"]:has(h2:has-text("Add Time Entry"))');
+  await page.getByRole('button', { name: 'Hinzufügen' }).click();
+  const form = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))');
   await expect(form).toBeVisible();
-  await form.getByLabel('Location').fill(location);
-  await form.getByLabel('Start time').fill(startTime);
-  await form.getByLabel('End time').fill(endTime);
-  await form.getByRole('button', { name: 'Save Entry' }).click();
+  await form.getByLabel('Einsatzort').fill(location);
+  await form.getByLabel('Startzeit').fill(startTime);
+  await form.getByLabel('Endzeit').fill(endTime);
+  await form.getByRole('button', { name: 'Eintrag speichern' }).click();
   await expect(form).not.toBeVisible();
 };
 
 test.describe('Export Page', () => {
     
   test.beforeEach(async ({ page }) => {
-    // Navigate to the app and log in as the first mock user
+    // Navigate to the app and log in as the first mock user (language is German)
     await page.goto('/');
     await page.getByRole('button', { name: /Log in as/ }).first().click();
     await page.waitForURL('/');
 
     // Clear any existing data for a clean test run
-    const clearDataButton = page.getByRole('button', { name: 'Clear all data' });
+    const clearDataButton = page.getByRole('button', { name: 'Alle Daten löschen' });
     await clearDataButton.click();
-    await page.getByRole('button', { name: 'Yes, delete everything' }).click();
+    await page.getByRole('button', { name: 'Ja, alles löschen' }).click();
     // Wait for the "Data Cleared" toast to appear and disappear
-    await expect(page.locator('div:has-text("Data Cleared")')).toBeVisible();
-    await expect(page.locator('div:has-text("Data Cleared")')).not.toBeVisible({ timeout: 10000 });
+    await expect(page.locator('div:has-text("Daten gelöscht")')).toBeVisible();
+    await expect(page.locator('div:has-text("Daten gelöscht")')).not.toBeVisible({ timeout: 10000 });
   });
 
   test('should display entries on the export preview', async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('Export Page', () => {
     await addManualEntry(page, 'Export Test Entry', '10:00', '14:00');
     
     // Navigate to export page
-    await page.getByRole('link', { name: 'Preview & Export' }).click();
+    await page.getByRole('link', { name: 'Vorschau & Export' }).click();
     await page.waitForURL('/export');
 
     // Check for the entry in the preview table
