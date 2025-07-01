@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
@@ -410,38 +409,38 @@ export default function TimeTracker() {
                   {t('tracker.headerExportLink')}
                 </Link>
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+              {(process.env.NEXT_PUBLIC_ENVIRONMENT === "development" || process.env.NEXT_PUBLIC_ENVIRONMENT === "test") && (
+                <AlertDialog>
                   <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Button variant="destructive" size="icon">
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">{t('tracker.headerClearDataTooltip')}</span>
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>{t('tracker.headerClearDataTooltip')}</p>
-                      </TooltipContent>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="icon">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">{t('tracker.headerClearDataTooltip')}</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <TooltipContent>
+                      <p>{t('tracker.headerClearDataTooltip')}</p>
+                    </TooltipContent>
                   </Tooltip>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{t('tracker.clearDataAlertTitle')}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t('tracker.clearDataAlertDescription')}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t('tracker.clearDataAlertCancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleClearData}
-                      className="bg-destructive hover:bg-destructive/90"
-                    >
-                      {t('tracker.clearDataAlertConfirm')}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('tracker.clearDataAlertTitle')}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t('tracker.clearDataAlertDescription')}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('tracker.clearDataAlertCancel')}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleClearData}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        {t('tracker.clearDataAlertConfirm')}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button asChild variant="ghost" size="icon">

@@ -1,7 +1,10 @@
 import type { TimeEntry } from '@/lib/types';
 import { subDays, set } from 'date-fns';
 
-let entries: TimeEntry[] = [
+let entries: TimeEntry[] = [];
+
+if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
+  entries = [
     {
         id: '1',
         userId: 'mock-user-1',
@@ -62,7 +65,8 @@ let entries: TimeEntry[] = [
        travelTime: 0,
        isDriver: false,
    }
-];
+  ];
+}
 
 export const addTimeEntry = async (entry: Omit<TimeEntry, 'id'>): Promise<string> => {
   const newEntry = { ...entry, id: Date.now().toString() };

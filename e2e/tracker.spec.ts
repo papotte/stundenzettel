@@ -10,14 +10,6 @@ test.describe('Core Tracker Functionality', () => {
     await page.goto('/');
     await page.getByRole('button', { name: /Log in as/ }).first().click();
     await page.waitForURL('/');
-
-    // Clear any existing data for a clean test run
-    const clearDataButton = page.getByRole('button', { name: 'Alle Daten löschen' });
-    await clearDataButton.click();
-    await page.getByRole('button', { name: 'Ja, alles löschen' }).click();
-    // Wait for the "Data Cleared" toast to appear and disappear
-    await expect(page.locator('div:has-text("Daten gelöscht")')).toBeVisible();
-    await expect(page.locator('div:has-text("Daten gelöscht")')).not.toBeVisible({ timeout: 10000 });
   });
 
   // --- LIVE TIME TRACKING ---
