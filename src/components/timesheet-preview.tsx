@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useCallback } from "react";
@@ -113,13 +112,14 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                     return null;
                   }
 
+                  const dayTestId = `timesheet-day-${format(day, 'yyyy-MM-dd')}`;
                   const dayEntries = getEntriesForDay(day);
                   const isSunday = getDay(day) === 0;
 
                   if (dayEntries.length === 0) {
                     if (isSunday) return null; // Don't render empty Sundays
                     return (
-                      <TableRow key={day.toISOString()} className="border-b border-black last:border-b-0">
+                      <TableRow key={day.toISOString()} className="border-b border-black last:border-b-0" data-testid={dayTestId}>
                         <TableCell className="bg-table-header font-medium border-r border-black text-left print:p-1">{dayOfWeekMap[getDay(day)]}</TableCell>
                         <TableCell className="group relative align-middle border-r border-black text-right cursor-default print:p-1">
                           {format(day, "d/M/yyyy")}
@@ -158,6 +158,7 @@ export default function TimesheetPreview({ selectedMonth, user, entries, t, loca
                         key={entry.id}
                         className="border-b border-black last:border-b-0 hover:bg-muted/50 cursor-pointer"
                         onClick={() => onEdit(entry)}
+                        data-testid={dayTestId}
                       >
                         {entryIndex === 0 && <TableCell onClick={(e) => e.stopPropagation()} rowSpan={dayEntries.length} className="bg-table-header font-medium align-middle border-r border-black text-left cursor-default print:p-1">{dayOfWeekMap[getDay(day)]}</TableCell>}
                         {entryIndex === 0 &&
