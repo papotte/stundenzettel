@@ -36,6 +36,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import {
@@ -97,7 +98,7 @@ const TimeWiseIcon = ({
   className?: string
   style?: React.CSSProperties
 }) => (
-  <img
+  <Image
     src="/favicon.png"
     alt="TimeWise Tracker Logo"
     className={className}

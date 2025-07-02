@@ -15,12 +15,8 @@ const ReverseGeocodeInputSchema = z.object({
 })
 export type ReverseGeocodeInput = z.infer<typeof ReverseGeocodeInputSchema>
 
-const ReverseGeocodeOutputSchema = z.object({
-  address: z.string().describe('The human-readable address.'),
-})
-export type ReverseGeocodeOutput = z.infer<typeof ReverseGeocodeOutputSchema>
-
 type AddressComponent = { types: string[]; long_name: string }
+type ReverseGeocodeOutput = { address: string }
 
 export async function reverseGeocode(
   input: ReverseGeocodeInput,

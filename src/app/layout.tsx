@@ -4,8 +4,12 @@ import BottomNav from '@/components/ui/bottom-nav'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { I18nProvider } from '@/context/i18n-context'
+import { Lora, PT_Sans } from 'next/font/google'
 
 import './globals.css'
+
+const lora = Lora({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-lora' })
+const ptSans = PT_Sans({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-pt-sans' })
 
 export const metadata: Metadata = {
   title: 'TimeWise Tracker',
@@ -20,16 +24,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=PT+Sans:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
         <link rel="icon" href="/favicon.png" sizes="any" />
         <link
           rel="icon"
@@ -45,7 +39,7 @@ export default function RootLayout({
         />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="font-body antialiased">
+      <body className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}>
         <AuthProvider>
           <I18nProvider>
             {children}

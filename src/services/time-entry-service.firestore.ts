@@ -9,6 +9,7 @@ import {
   query,
   updateDoc,
   writeBatch,
+  UpdateData,
 } from 'firebase/firestore'
 
 import { db } from '@/lib/firebase'
@@ -25,9 +26,9 @@ const fromFirestore = (docData: unknown): TimeEntry => {
   if (data.endTime && data.endTime instanceof Timestamp) {
     data.endTime = data.endTime.toDate()
   }
+
   // Validate required fields before casting
   if (
-    !('id' in data) ||
     !('userId' in data) ||
     !('startTime' in data) ||
     !('location' in data)
@@ -37,7 +38,7 @@ const fromFirestore = (docData: unknown): TimeEntry => {
   return data as unknown as TimeEntry
 }
 
-const toFirestore = (entry: Partial<TimeEntry>) => {
+const toFirestore = (entry: Partial<TimeEntry>): UpdateData<TimeEntry> => {
   const data: { [key: string]: unknown } = { ...entry }
   if (entry.startTime) {
     data.startTime = Timestamp.fromDate(entry.startTime)
@@ -47,8 +48,8 @@ const toFirestore = (entry: Partial<TimeEntry>) => {
     data.endTime = entry.endTime ? Timestamp.fromDate(entry.endTime) : null
   }
   // Don't save the id field in the document data
-  if (Object.prototype.hasOwnProperty.call(data, 'id')) delete data.id
-  return data as { [x: string]: any }
+  if ('id' in data) delete data.id
+  return data
 }
 
 export const addTimeEntry = async (

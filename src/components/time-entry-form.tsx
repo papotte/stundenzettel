@@ -142,13 +142,12 @@ export default function TimeEntryForm({
   const endTimeValue = watch('endTime')
   const pauseDurationValue = watch('pauseDuration')
   const travelTimeValue = watch('travelTime')
-  const locationValue = watch('location')
 
   const isSpecialEntry = useMemo(() => {
     return SPECIAL_LOCATION_KEYS.includes(
       getValues('location') as SpecialLocationKey,
     )
-  }, [locationValue, getValues])
+  }, [getValues])
 
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
@@ -168,7 +167,7 @@ export default function TimeEntryForm({
         return { minutes: 30, timeString: '00:30', reason: '6 hours' }
       }
       return null
-    } catch (_) {
+    } catch {
       return null
     }
   }, [startTimeValue, endTimeValue, travelTimeValue, isSpecialEntry])
@@ -197,7 +196,7 @@ export default function TimeEntryForm({
         workDurationInMinutes: workDuration,
         totalCompensatedMinutes: total > 0 ? total : 0,
       }
-    } catch (_) {
+    } catch {
       return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 }
     }
   }, [
