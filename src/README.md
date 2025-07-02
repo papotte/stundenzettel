@@ -56,7 +56,9 @@ Create a `.env.local` file in the root of your project and set the environment t
 # For local testing and development with mock data
 NEXT_PUBLIC_ENVIRONMENT=development
 ```
+
 or
+
 ```env
 NEXT_PUBLIC_ENVIRONMENT=test
 ```
@@ -74,14 +76,14 @@ To connect to a live Firebase backend, you'll need your project credentials.
     NEXT_PUBLIC_ENVIRONMENT=production
     ```
 3.  **Add Firebase Credentials:**
-    *   Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
-    *   In your project, go to Project Settings and add a new Web App.
-    *   Copy the Firebase configuration credentials into your `.env.local` file.
+    - Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+    - In your project, go to Project Settings and add a new Web App.
+    - Copy the Firebase configuration credentials into your `.env.local` file.
 4.  **Add Google Maps API Key:**
-    *   Go to the [Google Cloud Console](https://console.cloud.google.com/).
-    *   In the same project used for Firebase, navigate to "APIs & Services" > "Library" and enable the **Geocoding API**.
-    *   Navigate to "APIs & Services" > "Credentials" and create a new API Key.
-    *   Add this API key to your `.env.local` file.
+    - Go to the [Google Cloud Console](https://console.cloud.google.com/).
+    - In the same project used for Firebase, navigate to "APIs & Services" > "Library" and enable the **Geocoding API**.
+    - Navigate to "APIs & Services" > "Credentials" and create a new API Key.
+    - Add this API key to your `.env.local` file.
 
 Your final `.env.local` file for Firebase Mode should look like this:
 
@@ -132,6 +134,7 @@ This project uses [ESLint](https://eslint.org/) for linting and [Prettier](https
 You can run the linter and formatter using the following npm scripts:
 
 - **Check for linting errors:**
+
   ```bash
   npm run lint
   ```
@@ -161,17 +164,18 @@ firebase apphosting:secrets:set SECRET_NAME
 
 When prompted, enter the secret value (`your_value_here`). You will need to set the following secrets:
 
-*   `NEXT_PUBLIC_ENVIRONMENT` (set this to `production`)
-*   `NEXT_PUBLIC_FIREBASE_API_KEY`
-*   `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-*   `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-*   `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-*   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-*   `NEXT_PUBLIC_FIREBASE_APP_ID`
-*   `GOOGLE_MAPS_API_KEY`
-*   `NEXT_PUBLIC_FIREBASE_DATABASE_ID` (Optional: Only if you use a non-default database)
+- `NEXT_PUBLIC_ENVIRONMENT` (set this to `production`)
+- `NEXT_PUBLIC_FIREBASE_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+- `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+- `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+- `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+- `NEXT_PUBLIC_FIREBASE_APP_ID`
+- `GOOGLE_MAPS_API_KEY`
+- `NEXT_PUBLIC_FIREBASE_DATABASE_ID` (Optional: Only if you use a non-default database)
 
 **Example:**
+
 ```bash
 # This command will prompt you to enter the value for your API key
 firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
@@ -186,6 +190,7 @@ From your project's root directory, run the following command:
 ```bash
 firebase deploy --only firestore:rules
 ```
+
 This will publish the rules that allow users to read and write their own time entries.
 
 ### 3. Deploy Your Application
@@ -211,6 +216,7 @@ npm run test:e2e
 ```
 
 This will automatically:
+
 1.  Start the development server.
 2.  Run all tests located in the `e2e/` directory.
 3.  Shut down the server once the tests are complete.
@@ -240,17 +246,17 @@ This error usually means that either the necessary Google Cloud APIs are not ena
 **Solution:**
 
 1.  **Enable Cloud APIs:**
-    *   Make sure you are logged into the Google account associated with your Firebase project.
-    *   Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
-    *   Navigate to **APIs & Services > Library**.
-    *   Search for and enable the following two APIs if they are not already active:
-        *   **Cloud Firestore API**
-        *   **Identity Toolkit API** (required for Firebase Authentication)
-    *   **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
+    - Make sure you are logged into the Google account associated with your Firebase project.
+    - Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
+    - Navigate to **APIs & Services > Library**.
+    - Search for and enable the following two APIs if they are not already active:
+      - **Cloud Firestore API**
+      - **Identity Toolkit API** (required for Firebase Authentication)
+    - **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
 
 2.  **Deploy Security Rules:**
-    *   If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
-    *   Run the following command from your project directory:
-        ```bash
-        firebase deploy --only firestore:rules
-        ```
+    - If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
+    - Run the following command from your project directory:
+      ```bash
+      firebase deploy --only firestore:rules
+      ```

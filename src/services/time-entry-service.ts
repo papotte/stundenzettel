@@ -1,31 +1,41 @@
-import * as firestoreService from './time-entry-service.firestore';
-import * as localService from './time-entry-service.local';
-import type { TimeEntry } from '@/lib/types';
+import * as firestoreService from './time-entry-service.firestore'
+import * as localService from './time-entry-service.local'
+import type { TimeEntry } from '@/lib/types'
 
-const useMockService = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || process.env.NEXT_PUBLIC_ENVIRONMENT === 'development';
+const useMockService =
+  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
+  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
 
-const service = useMockService ? localService : firestoreService;
+const service = useMockService ? localService : firestoreService
 
 if (useMockService) {
-  console.log(`Using local time entry service (NEXT_PUBLIC_ENVIRONMENT=${process.env.NEXT_PUBLIC_ENVIRONMENT}).`);
+  console.log(
+    `Using local time entry service (NEXT_PUBLIC_ENVIRONMENT=${process.env.NEXT_PUBLIC_ENVIRONMENT}).`,
+  )
 }
 
 export const addTimeEntry = (entry: Omit<TimeEntry, 'id'>): Promise<string> => {
-  return service.addTimeEntry(entry);
-};
+  return service.addTimeEntry(entry)
+}
 
-export const updateTimeEntry = (entryId: string, entry: Partial<TimeEntry>): Promise<void> => {
-    return service.updateTimeEntry(entryId, entry);
-};
+export const updateTimeEntry = (
+  entryId: string,
+  entry: Partial<TimeEntry>,
+): Promise<void> => {
+  return service.updateTimeEntry(entryId, entry)
+}
 
-export const deleteTimeEntry = (userId: string, entryId: string): Promise<void> => {
-    return service.deleteTimeEntry(userId, entryId);
-};
+export const deleteTimeEntry = (
+  userId: string,
+  entryId: string,
+): Promise<void> => {
+  return service.deleteTimeEntry(userId, entryId)
+}
 
 export const getTimeEntries = (userId: string): Promise<TimeEntry[]> => {
-    return service.getTimeEntries(userId);
-};
+  return service.getTimeEntries(userId)
+}
 
 export const deleteAllTimeEntries = (userId: string): Promise<void> => {
-    return service.deleteAllTimeEntries(userId);
-};
+  return service.deleteAllTimeEntries(userId)
+}
