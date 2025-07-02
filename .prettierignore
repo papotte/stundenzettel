@@ -1,0 +1,29 @@
+# Next.js build outputs
+.next/
+out/
+
+# Node modules
+node_modules/
+
+# Playwright reports
+playwright-report/
+test-results/
+
+# Build artifacts
+build/
+dist/
+
+# Env files
+.env
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Other
+coverage
+.DS_Store

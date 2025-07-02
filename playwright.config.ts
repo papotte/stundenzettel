@@ -1,5 +1,5 @@
-import { defineConfig, devices } from '@playwright/test';
-import type { PlaywrightTestConfig } from '@playwright/test';
+import type { PlaywrightTestConfig } from '@playwright/test'
+import { devices } from '@playwright/test'
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -13,7 +13,7 @@ const config: PlaywrightTestConfig = {
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000
+    timeout: 5000,
   },
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -67,6 +67,6 @@ const config: PlaywrightTestConfig = {
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
-};
+}
 
-export default config;
+export default config

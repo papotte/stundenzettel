@@ -1,35 +1,41 @@
-'use client';
+'use client'
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import ExportPreview from '@/components/export-preview';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useEffect } from 'react';
-import { useTranslation } from '@/context/i18n-context';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { useEffect } from 'react'
+
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+import ExportPreview from '@/components/export-preview'
+import { Button } from '@/components/ui/button'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { useTranslation } from '@/context/i18n-context'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function ExportPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const { t } = useTranslation();
+  const { user, loading } = useAuth()
+  const router = useRouter()
+  const { t } = useTranslation()
 
-   useEffect(() => {
+  useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login');
+      router.replace('/login')
     }
-  }, [user, loading, router]);
+  }, [user, loading, router])
 
   if (loading || !user) {
-    return null;
+    return null
   }
-  
+
   return (
     <TooltipProvider>
-      <div className="bg-muted min-h-screen p-4 sm:p-8 print:p-0 print:bg-white">
-        <div className="max-w-7xl mx-auto print:max-w-none print:mx-0">
-          <Button asChild variant="outline" className="mb-4 print:hidden hidden md:inline-flex">
+      <div className="min-h-screen bg-muted p-4 sm:p-8 print:bg-white print:p-0">
+        <div className="mx-auto max-w-7xl print:mx-0 print:max-w-none">
+          <Button
+            asChild
+            variant="outline"
+            className="mb-4 hidden md:inline-flex print:hidden"
+          >
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('export_page.backButton')}
@@ -39,5 +45,5 @@ export default function ExportPage() {
         </div>
       </div>
     </TooltipProvider>
-  );
+  )
 }
