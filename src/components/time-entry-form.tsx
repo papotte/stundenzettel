@@ -121,10 +121,10 @@ export default function TimeEntryForm({ entry, selectedDate, onSave, onClose, us
       const travelTimeInMinutes = (travelTimeValue || 0) * 60;
       const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes;
 
-      if (totalActivityInMinutes >= 9 * 60) {
+      if (totalActivityInMinutes > 9 * 60) {
         return { minutes: 45, timeString: '00:45', reason: '9 hours' };
       }
-      if (totalActivityInMinutes >= 6 * 60) {
+      if (totalActivityInMinutes > 6 * 60) {
         return { minutes: 30, timeString: '00:30', reason: '6 hours' };
       }
       return null;

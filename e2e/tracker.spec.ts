@@ -152,14 +152,14 @@ test.describe('Core Tracker Functionality', () => {
       await expect(form).toBeVisible();
       await form.getByLabel('Einsatzort').fill('Long Day');
       await form.getByLabel('Startzeit').fill('08:00');
-      await form.getByLabel('Endzeit').fill('14:00'); // 6h
+      await form.getByLabel('Endzeit').fill('14:30'); // 6.5h
       // Should suggest 30 min pause
       await expect(form.getByText(/Vorschlag: 30 Min/)).toBeVisible();
       // Click the suggestion
       await form.getByRole('button', { name: /Vorschlag: 30 Min/ }).click();
       await expect(form.getByLabel('Pause')).toHaveValue('00:30');
       // Now test for 9h suggestion
-      await form.getByLabel('Endzeit').fill('17:00'); // 9h
+      await form.getByLabel('Endzeit').fill('17:30'); // 9.5h
       await expect(form.getByText(/Vorschlag: 45 Min/)).toBeVisible();
       await form.getByRole('button', { name: /Vorschlag: 45 Min/ }).click();
       await expect(form.getByLabel('Pause')).toHaveValue('00:45');
