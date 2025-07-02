@@ -1,9 +1,10 @@
 'use client'
-import { useTranslation } from '@/context/i18n-context'
-import { useAuth } from '@/hooks/use-auth'
+
 import { Cog, FileSpreadsheet, Home } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+
+import { useTranslation } from '@/context/i18n-context'
 
 const navItems = [
   {
@@ -28,14 +29,7 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const router = useRouter()
-  const { signOut } = useAuth()
   const { t } = useTranslation()
-
-  const handleSignOut = async () => {
-    await signOut()
-    router.push('/login')
-  }
 
   return (
     <nav

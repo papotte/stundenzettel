@@ -1,8 +1,11 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
-import TimeEntryCard from '../time-entry-card'
-import type { TimeEntry } from '@/lib/types'
+
+import { fireEvent, render, screen } from '@testing-library/react'
+
 import { dictionaries } from '@/lib/i18n/dictionaries'
+import type { TimeEntry } from '@/lib/types'
+
+import TimeEntryCard from '../time-entry-card'
 
 // Helper to resolve nested keys from the dictionary
 const getNestedValue = (obj: any, key: string): string => {

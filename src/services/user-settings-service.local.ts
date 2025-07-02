@@ -1,6 +1,6 @@
 import type { UserSettings } from '@/lib/types'
 
-let userSettings: { [userId: string]: Partial<UserSettings> } = {
+const userSettings: { [userId: string]: Partial<UserSettings> } = {
   'mock-user-1': {
     defaultWorkHours: 7,
     defaultStartTime: '09:00',

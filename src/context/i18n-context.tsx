@@ -1,18 +1,17 @@
 'use client'
 
 import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
   ReactNode,
+  createContext,
   useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from 'react'
+
 import { useAuth } from '@/hooks/use-auth'
-import { getUserSettings } from '@/services/user-settings-service'
 import { dictionaries } from '@/lib/i18n/dictionaries'
-import type { UserSettings } from '@/lib/types'
-import { Skeleton } from '@/components/ui/skeleton'
+import { getUserSettings } from '@/services/user-settings-service'
 
 type Language = keyof typeof dictionaries
 

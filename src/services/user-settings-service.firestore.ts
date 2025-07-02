@@ -1,6 +1,7 @@
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+
 import { db } from '@/lib/firebase'
 import type { UserSettings } from '@/lib/types'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 const defaultSettings: UserSettings = {
   defaultWorkHours: 7,

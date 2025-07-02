@@ -1,17 +1,18 @@
-import { db } from '@/lib/firebase'
-import type { TimeEntry } from '@/lib/types'
 import {
-  collection,
-  getDocs,
+  Timestamp,
   addDoc,
-  updateDoc,
+  collection,
   deleteDoc,
   doc,
-  Timestamp,
-  query,
+  getDocs,
   orderBy,
+  query,
+  updateDoc,
   writeBatch,
 } from 'firebase/firestore'
+
+import { db } from '@/lib/firebase'
+import type { TimeEntry } from '@/lib/types'
 
 // Helper to convert Firestore Timestamps to JS Dates in a document
 const fromFirestore = (docData: any): TimeEntry => {

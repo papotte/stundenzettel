@@ -1,5 +1,6 @@
+import { set, subDays } from 'date-fns'
+
 import type { TimeEntry } from '@/lib/types'
-import { subDays, set } from 'date-fns'
 
 let entries: TimeEntry[] = []
 

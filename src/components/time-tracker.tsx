@@ -1,5 +1,42 @@
 'use client'
 
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+
+import {
+  addDays,
+  addMinutes,
+  differenceInMinutes,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isWithinInterval,
+  set,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+} from 'date-fns'
+import {
+  BarChart,
+  BedDouble,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Cog,
+  FileSpreadsheet,
+  Hourglass,
+  Landmark,
+  Loader2,
+  LogOut,
+  MapPin,
+  Pause,
+  Plane,
+  Play,
+  Plus,
+  Trash2,
+} from 'lucide-react'
+import Link from 'next/link'
+
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import {
   AlertDialog,
@@ -48,41 +85,7 @@ import {
   updateTimeEntry,
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
-import {
-  addDays,
-  addMinutes,
-  differenceInMinutes,
-  endOfMonth,
-  endOfWeek,
-  format,
-  isSameDay,
-  isWithinInterval,
-  set,
-  startOfMonth,
-  startOfWeek,
-  subDays,
-} from 'date-fns'
-import {
-  BarChart,
-  BedDouble,
-  Calendar as CalendarIcon,
-  ChevronLeft,
-  ChevronRight,
-  Cog,
-  FileSpreadsheet,
-  Hourglass,
-  Landmark,
-  Loader2,
-  LogOut,
-  MapPin,
-  Pause,
-  Plane,
-  Play,
-  Plus,
-  Trash2,
-} from 'lucide-react'
-import Link from 'next/link'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+
 import TimeEntryCard from './time-entry-card'
 import TimeEntryForm from './time-entry-form'
 import { Skeleton } from './ui/skeleton'

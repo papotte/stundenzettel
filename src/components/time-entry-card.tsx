@@ -1,21 +1,21 @@
 'use client'
 
 import React from 'react'
-import { format, differenceInMinutes } from 'date-fns'
+
+import { differenceInMinutes, format } from 'date-fns'
 import {
-  Edit,
-  Trash2,
-  Clock,
-  CarFront,
-  Timer,
   BedDouble,
-  Plane,
-  Landmark,
-  Hourglass,
+  CarFront,
+  Clock,
   Coffee,
+  Edit,
+  Hourglass,
+  Landmark,
+  Plane,
+  Timer,
+  Trash2,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,10 +27,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import type { TimeEntry } from '@/lib/types'
-import { formatDuration } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { useTranslation } from '@/context/i18n-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
+import type { TimeEntry } from '@/lib/types'
+import { formatDuration } from '@/lib/utils'
 
 interface TimeEntryCardProps {
   entry: TimeEntry
@@ -67,9 +69,7 @@ export default function TimeEntryCard({
   const calculateCompensatedSeconds = () => {
     if (!entry.endTime) {
       // Handle running timer case
-      const runningSeconds =
-        (new Date().getTime() - entry.startTime.getTime()) / 1000
-      return runningSeconds
+      return (new Date().getTime() - entry.startTime.getTime()) / 1000
     }
 
     const workDurationInMinutes = differenceInMinutes(

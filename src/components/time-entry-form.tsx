@@ -1,62 +1,66 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+
 import { zodResolver } from '@hookform/resolvers/zod'
+
+import { differenceInMinutes, format, parse, set } from 'date-fns'
+import {
+  AlertTriangle,
+  Calendar as CalendarIcon,
+  Lightbulb,
+  Loader2,
+  MapPin,
+  Save,
+} from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { format, set, parse, addMinutes, differenceInMinutes } from 'date-fns'
+
+import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-  SheetClose,
-} from '@/components/ui/sheet'
-import { Calendar } from './ui/calendar'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
 import {
-  Calendar as CalendarIcon,
-  Save,
-  Lightbulb,
-  AlertTriangle,
-  MapPin,
-  Loader2,
-} from 'lucide-react'
-import {
-  cn,
-  timeStringToMinutes,
-  formatHoursAndMinutes,
-  formatMinutesToTimeInput,
-} from '@/lib/utils'
-import type { TimeEntry, UserSettings } from '@/lib/types'
-import { Separator } from './ui/separator'
-import { useMemo, useState } from 'react'
+  SheetClose,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import {
   Tooltip,
   TooltipContent,
-  TooltipTrigger,
   TooltipProvider,
+  TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { useToast } from '@/hooks/use-toast'
-import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { useTranslation } from '@/context/i18n-context'
+import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS } from '@/lib/constants'
+import type { TimeEntry, UserSettings } from '@/lib/types'
+import {
+  cn,
+  formatHoursAndMinutes,
+  formatMinutesToTimeInput,
+  timeStringToMinutes,
+} from '@/lib/utils'
+
+import { Calendar } from './ui/calendar'
+import { Separator } from './ui/separator'
 
 const formSchema = z
   .object({
@@ -111,7 +115,6 @@ export default function TimeEntryForm({
   entry,
   selectedDate,
   onSave,
-  onClose,
   userSettings,
 }: TimeEntryFormProps) {
   const { toast } = useToast()

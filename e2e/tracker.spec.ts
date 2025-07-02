@@ -1,5 +1,6 @@
-import { expect, test } from '@playwright/test';
-import { addManualEntry } from './test-helpers';
+import { expect, test } from '@playwright/test'
+
+import { addManualEntry } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---

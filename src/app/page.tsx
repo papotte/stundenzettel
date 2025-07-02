@@ -1,8 +1,11 @@
 'use client'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
-import TimeTracker from '@/components/time-tracker'
+
 import { useEffect } from 'react'
+
+import { useRouter } from 'next/navigation'
+
+import TimeTracker from '@/components/time-tracker'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function Home() {
   const { user, loading } = useAuth()

@@ -1,25 +1,28 @@
 'use client'
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
+
 import {
-  format,
-  isSameMonth,
-  getDay,
   Locale,
   differenceInMinutes,
+  format,
+  getDay,
+  isSameMonth,
 } from 'date-fns'
+import { Plus } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 import {
   Table,
-  TableHeader,
   TableBody,
-  TableRow,
-  TableHead,
   TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
-import { getWeeksForMonth, formatDecimalHours } from '@/lib/utils'
+import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
+
 import TimesheetHeader from './timesheet-header'
 
 const dayOfWeekMap: { [key: number]: string } = {
@@ -49,7 +52,6 @@ interface TimesheetPreviewProps {
 export default function TimesheetPreview({
   selectedMonth,
   user,
-  entries,
   t,
   locale,
   userSettings,

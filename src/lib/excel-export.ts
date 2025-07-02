@@ -1,13 +1,14 @@
-import ExcelJS from 'exceljs'
 import {
+  type Locale,
+  differenceInMinutes,
   format,
   getDay,
   isSameMonth,
-  differenceInMinutes,
-  type Locale,
 } from 'date-fns'
+import ExcelJS from 'exceljs'
+
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
-import { getWeeksForMonth, formatDecimalHours } from '@/lib/utils'
+import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
 const dayOfWeekMap: { [key: number]: string } = {
   1: 'Mo',
@@ -35,7 +36,6 @@ export const exportToExcel = async ({
   selectedMonth,
   user,
   userSettings,
-  entries,
   t,
   locale,
   getEntriesForDay,
@@ -216,7 +216,7 @@ export const exportToExcel = async ({
 
       const applyRowStyles = (row: ExcelJS.Row) => {
         row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-          let border: Partial<ExcelJS.Borders> = {}
+          let border: Partial<ExcelJS.Borders>
           if (colNumber === 4) {
             // von
             border = {

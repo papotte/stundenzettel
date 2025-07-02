@@ -1,13 +1,10 @@
 'use client'
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react'
-import {
-  onAuthStateChanged,
-  User,
-  signOut as firebaseSignOut,
-} from 'firebase/auth'
+import React, { ReactNode, createContext, useEffect, useState } from 'react'
+
+import { signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
+
 import { auth as firebaseAuth } from '@/lib/firebase'
-import { Skeleton } from '@/components/ui/skeleton'
 import type { AuthenticatedUser } from '@/lib/types'
 
 interface AuthContextType {

@@ -1,17 +1,18 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  UserCredential,
   GoogleAuthProvider,
-  signInWithPopup,
-  setPersistence,
+  UserCredential,
   browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signInWithPopup,
 } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { useRouter } from 'next/navigation'
+
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -24,9 +25,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useToast } from '@/hooks/use-toast'
-import { useAuth } from '@/hooks/use-auth'
 import { useTranslation } from '@/context/i18n-context'
+import { useAuth } from '@/hooks/use-auth'
+import { useToast } from '@/hooks/use-toast'
+import { auth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
 
 const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (

@@ -1,8 +1,10 @@
+import type { Metadata } from 'next'
+
 import BottomNav from '@/components/ui/bottom-nav'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { I18nProvider } from '@/context/i18n-context'
-import type { Metadata } from 'next'
+
 import './globals.css'
 
 export const metadata: Metadata = {

@@ -1,4 +1,5 @@
 'use server'
+
 /**
  * @fileOverview A function to convert GPS coordinates to a human-readable address.
  *
@@ -6,7 +7,6 @@
  * - ReverseGeocodeInput - The input type for the reverseGeocode function.
  * - ReverseGeocodeOutput - The return type for the reverseGeocode function.
  */
-
 import { z } from 'zod'
 
 const ReverseGeocodeInputSchema = z.object({

@@ -1,8 +1,11 @@
 import React from 'react'
+
 import { render, screen } from '@testing-library/react'
-import TimesheetHeader from '../timesheet-header'
-import type { UserSettings } from '@/lib/types'
+
 import { dictionaries } from '@/lib/i18n/dictionaries'
+import type { UserSettings } from '@/lib/types'
+
+import TimesheetHeader from '../timesheet-header'
 
 // Helper to resolve nested keys from the dictionary
 const getNestedValue = (obj: any, key: string): string => {

@@ -1,6 +1,7 @@
+import type { UserSettings } from '@/lib/types'
+
 import * as firestoreService from './user-settings-service.firestore'
 import * as localService from './user-settings-service.local'
-import type { UserSettings } from '@/lib/types'
 
 const useMockService =
   process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||

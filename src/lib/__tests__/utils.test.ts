@@ -1,9 +1,9 @@
 import {
+  formatDecimalHours,
   formatDuration,
   formatHoursAndMinutes,
-  formatDecimalHours,
-  timeStringToMinutes,
   formatMinutesToTimeInput,
+  timeStringToMinutes,
 } from '../utils'
 
 describe('utils', () => {
