@@ -6,6 +6,7 @@ import {
   differenceInMinutes,
   endOfMonth,
   endOfWeek,
+  format,
   isSameDay,
   isWithinInterval,
   set,
@@ -404,6 +405,10 @@ export function useTimeTracker(
     setIsFormOpen(true)
   }, [])
 
+  const formattedSelectedDate = selectedDate
+    ? format(selectedDate, 'PPP')
+    : 'Loading...'
+
   return {
     entries,
     isLoading,
@@ -438,5 +443,6 @@ export function useTimeTracker(
     weeklyTotal,
     monthlyTotal,
     openNewEntryForm,
+    formattedSelectedDate,
   }
 }
