@@ -8,8 +8,16 @@ import type { UserSettings } from '@/lib/types'
 import TimesheetHeader from '../timesheet-header'
 
 // Helper to resolve nested keys from the dictionary
-const getNestedValue = (obj: any, key: string): string => {
-  return key.split('.').reduce((acc, part) => acc && acc[part], obj) || key
+const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
+  return (key
+    .split('.')
+    .reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object'
+          ? (acc as Record<string, unknown>)[part]
+          : undefined,
+      obj,
+    ) ?? key) as string
 }
 
 // Mock t function using the actual dictionary

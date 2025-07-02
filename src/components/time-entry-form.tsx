@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
-import { SPECIAL_LOCATION_KEYS } from '@/lib/constants'
+import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
@@ -145,7 +145,9 @@ export default function TimeEntryForm({
   const locationValue = watch('location')
 
   const isSpecialEntry = useMemo(() => {
-    return SPECIAL_LOCATION_KEYS.includes(getValues('location') as any)
+    return SPECIAL_LOCATION_KEYS.includes(
+      getValues('location') as SpecialLocationKey,
+    )
   }, [locationValue, getValues])
 
   const pauseSuggestion = useMemo(() => {
@@ -166,7 +168,7 @@ export default function TimeEntryForm({
         return { minutes: 30, timeString: '00:30', reason: '6 hours' }
       }
       return null
-    } catch (e) {
+    } catch (_) {
       return null
     }
   }, [startTimeValue, endTimeValue, travelTimeValue, isSpecialEntry])
@@ -195,7 +197,7 @@ export default function TimeEntryForm({
         workDurationInMinutes: workDuration,
         totalCompensatedMinutes: total > 0 ? total : 0,
       }
-    } catch (e) {
+    } catch (_) {
       return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 }
     }
   }, [
@@ -289,7 +291,7 @@ export default function TimeEntryForm({
     })
 
     const finalIsSpecial = SPECIAL_LOCATION_KEYS.includes(
-      values.location as any,
+      values.location as SpecialLocationKey,
     )
 
     const finalEntry: Omit<TimeEntry, 'userId'> = {

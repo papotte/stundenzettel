@@ -45,8 +45,17 @@ const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const I18nContext = createContext<I18nContextType | null>(null)
 
-const getNestedValue = (obj: any, key: string) => {
-  return key.split('.').reduce((acc, part) => acc && acc[part], obj)
+const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
+  const value = key
+    .split('.')
+    .reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object'
+          ? (acc as Record<string, unknown>)[part]
+          : undefined,
+      obj,
+    )
+  return typeof value === 'string' ? value : key
 }
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {

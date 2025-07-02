@@ -8,8 +8,16 @@ import type { TimeEntry } from '@/lib/types'
 import TimeEntryCard from '../time-entry-card'
 
 // Helper to resolve nested keys from the dictionary
-const getNestedValue = (obj: any, key: string): string => {
-  return key.split('.').reduce((acc, part) => acc && acc[part], obj) || key
+const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
+  return (key
+    .split('.')
+    .reduce<unknown>(
+      (acc, part) =>
+        acc && typeof acc === 'object'
+          ? (acc as Record<string, unknown>)[part]
+          : undefined,
+      obj,
+    ) ?? key) as string
 }
 
 // Mock the translation hook to use the actual english dictionary

@@ -25,7 +25,7 @@ import {
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { SPECIAL_LOCATION_KEYS } from '@/lib/constants'
+import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
@@ -97,7 +97,7 @@ export default function ExportPreview() {
                 'SICK_LEAVE',
                 'PTO',
                 'BANK_HOLIDAY',
-              ].includes(entry.location)
+              ].includes(entry.location as string)
 
               if (isCompensatedSpecialDay) {
                 totalMinutes += workMinutes
@@ -119,7 +119,7 @@ export default function ExportPreview() {
 
   const getLocationDisplayName = useCallback(
     (location: string) => {
-      if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
+      if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
         return t(`special_locations.${location}`)
       }
       return location

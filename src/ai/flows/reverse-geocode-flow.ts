@@ -20,6 +20,8 @@ const ReverseGeocodeOutputSchema = z.object({
 })
 export type ReverseGeocodeOutput = z.infer<typeof ReverseGeocodeOutputSchema>
 
+type AddressComponent = { types: string[]; long_name: string }
+
 export async function reverseGeocode(
   input: ReverseGeocodeInput,
 ): Promise<ReverseGeocodeOutput> {
@@ -61,7 +63,10 @@ export async function reverseGeocode(
     }
 
     // Helper to find a specific address component type from the results
-    const getAddressComponent = (components: any[], type: string) => {
+    const getAddressComponent = (
+      components: AddressComponent[],
+      type: string,
+    ) => {
       return components.find((c) => c.types.includes(type))?.long_name
     }
 

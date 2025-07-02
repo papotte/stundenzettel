@@ -54,13 +54,15 @@ export default function TimeEntryCard({
 }: TimeEntryCardProps) {
   const { t } = useTranslation()
 
-  const isSpecial = SPECIAL_LOCATION_KEYS.includes(entry.location as any)
+  const isSpecial = SPECIAL_LOCATION_KEYS.includes(
+    entry.location as SpecialLocationKey,
+  )
   const SpecialIcon = isSpecial
     ? SpecialIcons[entry.location as SpecialLocationKey]
     : undefined
 
   const getLocationDisplayName = (location: string) => {
-    if (SPECIAL_LOCATION_KEYS.includes(location as any)) {
+    if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
       return t(`special_locations.${location}`)
     }
     return location

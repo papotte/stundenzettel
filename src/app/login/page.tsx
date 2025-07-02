@@ -121,10 +121,11 @@ export default function LoginPage() {
       await setPersistence(auth, browserLocalPersistence)
       await action(email, password)
       router.push('/')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
       toast({
         title: t('login.authFailedTitle'),
-        description: error.message,
+        description: message,
         variant: 'destructive',
       })
     } finally {
@@ -157,10 +158,11 @@ export default function LoginPage() {
       await setPersistence(auth, browserLocalPersistence)
       await signInWithPopup(auth, provider)
       router.push('/')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error)
       toast({
         title: t('login.authFailedTitle'),
-        description: error.message,
+        description: message,
         variant: 'destructive',
       })
     } finally {

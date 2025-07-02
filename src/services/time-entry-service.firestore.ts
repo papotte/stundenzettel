@@ -15,19 +15,30 @@ import { db } from '@/lib/firebase'
 import type { TimeEntry } from '@/lib/types'
 
 // Helper to convert Firestore Timestamps to JS Dates in a document
-const fromFirestore = (docData: any): TimeEntry => {
-  const data = { ...docData }
+const fromFirestore = (docData: unknown): TimeEntry => {
+  if (typeof docData !== 'object' || docData === null)
+    throw new Error('Invalid Firestore data')
+  const data = { ...(docData as Record<string, unknown>) }
   if (data.startTime && data.startTime instanceof Timestamp) {
     data.startTime = data.startTime.toDate()
   }
   if (data.endTime && data.endTime instanceof Timestamp) {
     data.endTime = data.endTime.toDate()
   }
-  return data as TimeEntry
+  // Validate required fields before casting
+  if (
+    !('id' in data) ||
+    !('userId' in data) ||
+    !('startTime' in data) ||
+    !('location' in data)
+  ) {
+    throw new Error('Missing required TimeEntry fields')
+  }
+  return data as unknown as TimeEntry
 }
 
 const toFirestore = (entry: Partial<TimeEntry>) => {
-  const data: { [key: string]: any } = { ...entry }
+  const data: { [key: string]: unknown } = { ...entry }
   if (entry.startTime) {
     data.startTime = Timestamp.fromDate(entry.startTime)
   }
@@ -36,8 +47,8 @@ const toFirestore = (entry: Partial<TimeEntry>) => {
     data.endTime = entry.endTime ? Timestamp.fromDate(entry.endTime) : null
   }
   // Don't save the id field in the document data
-  if ('id' in data) delete data.id
-  return data
+  if (Object.prototype.hasOwnProperty.call(data, 'id')) delete data.id
+  return data as { [x: string]: any }
 }
 
 export const addTimeEntry = async (
@@ -73,8 +84,8 @@ export const getTimeEntries = async (userId: string): Promise<TimeEntry[]> => {
   const q = query(collectionRef, orderBy('startTime', 'desc'))
   const querySnapshot = await getDocs(q)
   return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
     ...fromFirestore(doc.data()),
+    id: doc.id,
   }))
 }
 
