@@ -123,7 +123,15 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, 'id'>
+export type Toast = {
+  title?: string
+  description?: string
+  action?: ToastActionElement
+  variant?: 'default' | 'destructive' | null
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  className?: string
+}
 
 function toast({ ...props }: Toast) {
   const id = genId()

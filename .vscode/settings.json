@@ -1,4 +1,5 @@
 {
   "IDX.aI.enableInlineCompletion": true,
-  "IDX.aI.enableCodebaseIndexing": true
+  "IDX.aI.enableCodebaseIndexing": true,
+  "jest.testExplorer.testRegex": "((/__tests__/.*|(\\.|/)(test))\\.[jt]sx?)$"
 }
