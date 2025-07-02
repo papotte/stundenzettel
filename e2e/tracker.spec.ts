@@ -403,6 +403,57 @@ test.describe('Core Tracker Functionality', () => {
     })
   })
 
+  // --- DUPLICATE ENTRIES ---
+  test.describe('Duplicate Entries', () => {
+    test('should duplicate a single entry to another day', async ({
+      page,
+    }) => {
+      const location = 'Entry to Duplicate'
+      await addManualEntry(page, location, '10:00', '11:00')
+
+      // Select the entry
+      const entryCard = page.locator(`[data-location="${location}"]`)
+      await entryCard
+        .getByRole('checkbox', { name: `Select entry for ${location}` })
+        .click()
+
+      // Click duplicate button
+      await page.getByRole('button', { name: /Duplizieren/ }).click()
+
+      // Dialog should appear
+      const dialog = page.getByRole('dialog', {
+        name: 'Zeiteinträge duplizieren',
+      })
+      await expect(dialog).toBeVisible()
+
+      // Select tomorrow's date
+      const today = new Date()
+      const tomorrow = new Date()
+      tomorrow.setDate(today.getDate() + 1)
+      const tomorrowDay = String(tomorrow.getDate())
+
+      await dialog
+        .getByRole('button', { name: tomorrowDay, exact: true })
+        .click()
+
+      // Confirm duplication
+      await dialog.getByRole('button', { name: 'Duplizieren' }).click()
+      await expect(dialog).not.toBeVisible()
+
+      // Check for success toast
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Einträge dupliziert',
+      )
+
+      // Navigate to tomorrow and verify
+      await page.getByRole('button', { name: 'Next day' }).click()
+      const duplicatedCard = page.locator(`[data-location="${location}"]`)
+      await expect(duplicatedCard).toBeVisible()
+      await expect(duplicatedCard.getByText(/10:00.*-.*11:00/)).toBeVisible()
+    })
+  })
+
+  // --- ACCESSIBILITY & RESPONSIVE ---
   test.describe('Accessibility', () => {
     test('should trap focus in dialogs', async ({ page }) => {
       await page.goto('/')

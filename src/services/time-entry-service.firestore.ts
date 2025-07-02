@@ -57,6 +57,28 @@ export const addTimeEntry = async (
   return docRef.id
 }
 
+export const addMultipleTimeEntries = async (
+  userId: string,
+  entriesToAdd: Omit<TimeEntry, 'id'>[],
+): Promise<TimeEntry[]> => {
+  if (!userId) throw new Error('User not authenticated')
+  if (entriesToAdd.length === 0) return []
+
+  const collectionRef = collection(db, 'users', userId, 'timeEntries')
+  const batch = writeBatch(db)
+  const newEntries: TimeEntry[] = []
+
+  for (const entry of entriesToAdd) {
+    const docRef = doc(collectionRef) // This creates a ref with a new auto-generated ID
+    batch.set(docRef, toFirestore(entry))
+    const { id, ...rest } = entry
+    newEntries.push({ ...rest, id: docRef.id })
+  }
+
+  await batch.commit()
+  return newEntries
+}
+
 export const updateTimeEntry = async (
   entryId: string,
   entry: Partial<TimeEntry>,

@@ -19,6 +19,14 @@ export const addTimeEntry = (entry: Omit<TimeEntry, 'id'>): Promise<string> => {
   return service.addTimeEntry(entry)
 }
 
+export const addMultipleTimeEntries = (
+  userId: string,
+  entries: Omit<TimeEntry, 'id' | 'userId'>[],
+): Promise<TimeEntry[]> => {
+  const entriesWithUser = entries.map((e) => ({ ...e, userId }))
+  return service.addMultipleTimeEntries(userId, entriesWithUser)
+}
+
 export const updateTimeEntry = (
   entryId: string,
   entry: Partial<TimeEntry>,

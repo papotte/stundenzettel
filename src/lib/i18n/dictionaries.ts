@@ -59,6 +59,10 @@ export const dictionaries = {
         'This action cannot be undone. This will permanently delete all your time tracking data from the database.',
       clearDataAlertCancel: 'Cancel',
       clearDataAlertConfirm: 'Yes, delete everything',
+      duplicateButton: 'Duplicate',
+      duplicateDialogTitle: 'Duplicate Time Entries',
+      duplicateDialogDescription:
+        'You have selected {count} entries. Choose a date to copy them to.',
     },
     // Special Locations
     special_locations: {
@@ -158,6 +162,12 @@ export const dictionaries = {
       databaseErrorTitle: 'Database Connection Error',
       databaseConnectionError:
         "Could not connect to the database. Please see the 'Troubleshooting' section in the README.md file.",
+      duplicateSuccessTitle: 'Entries Duplicated',
+      duplicateSuccessDescription:
+        '{count} entries were successfully copied to {date}.',
+      duplicateErrorTitle: 'Duplication Failed',
+      duplicateErrorDescription:
+        'There was a problem duplicating the entries.',
     },
     // Settings Page
     settings: {
@@ -291,6 +301,10 @@ export const dictionaries = {
         'Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle Ihre Zeiterfassungsdaten endgültig aus der Datenbank gelöscht.',
       clearDataAlertCancel: 'Abbrechen',
       clearDataAlertConfirm: 'Ja, alles löschen',
+      duplicateButton: 'Duplizieren',
+      duplicateDialogTitle: 'Zeiteinträge duplizieren',
+      duplicateDialogDescription:
+        'Sie haben {count} Einträge ausgewählt. Wählen Sie ein Datum, zu dem sie kopiert werden sollen.',
     },
     // Special Locations
     special_locations: {
@@ -402,6 +416,12 @@ export const dictionaries = {
       databaseErrorTitle: 'Datenbank-Verbindungsfehler',
       databaseConnectionError:
         "Verbindung zur Datenbank fehlgeschlagen. Bitte lesen Sie den Abschnitt 'Fehlerbehebung' in der README.md-Datei.",
+      duplicateSuccessTitle: 'Einträge dupliziert',
+      duplicateSuccessDescription:
+        '{count} Einträge wurden erfolgreich nach {date} kopiert.',
+      duplicateErrorTitle: 'Duplizierung fehlgeschlagen',
+      duplicateErrorDescription:
+        'Beim Duplizieren der Einträge ist ein Problem aufgetreten.',
     },
     // Settings Page
     settings: {

@@ -29,15 +29,18 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useTranslation } from '@/context/i18n-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry } from '@/lib/types'
-import { formatDuration } from '@/lib/utils'
+import { cn, formatDuration } from '@/lib/utils'
 
 interface TimeEntryCardProps {
   entry: TimeEntry
   onEdit: (entry: TimeEntry) => void
   onDelete: (id: string) => void
+  isSelected: boolean
+  onSelectionChange: (id: string, checked: boolean) => void
 }
 
 const SpecialIcons: { [key in SpecialLocationKey]?: React.ElementType } = {
@@ -51,6 +54,8 @@ export default function TimeEntryCard({
   entry,
   onEdit,
   onDelete,
+  isSelected,
+  onSelectionChange,
 }: TimeEntryCardProps) {
   const { t } = useTranslation()
 
@@ -94,16 +99,40 @@ export default function TimeEntryCard({
 
   const totalCompensatedSeconds = calculateCompensatedSeconds()
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent click from propagating if it's on a button
+    if (
+      (e.target as HTMLElement).closest('button') ||
+      (e.target as HTMLElement).closest('a')
+    ) {
+      return
+    }
+    onSelectionChange(entry.id, !isSelected)
+  }
+
   if (SpecialIcon) {
     return (
       <Card
-        className="transition-shadow hover:shadow-md"
+        className={cn(
+          'cursor-pointer transition-shadow hover:shadow-md',
+          isSelected && 'ring-2 ring-primary',
+        )}
         data-testid={`time-entry-card-${entry.location.toLowerCase()}`}
         data-location={entry.location}
+        onClick={handleCardClick}
       >
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) =>
+                  onSelectionChange(entry.id, !!checked)
+                }
+                aria-label={`Select entry for ${getLocationDisplayName(entry.location)}`}
+                onClick={(e) => e.stopPropagation()}
+                className="mr-2"
+              />
               <SpecialIcon className="h-5 w-5 text-primary" />
               <p className="font-semibold">
                 {getLocationDisplayName(entry.location)}
@@ -167,50 +196,65 @@ export default function TimeEntryCard({
 
   return (
     <Card
-      className="transition-shadow hover:shadow-md"
+      className={cn(
+        'cursor-pointer transition-shadow hover:shadow-md',
+        isSelected && 'ring-2 ring-primary',
+      )}
       data-testid={`time-entry-card-${entry.id}`}
       data-location={entry.location}
+      onClick={handleCardClick}
     >
       <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="grid flex-1 gap-1">
-            <p className="font-semibold">{entry.location}</p>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <Clock className="mr-1.5 h-3.5 w-3.5" />
-                <span>
-                  {format(entry.startTime, 'p')} -{' '}
-                  {entry.endTime
-                    ? format(entry.endTime, 'p')
-                    : t('time_entry_card.runningLabel')}
-                </span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={(checked) =>
+                onSelectionChange(entry.id, !!checked)
+              }
+              aria-label={`Select entry for ${entry.location}`}
+              onClick={(e) => e.stopPropagation()}
+              className="mt-1"
+            />
+            <div className="grid flex-1 gap-1">
+              <p className="font-semibold">{entry.location}</p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <div className="flex items-center">
+                  <Clock className="mr-1.5 h-3.5 w-3.5" />
+                  <span>
+                    {format(entry.startTime, 'p')} -{' '}
+                    {entry.endTime
+                      ? format(entry.endTime, 'p')
+                      : t('time_entry_card.runningLabel')}
+                  </span>
+                </div>
+                {entry.pauseDuration && entry.pauseDuration > 0 ? (
+                  <div className="flex items-center">
+                    <Coffee className="mr-1.5 h-3.5 w-3.5" />
+                    <span>
+                      {t('time_entry_card.pauseLabel', {
+                        minutes: entry.pauseDuration,
+                      })}
+                    </span>
+                  </div>
+                ) : null}
+                {entry.travelTime && entry.travelTime > 0 ? (
+                  <div className="flex items-center">
+                    <Timer className="mr-1.5 h-3.5 w-3.5" />
+                    <span>
+                      {t('time_entry_card.travelLabel', {
+                        hours: entry.travelTime,
+                      })}
+                    </span>
+                  </div>
+                ) : null}
+                {entry.isDriver ? (
+                  <div className="flex items-center">
+                    <CarFront className="mr-1.5 h-3.5 w-3.5" />
+                    <span>{t('time_entry_card.driverLabel')}</span>
+                  </div>
+                ) : null}
               </div>
-              {entry.pauseDuration && entry.pauseDuration > 0 ? (
-                <div className="flex items-center">
-                  <Coffee className="mr-1.5 h-3.5 w-3.5" />
-                  <span>
-                    {t('time_entry_card.pauseLabel', {
-                      minutes: entry.pauseDuration,
-                    })}
-                  </span>
-                </div>
-              ) : null}
-              {entry.travelTime && entry.travelTime > 0 ? (
-                <div className="flex items-center">
-                  <Timer className="mr-1.5 h-3.5 w-3.5" />
-                  <span>
-                    {t('time_entry_card.travelLabel', {
-                      hours: entry.travelTime,
-                    })}
-                  </span>
-                </div>
-              ) : null}
-              {entry.isDriver ? (
-                <div className="flex items-center">
-                  <CarFront className="mr-1.5 h-3.5 w-3.5" />
-                  <span>{t('time_entry_card.driverLabel')}</span>
-                </div>
-              ) : null}
             </div>
           </div>
           <div className="flex items-center gap-2">
