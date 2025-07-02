@@ -137,6 +137,19 @@ export const addTimeEntry = async (
   return newEntry.id
 }
 
+export const addMultipleTimeEntries = async (
+  userId: string,
+  entriesToAdd: Omit<TimeEntry, 'id'>[],
+): Promise<TimeEntry[]> => {
+  const newEntries: TimeEntry[] = entriesToAdd.map((entry, index) => ({
+    ...entry,
+    userId,
+    id: `${Date.now()}-${index}`,
+  }))
+  entries.push(...newEntries)
+  return newEntries
+}
+
 export const updateTimeEntry = async (
   entryId: string,
   entryUpdate: Partial<TimeEntry>,
