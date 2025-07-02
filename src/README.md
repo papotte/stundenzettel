@@ -119,6 +119,32 @@ The application will be available at [http://localhost:9002](http://localhost:90
 
 ---
 
+## Code Quality (Linting & Formatting)
+
+This project uses [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier.io/) for code formatting to ensure code quality and consistency.
+
+- **ESLint**: Catches common errors and enforces best practices. Configuration is in `.eslintrc.json`.
+- **Prettier**: Automatically formats code to a consistent style. Configuration is in `.prettierrc`.
+- **Tailwind CSS Plugin**: The Prettier setup includes a plugin that automatically sorts Tailwind CSS classes, keeping them organized and readable.
+
+### Available Scripts
+
+You can run the linter and formatter using the following npm scripts:
+
+- **Check for linting errors:**
+  ```bash
+  npm run lint
+  ```
+
+- **Automatically format all files:**
+  ```bash
+  npm run format
+  ```
+
+It's recommended to run `npm run format` before committing your changes.
+
+---
+
 ## Deploying to Production (Firebase)
 
 Deploying your application involves two main steps: deploying the app itself with **App Hosting**, and deploying the **Firestore Security Rules**.
