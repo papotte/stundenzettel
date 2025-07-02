@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\" --ignore-path .prettierignore",
     "typecheck": "tsc --noEmit",
     "test": "jest",
