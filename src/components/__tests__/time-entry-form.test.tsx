@@ -28,6 +28,12 @@ jest.mock('@/context/time-tracker-context', () => ({
   }),
 }))
 
+// Mock useIsMobile at the top, with a toggle variable
+let isMobile = false
+jest.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: () => isMobile,
+}))
+
 // --- TEST SETUP ---
 
 const mockUserSettings: UserSettings = {
@@ -55,6 +61,7 @@ beforeEach(() => {
   mockedReverseGeocode.mockClear()
   mockOnSave.mockClear()
   mockOnClose.mockClear()
+  isMobile = false
 })
 
 // --- TESTS ---
@@ -296,5 +303,83 @@ describe('TimeEntryForm', () => {
     expect(screen.getByLabelText('time_entry_form.pauseLabel')).toHaveValue(
       '00:30',
     )
+  })
+})
+
+describe('Pause Duration Field', () => {
+  beforeEach(() => {
+    isMobile = false
+  })
+
+  it('shows the correct label and description', () => {
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    expect(
+      screen.getByLabelText('time_entry_form.pauseLabel'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('time_entry_form.pauseDurationDescription'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the correct placeholder', () => {
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    expect(screen.getByPlaceholderText(/00:30/)).toBeInTheDocument()
+  })
+
+  it('auto-formats input as HH:mm on mobile', async () => {
+    isMobile = true
+    const user = userEvent.setup()
+    render(
+      <Sheet defaultOpen>
+        <SheetContent>
+          <TimeEntryForm
+            entry={null}
+            selectedDate={new Date()}
+            onSave={mockOnSave}
+            onClose={mockOnClose}
+            userSettings={mockUserSettings}
+          />
+        </SheetContent>
+      </Sheet>,
+    )
+    const pauseInput = screen.getByLabelText('time_entry_form.pauseLabel')
+    await user.clear(pauseInput)
+    await user.type(pauseInput, '1234')
+    expect(pauseInput).toHaveValue('12:34')
+  })
+
+  it('uses type="tel" for pause input on mobile', () => {
+    isMobile = true
+    render(
+      <Sheet defaultOpen>
+        <SheetContent>
+          <TimeEntryForm
+            entry={null}
+            selectedDate={new Date()}
+            onSave={mockOnSave}
+            onClose={mockOnClose}
+            userSettings={mockUserSettings}
+          />
+        </SheetContent>
+      </Sheet>,
+    )
+    const pauseInput = screen.getByLabelText('time_entry_form.pauseLabel')
+    expect(pauseInput).toHaveAttribute('type', 'tel')
   })
 })

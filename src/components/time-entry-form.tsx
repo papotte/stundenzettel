@@ -49,6 +49,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry, UserSettings } from '@/lib/types'
@@ -122,6 +123,7 @@ export default function TimeEntryForm({
   const { toast } = useToast()
   const { t, language } = useTranslation()
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
+  const isMobile = useIsMobile()
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
   const defaultEndTime = userSettings?.defaultEndTime || '17:00'
@@ -316,6 +318,23 @@ export default function TimeEntryForm({
     return entry?.location || ''
   }, [entry, isSpecialEntry, t])
 
+  // Helper to format input as HH:mm
+  function formatDurationInput(value: string) {
+    // Remove non-digits
+    const digits = value.replace(/\D/g, '')
+    if (digits.length <= 2) return digits
+    return digits.slice(0, 2) + ':' + digits.slice(2, 4)
+  }
+
+  // Helper to validate HH:mm format and valid duration
+  function isValidDuration(value: string) {
+    if (!/^\d{1,2}:\d{2}$/.test(value)) return false
+    const [hh, mm] = value.split(':').map(Number)
+    if (isNaN(hh) || isNaN(mm)) return false
+    if (mm < 0 || mm > 59) return false
+    return !(hh < 0 || hh > 23)
+  }
+
   return (
     <>
       <SheetHeader className="px-6 pt-6">
@@ -473,8 +492,42 @@ export default function TimeEntryForm({
                             {t('time_entry_form.pauseLabel')}
                           </FormLabel>
                           <FormControl>
-                            <Input type="time" {...field} />
+                            {isMobile ? (
+                              <Input
+                                type="tel"
+                                inputMode="numeric"
+                                pattern="[0-9:]*"
+                                placeholder="e.g. 00:30 for 30 minutes"
+                                value={field.value}
+                                onChange={(e) => {
+                                  const formatted = formatDurationInput(
+                                    e.target.value,
+                                  )
+                                  field.onChange(formatted)
+                                }}
+                                maxLength={5}
+                              />
+                            ) : (
+                              <Input
+                                type="time"
+                                step="60"
+                                placeholder="e.g. 00:30 for 30 minutes"
+                                {...field}
+                              />
+                            )}
                           </FormControl>
+                          {field.value && !isValidDuration(field.value) && (
+                            <div className="text-sm font-medium text-destructive mt-1">
+                              {t('time_entry_form.pauseDurationInvalid', {
+                                example: '00:30',
+                              })}
+                            </div>
+                          )}
+                          <FormDescription>
+                            {t('time_entry_form.pauseDurationDescription', {
+                              example: '00:30',
+                            })}
+                          </FormDescription>
                           <FormMessage />
                           <div className="pt-2">
                             {pauseSuggestion && (
