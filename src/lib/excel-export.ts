@@ -268,9 +268,11 @@ export const exportToExcel = async ({
           )
 
           // If pauseDecimal is 0, use blank; otherwise, use the value
-          const pauseCellValue = (!entry.pauseDuration || pauseDecimal === 0) ? '' : pauseDecimal
+          const pauseCellValue =
+            !entry.pauseDuration || pauseDecimal === 0 ? '' : pauseDecimal
           // If travelTime is 0, use blank; otherwise, use the value
-          const travelCellValue = (!entry.travelTime || entry.travelTime === 0) ? '' : entry.travelTime
+          const travelCellValue =
+            !entry.travelTime || entry.travelTime === 0 ? '' : entry.travelTime
 
           const rowData = [
             '', // Weekday gets merged

@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-format:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run linter
+        run: npm run lint
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run unit tests
+        run: npm run test:ci
+
+      - name: Download coverage artifact from main
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: main.yml # e.g., ci.yml
+          branch: main
+          name: coverage-main
+          path: ./coverage/main
+          # Optionally, you can use 'pr: true' if you want the latest from the PR base branch
+
+      - name: Post coverage comment
+        if: always()
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-step: all
+          coverage-file: ./coverage/report.json
+          base-coverage-file: ./coverage/main/report.json
+          custom-title: 'Code Coverage Report'
+          package-manager: npm
+
+      - name: Upload coverage report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-pr
+          path: coverage/
+          retention-days: 7
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, unit-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
