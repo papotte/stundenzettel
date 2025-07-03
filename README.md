@@ -264,6 +264,13 @@ This project includes a complete CI/CD pipeline configured with GitHub Actions. 
       4.  Push the version bump to `package.json`.
   - **Conventional Commits**: This workflow relies on commit messages following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification (e.g., `feat: ...`, `fix: ...`).
 
+- **`version-bump.yml` (Automatic Version Bumping)**:
+  - **Trigger**: Runs when a pull request is merged into the `main` branch.
+  - **Jobs**:
+    - Bumps the project version and creates a new tag based on PR title keywords (`#major`, `#minor`, `#patch`).
+    - Uses [`phips28/gh-action-bump-version`](https://github.com/marketplace/actions/github-tag-bump) to determine the version bump type.
+  - **Purpose**: Ensures that every merge to `main` results in a version bump and tag, following the PR's intent.
+
 - **`deploy.yml` (Continuous Deployment)**:
   - **Trigger**: Runs automatically whenever a new GitHub Release is `published`.
   - **Jobs**:

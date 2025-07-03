@@ -1,0 +1,26 @@
+name: Bump version on push to main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Bump version and push tag
+        id: bump_version
+        uses: phips28/gh-action-bump-version@v11.0.2
+        with:
+          tag-prefix: 'v'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Output new version
+        run: echo "New version is ${{ steps.bump_version.outputs.newTag }}"
