@@ -1,4 +1,3 @@
-
 name: CI
 
 on:
@@ -7,6 +6,12 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-and-format:
@@ -55,9 +60,12 @@ jobs:
 
       - name: Post coverage comment
         if: always()
-        uses: ArtiomTr/jest-coverage-report-action@v2
+        uses: romeovs/lcov-reporter-action@v0.3.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: ./coverage/lcov.info
+          title: 'Code Coverage Report'
+          delete-old-comments: true
 
       - name: Upload coverage report artifact
         if: always()
