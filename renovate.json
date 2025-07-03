@@ -1,0 +1,83 @@
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "updateTypes": ["minor", "patch"],
+      "groupName": "all non-major dependencies"
+    },
+    {
+      "updateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "react-test-renderer",
+        "@types/react",
+        "@types/react-dom",
+        "@types/react-test-renderer"
+      ],
+      "groupName": "react dependencies"
+    },
+    {
+      "matchPackageNames": [
+        "jest",
+        "ts-jest",
+        "jest-environment-jsdom",
+        "@types/jest"
+      ],
+      "groupName": "jest dependencies"
+    },
+    {
+      "matchPackageNames": ["playwright", "@playwright/test"],
+      "groupName": "playwright dependencies"
+    },
+    {
+      "matchPackageNames": [
+        "@testing-library/react",
+        "@testing-library/jest-dom",
+        "@testing-library/user-event"
+      ],
+      "groupName": "testing-library dependencies"
+    },
+    {
+      "matchPackageNames": [
+        "eslint",
+        "eslint-config-*",
+        "eslint-plugin-*",
+        "prettier"
+      ],
+      "groupName": "linting and formatting"
+    },
+    {
+      "matchPackageNames": ["typescript", "@types/*"],
+      "excludePackageNames": [
+        "@types/react",
+        "@types/react-dom",
+        "@types/react-test-renderer"
+      ],
+      "groupName": "typescript and types"
+    },
+    {
+      "matchPackageNames": [
+        "next",
+        "@types/next",
+        "next-auth",
+        "@types/next-auth"
+      ],
+      "groupName": "next.js dependencies"
+    },
+    {
+      "matchPackageNames": ["firebase", "@firebase/*"],
+      "groupName": "firebase dependencies"
+    },
+    {
+      "matchPackageNames": ["tailwindcss", "@tailwindcss/*"],
+      "groupName": "tailwindcss dependencies"
+    }
+  ],
+  "labels": ["dependencies"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5
+}
