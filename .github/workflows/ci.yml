@@ -36,44 +36,16 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-  unit-tests:
-    name: Unit Tests
+  coverage:
     runs-on: ubuntu-latest
-    permissions:
-      # Required to post a comment on the PR
-      pull-requests: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run unit tests
-        run: npm run test
-
-      - name: Post coverage comment
-        if: always()
-        uses: romeovs/lcov-reporter-action@v0.3.1
+      - uses: actions/checkout@v3
+      - uses: ArtiomTr/jest-coverage-report-action@v21
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          lcov-file: ./coverage/lcov.info
-          title: 'Code Coverage Report'
           delete-old-comments: true
-
-      - name: Upload coverage report artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report-pr
-          path: coverage/
-          retention-days: 7
+          test-script: npm test
+          package-manager: npm
 
   build:
     name: Build
