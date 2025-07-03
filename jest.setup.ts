@@ -27,3 +27,19 @@ jest.mock('@/context/i18n-context', () => ({
     loading: false,
   }),
 }))
+
+// Add this at the very top of your test file or in jest.setup.ts
+if (!window.matchMedia) {
+  window.matchMedia = function () {
+    return {
+      matches: false,
+      media: '',
+      onchange: null,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      dispatchEvent: jest.fn(),
+    }
+  }
+}

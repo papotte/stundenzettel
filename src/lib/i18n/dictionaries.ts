@@ -95,6 +95,11 @@ export const dictionaries = {
       endTimeLabel: 'End time',
       optionalDetailsTitle: 'Optional Details',
       pauseLabel: 'Pause',
+      pauseDurationLabel: 'Pause Duration (HH:mm)',
+      pauseDurationDescription:
+        'Enter the total duration of your pause in HH:mm format (e.g. {example} for 30 minutes).',
+      pauseDurationInvalid:
+        'Please enter a valid duration in HH:mm format (e.g. {example}).',
       pauseSuggestion: 'Suggest: {minutes} min',
       pauseSuggestionTooltip:
         'Activity over {hours}. Recommended pause: {minutes} mins.',
@@ -298,7 +303,12 @@ export const dictionaries = {
         'Diese Aktion kann nicht rückgängig gemacht werden. Der Zeiteintrag für "{location}" wird dauerhaft gelöscht.',
       deleteAlertCancel: 'Abbrechen',
       deleteAlertConfirm: 'Löschen',
-      pauseLabel: '{minutes} Min. Pause',
+      pauseLabel: 'Pause',
+      pauseDurationLabel: 'Pausendauer (HH:mm)',
+      pauseDurationDescription:
+        'Geben Sie die Gesamtdauer Ihrer Pause im Format HH:mm ein (z.B. {example} für 30 Minuten).',
+      pauseDurationInvalid:
+        'Bitte geben Sie eine gültige Dauer im Format HH:mm ein (z.B. {example}).',
       travelLabel: '{hours} Std. Fahrt',
       driverLabel: 'Fahrer',
       runningLabel: 'Jetzt',
@@ -318,6 +328,11 @@ export const dictionaries = {
       endTimeLabel: 'Endzeit',
       optionalDetailsTitle: 'Optionale Angaben',
       pauseLabel: 'Pause',
+      pauseDurationLabel: 'Pause Duration (HH:mm)',
+      pauseDurationDescription:
+        'Enter the total duration of your pause in HH:mm format (e.g. {example} for 30 minutes).',
+      pauseDurationInvalid:
+        'Please enter a valid duration in HH:mm format (e.g. {example}).',
       pauseSuggestion: 'Vorschlag: {minutes} Min.',
       pauseSuggestionTooltip:
         'Aktivität über {hours}. Empfohlene Pause: {minutes} Min.',
