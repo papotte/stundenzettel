@@ -181,7 +181,17 @@ When prompted, enter the secret value (`your_value_here`). You will need to set 
 firebase apphosting:secrets:set NEXT_PUBLIC_FIREBASE_API_KEY
 ```
 
-### 2. Deploy Firestore Security Rules
+### 2. Deploy Your Application
+
+After setting all your secrets, you can deploy your application to Firebase App Hosting from your local machine:
+
+```bash
+firebase deploy --only apphosting
+```
+
+See the **CI/CD with GitHub Actions** section for details on automated deployments.
+
+### 3. Deploy Firestore Security Rules
 
 Your database is protected by security rules. This project includes a `firestore.rules` file that you must deploy to your project. **This is a critical step to allow your app to read and write data.**
 
@@ -191,15 +201,11 @@ From your project's root directory, run the following command:
 firebase deploy --only firestore:rules
 ```
 
-This will publish the rules that allow users to read and write their own time entries.
+---
 
-### 3. Deploy Your Application
+## CI/CD with GitHub Actions
 
-After setting all your secrets and deploying your security rules, deploy your application to Firebase App Hosting:
-
-```bash
-firebase deploy --only apphosting
-```
+This project includes a complete CI/CD pipeline configured with GitHub Actions. The workflows are defined in the `.github/workflows` directory at the root of the project. For full details, please see the main `README.md` file.
 
 ---
 
@@ -246,17 +252,17 @@ This error usually means that either the necessary Google Cloud APIs are not ena
 **Solution:**
 
 1.  **Enable Cloud APIs:**
-    - Make sure you are logged into the Google account associated with your Firebase project.
-    - Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
-    - Navigate to **APIs & Services > Library**.
-    - Search for and enable the following two APIs if they are not already active:
+    -   Make sure you are logged into the Google account associated with your Firebase project.
+    -   Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
+    -   Navigate to **APIs & Services > Library**.
+    -   Search for and enable the following two APIs if they are not already active:
       - **Cloud Firestore API**
       - **Identity Toolkit API** (required for Firebase Authentication)
-    - **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
+    -   **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
 
 2.  **Deploy Security Rules:**
-    - If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
-    - Run the following command from your project directory:
+    -   If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
+    -   Run the following command from your project directory:
       ```bash
       firebase deploy --only firestore:rules
       ```
