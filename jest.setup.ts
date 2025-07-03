@@ -18,3 +18,12 @@ Element.prototype.hasPointerCapture = jest.fn()
 
 // Mock scrollIntoView, which is used by Radix UI Select components.
 Element.prototype.scrollIntoView = jest.fn()
+
+jest.mock('@/context/i18n-context', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    language: 'en',
+    setLanguageState: jest.fn(),
+    loading: false,
+  }),
+}))
