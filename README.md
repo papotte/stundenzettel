@@ -245,59 +245,59 @@ This project includes a complete CI/CD pipeline configured with GitHub Actions. 
 
 ### Workflows Overview
 
--   **`ci.yml` (Continuous Integration)**:
-    -   **Trigger**: Runs on every push to a pull request.
-    -   **Jobs**:
-        -   `lint-and-format`: Checks for linting and formatting errors.
-        -   `tests`: Runs unit and end-to-end tests in parallel.
-        -   `build`: Builds the Next.js application.
-    -   **Purpose**: Ensures that all new code meets quality standards and doesn't break existing functionality before it gets merged.
+- **`ci.yml` (Continuous Integration)**:
+  - **Trigger**: Runs on every push to a pull request.
+  - **Jobs**:
+    - `lint-and-format`: Checks for linting and formatting errors.
+    - `tests`: Runs unit and end-to-end tests in parallel.
+    - `build`: Builds the Next.js application.
+  - **Purpose**: Ensures that all new code meets quality standards and doesn't break existing functionality before it gets merged.
 
--   **`main.yml` (Continuous Release)**:
-    -   **Trigger**: Runs on every push to the `main` branch.
-    -   **Jobs**:
-        -   Runs all the same checks as the `ci.yml` workflow.
-        -   If all checks pass, it uses `semantic-release` to automatically:
-            1.  Analyze commit messages to determine the next version number (patch, minor, or major).
-            2.  Generate release notes from the commit history.
-            3.  Create a new Git tag and a GitHub Release.
-            4.  Push the version bump to `package.json`.
-    -   **Conventional Commits**: This workflow relies on commit messages following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification (e.g., `feat: ...`, `fix: ...`).
+- **`main.yml` (Continuous Release)**:
+  - **Trigger**: Runs on every push to the `main` branch.
+  - **Jobs**:
+    - Runs all the same checks as the `ci.yml` workflow.
+    - If all checks pass, it uses `semantic-release` to automatically:
+      1.  Analyze commit messages to determine the next version number (patch, minor, or major).
+      2.  Generate release notes from the commit history.
+      3.  Create a new Git tag and a GitHub Release.
+      4.  Push the version bump to `package.json`.
+  - **Conventional Commits**: This workflow relies on commit messages following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification (e.g., `feat: ...`, `fix: ...`).
 
--   **`deploy.yml` (Continuous Deployment)**:
-    -   **Trigger**: Runs automatically whenever a new GitHub Release is `published`.
-    -   **Jobs**:
-        -   Runs E2E tests as a final gate before deployment.
-        -   Deploys the application to **Firebase App Hosting**.
-    -   **Setup**: For this workflow to succeed, you must create a `FIREBASE_SERVICE_ACCOUNT_JSON` secret in your GitHub repository's settings. See below for instructions.
+- **`deploy.yml` (Continuous Deployment)**:
+  - **Trigger**: Runs automatically whenever a new GitHub Release is `published`.
+  - **Jobs**:
+    - Runs E2E tests as a final gate before deployment.
+    - Deploys the application to **Firebase App Hosting**.
+  - **Setup**: For this workflow to succeed, you must create a `FIREBASE_SERVICE_ACCOUNT_JSON` secret in your GitHub repository's settings. See below for instructions.
 
--   **`nightly.yml` (Nightly Tests)**:
-    -   **Trigger**: Runs on a schedule (daily at 5 AM UTC).
-    -   **Jobs**: Runs the full E2E test suite against the `main` branch to catch any regressions that might have been missed.
+- **`nightly.yml` (Nightly Tests)**:
+  - **Trigger**: Runs on a schedule (daily at 5 AM UTC).
+  - **Jobs**: Runs the full E2E test suite against the `main` branch to catch any regressions that might have been missed.
 
 ### Required GitHub Secret for Deployment
 
 To allow GitHub Actions to deploy your application to Firebase, you must create a service account and add its key as a secret to your repository.
 
 1.  **Create a Service Account**:
-    -   Go to the [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts) for your project.
-    -   Click **+ CREATE SERVICE ACCOUNT**.
-    -   Give it a name (e.g., `github-actions-deploy`) and click **CREATE AND CONTINUE**.
-    -   Grant it the following two roles:
-        -   **Firebase App Hosting Admin** (to deploy the app)
-        -   **Firebase Admin** (can be narrowed, but this is simple for setup)
-    -   Click **CONTINUE**, then **DONE**.
+    - Go to the [Google Cloud Console](https://console.cloud.google.com/iam-admin/serviceaccounts) for your project.
+    - Click **+ CREATE SERVICE ACCOUNT**.
+    - Give it a name (e.g., `github-actions-deploy`) and click **CREATE AND CONTINUE**.
+    - Grant it the following two roles:
+      - **Firebase App Hosting Admin** (to deploy the app)
+      - **Firebase Admin** (can be narrowed, but this is simple for setup)
+    - Click **CONTINUE**, then **DONE**.
 2.  **Generate a JSON Key**:
-    -   Find the service account you just created in the list.
-    -   Click the three-dot menu on the right and select **Manage keys**.
-    -   Click **ADD KEY** > **Create new key**.
-    -   Select **JSON** and click **CREATE**. A JSON file will be downloaded to your computer.
+    - Find the service account you just created in the list.
+    - Click the three-dot menu on the right and select **Manage keys**.
+    - Click **ADD KEY** > **Create new key**.
+    - Select **JSON** and click **CREATE**. A JSON file will be downloaded to your computer.
 3.  **Create the GitHub Secret**:
-    -   In your GitHub repository, go to **Settings > Secrets and variables > Actions**.
-    -   Click **New repository secret**.
-    -   Name the secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
-    -   Open the downloaded JSON file, copy its entire contents, and paste it into the **Value** field in GitHub.
-    -   Click **Add secret**.
+    - In your GitHub repository, go to **Settings > Secrets and variables > Actions**.
+    - Click **New repository secret**.
+    - Name the secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
+    - Open the downloaded JSON file, copy its entire contents, and paste it into the **Value** field in GitHub.
+    - Click **Add secret**.
 
 The `deploy.yml` workflow is now configured to use this secret to authenticate with Firebase and deploy your application.
 
@@ -312,17 +312,17 @@ This error usually means that either the necessary Google Cloud APIs are not ena
 **Solution:**
 
 1.  **Enable Cloud APIs:**
-    -   Make sure you are logged into the Google account associated with your Firebase project.
-    -   Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
-    -   Navigate to **APIs & Services > Library**.
-    -   Search for and enable the following two APIs if they are not already active:
-      - **Cloud Firestore API**
-      - **Identity Toolkit API** (required for Firebase Authentication)
-    -   **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
+    - Make sure you are logged into the Google account associated with your Firebase project.
+    - Go to the [Google Cloud Console](https://console.cloud.google.com/) for your project.
+    - Navigate to **APIs & Services > Library**.
+    - Search for and enable the following two APIs if they are not already active:
+    - **Cloud Firestore API**
+    - **Identity Toolkit API** (required for Firebase Authentication)
+    - **Important:** Many Google Cloud services, even those with a generous free tier, require a billing account to be linked to the project to function. Navigate to the **Billing** section in the Google Cloud Console and ensure your project is linked to a billing account.
 
 2.  **Deploy Security Rules:**
-    -   If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
-    -   Run the following command from your project directory:
-      ```bash
-      firebase deploy --only firestore:rules
-      ```
+    - If you've just created your project, its database is locked down by default. You need to deploy the security rules included in this project.
+    - Run the following command from your project directory:
+    ```bash
+    firebase deploy --only firestore:rules
+    ```
