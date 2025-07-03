@@ -45,7 +45,7 @@ jobs:
         run: npm run lint
 
       - name: Run unit tests
-        run: npm run test
+        run: npm run test:ci
 
       - name: Zip coverage report
         if: always()
@@ -55,8 +55,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage.zip
+          name: coverage-main
+          path: coverage/report.json
           retention-days: 7
 
       - name: Build project

@@ -13,6 +13,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json,yml,yaml}\" --ignore-path .prettierignore",
     "typecheck": "tsc --noEmit",
     "test": "jest --coverage",
+    "test:ci": "jest --ci --json --coverage --testLocationInResults --outputFile=coverage/report.json",
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
     "test:e2e:debug": "playwright test --debug",
