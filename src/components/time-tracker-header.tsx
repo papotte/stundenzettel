@@ -57,7 +57,11 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
           <AlertDialog>
             <Tooltip>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon">
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  data-testid="clear-data-btn"
+                >
                   <Trash2 className="h-4 w-4" />
                   <span className="sr-only">
                     {t('tracker.headerClearDataTooltip')}
@@ -84,6 +88,7 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
                 <AlertDialogAction
                   onClick={handleClearData}
                   className="bg-destructive hover:bg-destructive/90"
+                  data-testid="clear-data-confirm-btn"
                 >
                   {t('tracker.clearDataAlertConfirm')}
                 </AlertDialogAction>
@@ -113,7 +118,12 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={handleSignOut}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              data-testid="sign-out-btn"
+            >
               <LogOut className="h-4 w-4" />
               <span className="sr-only">
                 {t('tracker.headerSignOutTooltip')}
