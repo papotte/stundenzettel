@@ -1,10 +1,6 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
 
-// Set the environment to 'test' for all Jest tests.
-// This ensures that the application uses mock services instead of live ones.
-process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-
 // Mock ResizeObserver for Radix UI components
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

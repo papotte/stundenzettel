@@ -77,6 +77,7 @@ export default function SettingsPage() {
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
+    mode: 'all',
     defaultValues: {
       defaultWorkHours: 7,
       defaultStartTime: '09:00',
