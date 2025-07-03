@@ -49,7 +49,7 @@ if (useMocks) {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
     // Connect to a specific database if NEXT_PUBLIC_FIREBASE_DATABASE_ID is set,
     // otherwise, it will connect to the default '(default)' database.
-    db = getFirestore(app, process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID)
+    db = getFirestore(app, process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || '')
     auth = getAuth(app)
   }
 }
