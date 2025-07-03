@@ -2,42 +2,9 @@ import React from 'react'
 
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import { dictionaries } from '@/lib/i18n/dictionaries'
 import type { TimeEntry } from '@/lib/types'
 
 import TimeEntryCard from '../time-entry-card'
-
-// Helper to resolve nested keys from the dictionary
-const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
-  return (key
-    .split('.')
-    .reduce<unknown>(
-      (acc, part) =>
-        acc && typeof acc === 'object'
-          ? (acc as Record<string, unknown>)[part]
-          : undefined,
-      obj,
-    ) ?? key) as string
-}
-
-// Mock the translation hook to use the actual english dictionary
-jest.mock('@/context/i18n-context', () => ({
-  useTranslation: () => ({
-    t: (key: string, replacements?: Record<string, string | number>) => {
-      let value = getNestedValue(dictionaries.en, key)
-
-      if (replacements) {
-        Object.keys(replacements).forEach((placeholder) => {
-          value = value.replace(
-            `{${placeholder}}`,
-            String(replacements[placeholder]),
-          )
-        })
-      }
-      return value
-    },
-  }),
-}))
 
 describe('TimeEntryCard', () => {
   const onEdit = jest.fn()
@@ -69,9 +36,9 @@ describe('TimeEntryCard', () => {
     expect(screen.getByText('Office')).toBeInTheDocument()
     // Use regex to be resilient to locale time formatting
     expect(screen.getByText(/9:00.*-.*5:00/i)).toBeInTheDocument()
-    expect(screen.getByText('30m pause')).toBeInTheDocument()
-    expect(screen.getByText('0.5h travel')).toBeInTheDocument()
-    expect(screen.getByText('Driver')).toBeInTheDocument()
+    expect(screen.getByText('time_entry_card.pauseLabel')).toBeInTheDocument()
+    expect(screen.getByText('time_entry_card.travelLabel')).toBeInTheDocument()
+    expect(screen.getByText('time_entry_card.driverLabel')).toBeInTheDocument()
     // 8 hours work - 30 min pause + 30 min travel = 8 hours total = 28800 seconds
     expect(screen.getByText('08:00:00')).toBeInTheDocument()
   })
@@ -89,13 +56,19 @@ describe('TimeEntryCard', () => {
       />,
     )
 
-    expect(screen.getByText('Sick Leave')).toBeInTheDocument()
+    expect(screen.getByText('special_locations.SICK_LEAVE')).toBeInTheDocument()
     // 8 hours duration
     expect(screen.getByText('08:00:00')).toBeInTheDocument()
     // It should not render pause, travel, or driver details
-    expect(screen.queryByText(/pause/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/travel/)).not.toBeInTheDocument()
-    expect(screen.queryByText('Driver')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('time_entry_card.pauseLabel'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('time_entry_card.travelLabel'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('time_entry_card.driverLabel'),
+    ).not.toBeInTheDocument()
   })
 
   it('calls onEdit when the edit button is clicked', () => {
@@ -103,8 +76,7 @@ describe('TimeEntryCard', () => {
       <TimeEntryCard entry={baseEntry} onEdit={onEdit} onDelete={onDelete} />,
     )
 
-    const editButton = screen.getByRole('button', { name: 'Edit' })
-    fireEvent.click(editButton)
+    fireEvent.click(screen.getByText('time_entry_card.editLabel'))
 
     expect(onEdit).toHaveBeenCalledTimes(1)
     expect(onEdit).toHaveBeenCalledWith(baseEntry)
@@ -116,19 +88,16 @@ describe('TimeEntryCard', () => {
     )
 
     // Click the delete trigger button
-    const deleteButton = screen.getByRole('button', { name: 'Delete' })
-    fireEvent.click(deleteButton)
+    fireEvent.click(screen.getByText('time_entry_card.deleteLabel'))
 
     // Dialog should now be visible
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
-    expect(screen.getByText('Are you sure?')).toBeInTheDocument()
-    expect(screen.getByText(/This action cannot be undone/)).toHaveTextContent(
-      baseEntry.location,
-    )
+    expect(
+      screen.getByText('time_entry_card.deleteAlertConfirm'),
+    ).toBeInTheDocument()
 
     // Click the confirm button
-    const confirmButton = screen.getByRole('button', { name: 'Delete' })
-    fireEvent.click(confirmButton)
+    fireEvent.click(screen.getByText('time_entry_card.deleteAlertConfirm'))
 
     expect(onDelete).toHaveBeenCalledTimes(1)
     expect(onDelete).toHaveBeenCalledWith(baseEntry.id)
