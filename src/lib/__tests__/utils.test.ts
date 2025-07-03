@@ -1,4 +1,6 @@
 import {
+  formatAppDate,
+  formatAppNumber,
   formatDecimalHours,
   formatDuration,
   formatHoursAndMinutes,
@@ -61,6 +63,29 @@ describe('utils', () => {
       expect(formatMinutesToTimeInput(0)).toBe('00:00')
       expect(formatMinutesToTimeInput(undefined)).toBe('00:00')
       expect(formatMinutesToTimeInput(null)).toBe('00:00')
+    })
+  })
+
+  describe('formatAppDate', () => {
+    it('should format date in English', () => {
+      const date = new Date('2025-07-02T00:00:00Z')
+      expect(formatAppDate(date, 'en')).toMatch(/July 2(nd)?, 2025/)
+    })
+    it('should format date in German', () => {
+      const date = new Date('2025-07-02T00:00:00Z')
+      expect(formatAppDate(date, 'de')).toMatch(/2\. Juli 2025/)
+    })
+  })
+
+  describe('formatAppNumber', () => {
+    it('should format number in English', () => {
+      expect(formatAppNumber(1234567.89, 'en')).toBe('1,234,567.89')
+    })
+    it('should format number in German', () => {
+      expect(formatAppNumber(1234567.89, 'de')).toBe('1.234.567,89')
+    })
+    it('should format number with custom options', () => {
+      expect(formatAppNumber(0.5, 'en', { style: 'percent' })).toBe('50%')
     })
   })
 })

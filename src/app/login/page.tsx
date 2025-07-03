@@ -13,6 +13,7 @@ import {
 } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
 
+import TimeWiseIcon from '@/components/time-wise-icon'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -30,27 +31,6 @@ import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
-
-const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-    <path
-      d="M7 9L9 15L12 11L15 15L17 9"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="12" cy="12" r="1" fill="currentColor" />
-  </svg>
-)
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -91,10 +71,6 @@ const mockUsers: AuthenticatedUser[] = [
   },
 ]
 
-const useMocks =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
-
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -103,6 +79,10 @@ export default function LoginPage() {
   const { toast } = useToast()
   const { loginAsMockUser } = useAuth()
   const { t } = useTranslation()
+
+  const useMocks =
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
 
   const handleAuthAction = async (
     action: (email: string, password: string) => Promise<UserCredential>,
@@ -197,6 +177,7 @@ export default function LoginPage() {
                 key={user.uid}
                 onClick={() => handleMockLogin(user)}
                 className="w-full"
+                data-testid={`login-as-${user.displayName}`}
               >
                 {t('login.loginAs', {
                   displayName: user.displayName || user.email!,

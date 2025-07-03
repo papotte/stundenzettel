@@ -16,6 +16,24 @@ const config: Config = {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/e2e/', // Ignore Playwright E2E tests
+  ],
+  collectCoverage: true,
+  coverageReporters: ['json', 'lcov', 'text', 'clover'],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.test.{ts,tsx}',
+    '!src/app/layout.tsx',
+    '!src/components/ui/**',
+    '!src/lib/i18n/dictionaries.ts',
+    '!src/ai/dev.ts',
+    '!src/ai/genkit.ts',
+    '!jest.config.ts',
+    '!jest.setup.ts',
+  ],
+  transformIgnorePatterns: ['/node_modules/(?!(lucide-react)/)'],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

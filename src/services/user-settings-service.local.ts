@@ -6,6 +6,7 @@ const userSettings: { [userId: string]: Partial<UserSettings> } = {
     defaultStartTime: '09:00',
     defaultEndTime: '17:00',
     language: 'de',
+    companyName: 'Acme Inc.',
   },
   'mock-user-2': {
     defaultWorkHours: 7.5,
