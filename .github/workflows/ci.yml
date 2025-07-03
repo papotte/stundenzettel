@@ -40,8 +40,9 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     permissions:
-      # Required to post a comment on the PR
+      checks: write
       pull-requests: write
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
