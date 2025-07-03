@@ -1,5 +1,3 @@
-process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-
 import type { TimeEntry } from '@/lib/types'
 
 import {

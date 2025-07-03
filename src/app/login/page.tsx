@@ -71,10 +71,6 @@ const mockUsers: AuthenticatedUser[] = [
   },
 ]
 
-const useMocks =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
-
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -83,6 +79,10 @@ export default function LoginPage() {
   const { toast } = useToast()
   const { loginAsMockUser } = useAuth()
   const { t } = useTranslation()
+
+  const useMocks =
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
 
   const handleAuthAction = async (
     action: (email: string, password: string) => Promise<UserCredential>,
@@ -177,6 +177,7 @@ export default function LoginPage() {
                 key={user.uid}
                 onClick={() => handleMockLogin(user)}
                 className="w-full"
+                data-testid={`login-as-${user.displayName}`}
               >
                 {t('login.loginAs', {
                   displayName: user.displayName || user.email!,
