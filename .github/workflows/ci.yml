@@ -53,7 +53,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run unit tests
         run: npm run test:ci
@@ -61,7 +61,7 @@ jobs:
       - name: Download coverage artifact from main
         uses: dawidd6/action-download-artifact@v3
         with:
-          workflow: <main-workflow-file.yml> # e.g., ci.yml
+          workflow: main.yml # e.g., ci.yml
           branch: main
           name: coverage-main
           path: ./coverage/main
@@ -74,9 +74,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-step: all
           coverage-file: ./coverage/report.json
-          base-coverage-file: ./coverage/main/eport.json
+          base-coverage-file: ./coverage/main/report.json
           custom-title: 'Code Coverage Report'
-          delete-old-comments: true
           package-manager: npm
 
       - name: Upload coverage report artifact
