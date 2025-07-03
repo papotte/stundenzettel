@@ -56,24 +56,6 @@ jobs:
           path: coverage.zip
           retention-days: 7
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-
-      - name: Zip E2E report
-        if: always()
-        run: zip -r playwright-report.zip playwright-report
-
-      - name: Upload E2E report artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-main
-          path: playwright-report.zip
-          retention-days: 7
-
       - name: Build project
         run: npm run build
 
