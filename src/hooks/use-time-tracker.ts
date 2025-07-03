@@ -6,7 +6,6 @@ import {
   differenceInMinutes,
   endOfMonth,
   endOfWeek,
-  format,
   isSameDay,
   isWithinInterval,
   set,
@@ -19,6 +18,7 @@ import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import type { Toast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry, UserSettings } from '@/lib/types'
+import { formatAppDate } from '@/lib/utils'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -32,6 +32,7 @@ export function useTimeTracker(
   user: { uid: string } | null,
   toast: (options: Toast) => void,
   t: (key: string, params?: Record<string, string | number>) => string,
+  locale: string = 'en',
 ) {
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -406,7 +407,7 @@ export function useTimeTracker(
   }, [])
 
   const formattedSelectedDate = selectedDate
-    ? format(selectedDate, 'PPP')
+    ? formatAppDate(selectedDate, locale)
     : 'Loading...'
 
   return {

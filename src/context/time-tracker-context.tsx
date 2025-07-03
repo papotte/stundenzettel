@@ -8,6 +8,7 @@ interface TimeTrackerProviderProps {
   toast: (options: Toast) => void
   t: (key: string, params?: Record<string, string | number>) => string
   children: ReactNode
+  locale?: string
 }
 
 // The type returned by useTimeTracker
@@ -23,8 +24,9 @@ export const TimeTrackerProvider = ({
   toast,
   t,
   children,
+  locale = 'en',
 }: TimeTrackerProviderProps) => {
-  const value = useTimeTracker(user, toast, t)
+  const value = useTimeTracker(user, toast, t, locale)
   return (
     <TimeTrackerContext.Provider value={value}>
       {children}

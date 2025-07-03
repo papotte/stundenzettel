@@ -1,10 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { differenceInMinutes, format, parse, set } from 'date-fns'
+import { differenceInMinutes, parse, set } from 'date-fns'
 import {
   AlertTriangle,
   Calendar as CalendarIcon,
@@ -54,6 +54,8 @@ import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
+  formatAppDate,
+  formatAppTime,
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
   timeStringToMinutes,
@@ -118,7 +120,7 @@ export default function TimeEntryForm({
   userSettings,
 }: TimeEntryFormProps) {
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
@@ -129,8 +131,8 @@ export default function TimeEntryForm({
     defaultValues: {
       location: entry?.location || '',
       date: entry?.startTime || selectedDate,
-      startTime: entry ? format(entry.startTime, 'HH:mm') : defaultStartTime,
-      endTime: entry?.endTime ? format(entry.endTime, 'HH:mm') : defaultEndTime,
+      startTime: entry ? formatAppTime(entry.startTime) : defaultStartTime,
+      endTime: entry?.endTime ? formatAppTime(entry.endTime) : defaultEndTime,
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration),
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
@@ -404,7 +406,7 @@ export default function TimeEntryForm({
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {field.value ? (
-                              format(field.value, 'PPP')
+                              formatAppDate(field.value, language)
                             ) : (
                               <span>{t('time_entry_form.pickDate')}</span>
                             )}

@@ -4,8 +4,10 @@ import {
   eachWeekOfInterval,
   endOfMonth,
   endOfWeek,
+  format,
   startOfMonth,
 } from 'date-fns'
+import { de, enUS } from 'date-fns/locale'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
@@ -79,4 +81,34 @@ export function formatMinutesToTimeInput(
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+/**
+ * Formats a date in a consistent, locale-aware way for the app (e.g., July 2nd, 2025).
+ * Defaults to 'en' if no locale is provided or recognized.
+ */
+export function formatAppDate(date: Date, locale: string = 'en') {
+  const localeObj = locale === 'de' ? de : enUS
+  return format(date, 'PPP', { locale: localeObj })
+}
+
+/**
+ * Formats a number in a locale-aware way for the app (e.g., 1,234.56 or 1.234,56).
+ * Defaults to 'en' if no locale is provided or recognized.
+ */
+export function formatAppNumber(
+  value: number,
+  locale: string = 'en',
+  options?: Intl.NumberFormatOptions,
+) {
+  return new Intl.NumberFormat(locale, options).format(value)
+}
+
+/**
+ * Formats a time in 24h format (HH:mm) in a locale-aware way for the app.
+ * Defaults to 'en' if no locale is provided or recognized.
+ */
+export function formatAppTime(date: Date) {
+  // Note: 'HH:mm' is not locale-sensitive, but we keep the locale param for future-proofing
+  return format(date, 'HH:mm')
 }

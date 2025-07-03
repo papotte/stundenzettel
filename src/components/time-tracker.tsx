@@ -17,11 +17,11 @@ import TimeTrackerLiveCard from './time-tracker-live-card'
 
 export default function TimeTracker() {
   const { user } = useAuth()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const { toast } = useToast()
 
   return (
-    <TimeTrackerProvider user={user} toast={toast} t={t}>
+    <TimeTrackerProvider user={user} toast={toast} t={t} locale={language}>
       <TooltipProvider>
         <TimeTrackerContent />
       </TooltipProvider>
