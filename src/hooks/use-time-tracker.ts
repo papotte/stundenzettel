@@ -334,10 +334,6 @@ export function useTimeTracker(
     }
   }
 
-  const handleSignOut = async () => {
-    // This should be passed in as a callback if needed
-  }
-
   const handlePreviousDay = () => {
     if (selectedDate) {
       setSelectedDate(subDays(selectedDate, 1))
@@ -435,7 +431,6 @@ export function useTimeTracker(
     handleClearData,
     handleAddSpecialEntry,
     handleGetCurrentLocation,
-    handleSignOut,
     handlePreviousDay,
     handleNextDay,
     filteredEntries,

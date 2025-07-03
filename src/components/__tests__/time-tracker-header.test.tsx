@@ -7,18 +7,23 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 
 // Mock the context
 const handleClearData = jest.fn()
-const handleSignOut = jest.fn()
+const signOut = jest.fn()
 jest.mock('@/context/time-tracker-context', () => ({
   useTimeTrackerContext: () => ({
     handleClearData,
-    handleSignOut,
+  }),
+}))
+
+jest.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({
+    signOut,
   }),
 }))
 
 describe('TimeTrackerHeader', () => {
   beforeEach(() => {
     handleClearData.mockClear()
-    handleSignOut.mockClear()
+    signOut.mockClear()
   })
 
   function renderWithProvider(ui: React.ReactElement) {
@@ -44,6 +49,6 @@ describe('TimeTrackerHeader', () => {
     fireEvent.click(screen.getByTestId('clear-data-confirm-btn'))
     fireEvent.click(screen.getByTestId('sign-out-btn'))
     expect(handleClearData).toHaveBeenCalled()
-    expect(handleSignOut).toHaveBeenCalled()
+    expect(signOut).toHaveBeenCalled()
   })
 })

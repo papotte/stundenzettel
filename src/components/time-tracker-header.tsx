@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
+import { useAuth } from '@/hooks/use-auth'
 
 import TimeWiseIcon from './time-wise-icon'
 
@@ -33,7 +34,13 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
   showClearData,
 }) => {
   const { t } = useTranslation()
-  const { handleClearData, handleSignOut } = useTimeTrackerContext()
+  const { handleClearData } = useTimeTrackerContext()
+  const { signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+    // The auth context and page guard will handle redirection
+  }
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex items-center gap-2">
