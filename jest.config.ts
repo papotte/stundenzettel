@@ -21,7 +21,7 @@ const config: Config = {
     '/e2e/', // Ignore Playwright E2E tests
   ],
   collectCoverage: true,
-  coverageReporters: ['json', 'lcov', 'text', 'clover'],
+  coverageReporters: ['json', 'lcov', 'text', 'clover', 'json-summary'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.test.{ts,tsx}',

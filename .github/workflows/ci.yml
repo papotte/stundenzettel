@@ -34,6 +34,9 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    permissions:
+      # Required to post a comment on the PR
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,7 +53,13 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
-      - name: Upload coverage report
+      - name: Post coverage comment
+        if: always()
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload coverage report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
