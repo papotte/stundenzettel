@@ -29,11 +29,6 @@ const mockSignInWithPopup = jest.fn()
 // This mock intercepts the actual Firebase SDK calls made by the component.
 // By not using `jest.requireActual`, we ensure the test is fully isolated.
 jest.mock('firebase/auth', () => ({
-  signInWithEmailAndPassword: (...args: any[]) =>
-    mockSignInWithEmailAndPassword(...args),
-  createUserWithEmailAndPassword: (...args: any[]) =>
-    mockCreateUserWithEmailAndPassword(...args),
-  signInWithPopup: (...args: any[]) => mockSignInWithPopup(...args),
   GoogleAuthProvider: jest.fn(),
   setPersistence: jest.fn().mockResolvedValue(undefined),
   browserLocalPersistence: 'local',

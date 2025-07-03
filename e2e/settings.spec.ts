@@ -58,6 +58,21 @@ test.describe('Settings Page', () => {
     await expect(page.getByLabel('Tägliche Standardarbeitszeit')).toBeVisible()
   })
 
+  test('should show a validation error when trying to save invalid settings', async ({
+    page,
+  }) => {
+    // Go to settings
+    await page.getByRole('link', { name: 'Einstellungen' }).click()
+    await page.waitForURL('/settings')
+    // Try to set an invalid daily work hours
+    await page.getByLabel('Tägliche Standardarbeitszeit').fill('10.5')
+    await expect(page.getByText('Cannot be more than 10 hours')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
+    // Check for validation error
+    await expect(page.getByText('Cannot be more than 10 hours')).toBeVisible()
+  })
+
   test('should update company details and see them in export preview', async ({
     page,
   }) => {
