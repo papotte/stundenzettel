@@ -2,13 +2,8 @@
 
 import React, { useCallback, useMemo } from 'react'
 
-import {
-  Locale,
-  differenceInMinutes,
-  format,
-  getDay,
-  isSameMonth,
-} from 'date-fns'
+import { differenceInMinutes, format, getDay, isSameMonth } from 'date-fns'
+import { de, enUS } from 'date-fns/locale'
 import { Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -20,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslation } from '@/context/i18n-context'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -39,8 +35,6 @@ interface TimesheetPreviewProps {
   selectedMonth: Date
   user: AuthenticatedUser | null
   entries: TimeEntry[]
-  t: (key: string, replacements?: Record<string, string | number>) => string
-  locale: Locale
   userSettings: UserSettings | null
   getEntriesForDay: (day: Date) => TimeEntry[]
   calculateWeekTotal: (week: Date[]) => number
@@ -52,8 +46,6 @@ interface TimesheetPreviewProps {
 export default function TimesheetPreview({
   selectedMonth,
   user,
-  t,
-  locale,
   userSettings,
   getEntriesForDay,
   calculateWeekTotal,
@@ -61,6 +53,9 @@ export default function TimesheetPreview({
   onEdit,
   onAdd,
 }: TimesheetPreviewProps) {
+  const { t, language } = useTranslation()
+  const locale = language === 'de' ? de : enUS
+
   const weeksInMonth = useMemo(
     () => getWeeksForMonth(selectedMonth),
     [selectedMonth],

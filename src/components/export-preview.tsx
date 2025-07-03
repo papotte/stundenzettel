@@ -328,8 +328,6 @@ export default function ExportPreview() {
             selectedMonth={selectedMonth}
             user={user}
             entries={entries}
-            t={t}
-            locale={locale}
             userSettings={userSettings}
             getEntriesForDay={getEntriesForDay}
             calculateWeekTotal={calculateWeekTotal}
