@@ -36,11 +36,12 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-  coverage:
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: ArtiomTr/jest-coverage-report-action@v21
+      - uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           delete-old-comments: true
