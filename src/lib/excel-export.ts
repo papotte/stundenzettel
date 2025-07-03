@@ -267,14 +267,19 @@ export const exportToExcel = async ({
             formatDecimalHours(entry.pauseDuration),
           )
 
+          // If pauseDecimal is 0, use blank; otherwise, use the value
+          const pauseCellValue = (!entry.pauseDuration || pauseDecimal === 0) ? '' : pauseDecimal
+          // If travelTime is 0, use blank; otherwise, use the value
+          const travelCellValue = (!entry.travelTime || entry.travelTime === 0) ? '' : entry.travelTime
+
           const rowData = [
             '', // Weekday gets merged
             '', // Date gets merged
             getLocationDisplayName(entry.location),
             entry.startTime ? format(entry.startTime, 'HH:mm') : '',
             entry.endTime ? format(entry.endTime, 'HH:mm') : '',
-            pauseDecimal,
-            entry.travelTime || 0,
+            pauseCellValue,
+            travelCellValue,
             compensatedHours,
             entry.isDriver ? t('export_preview.driverMark') : '',
             '', // Mileage
