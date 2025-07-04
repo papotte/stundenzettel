@@ -39,3 +39,9 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}'
           projectId: '${{ vars.FIREBASE_PROJECT_ID }}' # Recommended to set this as a GitHub variable
+
+      - name: Deploy Firestore Security Rules
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}' > /tmp/service_account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/service_account.json
+          npx firebase-tools deploy --only firestore --project=${{ vars.FIREBASE_PROJECT_ID }} --non-interactive
