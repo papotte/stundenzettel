@@ -195,9 +195,9 @@ See the **CI/CD with GitHub Actions** section for details on automated deploymen
 
 ### 3. Deploy Firestore Security Rules
 
-Your database is protected by security rules. This project includes a `firestore.rules` file that you must deploy to your project.
+Your database is protected by security rules defined in the `firestore.rules` file. These rules are **deployed automatically** by the CI/CD pipeline whenever a new release is created.
 
-From your project's root directory, run the following command:
+If you need to deploy them manually, you can run the following command from your project's root directory:
 
 ```bash
 firebase deploy --only firestore:rules
