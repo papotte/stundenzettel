@@ -7,8 +7,11 @@
 
 # testing
 /coverage
-/playwright-report/
+
+# Playwright
 /test-results/
+/playwright-report/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -32,7 +35,17 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# IDE
-.idea/
-.vscode/*
-!.vscode/settings.json
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDEA
+.idea
+
+# project IDX
+/.firebase/
+/.idx/
+/.vscode/
