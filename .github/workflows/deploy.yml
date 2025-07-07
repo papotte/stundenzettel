@@ -11,7 +11,9 @@ on:
   workflow_dispatch:
 
 permissions:
+  checks: write
   contents: read
+  pull-requests: write
 
 jobs:
   deploy:
@@ -34,6 +36,9 @@ jobs:
         run: npm run test:e2e
         env:
           NEXT_PUBLIC_ENVIRONMENT: test
+
+      - name: Build the application
+        run: npm run build
 
       - name: Deploy to Firebase App Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
