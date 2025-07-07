@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test'
 
-import { format } from 'date-fns'
+import { format, getWeekOfMonth } from 'date-fns'
 
 import { addManualEntry } from './test-helpers'
 
 test.describe('Export Page', () => {
+  let weekIndex: number = 0
   test.beforeEach(async ({ page }) => {
     // Navigate to the app and log in as the first mock user (language is German)
     await page.goto('/')
@@ -13,6 +14,9 @@ test.describe('Export Page', () => {
       .first()
       .click()
     await page.waitForURL('/')
+
+    const week = getWeekOfMonth(new Date())
+    weekIndex = week - 1 // Adjust for zero-based index
   })
 
   test('should display entries on the export preview', async ({ page }) => {
@@ -30,9 +34,9 @@ test.describe('Export Page', () => {
     await expect(preview.getByText('10:00')).toBeVisible()
     await expect(preview.getByText('14:00')).toBeVisible()
     // 4 hours = 4.00
-    await expect(preview.getByTestId('timesheet-week-0-total')).toContainText(
-      '4.00',
-    )
+    await expect(
+      preview.getByTestId(`timesheet-week-${weekIndex}-total`),
+    ).toContainText('4.00')
     await expect(preview.getByTestId('timesheet-month-total')).toContainText(
       '4.00',
     )
@@ -123,9 +127,9 @@ test.describe('Export Page', () => {
     await expect(preview.getByText('09:00')).toBeVisible()
     await expect(preview.getByText('13:00')).toBeVisible()
     // 4 hours = 4.00
-    await expect(preview.getByTestId('timesheet-week-0-total')).toContainText(
-      '4.00',
-    )
+    await expect(
+      preview.getByTestId(`timesheet-week-${weekIndex}-total`),
+    ).toContainText('4.00')
     await expect(preview.getByTestId('timesheet-month-total')).toContainText(
       '4.00',
     )

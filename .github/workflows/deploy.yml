@@ -7,7 +7,7 @@ on:
     branches:
       # We want to allow any branches that have `deploy` in the name to test this workflow
       - deploy/*
-      - "*/*deploy*"
+      - '*/*deploy*'
   workflow_dispatch:
 
 permissions:
