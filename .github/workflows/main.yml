@@ -60,6 +60,14 @@ jobs:
           path: coverage/report.json
           retention-days: 7
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          NEXT_PUBLIC_ENVIRONMENT: test
+
       - name: Build project
         run: npm run build
 
