@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/papotte/stundenzettel/compare/v1.0.2...v1.0.3) (2025-07-08)
+
+
+### Bug Fixes
+
+* add the day of the week to the date formatting ([#34](https://github.com/papotte/stundenzettel/issues/34)) ([7fa5366](https://github.com/papotte/stundenzettel/commit/7fa5366ab23d2407367f399b5c9290b8019034cb))
+
 ## [1.0.2](https://github.com/papotte/stundenzettel/compare/v1.0.1...v1.0.2) (2025-07-08)
 
 
