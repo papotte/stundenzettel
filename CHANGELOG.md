@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/papotte/stundenzettel/compare/v1.0.1...v1.0.2) (2025-07-08)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#26](https://github.com/papotte/stundenzettel/issues/26)) ([581f83d](https://github.com/papotte/stundenzettel/commit/581f83d3d1a6fd4c58e0bfb1f41e9a721b7382cc))
+* **deps:** update dependency firebase to v11.10.0 ([#29](https://github.com/papotte/stundenzettel/issues/29)) ([f663c56](https://github.com/papotte/stundenzettel/commit/f663c56407ed59bc05103914424f39dc69810ad7))
+
 ## [1.0.1](https://github.com/papotte/stundenzettel/compare/v1.0.0...v1.0.1) (2025-07-08)
 
 
