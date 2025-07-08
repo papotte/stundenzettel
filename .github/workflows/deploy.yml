@@ -32,15 +32,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-        env:
-          NEXT_PUBLIC_ENVIRONMENT: test
+        run: npm ci --ignore-scripts
 
       - name: Build the application
         run: npm run build

@@ -78,6 +78,7 @@ test.describe('Core Tracker Functionality', () => {
 
       // Cancel instead of saving
       await form.getByRole('button', { name: 'Abbrechen' }).click()
+      await page.getByRole('button', { name: 'Verwerfen' }).click()
       await expect(form).not.toBeVisible()
 
       // Verify no entry was created

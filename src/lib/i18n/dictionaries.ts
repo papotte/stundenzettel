@@ -113,6 +113,11 @@ export const dictionaries = {
         'The work duration exceeds the legal maximum of 10 hours per day.',
       cancelButton: 'Cancel',
       saveButton: 'Save Entry',
+      cancelConfirmTitle: 'Discard changes?',
+      cancelConfirmDescription:
+        'Are you sure you want to cancel? Unsaved changes will be lost.',
+      cancelConfirmAbort: 'Keep editing',
+      cancelConfirmConfirm: 'Discard',
       locationFetchToastTitle: 'Fetching location...',
       locationFetchToastDescription: 'Please wait while we get your address.',
       locationFetchedToastTitle: 'Location fetched!',
@@ -346,6 +351,11 @@ export const dictionaries = {
         'Die Arbeitsdauer überschreitet das gesetzliche Maximum von 10 Stunden pro Tag.',
       cancelButton: 'Abbrechen',
       saveButton: 'Eintrag speichern',
+      cancelConfirmTitle: 'Änderungen verwerfen?',
+      cancelConfirmDescription:
+        'Sind Sie sicher, dass Sie abbrechen möchten? Nicht gespeicherte Änderungen gehen verloren.',
+      cancelConfirmAbort: 'Weiter bearbeiten',
+      cancelConfirmConfirm: 'Verwerfen',
       locationFetchToastTitle: 'Standort wird abgerufen...',
       locationFetchToastDescription:
         'Bitte warten Sie, während wir Ihre Adresse abrufen.',

@@ -160,6 +160,7 @@ test.describe('Export Page', () => {
     // Edit the location but cancel
     await form.getByLabel('Einsatzort').fill('Should Not Save')
     await form.getByRole('button', { name: 'Abbrechen' }).click()
+    await page.getByRole('button', { name: 'Verwerfen' }).click()
     await expect(form).not.toBeVisible()
 
     // Verify the original entry is unchanged in the export preview
@@ -168,6 +169,37 @@ test.describe('Export Page', () => {
     await expect(preview.getByText('08:00')).toBeVisible()
     await expect(preview.getByText('10:00')).toBeVisible()
     await expect(preview.getByText('Should Not Save')).not.toBeVisible()
+  })
+
+  test('should prevent closing the edit form when clicking outside the modal', async ({
+    page,
+  }) => {
+    // Add an entry
+    await addManualEntry(page, 'Export Prevent Outside Close', '08:00', '10:00')
+
+    // Navigate to export page
+    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.waitForURL('/export')
+
+    // Click the entry row to open the edit dialog
+    const entryCell = page.getByTestId(
+      `timesheet-day-${format(new Date(), 'yyyy-MM-dd')}`,
+    )
+    await entryCell.click()
+
+    // The edit form should appear
+    const form = page.locator(
+      'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+    )
+    await expect(form).toBeVisible()
+
+    // Click outside the modal (on the overlay)
+    // The overlay is the first element with role="presentation" after the dialog
+    const overlay = page.locator('div.fixed.inset-0.bg-black\\/80').first()
+    await overlay.click({ position: { x: 10, y: 10 } })
+
+    // The form should still be visible
+    await expect(form).toBeVisible()
   })
 
   test('should allow adding a new entry to a day from the export page', async ({

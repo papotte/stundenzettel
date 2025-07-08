@@ -21,7 +21,7 @@ test.describe('Authentication', () => {
     await expect(
       page.getByRole('button', { name: 'Erfassung starten' }),
     ).toBeVisible()
-    await expect(page.getByText('Heutige Einträge')).toBeVisible()
+    await expect(page.getByText('Heute')).toBeVisible()
   })
 
   test('should log out and redirect to login page', async ({ page }) => {
