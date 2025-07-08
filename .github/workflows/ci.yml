@@ -60,7 +60,7 @@ jobs:
         run: npm run test:ci
 
       - name: Download coverage artifact from main
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v11
         with:
           workflow: main.yml # e.g., ci.yml
           branch: main
