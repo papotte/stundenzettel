@@ -1,6 +1,7 @@
 import { set, subDays } from 'date-fns'
 
 import type { TimeEntry } from '@/lib/types'
+import { compareEntriesByStartTime } from '@/lib/utils'
 
 let entries: TimeEntry[] = []
 
@@ -126,6 +127,19 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
       travelTime: 0,
       isDriver: false,
     },
+    {
+      id: '7',
+      userId: 'mock-user-1',
+      location: 'Duration Only Example',
+      durationMinutes: 15,
+      startTime: set(new Date(), {
+        hours: 12,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      }),
+      // No endTime
+    },
   ]
 }
 
@@ -156,7 +170,7 @@ export const deleteTimeEntry = async (
 export const getTimeEntries = async (userId: string): Promise<TimeEntry[]> => {
   return entries
     .filter((e) => e.userId === userId)
-    .sort((a, b) => b.startTime.getTime() - a.startTime.getTime())
+    .sort(compareEntriesByStartTime)
 }
 
 export const deleteAllTimeEntries = async (userId: string): Promise<void> => {

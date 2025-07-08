@@ -28,6 +28,7 @@ import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
+import { compareEntriesByStartTime } from '@/lib/utils'
 import {
   addTimeEntry,
   getTimeEntries,
@@ -76,7 +77,7 @@ export default function ExportPreview() {
     (day: Date) => {
       return entries
         .filter((entry) => entry.startTime && isSameDay(entry.startTime, day))
-        .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+        .sort(compareEntriesByStartTime)
     },
     [entries],
   )
@@ -88,7 +89,9 @@ export default function ExportPreview() {
       week.forEach((day) => {
         if (isSameMonth(day, selectedMonth)) {
           getEntriesForDay(day).forEach((entry) => {
-            if (entry.endTime) {
+            if (typeof entry.durationMinutes === 'number') {
+              totalMinutes += entry.durationMinutes
+            } else if (entry.startTime && entry.endTime) {
               const workMinutes = differenceInMinutes(
                 entry.endTime,
                 entry.startTime,
@@ -185,9 +188,7 @@ export default function ExportPreview() {
           const newId = await addTimeEntry(entryWithUser)
           const newEntry = { ...entryWithUser, id: newId }
           setEntries((prev) =>
-            [newEntry, ...prev].sort(
-              (a, b) => b.startTime.getTime() - a.startTime.getTime(),
-            ),
+            [newEntry, ...prev].sort((a, b) => compareEntriesByStartTime(b, a)),
           )
           toast({
             title: t('toasts.entryAddedTitle'),

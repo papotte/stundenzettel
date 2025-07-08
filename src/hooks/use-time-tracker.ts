@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   addDays,
-  addMinutes,
   differenceInMinutes,
   endOfMonth,
   endOfWeek,
@@ -18,7 +17,7 @@ import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import type { Toast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-import { formatAppDate } from '@/lib/utils'
+import { compareEntriesByStartTime, formatAppDate } from '@/lib/utils'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -76,9 +75,12 @@ export function useTimeTracker(
     if (runningTimer) {
       interval = setInterval(() => {
         setElapsedTime(
-          Math.floor(
-            (new Date().getTime() - runningTimer.startTime.getTime()) / 1000,
-          ),
+          runningTimer.startTime
+            ? Math.floor(
+                (new Date().getTime() - runningTimer.startTime.getTime()) /
+                  1000,
+              )
+            : 0,
         )
       }, 1000)
     }
@@ -141,9 +143,7 @@ export function useTimeTracker(
         const newId = await addTimeEntry(entryWithUser)
         const newEntry = { ...entryWithUser, id: newId }
         setEntries((prev) =>
-          [newEntry, ...prev].sort(
-            (a, b) => b.startTime.getTime() - a.startTime.getTime(),
-          ),
+          [newEntry, ...prev].sort(compareEntriesByStartTime),
         )
         toast({
           title: t('toasts.entryAddedTitle') ?? '',
@@ -218,22 +218,22 @@ export function useTimeTracker(
     const isTimeOffInLieu = locationKey === 'TIME_OFF_IN_LIEU'
     const hours = isTimeOffInLieu ? 0 : currentSettings.defaultWorkHours || 7
     const startTime = set(selectedDate, {
-      hours: 9,
+      hours: 12,
       minutes: 0,
       seconds: 0,
       milliseconds: 0,
     })
-    const endTime = hours > 0 ? addMinutes(startTime, hours * 60) : startTime
+    const durationMinutes = hours * 60
     const newEntry: Omit<TimeEntry, 'id' | 'userId'> = {
       location: locationKey,
-      startTime: startTime,
-      endTime: endTime,
-      pauseDuration: 0,
-      travelTime: 0,
-      isDriver: false,
+      startTime,
+      durationMinutes,
     }
     const entryExists = entries.some(
-      (e) => isSameDay(e.startTime, selectedDate) && e.location === locationKey,
+      (e) =>
+        e.startTime &&
+        isSameDay(e.startTime, selectedDate) &&
+        e.location === locationKey,
     )
     if (entryExists) {
       toast({
@@ -251,9 +251,7 @@ export function useTimeTracker(
       const newId = await addTimeEntry(entryWithUser)
       const finalNewEntry = { ...entryWithUser, id: newId }
       setEntries((prev) =>
-        [finalNewEntry, ...prev].sort(
-          (a, b) => b.startTime.getTime() - a.startTime.getTime(),
-        ),
+        [finalNewEntry, ...prev].sort(compareEntriesByStartTime),
       )
       toast({
         title: t('toasts.entryAddedTitle') ?? '',
@@ -349,7 +347,10 @@ export function useTimeTracker(
   const filteredEntries = useMemo(
     () =>
       selectedDate
-        ? entries.filter((entry) => isSameDay(entry.startTime, selectedDate))
+        ? entries.filter(
+            (entry) =>
+              entry.startTime && isSameDay(entry.startTime, selectedDate),
+          )
         : [],
     [entries, selectedDate],
   )
@@ -357,20 +358,22 @@ export function useTimeTracker(
   const calculateTotalCompensatedMinutes = useCallback(
     (entriesToSum: TimeEntry[]): number => {
       return entriesToSum.reduce((total, entry) => {
-        if (!entry.endTime) return total
-        const workMinutes = differenceInMinutes(entry.endTime, entry.startTime)
-        const isNonWorkEntry = ['SICK_LEAVE', 'PTO', 'BANK_HOLIDAY'].includes(
-          entry.location,
-        )
-        if (isNonWorkEntry) {
-          return total + workMinutes
+        if (typeof entry.durationMinutes === 'number') {
+          return total + entry.durationMinutes
+        } else if (entry.startTime && entry.endTime) {
+          const workMinutes = differenceInMinutes(
+            entry.endTime,
+            entry.startTime,
+          )
+
+          if (entry.location === 'TIME_OFF_IN_LIEU') {
+            return total
+          }
+          const travelMinutes = (entry.travelTime || 0) * 60
+          const pauseMinutes = entry.pauseDuration || 0
+          return total + workMinutes - pauseMinutes + travelMinutes
         }
-        if (entry.location === 'TIME_OFF_IN_LIEU') {
-          return total
-        }
-        const travelMinutes = (entry.travelTime || 0) * 60
-        const pauseMinutes = entry.pauseDuration || 0
-        return total + workMinutes - pauseMinutes + travelMinutes
+        return total
       }, 0)
     },
     [],
@@ -384,11 +387,15 @@ export function useTimeTracker(
     const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 })
     const monthStart = startOfMonth(selectedDate)
     const monthEnd = endOfMonth(selectedDate)
-    const weekEntries = entries.filter((entry) =>
-      isWithinInterval(entry.startTime, { start: weekStart, end: weekEnd }),
+    const weekEntries = entries.filter(
+      (entry) =>
+        entry.startTime &&
+        isWithinInterval(entry.startTime, { start: weekStart, end: weekEnd }),
     )
-    const monthEntries = entries.filter((entry) =>
-      isWithinInterval(entry.startTime, { start: monthStart, end: monthEnd }),
+    const monthEntries = entries.filter(
+      (entry) =>
+        entry.startTime &&
+        isWithinInterval(entry.startTime, { start: monthStart, end: monthEnd }),
     )
     return {
       dailyTotal: calculateTotalCompensatedMinutes(filteredEntries),

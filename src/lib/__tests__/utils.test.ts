@@ -1,6 +1,9 @@
+import type { TimeEntry } from '../types'
 import {
+  compareEntriesByStartTime,
   formatAppDate,
   formatAppNumber,
+  formatAppTime,
   formatDecimalHours,
   formatDuration,
   formatHoursAndMinutes,
@@ -86,6 +89,79 @@ describe('utils', () => {
     })
     it('should format number with custom options', () => {
       expect(formatAppNumber(0.5, 'en', { style: 'percent' })).toBe('50%')
+    })
+  })
+
+  describe('compareEntriesByStartTime', () => {
+    const now = new Date('2024-01-10T12:00:00')
+    const earlier = new Date('2024-01-09T12:00:00')
+    const later = new Date('2024-01-11T12:00:00')
+
+    const intervalEntry1: TimeEntry = {
+      id: '1',
+      userId: 'u',
+      location: 'A',
+      startTime: now,
+      endTime: later,
+    }
+    const intervalEntry2: TimeEntry = {
+      id: '2',
+      userId: 'u',
+      location: 'B',
+      startTime: earlier,
+      endTime: now,
+    }
+    const durationEntry1: TimeEntry = {
+      id: '3',
+      userId: 'u',
+      location: 'C',
+      startTime: now,
+      durationMinutes: 60,
+    }
+    const durationEntry2: TimeEntry = {
+      id: '4',
+      userId: 'u',
+      location: 'D',
+      startTime: earlier,
+      durationMinutes: 120,
+    }
+
+    it('sorts interval entries by startTime descending', () => {
+      const arr = [intervalEntry2, intervalEntry1]
+      arr.sort(compareEntriesByStartTime)
+      expect(arr[0]).toBe(intervalEntry1)
+      expect(arr[1]).toBe(intervalEntry2)
+    })
+
+    it('puts all duration-only entries after interval entries, even if they have a startTime', () => {
+      const arr = [
+        durationEntry1,
+        intervalEntry1,
+        durationEntry2,
+        intervalEntry2,
+      ]
+      arr.sort(compareEntriesByStartTime)
+      expect(arr.slice(0, 2)).toEqual([intervalEntry1, intervalEntry2])
+      expect(arr.slice(2)).toEqual([durationEntry1, durationEntry2])
+    })
+  })
+
+  describe('formatAppTime', () => {
+    it('formats a typical time correctly', () => {
+      const date = new Date('2024-01-10T09:05:00')
+      expect(formatAppTime(date)).toBe('09:05')
+    })
+    it('formats midnight as 00:00', () => {
+      const date = new Date('2024-01-10T00:00:00')
+      expect(formatAppTime(date)).toBe('00:00')
+    })
+    it('formats single-digit hours and minutes with leading zeros', () => {
+      const date = new Date('2024-01-10T03:07:00')
+      expect(formatAppTime(date)).toBe('03:07')
+    })
+    it('formats 23:59 correctly', () => {
+      const date = new Date('2024-01-10T23:59:00')
+      expect(formatAppTime(date)).toBe('23:59')
     })
   })
 })

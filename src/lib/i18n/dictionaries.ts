@@ -130,6 +130,13 @@ export const dictionaries = {
       geolocationNotSupportedToastTitle: 'Geolocation not supported',
       geolocationNotSupportedToastDescription:
         'Your browser does not support geolocation.',
+      entryModeLabel: 'Entry mode',
+      modeInterval: 'By interval',
+      modeDuration: 'By duration',
+      durationLabel: 'Duration',
+      durationFormLabel: 'Duration (minutes)',
+      durationInvalid:
+        'Please enter a valid duration in minutes. Minimum is 5 minutes.',
     },
     // Toasts
     toasts: {
@@ -370,6 +377,13 @@ export const dictionaries = {
       geolocationNotSupportedToastTitle: 'Geolokalisierung nicht unterstützt',
       geolocationNotSupportedToastDescription:
         'Ihr Browser unterstützt keine Geolokalisierung.',
+      entryModeLabel: 'Erfassungsmodus',
+      modeInterval: 'Nach Zeitraum',
+      modeDuration: 'Nach Dauer',
+      durationLabel: 'Dauer',
+      durationFormLabel: 'Dauer (Minuten)',
+      durationInvalid:
+        'Bitte geben Sie eine gültige Dauer in Minuten ein. Mindestdauer ist 5 Minuten.',
     },
     // Toasts
     toasts: {

@@ -242,10 +242,16 @@ export const exportToExcel = async ({
       if (dayEntries.length > 0) {
         dayEntries.forEach((entry) => {
           let compensatedHours = 0
-          if (entry.endTime) {
+          let fromValue = ''
+          let toValue = ''
+          if (typeof entry.durationMinutes === 'number') {
+            compensatedHours = entry.durationMinutes / 60
+            fromValue = ''
+            toValue = ''
+          } else if (entry.endTime) {
             const workDuration = differenceInMinutes(
               entry.endTime,
-              entry.startTime,
+              entry.startTime!,
             )
             const isCompensatedSpecialDay = [
               'SICK_LEAVE',
@@ -262,6 +268,8 @@ export const exportToExcel = async ({
               compensatedHours =
                 compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
             }
+            fromValue = entry.startTime ? format(entry.startTime, 'HH:mm') : ''
+            toValue = entry.endTime ? format(entry.endTime, 'HH:mm') : ''
           }
           const pauseDecimal = parseFloat(
             formatDecimalHours(entry.pauseDuration),
@@ -278,8 +286,8 @@ export const exportToExcel = async ({
             '', // Weekday gets merged
             '', // Date gets merged
             getLocationDisplayName(entry.location),
-            entry.startTime ? format(entry.startTime, 'HH:mm') : '',
-            entry.endTime ? format(entry.endTime, 'HH:mm') : '',
+            fromValue,
+            toValue,
             pauseCellValue,
             travelCellValue,
             compensatedHours,

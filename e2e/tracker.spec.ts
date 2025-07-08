@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { addManualEntry } from './test-helpers'
+import { addDurationEntry, addManualEntry } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---
@@ -302,6 +302,22 @@ test.describe('Core Tracker Functionality', () => {
       await expect(form.getByText(/Warnung/i)).toBeVisible()
       await form.getByRole('button', { name: 'Eintrag speichern' }).click()
     })
+
+    test('should add, display, and delete a duration-only entry', async ({
+      page,
+    }) => {
+      const location = 'Duration Only E2E'
+      const duration = 90 // 1h 30m
+      await addDurationEntry(page, location, duration)
+      const entryCard = page.locator(`[data-location="${location}"]`)
+      await expect(entryCard).toBeVisible()
+      await expect(entryCard.getByText(/Dauer: 90 min/)).toBeVisible()
+      await expect(entryCard.getByText('01:30:00')).toBeVisible()
+      // Delete
+      await entryCard.getByRole('button', { name: 'Löschen' }).click()
+      await page.getByRole('button', { name: 'Löschen', exact: true }).click()
+      await expect(entryCard).not.toBeVisible()
+    })
   })
 
   // --- DAILY ACTIONS & SPECIAL ENTRIES ---
@@ -327,9 +343,9 @@ test.describe('Core Tracker Functionality', () => {
       )
       await expect(form).toBeVisible()
       // A special entry's start/end times can be changed.
-      await form.getByLabel('Startzeit').fill('10:00') // Originally 09:00 - 16:00 (7h)
+      await form.getByLabel('Dauer (Minuten)').fill('360') // Originally 7h
       await form.getByRole('button', { name: 'Eintrag speichern' }).click()
-      await expect(sickCard.getByText('06:00:00')).toBeVisible() // Now 10:00 - 16:00 (6h)
+      await expect(sickCard.getByText('06:00:00')).toBeVisible() // Now 6h
 
       // Delete
       await sickCard.getByRole('button', { name: 'Löschen' }).click()
