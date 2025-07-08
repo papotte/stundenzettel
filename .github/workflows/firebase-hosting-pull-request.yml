@@ -11,12 +11,26 @@ jobs:
   build_and_preview:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: google-application-credentials.json
     steps:
       - uses: actions/checkout@v4
       - run: npm ci --ignore-scripts && npm run build
-      - name: Deploy to Firebase
-        uses: joinflux/firebase-tools@v9.16.0
-        with:
-          args: deploy --only apphosting
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Prepare Google Application Credentials
+        shell: bash
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > "google-application-credentials.json"
+
+      - name: Deploy Firebase functions
+        shell: bash
+        run: firebase deploy --non-interactive
+
+      - name: Remove credentials file
+        if: success() || failure()
+        run: |
+          rm google-application-credentials.json
+
