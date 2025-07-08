@@ -8,6 +8,11 @@
 # testing
 /coverage
 
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
 # next.js
 /.next/
 /out/
@@ -44,13 +49,5 @@ next-env.d.ts
 /.firebase/
 /.idx/
 /.vscode/
-firebase.json
-firestore.rules
-firestore.indexes.json
-storage.rules
-database.rules.json
-
-# Playwright
-/test-results/
-/playwright-report/
-/playwright/.cache/
+/*-debug.log
+/google-application-credentials.json

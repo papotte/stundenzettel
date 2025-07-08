@@ -3,15 +3,24 @@ name: Deploy to Firebase
 on:
   release:
     types: [created, published, released]
+  push:
+    branches:
+      # We want to allow any branches that have `deploy` in the name to test this workflow
+      - deploy/*
+      - '*/*deploy*'
   workflow_dispatch:
 
 permissions:
+  checks: write
   contents: read
+  pull-requests: write
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: google-application-credentials.json
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,9 +42,22 @@ jobs:
         env:
           NEXT_PUBLIC_ENVIRONMENT: test
 
-      - name: Deploy to Firebase App Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}'
-          projectId: '${{ vars.FIREBASE_PROJECT_ID }}' # Recommended to set this as a GitHub variable
+      - name: Build the application
+        run: npm run build
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Prepare Google Application Credentials
+        shell: bash
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" | base64 --decode > "google-application-credentials.json"
+
+      - name: Deploy Firebase functions
+        shell: bash
+        run: firebase deploy --non-interactive -m "Deploying from Github Actions ${{ github.event.release.tag_name }}"
+
+      - name: Remove credentials file
+        if: success() || failure()
+        run: |
+          rm google-application-credentials.json
