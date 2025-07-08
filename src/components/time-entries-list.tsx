@@ -30,7 +30,9 @@ const TimeEntriesList: React.FC = () => {
         <div className="flex items-center justify-between">
           <CardTitle>
             {selectedDate && isSameDay(selectedDate, new Date())
-              ? t('tracker.todaysEntries')
+              ? t('tracker.todaysEntries', {
+                  date: formattedSelectedDate,
+                })
               : selectedDate
                 ? t('tracker.entriesForDate', {
                     date: formattedSelectedDate,
