@@ -2,7 +2,7 @@ name: Deploy to Firebase
 
 on:
   release:
-    types: [created, published, released]
+    types: [published]
   push:
     branches:
       # We want to allow any branches that have `deploy` in the name to test this workflow

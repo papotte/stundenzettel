@@ -27,3 +27,6 @@ pnpm-debug.log*
 # Other
 coverage
 .DS_Store
+
+# Automatically generated CHANGELOG file
+CHANGELOG.md
