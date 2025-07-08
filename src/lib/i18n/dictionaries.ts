@@ -41,7 +41,7 @@ export const dictionaries = {
       timeEntriesTitle: 'Time Entries',
       addEntryButton: 'Add',
       entriesForDate: 'Entries for {date}',
-      todaysEntries: "Entries for {date} – Today",
+      todaysEntries: 'Entries for {date} – Today',
       noEntries: 'No entries for this day.',
       addFirstEntryLink: 'Add your first entry',
       summaryTitle: 'Hours Summary',
