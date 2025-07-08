@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/papotte/stundenzettel/compare/v1.0.4...v1.1.0) (2025-07-08)
+
+
+### Features
+
+* enable duration-only entries ([#38](https://github.com/papotte/stundenzettel/issues/38)) ([81980a8](https://github.com/papotte/stundenzettel/commit/81980a8a96d72f44f07da2670d1088249c456266))
+
 ## [1.0.4](https://github.com/papotte/stundenzettel/compare/v1.0.3...v1.0.4) (2025-07-08)
 
 
