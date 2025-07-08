@@ -1,18 +1,21 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
+    "database": "timewise",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "apphosting": [
     {
-      "backendId": "my-backend",
-      "rootDir": "./my-app",
+      "backendId": "studio",
+      "rootDir": "/",
       "ignore": [
         "node_modules",
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log",
         "functions"
-      ]
+      ],
+      "alwaysDeployFromSource": true
     }
   ]
 }
