@@ -69,15 +69,18 @@ export default function TimeEntryCard({
   }
 
   const calculateCompensatedSeconds = () => {
+    if (typeof entry.durationMinutes === 'number') {
+      return entry.durationMinutes * 60
+    }
     if (!entry.endTime) {
-      // Handle running timer case
+      if (!entry.startTime) return 0
       return (new Date().getTime() - entry.startTime.getTime()) / 1000
     }
 
-    const workDurationInMinutes = differenceInMinutes(
-      entry.endTime,
-      entry.startTime,
-    )
+    const workDurationInMinutes =
+      entry.startTime && entry.endTime
+        ? differenceInMinutes(entry.endTime, entry.startTime)
+        : entry.durationMinutes || 0
 
     if (isSpecial) {
       // For special entries, the duration is just the time between start and end.
@@ -93,6 +96,10 @@ export default function TimeEntryCard({
   }
 
   const totalCompensatedSeconds = calculateCompensatedSeconds()
+
+  const formattedStartTime = format(entry.startTime, 'p')
+  const formattedEndTime =
+    entry.endTime instanceof Date ? format(entry.endTime, 'p') : ''
 
   if (SpecialIcon) {
     return (
@@ -176,15 +183,22 @@ export default function TimeEntryCard({
           <div className="grid flex-1 gap-1">
             <p className="font-semibold">{entry.location}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <Clock className="mr-1.5 h-3.5 w-3.5" />
-                <span>
-                  {format(entry.startTime, 'p')} -{' '}
-                  {entry.endTime
-                    ? format(entry.endTime, 'p')
-                    : t('time_entry_card.runningLabel')}
-                </span>
-              </div>
+              {typeof entry.durationMinutes === 'number' ? (
+                <div className="flex items-center">
+                  <Clock className="mr-1.5 h-3.5 w-3.5" />
+                  <span>
+                    {t('time_entry_form.durationLabel')}:{' '}
+                    {entry.durationMinutes} min
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <Clock className="mr-1.5 h-3.5 w-3.5" />
+                  <span>
+                    {formattedStartTime} - {formattedEndTime}
+                  </span>
+                </div>
+              )}
               {entry.pauseDuration && entry.pauseDuration > 0 ? (
                 <div className="flex items-center">
                   <Coffee className="mr-1.5 h-3.5 w-3.5" />

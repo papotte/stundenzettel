@@ -71,6 +71,63 @@ describe('TimeEntryCard', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('renders a duration-only entry correctly', () => {
+    const durationEntry: TimeEntry = {
+      id: '2',
+      userId: 'user-1',
+      location: 'Duration Task',
+      durationMinutes: 150, // 2h 30m
+      startTime: new Date('2024-01-10T12:00:00'),
+      pauseDuration: 0,
+      travelTime: 0,
+      isDriver: false,
+    }
+    render(
+      <TimeEntryCard
+        entry={durationEntry}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />,
+    )
+
+    expect(screen.getByText('Duration Task')).toBeInTheDocument()
+    expect(
+      screen.getByText(/time_entry_form.durationLabel: 150 min/),
+    ).toBeInTheDocument()
+    expect(screen.getByText('02:30:00')).toBeInTheDocument()
+    // Should not show a time range
+    expect(screen.queryByText(/-.*:/)).not.toBeInTheDocument()
+  })
+
+  it('allows creating and displaying a duration-only entry', () => {
+    // Simulate creating a duration-only entry and rendering it
+    const newDurationEntry: TimeEntry = {
+      id: '3',
+      userId: 'user-2',
+      location: 'Duration Only',
+      durationMinutes: 90, // 1h 30m
+      startTime: new Date('2024-01-10T12:00:00'),
+      pauseDuration: 0,
+      travelTime: 0,
+      isDriver: false,
+    }
+    render(
+      <TimeEntryCard
+        entry={newDurationEntry}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />,
+    )
+
+    expect(screen.getByText('Duration Only')).toBeInTheDocument()
+    expect(
+      screen.getByText(/time_entry_form.durationLabel: 90 min/),
+    ).toBeInTheDocument()
+    expect(screen.getByText('01:30:00')).toBeInTheDocument()
+    // Should not show a time range
+    expect(screen.queryByText(/-.*:/)).not.toBeInTheDocument()
+  })
+
   it('calls onEdit when the edit button is clicked', () => {
     render(
       <TimeEntryCard entry={baseEntry} onEdit={onEdit} onDelete={onDelete} />,

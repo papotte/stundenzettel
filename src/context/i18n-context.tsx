@@ -22,7 +22,7 @@ interface I18nContextType {
   loading: boolean
 }
 
-const TimeWiseIcon = (props: React.SVGProps<SVGSVGElement>) => (
+const LoadingIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     width="24"
     height="24"
@@ -122,7 +122,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center space-y-4">
-          <TimeWiseIcon className="h-12 w-12 animate-spin text-primary" />
+          <LoadingIcon className="h-12 w-12 animate-spin text-primary" />
         </div>
       </div>
     )

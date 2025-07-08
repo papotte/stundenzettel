@@ -10,6 +10,8 @@ import {
 import { de, enUS } from 'date-fns/locale'
 import { twMerge } from 'tailwind-merge'
 
+import type { TimeEntry } from './types'
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -111,4 +113,21 @@ export function formatAppNumber(
 export function formatAppTime(date: Date) {
   // Note: 'HH:mm' is not locale-sensitive, but we keep the locale param for future-proofing
   return format(date, 'HH:mm')
+}
+
+export function compareEntriesByStartTime(a: TimeEntry, b: TimeEntry) {
+  const aIsDuration = typeof a.durationMinutes === 'number'
+  const bIsDuration = typeof b.durationMinutes === 'number'
+  if (aIsDuration && !bIsDuration) return 1
+  if (!aIsDuration && bIsDuration) return -1
+  if (!aIsDuration && !bIsDuration && a.startTime && b.startTime) {
+    return b.startTime.getTime() - a.startTime.getTime()
+  }
+  if (!aIsDuration && !bIsDuration && a.startTime && !b.startTime) return -1
+  if (!aIsDuration && !bIsDuration && !a.startTime && b.startTime) return 1
+  // Both are duration entries, sort by startTime descending
+  if (a.startTime && b.startTime) {
+    return b.startTime.getTime() - a.startTime.getTime()
+  }
+  return 0
 }

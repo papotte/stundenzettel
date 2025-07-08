@@ -74,25 +74,29 @@ import {
 
 import { Calendar } from './ui/calendar'
 import { Separator } from './ui/separator'
+import { Switch } from './ui/switch'
 
 const formSchema = z
   .object({
+    mode: z.enum(['interval', 'duration']),
     location: z.string().min(2, {
       message: 'Location must be at least 2 characters.',
     }),
     date: z.date(),
     startTime: z
       .string()
-      .regex(
-        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-        'Invalid time format (HH:mm)',
-      ),
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
+      .optional(),
     endTime: z
       .string()
-      .regex(
-        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-        'Invalid time format (HH:mm)',
-      ),
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
+      .optional(),
+    duration: z.coerce
+      .number()
+      .min(15, 'Minimum 15 minutes')
+      .max(1440, 'Maximum 24 hours')
+      .multipleOf(15, 'Must be a multiple of 15')
+      .optional(),
     pauseDuration: z
       .string()
       .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
@@ -102,13 +106,24 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      try {
-        const start = parse(data.startTime, 'HH:mm', new Date())
-        const end = parse(data.endTime, 'HH:mm', new Date())
-        return end > start
-      } catch {
-        return false
+      if (data.mode === 'interval') {
+        if (!data.startTime || !data.endTime) return false
+        try {
+          const start = parse(data.startTime, 'HH:mm', new Date())
+          const end = parse(data.endTime, 'HH:mm', new Date())
+          return end > start
+        } catch {
+          return false
+        }
+      } else if (data.mode === 'duration') {
+        if (!data.duration || Number.isNaN(data.duration)) return false
+        return (
+          data.duration >= 15 &&
+          data.duration <= 1440 &&
+          data.duration % 15 === 0
+        )
       }
+      return false
     },
     {
       message: 'End time must be after start time',
@@ -139,21 +154,36 @@ export default function TimeEntryForm({
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
   const defaultEndTime = userSettings?.defaultEndTime || '17:00'
+  const isDurationEntry = !!entry?.durationMinutes
+  const defaultMode = isDurationEntry ? 'duration' : 'interval'
+  const defaultDuration =
+    isDurationEntry && entry?.durationMinutes != null
+      ? entry.durationMinutes
+      : 15
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      mode: defaultMode,
       location: entry?.location || '',
-      date: entry?.startTime || selectedDate,
-      startTime: entry ? formatAppTime(entry.startTime) : defaultStartTime,
-      endTime: entry?.endTime ? formatAppTime(entry.endTime) : defaultEndTime,
-      pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration),
+      date: entry?.startTime ?? selectedDate ?? new Date(),
+      startTime:
+        !isDurationEntry && entry && entry.startTime
+          ? formatAppTime(entry.startTime)
+          : defaultStartTime,
+      endTime:
+        !isDurationEntry && entry?.endTime
+          ? formatAppTime(entry.endTime)
+          : defaultEndTime,
+      duration: defaultDuration,
+      pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
       travelTime: entry?.travelTime || 0,
       isDriver: entry?.isDriver || false,
     },
   })
 
   const { watch, setValue, getValues } = form
+  const modeValue = watch('mode')
   const startTimeValue = watch('startTime')
   const endTimeValue = watch('endTime')
   const pauseDurationValue = watch('pauseDuration')
@@ -168,8 +198,8 @@ export default function TimeEntryForm({
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
     try {
-      const start = parse(startTimeValue, 'HH:mm', new Date())
-      const end = parse(endTimeValue, 'HH:mm', new Date())
+      const start = parse(startTimeValue || '00:00', 'HH:mm', new Date())
+      const end = parse(endTimeValue || '00:00', 'HH:mm', new Date())
       if (end <= start) return null
 
       const workDurationInMinutes = differenceInMinutes(end, start)
@@ -190,8 +220,8 @@ export default function TimeEntryForm({
 
   const { workDurationInMinutes, totalCompensatedMinutes } = useMemo(() => {
     try {
-      const start = parse(startTimeValue, 'HH:mm', new Date())
-      const end = parse(endTimeValue, 'HH:mm', new Date())
+      const start = parse(startTimeValue || '00:00', 'HH:mm', new Date())
+      const end = parse(endTimeValue || '00:00', 'HH:mm', new Date())
       if (end <= start)
         return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 }
 
@@ -204,7 +234,7 @@ export default function TimeEntryForm({
         }
       }
 
-      const pauseInMinutes = timeStringToMinutes(pauseDurationValue)
+      const pauseInMinutes = timeStringToMinutes(String(pauseDurationValue))
       const travelInMinutes = (travelTimeValue || 0) * 60
       const total = workDuration - pauseInMinutes + travelInMinutes
 
@@ -289,36 +319,68 @@ export default function TimeEntryForm({
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const [startHours, startMinutes] = values.startTime.split(':').map(Number)
-    const [endHours, endMinutes] = values.endTime.split(':').map(Number)
-
-    const startTime = set(values.date, {
-      hours: startHours,
-      minutes: startMinutes,
-      seconds: 0,
-      milliseconds: 0,
-    })
-    const endTime = set(values.date, {
-      hours: endHours,
-      minutes: endMinutes,
-      seconds: 0,
-      milliseconds: 0,
-    })
-
     const finalIsSpecial = SPECIAL_LOCATION_KEYS.includes(
       values.location as SpecialLocationKey,
     )
-
-    const finalEntry: Omit<TimeEntry, 'userId'> = {
-      id: entry?.id || Date.now().toString(),
-      location: values.location,
-      startTime,
-      endTime,
-      pauseDuration: finalIsSpecial
-        ? 0
-        : timeStringToMinutes(values.pauseDuration),
-      travelTime: finalIsSpecial ? 0 : values.travelTime,
-      isDriver: finalIsSpecial ? false : values.isDriver,
+    let finalEntry: Omit<TimeEntry, 'userId'>
+    if (values.mode === 'interval') {
+      if (!values.startTime || !values.endTime) {
+        // Should not happen due to validation, but guard for type safety
+        return
+      }
+      const [startHours, startMinutes] = (values.startTime ?? '')
+        .split(':')
+        .map(Number)
+      const [endHours, endMinutes] = (values.endTime ?? '')
+        .split(':')
+        .map(Number)
+      const date = values.date ?? new Date()
+      const startTime = set(date, {
+        hours: startHours,
+        minutes: startMinutes,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      const endTime = set(date, {
+        hours: endHours,
+        minutes: endMinutes,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      finalEntry = {
+        id: entry?.id || Date.now().toString(),
+        location: values.location,
+        startTime,
+        endTime,
+        pauseDuration: finalIsSpecial
+          ? 0
+          : timeStringToMinutes(String(values.pauseDuration || '')),
+        travelTime: finalIsSpecial ? 0 : values.travelTime,
+        isDriver: finalIsSpecial ? false : values.isDriver,
+      }
+    } else {
+      // duration mode
+      if (Number.isNaN(values.duration)) {
+        // Should not happen due to validation, but guard for type safety
+        return
+      }
+      // Set startTime to selected date at 12:00 local time for duration-only entries
+      const date = values.date ?? new Date()
+      const startTime = set(date, {
+        hours: 12,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      })
+      finalEntry = {
+        id: entry?.id || Date.now().toString(),
+        location: values.location,
+        durationMinutes: values.duration,
+        startTime,
+        pauseDuration: 0,
+        travelTime: 0,
+        isDriver: false,
+      }
     }
     onSave(finalEntry)
   }
@@ -457,38 +519,88 @@ export default function TimeEntryForm({
                   </FormItem>
                 )}
               />
-              <div className="flex gap-4">
+              <FormField
+                control={form.control}
+                name="mode"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-4 mb-2">
+                    <FormLabel className="mr-2">
+                      {t('time_entry_form.modeInterval')}
+                    </FormLabel>
+                    <Switch
+                      aria-label={t('time_entry_form.modeDuration')}
+                      data-testid="mode-switch"
+                      checked={field.value === 'duration'}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked ? 'duration' : 'interval')
+                      }
+                      id="mode-switch"
+                    />
+                    <FormLabel htmlFor="mode-switch" className="ml-2">
+                      {t('time_entry_form.modeDuration')}
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+              {modeValue === 'interval' ? (
+                <div className="flex gap-4">
+                  <FormField
+                    control={form.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>
+                          {t('time_entry_form.startTimeLabel')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>
+                          {t('time_entry_form.endTimeLabel')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              ) : (
                 <FormField
                   control={form.control}
-                  name="startTime"
+                  name="duration"
                   render={({ field }) => (
-                    <FormItem className="flex-1">
+                    <FormItem>
                       <FormLabel>
-                        {t('time_entry_form.startTimeLabel')}
+                        {t('time_entry_form.durationFormLabel')}
                       </FormLabel>
                       <FormControl>
-                        <Input type="time" {...field} />
+                        <Input
+                          type="number"
+                          min={5}
+                          max={1440}
+                          step={5}
+                          placeholder="e.g. 30"
+                          {...field}
+                          value={field.value?.toString() ?? ''}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>{t('time_entry_form.endTimeLabel')}</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {!isSpecialEntry && (
+              )}
+              {!isSpecialEntry && modeValue === 'interval' && (
                 <>
                   <Separator />
                   <p className="text-sm font-medium text-muted-foreground">

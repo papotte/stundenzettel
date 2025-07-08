@@ -226,10 +226,16 @@ export default function TimesheetPreview({
 
                   return dayEntries.map((entry, entryIndex) => {
                     let compensatedHours = 0
-                    if (entry.endTime) {
+                    let fromValue = ''
+                    let toValue = ''
+                    if (typeof entry.durationMinutes === 'number') {
+                      compensatedHours = entry.durationMinutes / 60
+                      fromValue = t('time_entry_form.durationLabel')
+                      toValue = `${entry.durationMinutes} min`
+                    } else if (entry.endTime) {
                       const workDuration = differenceInMinutes(
                         entry.endTime,
-                        entry.startTime,
+                        entry.startTime!,
                       )
                       const isCompensatedSpecialDay = [
                         'SICK_LEAVE',
@@ -246,6 +252,12 @@ export default function TimesheetPreview({
                         compensatedHours =
                           compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
                       }
+                      fromValue = entry.startTime
+                        ? format(entry.startTime, 'HH:mm')
+                        : ''
+                      toValue = entry.endTime
+                        ? format(entry.endTime, 'HH:mm')
+                        : ''
                     }
 
                     return (
@@ -289,21 +301,34 @@ export default function TimesheetPreview({
                           {getLocationDisplayName(entry.location)}
                         </TableCell>
                         <TableCell className="text-right print:p-1">
-                          {entry.startTime
-                            ? format(entry.startTime, 'HH:mm')
-                            : ''}
+                          {/* For duration-only entries, leave blank */}
+                          {typeof entry.durationMinutes === 'number'
+                            ? ''
+                            : fromValue}
                         </TableCell>
                         <TableCell className="text-right print:p-1">
-                          {entry.endTime ? format(entry.endTime, 'HH:mm') : ''}
+                          {/* For duration-only entries, leave blank */}
+                          {typeof entry.durationMinutes === 'number'
+                            ? ''
+                            : toValue}
                         </TableCell>
                         <TableCell className="border-l border-r border-black text-right print:p-1">
-                          {formatDecimalHours(entry.pauseDuration)}
+                          {/* Show blank if pause is 0 or 0.00 */}
+                          {entry.pauseDuration && entry.pauseDuration !== 0
+                            ? formatDecimalHours(entry.pauseDuration)
+                            : ''}
                         </TableCell>
                         <TableCell className="border-r border-black text-right print:p-1">
-                          {(entry.travelTime || 0).toFixed(2)}
+                          {/* Show blank if travel is 0 or 0.00 */}
+                          {entry.travelTime && entry.travelTime !== 0
+                            ? entry.travelTime.toFixed(2)
+                            : ''}
                         </TableCell>
                         <TableCell className="border-r border-black text-right print:p-1">
-                          {compensatedHours.toFixed(2)}
+                          {/* Show blank if compensated is 0 or 0.00 */}
+                          {compensatedHours && compensatedHours !== 0
+                            ? compensatedHours.toFixed(2)
+                            : ''}
                         </TableCell>
                         <TableCell className="border-r border-black text-left print:p-1">
                           {entry.isDriver ? t('export_preview.driverMark') : ''}
