@@ -17,6 +17,6 @@ jobs:
       - name: Deploy to Firebase
         uses: joinflux/firebase-tools@v9.16.0
         with:
-          args: deploy
+          args: deploy --only apphosting
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
