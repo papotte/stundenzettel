@@ -304,6 +304,28 @@ describe('TimeEntryForm', () => {
       '00:30',
     )
   })
+
+  it('should not call onClose when clicking outside the Sheet (pointerDownOutside)', () => {
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    // Find the SheetContent (role="dialog")
+    const dialog = screen.getByRole('dialog')
+    // Simulate pointerDownOutside event
+    const event = new Event('pointerdown', { bubbles: true })
+    Object.defineProperty(event, 'target', { value: document.body })
+    dialog.dispatchEvent(event)
+    // onClose should not be called
+    expect(mockOnClose).not.toHaveBeenCalled()
+    // The form should still be visible
+    expect(dialog).toBeVisible()
+  })
 })
 
 describe('Pause Duration Field', () => {
