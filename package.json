@@ -50,7 +50,7 @@
     "dotenv": "^16.5.0",
     "exceljs": "^4.4.0",
     "firebase": "^11.9.1",
-    "lucide-react": "^0.475.0",
+    "lucide-react": "^0.525.0",
     "next": "15.3.5",
     "patch-package": "^8.0.0",
     "react": "^18.3.1",
@@ -58,7 +58,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
-    "tailwind-merge": "3.0.1",
+    "tailwind-merge": "3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.2"
   },
