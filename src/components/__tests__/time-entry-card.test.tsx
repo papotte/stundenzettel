@@ -91,7 +91,9 @@ describe('TimeEntryCard', () => {
     )
 
     expect(screen.getByText('Duration Task')).toBeInTheDocument()
-    expect(screen.getByText(/time_entry_form.durationLabel: 150 min/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/time_entry_form.durationLabel: 150 min/),
+    ).toBeInTheDocument()
     expect(screen.getByText('02:30:00')).toBeInTheDocument()
     // Should not show a time range
     expect(screen.queryByText(/-.*:/)).not.toBeInTheDocument()
@@ -118,7 +120,9 @@ describe('TimeEntryCard', () => {
     )
 
     expect(screen.getByText('Duration Only')).toBeInTheDocument()
-    expect(screen.getByText(/time_entry_form.durationLabel: 90 min/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/time_entry_form.durationLabel: 90 min/),
+    ).toBeInTheDocument()
     expect(screen.getByText('01:30:00')).toBeInTheDocument()
     // Should not show a time range
     expect(screen.queryByText(/-.*:/)).not.toBeInTheDocument()
