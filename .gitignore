@@ -50,3 +50,4 @@ next-env.d.ts
 /.idx/
 /.vscode/
 /*-debug.log
+/firebase-*-credentials.json

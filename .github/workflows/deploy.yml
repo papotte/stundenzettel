@@ -3,11 +3,11 @@ name: Deploy to Firebase
 on:
   release:
     types: [created, published, released]
-  push:
-    branches:
-      # We want to allow any branches that have `deploy` in the name to test this workflow
-      - deploy/*
-      - '*/*deploy*'
+  #  push:
+  #    branches:
+  #      # We want to allow any branches that have `deploy` in the name to test this workflow
+  #      - deploy/*
+  #      - '*/*deploy*'
   workflow_dispatch:
 
 permissions:
@@ -45,4 +45,3 @@ jobs:
 
       - name: Deploy to Firebase
         run: npm run deploy
-
