@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/papotte/stundenzettel/compare/v1.0.0...v1.0.1) (2025-07-08)
+
+
+### Bug Fixes
+
+* only deploy on published release ([b4a445c](https://github.com/papotte/stundenzettel/commit/b4a445c223e56f0b95bad92942839a347ea1503a))
+
 # 1.0.0 (2025-07-08)
 
 
