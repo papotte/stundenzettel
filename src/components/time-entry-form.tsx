@@ -64,6 +64,17 @@ import {
 
 import { Calendar } from './ui/calendar'
 import { Separator } from './ui/separator'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 const formSchema = z
   .object({
@@ -118,12 +129,14 @@ export default function TimeEntryForm({
   entry,
   selectedDate,
   onSave,
+  onClose,
   userSettings,
 }: TimeEntryFormProps) {
   const { toast } = useToast()
   const { t, language } = useTranslation()
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const isMobile = useIsMobile()
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
   const defaultEndTime = userSettings?.defaultEndTime || '17:00'
@@ -641,11 +654,33 @@ export default function TimeEntryForm({
               </div>
 
               <SheetFooter className="pt-6">
-                <SheetClose asChild>
-                  <Button type="button" variant="outline">
-                    {t('time_entry_form.cancelButton')}
-                  </Button>
-                </SheetClose>
+                <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" variant="outline" onClick={() => setShowCancelDialog(true)}>
+                      {t('time_entry_form.cancelButton')}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('time_entry_form.cancelConfirmTitle')}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t('time_entry_form.cancelConfirmDescription')}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel asChild>
+                        <Button type="button" variant="outline" onClick={() => setShowCancelDialog(false)}>
+                          {t('time_entry_form.cancelConfirmAbort')}
+                        </Button>
+                      </AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button type="button" variant="destructive" onClick={onClose}>
+                          {t('time_entry_form.cancelConfirmConfirm')}
+                        </Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <Button type="submit">
                   <Save className="mr-2 h-4 w-4" />
                   {t('time_entry_form.saveButton')}
