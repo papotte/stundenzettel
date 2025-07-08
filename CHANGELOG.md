@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/papotte/stundenzettel/compare/v1.0.3...v1.0.4) (2025-07-08)
+
+
+### Bug Fixes
+
+* prevent accidental cancel ([#37](https://github.com/papotte/stundenzettel/issues/37)) ([3353044](https://github.com/papotte/stundenzettel/commit/33530443b9a54e132b9cd2bf8a10922c32749793))
+
 ## [1.0.3](https://github.com/papotte/stundenzettel/compare/v1.0.2...v1.0.3) (2025-07-08)
 
 
