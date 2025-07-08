@@ -55,7 +55,7 @@ jobs:
 
       - name: Deploy Firebase functions
         shell: bash
-        run: firebase deploy --non-interactive
+        run: firebase deploy --non-interactive -m "Deploying from Github Actions ${{ github.event.release.tag_name }}"
 
       - name: Remove credentials file
         if: success() || failure()
