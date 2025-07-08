@@ -89,7 +89,7 @@ export function formatMinutesToTimeInput(
  */
 export function formatAppDate(date: Date, locale: string = 'en') {
   const localeObj = locale === 'de' ? de : enUS
-  return format(date, 'PPP', { locale: localeObj })
+  return format(date, 'PPPP', { locale: localeObj })
 }
 
 /**
