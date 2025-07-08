@@ -18,6 +18,17 @@ import { z } from 'zod'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -36,7 +47,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import {
-  SheetClose,
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -64,17 +74,6 @@ import {
 
 import { Calendar } from './ui/calendar'
 import { Separator } from './ui/separator'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 
 const formSchema = z
   .object({
@@ -654,27 +653,44 @@ export default function TimeEntryForm({
               </div>
 
               <SheetFooter className="pt-6">
-                <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                <AlertDialog
+                  open={showCancelDialog}
+                  onOpenChange={setShowCancelDialog}
+                >
                   <AlertDialogTrigger asChild>
-                    <Button type="button" variant="outline" onClick={() => setShowCancelDialog(true)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowCancelDialog(true)}
+                    >
                       {t('time_entry_form.cancelButton')}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>{t('time_entry_form.cancelConfirmTitle')}</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {t('time_entry_form.cancelConfirmTitle')}
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
                         {t('time_entry_form.cancelConfirmDescription')}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel asChild>
-                        <Button type="button" variant="outline" onClick={() => setShowCancelDialog(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowCancelDialog(false)}
+                        >
                           {t('time_entry_form.cancelConfirmAbort')}
                         </Button>
                       </AlertDialogCancel>
                       <AlertDialogAction asChild>
-                        <Button type="button" variant="destructive" onClick={onClose}>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={onClose}
+                        >
                           {t('time_entry_form.cancelConfirmConfirm')}
                         </Button>
                       </AlertDialogAction>

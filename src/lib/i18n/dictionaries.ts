@@ -114,7 +114,8 @@ export const dictionaries = {
       cancelButton: 'Cancel',
       saveButton: 'Save Entry',
       cancelConfirmTitle: 'Discard changes?',
-      cancelConfirmDescription: 'Are you sure you want to cancel? Unsaved changes will be lost.',
+      cancelConfirmDescription:
+        'Are you sure you want to cancel? Unsaved changes will be lost.',
       cancelConfirmAbort: 'Keep editing',
       cancelConfirmConfirm: 'Discard',
       locationFetchToastTitle: 'Fetching location...',
@@ -351,7 +352,8 @@ export const dictionaries = {
       cancelButton: 'Abbrechen',
       saveButton: 'Eintrag speichern',
       cancelConfirmTitle: 'Änderungen verwerfen?',
-      cancelConfirmDescription: 'Sind Sie sicher, dass Sie abbrechen möchten? Nicht gespeicherte Änderungen gehen verloren.',
+      cancelConfirmDescription:
+        'Sind Sie sicher, dass Sie abbrechen möchten? Nicht gespeicherte Änderungen gehen verloren.',
       cancelConfirmAbort: 'Weiter bearbeiten',
       cancelConfirmConfirm: 'Verwerfen',
       locationFetchToastTitle: 'Standort wird abgerufen...',
