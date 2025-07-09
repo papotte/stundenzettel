@@ -16,9 +16,11 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-const MockExportPreview = () => <div data-testid="export-preview" />
-MockExportPreview.displayName = 'MockExportPreview'
-jest.mock('@/components/export-preview', () => MockExportPreview)
+jest.mock('@/components/export-preview', () => {
+  const MockExportPreview = () => <div data-testid="export-preview" />
+  MockExportPreview.displayName = 'MockExportPreview'
+  return MockExportPreview
+})
 
 jest.mock('@/components/ui/tooltip', () => ({
   TooltipProvider: ({ children }: TooltipProviderProps) => (

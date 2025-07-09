@@ -71,11 +71,42 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
           }
           onFocus={() => {
             setFocused(true)
-            if (onFocus) onFocus()
+            onFocus?.()
           }}
           onBlur={() => {
-            setFocused(false)
-            if (onBlur) onBlur()
+            setTimeout(() => setFocused(false), 100)
+            onBlur?.()
+          }}
+          onKeyDown={(e) => {
+            if (!suggestions.length) return
+            if (e.key === 'ArrowDown') {
+              e.preventDefault()
+              setActiveSuggestion(
+                (activeSuggestion) =>
+                  (activeSuggestion + 1) % suggestions.length,
+              )
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault()
+              setActiveSuggestion(
+                (activeSuggestion) =>
+                  (activeSuggestion - 1 + suggestions.length) %
+                  suggestions.length,
+              )
+            } else if (e.key === 'Enter' || e.key === 'Tab') {
+              if (
+                activeSuggestion >= 0 &&
+                activeSuggestion < suggestions.length
+              ) {
+                e.preventDefault()
+                setInputValue(suggestions[activeSuggestion])
+                onChange(suggestions[activeSuggestion])
+                setActiveSuggestion(-1)
+                setFocused(false)
+              }
+            } else if (e.key === 'Escape') {
+              setFocused(false)
+              setActiveSuggestion(-1)
+            }
           }}
           {...field}
         />

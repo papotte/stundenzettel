@@ -13,9 +13,11 @@ jest.mock('next/navigation', () => ({
     replace: mockReplace,
   }),
 }))
-const MockTimeTracker = () => <div data-testid="time-tracker" />
-MockTimeTracker.displayName = 'MockTimeTracker'
-jest.mock('@/components/time-tracker', () => MockTimeTracker)
+jest.mock('@/components/time-tracker', () => {
+  const MockTimeTracker = () => <div data-testid="time-tracker" />
+  MockTimeTracker.displayName = 'MockTimeTracker'
+  return MockTimeTracker
+})
 jest.mock('@/hooks/use-auth', () => ({
   useAuth: jest.fn(),
 }))
