@@ -470,25 +470,33 @@ export default function TimeEntryForm({
         <TooltipProvider>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <LocationInput
-                value={form.getValues('location')}
-                onChange={(val) => {
-                  form.setValue('location', val, { shouldValidate: true })
-                }}
-                disabled={isSpecialEntry}
-                suggestions={locationSuggestions}
-                isSpecialEntry={isSpecialEntry}
-                label={t('time_entry_form.locationLabel')}
-                placeholder={t('time_entry_form.locationPlaceholder')}
-                onGetCurrentLocation={
-                  !isSpecialEntry ? handleGetCurrentLocation : undefined
-                }
-                isFetchingLocation={isFetchingLocation}
-                error={
-                  form.formState.errors.location?.message as string | undefined
-                }
-                onBlur={() => form.trigger('location')}
-                onFocus={() => {}}
+              {/* Location field using Controller for full RHF control */}
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>{t('time_entry_form.locationLabel')}</FormLabel>
+                    <FormControl>
+                      <LocationInput
+                        {...field}
+                        suggestions={locationSuggestions}
+                        isSpecialEntry={isSpecialEntry}
+                        placeholder={t('time_entry_form.locationPlaceholder')}
+                        onGetCurrentLocation={
+                          !isSpecialEntry ? handleGetCurrentLocation : undefined
+                        }
+                        isFetchingLocation={isFetchingLocation}
+                        onBlur={() => {
+                          field.onBlur()
+                          form.trigger('location')
+                        }}
+                        onFocus={() => {}}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
               <FormField
                 control={form.control}
@@ -566,7 +574,7 @@ export default function TimeEntryForm({
                         </FormControl>
                         {/* Start time suggestions */}
                         {startTimeSuggestions.length > 0 && (
-                          <div className="flex gap-2 mt-2">
+                          <div className="flex gap-2 mt-2" data-testid="start-time-suggestions">
                             {startTimeSuggestions.map((s) => (
                               <Tooltip key={s}>
                                 <TooltipTrigger asChild>
@@ -586,7 +594,7 @@ export default function TimeEntryForm({
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  Based on previous entries for this location.
+                                  {t('time_entry_form.smartSuggestionTooltip')}
                                 </TooltipContent>
                               </Tooltip>
                             ))}
@@ -629,7 +637,7 @@ export default function TimeEntryForm({
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  Based on previous entries for this location.
+                                  {t('time_entry_form.smartSuggestionTooltip')}
                                 </TooltipContent>
                               </Tooltip>
                             ))}
@@ -798,7 +806,7 @@ export default function TimeEntryForm({
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    Based on previous entries for this location.
+                                    {t('time_entry_form.smartSuggestionTooltip')}
                                   </TooltipContent>
                                 </Tooltip>
                               ))}

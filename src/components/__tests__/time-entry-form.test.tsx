@@ -1,13 +1,12 @@
-import React from 'react'
+import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import type { TimeEntry, UserSettings } from '@/lib/types';
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import React from 'react';
 
-import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
-import { Sheet, SheetContent } from '@/components/ui/sheet'
-import type { TimeEntry, UserSettings } from '@/lib/types'
-
-import TimeEntryForm from '../time-entry-form'
+import TimeEntryForm from '../time-entry-form';
 
 // Mock toast hook
 const mockToast = jest.fn()
@@ -21,10 +20,33 @@ jest.mock('@/hooks/use-toast', () => ({
 jest.mock('@/ai/flows/reverse-geocode-flow')
 const mockedReverseGeocode = reverseGeocode as jest.Mock
 
+const entries = [
+  {
+    id: '1',
+    userId: 'u1',
+    location: 'Office',
+    startTime: new Date('2024-06-01T09:15:00'),
+    endTime: new Date('2024-06-01T17:15:00'),
+    pauseDuration: 30,
+    travelTime: 0.5,
+    isDriver: true,
+  },
+  {
+    id: '2',
+    userId: 'u1',
+    location: 'Home',
+    startTime: new Date('2024-06-02T08:00:00'),
+    endTime: new Date('2024-06-02T16:00:00'),
+    pauseDuration: 30,
+    travelTime: 0.25,
+    isDriver: false,
+  },
+]
+
 // Mock useTimeTrackerContext
 jest.mock('@/context/time-tracker-context', () => ({
   useTimeTrackerContext: () => ({
-    entries: [], // <-- add this line
+    entries: entries
     // Add all required context values for TimeEntryForm here
   }),
 }))
@@ -404,5 +426,83 @@ describe('Pause Duration Field', () => {
     )
     const pauseInput = screen.getByLabelText('time_entry_form.pauseLabel')
     expect(pauseInput).toHaveAttribute('type', 'tel')
+  })
+})
+
+// Add smart suggestion tests
+describe('Smart suggestions', () => {
+  it('shows start time suggestions for matching location and hides when selected', async () => {
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-06-03')}
+        onSave={jest.fn()}
+        onClose={jest.fn()}
+        userSettings={{
+          defaultWorkHours: 8,
+          defaultStartTime: '09:00',
+          defaultEndTime: '17:00',
+          language: 'en',
+        }}
+      />,
+    )
+
+    // Type a location that matches a previous entry
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await userEvent.clear(locationInput)
+    await userEvent.type(locationInput, 'Office')
+
+    // Focus start time input to show suggestions
+    const startTimeInput = screen.getByLabelText(
+      'time_entry_form.startTimeLabel',
+    )
+    fireEvent.focus(startTimeInput)
+
+    // Suggestion should appear
+    expect(await screen.findByText('09:15')).toBeInTheDocument()
+
+    // Click the suggestion
+    const suggestion = await screen.findByText('09:15')
+    expect(suggestion).toBeInTheDocument()
+    await userEvent.click(suggestion)
+
+    // The input should now have the value
+    expect(startTimeInput).toHaveValue('09:15')
+
+    // The suggestion should now be hidden
+    expect(screen.queryByText('09:15')).not.toBeInTheDocument()
+  })
+
+  it('shows tooltip for smart suggestion', async () => {
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-06-03')}
+        onSave={jest.fn()}
+        onClose={jest.fn()}
+        userSettings={{
+          defaultWorkHours: 8,
+          defaultStartTime: '08:00',
+          defaultEndTime: '17:00',
+          language: 'en',
+        }}
+      />,
+    )
+
+    // Type a location that matches a previous entry
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await userEvent.clear(locationInput)
+    await userEvent.type(locationInput, 'Office')
+
+    // Hover over the suggestion chip
+    const suggestionChip = await screen.findByText('09:15')
+    await userEvent.hover(suggestionChip)
+
+    // Tooltip should appear in the div start-time-suggestions
+    const suggestionBox = await screen.findByTestId('start-time-suggestions')
+    const tooltip = await within(suggestionBox).findAllByText(
+      'time_entry_form.smartSuggestionTooltip',
+    )
+    expect(tooltip[0]).toBeVisible()
   })
 })

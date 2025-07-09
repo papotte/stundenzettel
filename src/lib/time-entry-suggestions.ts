@@ -59,7 +59,7 @@ export function suggestStartTimes(
   options?: { location?: string; dayOfWeek?: number; limit?: number },
 ) {
   if (!entries.length) return []
-  let filtered = entries.filter((e) => e.startTime)
+  let filtered = entries.filter((e) => e.durationMinutes == undefined)
   if (options?.location) {
     filtered = filtered.filter((e) => e.location === options.location)
   }

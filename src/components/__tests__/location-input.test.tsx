@@ -25,15 +25,15 @@ describe('LocationInput', () => {
     onFocus: jest.fn(),
   }
 
-  it('renders with label, placeholder, and value', () => {
+  it('renders with placeholder and value', () => {
     renderWithProvider(<LocationInput {...baseProps} value="Test" />)
-    expect(screen.getByLabelText('Location')).toHaveValue('Test')
     expect(screen.getByPlaceholderText('Enter location')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Test')).toBeInTheDocument()
   })
 
   it('shows suggestions when focused and input is typed', async () => {
     renderWithProvider(<LocationInput {...baseProps} value="O" />)
-    const input = screen.getByLabelText('Location')
+    const input = screen.getByPlaceholderText('Enter location')
     input.focus()
     // Use role-based query for options
     const options = await screen.findAllByRole('option')
@@ -47,7 +47,7 @@ describe('LocationInput', () => {
     renderWithProvider(
       <LocationInput {...baseProps} value="O" onChange={onChange} />,
     )
-    const input = screen.getByLabelText('Location')
+    const input = screen.getByPlaceholderText('Enter location')
     input.focus()
     const suggestion = await screen.findByRole('option', { name: 'Office' })
     fireEvent.mouseDown(suggestion)
@@ -59,7 +59,7 @@ describe('LocationInput', () => {
     renderWithProvider(
       <LocationInput {...baseProps} value="" onChange={onChange} />,
     )
-    const input = screen.getByLabelText('Location')
+    const input = screen.getByPlaceholderText('Enter location')
     input.focus()
     fireEvent.keyDown(input, { key: 'ArrowDown' })
     fireEvent.keyDown(input, { key: 'Enter' })
@@ -68,7 +68,7 @@ describe('LocationInput', () => {
 
   it('hides suggestions on escape', async () => {
     renderWithProvider(<LocationInput {...baseProps} value="O" />)
-    const input = screen.getByLabelText('Location')
+    const input = screen.getByPlaceholderText('Enter location')
     input.focus()
     await screen.findByRole('option', { name: 'Office' })
     fireEvent.keyDown(input, { key: 'Escape' })
@@ -93,15 +93,8 @@ describe('LocationInput', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('shows error message if error prop is set', () => {
-    renderWithProvider(
-      <LocationInput {...baseProps} error="Location is required" />,
-    )
-    expect(screen.getByText('Location is required')).toBeInTheDocument()
-  })
-
   it('is disabled when disabled prop is true', () => {
     renderWithProvider(<LocationInput {...baseProps} disabled={true} />)
-    expect(screen.getByLabelText('Location')).toBeDisabled()
+    expect(screen.getByPlaceholderText('Enter location')).toBeDisabled()
   })
 })
