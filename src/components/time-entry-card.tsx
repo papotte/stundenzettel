@@ -32,7 +32,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useTranslation } from '@/context/i18n-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
 import type { TimeEntry } from '@/lib/types'
-import { formatDuration } from '@/lib/utils'
+import { formatDuration, getLocationDisplayName } from '@/lib/utils'
 
 interface TimeEntryCardProps {
   entry: TimeEntry
@@ -60,13 +60,6 @@ export default function TimeEntryCard({
   const SpecialIcon = isSpecial
     ? SpecialIcons[entry.location as SpecialLocationKey]
     : undefined
-
-  const getLocationDisplayName = (location: string) => {
-    if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
-      return t(`special_locations.${location}`)
-    }
-    return location
-  }
 
   const calculateCompensatedSeconds = () => {
     if (typeof entry.durationMinutes === 'number') {
@@ -113,7 +106,7 @@ export default function TimeEntryCard({
             <div className="flex items-center gap-3">
               <SpecialIcon className="h-5 w-5 text-primary" />
               <p className="font-semibold">
-                {getLocationDisplayName(entry.location)}
+                {getLocationDisplayName(entry.location, t)}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -148,7 +141,7 @@ export default function TimeEntryCard({
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       {t('time_entry_card.deleteAlertDescription', {
-                        location: getLocationDisplayName(entry.location),
+                        location: getLocationDisplayName(entry.location, t),
                       })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>

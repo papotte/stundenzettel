@@ -9,8 +9,6 @@ import {
   AlertTriangle,
   Calendar as CalendarIcon,
   Lightbulb,
-  Loader2,
-  MapPin,
   Save,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -59,9 +57,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
+import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
+import {
+  suggestEndTimes,
+  suggestLocations,
+  suggestStartTimes,
+  suggestTravelTimes,
+} from '@/lib/time-entry-suggestions'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
@@ -69,9 +74,11 @@ import {
   formatAppTime,
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
+  getLocationDisplayName,
   timeStringToMinutes,
 } from '@/lib/utils'
 
+import { LocationInput } from './location-input'
 import { Calendar } from './ui/calendar'
 import { Separator } from './ui/separator'
 import { Switch } from './ui/switch'
@@ -93,9 +100,9 @@ const formSchema = z
       .optional(),
     duration: z.coerce
       .number()
-      .min(15, 'Minimum 15 minutes')
+      .min(5, 'Minimum 5 minutes')
       .max(1440, 'Maximum 24 hours')
-      .multipleOf(15, 'Must be a multiple of 15')
+      .multipleOf(5, 'Must be a multiple of 5')
       .optional(),
     pauseDuration: z
       .string()
@@ -118,9 +125,7 @@ const formSchema = z
       } else if (data.mode === 'duration') {
         if (!data.duration || Number.isNaN(data.duration)) return false
         return (
-          data.duration >= 15 &&
-          data.duration <= 1440 &&
-          data.duration % 15 === 0
+          data.duration >= 5 && data.duration <= 1440 && data.duration % 5 === 0
         )
       }
       return false
@@ -151,6 +156,7 @@ export default function TimeEntryForm({
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const isMobile = useIsMobile()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const { entries } = useTimeTrackerContext()
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
   const defaultEndTime = userSettings?.defaultEndTime || '17:00'
@@ -163,6 +169,7 @@ export default function TimeEntryForm({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
     defaultValues: {
       mode: defaultMode,
       location: entry?.location || '',
@@ -191,12 +198,46 @@ export default function TimeEntryForm({
   const endTimeValue = watch('endTime')
   const pauseDurationValue = watch('pauseDuration')
   const travelTimeValue = watch('travelTime')
+  const locationValue = watch('location')
 
   const isSpecialEntry = useMemo(() => {
     return SPECIAL_LOCATION_KEYS.includes(
       getValues('location') as SpecialLocationKey,
     )
   }, [getValues])
+
+  // Compute location suggestions as user types
+  const locationSuggestions = useMemo(() => {
+    const loc = locationValue || ''
+    if (isSpecialEntry || !loc.trim()) return []
+    return suggestLocations(entries, { filterText: loc, limit: 5 })
+  }, [entries, locationValue, isSpecialEntry])
+
+  // Smart suggestions for start, end, and travel time
+  const currentStartTime = watch('startTime')
+  const startTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestStartTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    }).filter((s) => s !== currentStartTime)
+  }, [entries, locationValue, isSpecialEntry, currentStartTime])
+  const currentEndTime = watch('endTime')
+  const endTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestEndTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    }).filter((s) => s !== currentEndTime)
+  }, [entries, locationValue, isSpecialEntry, currentEndTime])
+  const currentTravelTime = watch('travelTime')
+  const travelTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestTravelTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    }).filter((s) => s !== currentTravelTime)
+  }, [entries, locationValue, isSpecialEntry, currentTravelTime])
 
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
@@ -388,13 +429,6 @@ export default function TimeEntryForm({
     onSave(finalEntry)
   }
 
-  const locationDisplayName = useMemo(() => {
-    if (isSpecialEntry) {
-      return t(`special_locations.${entry?.location}`)
-    }
-    return entry?.location || ''
-  }, [entry, isSpecialEntry, t])
-
   // Helper to format input as HH:mm
   function formatDurationInput(value: string) {
     // Remove non-digits
@@ -411,6 +445,9 @@ export default function TimeEntryForm({
     if (mm < 0 || mm > 59) return false
     return !(hh < 0 || hh > 23)
   }
+
+  // Use the generalized getLocationDisplayName for displaying location
+  const displayLocation = getLocationDisplayName(getValues('location'), t)
 
   return (
     <>
@@ -430,59 +467,35 @@ export default function TimeEntryForm({
         <TooltipProvider>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Location field using Controller for full RHF control */}
               <FormField
                 control={form.control}
                 name="location"
-                render={({ field }) => {
-                  const displayValue = isSpecialEntry
-                    ? locationDisplayName
-                    : field.value
-                  return (
-                    <FormItem>
-                      <FormLabel>
-                        {t('time_entry_form.locationLabel')}
-                      </FormLabel>
-                      <div className="relative flex items-center">
-                        <FormControl>
-                          <Input
-                            placeholder={t(
-                              'time_entry_form.locationPlaceholder',
-                            )}
-                            {...field}
-                            value={displayValue}
-                            disabled={isSpecialEntry}
-                            className="pr-10"
-                          />
-                        </FormControl>
-                        {!isSpecialEntry && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                onClick={handleGetCurrentLocation}
-                                aria-label="Get current location"
-                                disabled={isFetchingLocation}
-                                className="absolute right-0 mr-1 h-8 w-8"
-                              >
-                                {isFetchingLocation ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <MapPin className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t('tracker.getLocationTooltip')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )
-                }}
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>{t('time_entry_form.locationLabel')}</FormLabel>
+                    <FormControl>
+                      <LocationInput
+                        {...field}
+                        suggestions={locationSuggestions}
+                        isSpecialEntry={isSpecialEntry}
+                        placeholder={t('time_entry_form.locationPlaceholder')}
+                        displayValue={displayLocation}
+                        disabled={isSpecialEntry}
+                        onGetCurrentLocation={
+                          !isSpecialEntry ? handleGetCurrentLocation : undefined
+                        }
+                        isFetchingLocation={isFetchingLocation}
+                        onBlur={() => {
+                          field.onBlur()
+                          form.trigger('location')
+                        }}
+                        onFocus={() => {}}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
               <FormField
                 control={form.control}
@@ -558,6 +571,37 @@ export default function TimeEntryForm({
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        {/* Start time suggestions */}
+                        {startTimeSuggestions.length > 0 && (
+                          <div
+                            className="flex gap-2 mt-2"
+                            data-testid="start-time-suggestions"
+                          >
+                            {startTimeSuggestions.map((s) => (
+                              <Tooltip key={s}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                    onClick={() =>
+                                      setValue('startTime', s, {
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    {s}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {t('time_entry_form.smartSuggestionTooltip')}
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -573,6 +617,34 @@ export default function TimeEntryForm({
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        {/* End time suggestions */}
+                        {endTimeSuggestions.length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {endTimeSuggestions.map((s) => (
+                              <Tooltip key={s}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                    onClick={() =>
+                                      setValue('endTime', s, {
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    {s}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {t('time_entry_form.smartSuggestionTooltip')}
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -714,6 +786,36 @@ export default function TimeEntryForm({
                               {...field}
                             />
                           </FormControl>
+                          {/* Travel time suggestions */}
+                          {travelTimeSuggestions.length > 0 && (
+                            <div className="flex gap-2 mt-2">
+                              {travelTimeSuggestions.map((s) => (
+                                <Tooltip key={s}>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                      onClick={() =>
+                                        setValue('travelTime', s, {
+                                          shouldValidate: true,
+                                        })
+                                      }
+                                    >
+                                      <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                      {s}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {t(
+                                      'time_entry_form.smartSuggestionTooltip',
+                                    )}
+                                  </TooltipContent>
+                                </Tooltip>
+                              ))}
+                            </div>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}

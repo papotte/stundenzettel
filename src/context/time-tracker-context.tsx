@@ -3,7 +3,7 @@ import React, { ReactNode, createContext, useContext } from 'react'
 import { useTimeTracker } from '@/hooks/use-time-tracker'
 import type { Toast } from '@/hooks/use-toast'
 
-interface TimeTrackerProviderProps {
+export interface TimeTrackerProviderProps {
   user: { uid: string } | null
   toast: (options: Toast) => void
   t: (key: string, params?: Record<string, string | number>) => string
