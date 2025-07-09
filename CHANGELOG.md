@@ -1,3 +1,17 @@
+# [1.2.0](https://github.com/papotte/stundenzettel/compare/v1.1.0...v1.2.0) (2025-07-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v5 ([#40](https://github.com/papotte/stundenzettel/issues/40)) ([efda36c](https://github.com/papotte/stundenzettel/commit/efda36c92b864206c994abd96a9290858f719d18))
+* **deps:** update dependency dotenv to v17 ([#45](https://github.com/papotte/stundenzettel/issues/45)) ([d8d3c71](https://github.com/papotte/stundenzettel/commit/d8d3c71b7f485c71393eb708a1971f1c5a9d94f2))
+* **deps:** update dependency react-day-picker to v9 ([#46](https://github.com/papotte/stundenzettel/issues/46)) ([283784b](https://github.com/papotte/stundenzettel/commit/283784b735782fa6675d7c5470bdc46aa4550c30))
+
+
+### Features
+
+* add default driver and display name to the settings ([#44](https://github.com/papotte/stundenzettel/issues/44)) ([8d37959](https://github.com/papotte/stundenzettel/commit/8d37959d9e7998f1120357342176eaec8f40b2db))
+
 # [1.1.0](https://github.com/papotte/stundenzettel/compare/v1.0.4...v1.1.0) (2025-07-08)
 
 
