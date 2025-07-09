@@ -171,3 +171,5 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
     )
   },
 )
+
+LocationInput.displayName = 'LocationInput'

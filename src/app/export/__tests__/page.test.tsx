@@ -1,6 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import React from 'react';
-import ExportPage from '../page';
+import React from 'react'
+
+import { TooltipProviderProps } from '@radix-ui/react-tooltip'
+import { render, screen } from '@testing-library/react'
+
+import { TimeTrackerProviderProps } from '@/context/time-tracker-context'
+import { useAuth } from '@/hooks/use-auth'
+
+import ExportPage from '../page'
 
 // Mocks
 const mockReplace = jest.fn()
@@ -10,13 +16,19 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-jest.mock('@/components/export-preview', () => () => <div data-testid="export-preview" />)
+const MockExportPreview = () => <div data-testid="export-preview" />
+MockExportPreview.displayName = 'MockExportPreview'
+jest.mock('@/components/export-preview', () => MockExportPreview)
 
 jest.mock('@/components/ui/tooltip', () => ({
-  TooltipProvider: ({ children }: any) => <div>{children}</div>,
+  TooltipProvider: ({ children }: TooltipProviderProps) => (
+    <div>{children}</div>
+  ),
 }))
 jest.mock('@/context/time-tracker-context', () => ({
-  TimeTrackerProvider: ({ children }: any) => <div data-testid="time-tracker-provider">{children}</div>,
+  TimeTrackerProvider: ({ children }: TimeTrackerProviderProps) => (
+    <div data-testid="time-tracker-provider">{children}</div>
+  ),
 }))
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: jest.fn() }),
@@ -31,22 +43,33 @@ describe('ExportPage', () => {
   })
 
   it('redirects to login if not authenticated', () => {
-    require('@/hooks/use-auth').useAuth.mockReturnValue({ user: null, loading: false })
+    ;(useAuth as jest.Mock).mockReturnValue({
+      user: null,
+      loading: false,
+    })
     render(<ExportPage />)
     expect(mockReplace).toHaveBeenCalledWith('/login')
   })
 
   it('renders nothing if loading', () => {
-    require('@/hooks/use-auth').useAuth.mockReturnValue({ user: null, loading: true })
+    ;(useAuth as jest.Mock).mockReturnValue({
+      user: null,
+      loading: true,
+    })
     const { container } = render(<ExportPage />)
     expect(container).toBeEmptyDOMElement()
   })
 
   it('renders ExportPreview and back button if authenticated', () => {
-    require('@/hooks/use-auth').useAuth.mockReturnValue({ user: { uid: '123' }, loading: false })
+    ;(useAuth as jest.Mock).mockReturnValue({
+      user: { uid: '123' },
+      loading: false,
+    })
     render(<ExportPage />)
     expect(screen.getByTestId('export-preview')).toBeInTheDocument()
     expect(screen.getByTestId('time-tracker-provider')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'export_page.backButton' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'export_page.backButton' }),
+    ).toBeInTheDocument()
   })
-}) 
+})
