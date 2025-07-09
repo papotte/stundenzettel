@@ -74,6 +74,7 @@ import {
   formatAppTime,
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
+  getLocationDisplayName,
   timeStringToMinutes,
 } from '@/lib/utils'
 
@@ -451,6 +452,9 @@ export default function TimeEntryForm({
     return !(hh < 0 || hh > 23)
   }
 
+  // Use the generalized getLocationDisplayName for displaying location
+  const displayLocation = getLocationDisplayName(getValues('location'), t)
+
   return (
     <>
       <SheetHeader className="px-6 pt-6">
@@ -482,6 +486,8 @@ export default function TimeEntryForm({
                         suggestions={locationSuggestions}
                         isSpecialEntry={isSpecialEntry}
                         placeholder={t('time_entry_form.locationPlaceholder')}
+                        displayValue={displayLocation}
+                        disabled={isSpecialEntry}
                         onGetCurrentLocation={
                           !isSpecialEntry ? handleGetCurrentLocation : undefined
                         }

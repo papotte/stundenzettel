@@ -17,6 +17,7 @@ interface LocationInputProps {
   isFetchingLocation?: boolean
   onBlur?: () => void
   onFocus?: () => void
+  displayValue?: string
 }
 
 export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
@@ -32,6 +33,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
       isFetchingLocation,
       onBlur,
       onFocus,
+      displayValue,
       ...field
     },
     ref,
@@ -45,97 +47,62 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
     }, [value])
 
     const showDropdown =
-      !isSpecialEntry && !disabled && suggestions.length > 0 && focused
+      focused && suggestions.length > 0 && !disabled && !isSpecialEntry
 
     return (
-      <div className="relative flex flex-col items-start w-full">
-        <div className="relative w-full flex items-center">
-          <Input
-            {...field}
-            ref={ref}
-            value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value)
-              onChange(e.target.value)
-              setActiveSuggestion(-1)
-            }}
-            disabled={disabled}
-            placeholder={placeholder}
-            className="pr-10"
-            onFocus={() => {
-              setFocused(true)
-              onFocus?.()
-            }}
-            onBlur={() => {
-              setTimeout(() => setFocused(false), 100)
-              onBlur?.()
-            }}
-            onKeyDown={(e) => {
-              if (!suggestions.length) return
-              if (e.key === 'ArrowDown') {
-                e.preventDefault()
-                setActiveSuggestion(
-                  (activeSuggestion) =>
-                    (activeSuggestion + 1) % suggestions.length,
-                )
-              } else if (e.key === 'ArrowUp') {
-                e.preventDefault()
-                setActiveSuggestion(
-                  (activeSuggestion) =>
-                    (activeSuggestion - 1 + suggestions.length) %
-                    suggestions.length,
-                )
-              } else if (e.key === 'Enter' || e.key === 'Tab') {
-                if (
-                  activeSuggestion >= 0 &&
-                  activeSuggestion < suggestions.length
-                ) {
-                  e.preventDefault()
-                  setInputValue(suggestions[activeSuggestion])
-                  onChange(suggestions[activeSuggestion])
-                  setActiveSuggestion(-1)
-                  setFocused(false)
-                }
-              } else if (e.key === 'Escape') {
-                setFocused(false)
-                setActiveSuggestion(-1)
-              }
-            }}
-            autoComplete="off"
-            aria-autocomplete="list"
-            aria-controls="location-suggestion-list"
-            aria-activedescendant={
-              activeSuggestion >= 0
-                ? `location-suggestion-${activeSuggestion}`
-                : undefined
-            }
-          />
-          {!isSpecialEntry && onGetCurrentLocation && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  onClick={onGetCurrentLocation}
-                  aria-label="Get current location"
-                  disabled={isFetchingLocation}
-                  className="absolute right-0 mr-1 h-8 w-8"
-                >
-                  {isFetchingLocation ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <MapPin className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Get current location</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-        {/* Custom dropdown for suggestions */}
+      <div className="relative w-full">
+        <Input
+          ref={ref}
+          type="text"
+          value={displayValue ?? inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value)
+            onChange(e.target.value)
+          }}
+          disabled={disabled}
+          placeholder={placeholder}
+          autoComplete="off"
+          aria-autocomplete="list"
+          aria-controls="location-suggestion-list"
+          aria-activedescendant={
+            activeSuggestion >= 0
+              ? `location-suggestion-${activeSuggestion}`
+              : undefined
+          }
+          onFocus={() => {
+            setFocused(true)
+            if (onFocus) onFocus()
+          }}
+          onBlur={() => {
+            setFocused(false)
+            if (onBlur) onBlur()
+          }}
+          {...field}
+        />
+        {!isSpecialEntry && onGetCurrentLocation && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={onGetCurrentLocation}
+                aria-label="Get current location"
+                disabled={isFetchingLocation}
+                className="absolute right-0 mr-1 h-8 w-8"
+              >
+                {isFetchingLocation ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Get current location</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
         {showDropdown && (
           <div
             id="location-suggestion-list"
@@ -171,5 +138,4 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
     )
   },
 )
-
 LocationInput.displayName = 'LocationInput'

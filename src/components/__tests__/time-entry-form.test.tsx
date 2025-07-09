@@ -731,3 +731,30 @@ describe('Duration-only entries', () => {
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 })
+
+describe('Special entry location field', () => {
+  it('disables the location input and shows translated label for special entries', () => {
+    const specialEntry = {
+      id: '1',
+      location: 'TIME_OFF_IN_LIEU',
+      startTime: new Date('2024-07-01T12:00:00'),
+      durationMinutes: 480,
+      pauseDuration: 0,
+      travelTime: 0,
+      isDriver: false,
+      userId: 'test-user',
+    }
+    render(
+      <TestWrapper
+        entry={specialEntry}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    expect(locationInput).toBeDisabled()
+    expect(locationInput).toHaveValue('special_locations.TIME_OFF_IN_LIEU')
+  })
+})

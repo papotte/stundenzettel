@@ -63,7 +63,7 @@ export const dictionaries = {
     // Special Locations
     special_locations: {
       SICK_LEAVE: 'Sick Leave',
-      PTO: 'PTO',
+      PTO: 'Paid Time Off',
       BANK_HOLIDAY: 'Bank Holiday',
       TIME_OFF_IN_LIEU: 'Time Off in Lieu',
     },

@@ -10,6 +10,7 @@ import {
 import { de, enUS } from 'date-fns/locale'
 import { twMerge } from 'tailwind-merge'
 
+import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from './constants'
 import type { TimeEntry } from './types'
 
 export function cn(...inputs: ClassValue[]) {
@@ -130,4 +131,14 @@ export function compareEntriesByStartTime(a: TimeEntry, b: TimeEntry) {
     return b.startTime.getTime() - a.startTime.getTime()
   }
   return 0
+}
+
+export function getLocationDisplayName(
+  location: string,
+  t: (key: string) => string,
+): string {
+  if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
+    return t(`special_locations.${location}`)
+  }
+  return location
 }
