@@ -428,12 +428,6 @@ export default function TimeEntryForm({
     }
     onSave(finalEntry)
   }
-  useMemo(() => {
-    if (isSpecialEntry) {
-      return t(`special_locations.${entry?.location}`)
-    }
-    return entry?.location || ''
-  }, [entry, isSpecialEntry, t])
 
   // Helper to format input as HH:mm
   function formatDurationInput(value: string) {
