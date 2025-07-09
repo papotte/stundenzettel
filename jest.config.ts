@@ -41,7 +41,7 @@ const config: Config = {
     '!jest.config.ts',
     '!jest.setup.ts',
   ],
-  transformIgnorePatterns: ['/node_modules/(?!(lucide-react)/)'],
+  transformIgnorePatterns: ['/node_modules/(?!(lucide-react|exceljs|uuid)/)'],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
