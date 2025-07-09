@@ -115,8 +115,10 @@ export const exportToExcel = async ({
 
   worksheet.mergeCells(titleRow.number, 1, titleRow.number, 5)
 
+  const userExportName =
+    userSettings.displayName?.trim() || user?.displayName || user?.email || ''
   const userCell = titleRow.getCell('J')
-  userCell.value = user?.displayName || user?.email
+  userCell.value = userExportName
   userCell.font = { bold: true, size: 10 }
   userCell.alignment = { horizontal: 'right' }
 
@@ -394,7 +396,7 @@ export const exportToExcel = async ({
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Stundenzettel_${user?.displayName || 'Export'}_${format(selectedMonth, 'yyyy-MM')}.xlsx`
+  a.download = `Stundenzettel_${userExportName || 'Export'}_${format(selectedMonth, 'yyyy-MM')}.xlsx`
   document.body.appendChild(a)
   a.click()
   window.URL.revokeObjectURL(url)

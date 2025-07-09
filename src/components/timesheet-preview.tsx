@@ -100,7 +100,11 @@ export default function TimesheetPreview({
             })}
           </h1>
           <div className="text-right font-semibold print:text-sm">
-            {user?.displayName || user?.email}
+            {
+              (userSettings?.displayName?.trim() ||
+                user?.displayName ||
+                user?.email) as string
+            }
           </div>
         </header>
       </div>

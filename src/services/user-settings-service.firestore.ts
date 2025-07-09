@@ -8,6 +8,8 @@ const defaultSettings: UserSettings = {
   defaultStartTime: '09:00',
   defaultEndTime: '17:00',
   language: 'en',
+  defaultIsDriver: false,
+  displayName: '', // New
   companyName: '',
   companyEmail: '',
   companyPhone1: '',

@@ -22,6 +22,8 @@ export interface UserSettings {
   defaultStartTime: string
   defaultEndTime: string
   language: 'en' | 'de'
+  defaultIsDriver?: boolean
+  displayName?: string
   companyName?: string
   companyEmail?: string
   companyPhone1?: string

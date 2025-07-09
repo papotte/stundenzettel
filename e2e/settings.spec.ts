@@ -102,4 +102,70 @@ test.describe('Settings Page', () => {
     await expect(page.getByText('0302334567')).toBeVisible()
     await expect(page.getByText('0300456789')).toBeVisible()
   })
+
+  test('should update display name and see it in the export preview', async ({
+    page,
+  }) => {
+    // Go to settings
+    await page.getByRole('link', { name: 'Einstellungen' }).click()
+    await page.waitForURL('/settings')
+    // Fill display name
+    await page.getByLabel('Anzeigename').fill('Malcolm X')
+    await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Einstellungen gespeichert',
+    )
+    // Go back to overview and then to export page
+    await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
+    await page.waitForURL('/')
+    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.waitForURL('/export')
+    // Check for display name in export preview
+    await expect(page.getByText('Malcolm X')).toBeVisible()
+  })
+
+  test('should update default driver and see it marked in the time form', async ({
+    page,
+  }) => {
+    // Go to settings
+    await page.getByRole('link', { name: 'Einstellungen' }).click()
+    await page.waitForURL('/settings')
+    // Set default driver checkbox
+    await page.getByLabel('Standardmäßig als Fahrer').click()
+    await expect(page.getByLabel('Standardmäßig als Fahrer')).toBeChecked()
+    await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Einstellungen gespeichert',
+    )
+    // Go back to overview and then to time form
+    await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
+    await page.waitForURL('/')
+    await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
+    const dialog = page.locator('div[role="dialog"]')
+    await expect(dialog).toBeVisible()
+    // Check for default driver marked in the time form
+    await expect(page.getByLabel('Fahrer')).toBeChecked()
+    // Cancel the dialog
+    await page.getByRole('button', { name: /Abbrechen|Cancel/i }).click()
+    await page.getByRole('button', { name: /Verwerfen|Discard/i }).click()
+    await expect(dialog).not.toBeVisible()
+
+    // Go back to settings and unset default driver
+    await page.getByRole('link', { name: 'Einstellungen' }).click()
+    await page.waitForURL('/settings')
+    // Unset default driver checkbox
+    await page.getByLabel('Standardmäßig als Fahrer').click()
+    await expect(page.getByLabel('Standardmäßig als Fahrer')).not.toBeChecked()
+    await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Einstellungen gespeichert',
+    )
+    // Go back to overview and then to time form
+    await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
+    await page.waitForURL('/')
+    await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
+    await expect(dialog).toBeVisible()
+    // Check for default driver marked in the time form
+    await expect(page.getByLabel('Fahrer')).not.toBeChecked()
+  })
 })
