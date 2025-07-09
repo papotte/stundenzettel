@@ -99,9 +99,9 @@ const formSchema = z
       .optional(),
     duration: z.coerce
       .number()
-      .min(15, 'Minimum 15 minutes')
+      .min(5, 'Minimum 5 minutes')
       .max(1440, 'Maximum 24 hours')
-      .multipleOf(15, 'Must be a multiple of 15')
+      .multipleOf(5, 'Must be a multiple of 5')
       .optional(),
     pauseDuration: z
       .string()
@@ -124,9 +124,7 @@ const formSchema = z
       } else if (data.mode === 'duration') {
         if (!data.duration || Number.isNaN(data.duration)) return false
         return (
-          data.duration >= 15 &&
-          data.duration <= 1440 &&
-          data.duration % 15 === 0
+          data.duration >= 5 && data.duration <= 1440 && data.duration % 5 === 0
         )
       }
       return false
@@ -170,6 +168,7 @@ export default function TimeEntryForm({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
     defaultValues: {
       mode: defaultMode,
       location: entry?.location || '',
@@ -574,7 +573,10 @@ export default function TimeEntryForm({
                         </FormControl>
                         {/* Start time suggestions */}
                         {startTimeSuggestions.length > 0 && (
-                          <div className="flex gap-2 mt-2" data-testid="start-time-suggestions">
+                          <div
+                            className="flex gap-2 mt-2"
+                            data-testid="start-time-suggestions"
+                          >
                             {startTimeSuggestions.map((s) => (
                               <Tooltip key={s}>
                                 <TooltipTrigger asChild>
@@ -806,7 +808,9 @@ export default function TimeEntryForm({
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    {t('time_entry_form.smartSuggestionTooltip')}
+                                    {t(
+                                      'time_entry_form.smartSuggestionTooltip',
+                                    )}
                                   </TooltipContent>
                                 </Tooltip>
                               ))}

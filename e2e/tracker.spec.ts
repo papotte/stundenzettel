@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { addDurationEntry, addManualEntry } from './test-helpers'
+import { addManualEntry } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---
@@ -301,22 +301,6 @@ test.describe('Core Tracker Functionality', () => {
       // Should show a validation error (if enforced by your app)
       await expect(form.getByText(/Warnung/i)).toBeVisible()
       await form.getByRole('button', { name: 'Eintrag speichern' }).click()
-    })
-
-    test('should add, display, and delete a duration-only entry', async ({
-      page,
-    }) => {
-      const location = 'Duration Only E2E'
-      const duration = 90 // 1h 30m
-      await addDurationEntry(page, location, duration)
-      const entryCard = page.locator(`[data-location="${location}"]`)
-      await expect(entryCard).toBeVisible()
-      await expect(entryCard.getByText(/Dauer: 90 min/)).toBeVisible()
-      await expect(entryCard.getByText('01:30:00')).toBeVisible()
-      // Delete
-      await entryCard.getByRole('button', { name: 'Löschen' }).click()
-      await page.getByRole('button', { name: 'Löschen', exact: true }).click()
-      await expect(entryCard).not.toBeVisible()
     })
   })
 

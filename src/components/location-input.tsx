@@ -1,4 +1,4 @@
-import React, { useState, forwardRef } from 'react'
+import React, { forwardRef, useState } from 'react'
 
 import { Loader2, MapPin } from 'lucide-react'
 
@@ -34,7 +34,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
       onFocus,
       ...field
     },
-    ref
+    ref,
   ) => {
     const [inputValue, setInputValue] = useState(value)
     const [focused, setFocused] = useState(false)
@@ -169,5 +169,5 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
         )}
       </div>
     )
-  }
+  },
 )

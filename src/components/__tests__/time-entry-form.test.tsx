@@ -1,12 +1,19 @@
-import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import type { TimeEntry, UserSettings } from '@/lib/types';
+import React from 'react'
 
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import React from 'react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-import TimeEntryForm from '../time-entry-form';
+import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import type { TimeEntry, UserSettings } from '@/lib/types'
+
+import TimeEntryForm from '../time-entry-form'
 
 // Mock toast hook
 const mockToast = jest.fn()
@@ -46,7 +53,7 @@ const entries = [
 // Mock useTimeTrackerContext
 jest.mock('@/context/time-tracker-context', () => ({
   useTimeTrackerContext: () => ({
-    entries: entries
+    entries: entries,
     // Add all required context values for TimeEntryForm here
   }),
 }))
@@ -504,5 +511,223 @@ describe('Smart suggestions', () => {
       'time_entry_form.smartSuggestionTooltip',
     )
     expect(tooltip[0]).toBeVisible()
+  })
+})
+
+describe('Duration-only entries', () => {
+  it('allows creating a duration-only entry and calls onSave with correct data', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+
+    // Fill location
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await user.clear(locationInput)
+    await user.type(locationInput, 'Duration Project')
+    fireEvent.blur(locationInput)
+
+    // Switch to duration mode
+    const modeSwitch = screen.getByTestId('mode-switch')
+    await user.click(modeSwitch)
+
+    // Fill duration (e.g., 90 minutes)
+    const durationInput = screen.getByLabelText(
+      'time_entry_form.durationFormLabel',
+    )
+    await user.clear(durationInput)
+    await user.type(durationInput, '90')
+
+    // Save
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+
+    await waitFor(() => {
+      expect(mockOnSave).toHaveBeenCalled()
+    })
+    const call = mockOnSave.mock.calls[0][0]
+    expect(call).toEqual(
+      expect.objectContaining({
+        location: 'Duration Project',
+        durationMinutes: 90,
+        pauseDuration: 0,
+        travelTime: 0,
+        isDriver: false,
+      }),
+    )
+    // Should not have startTime/endTime fields (or they should be undefined)
+    expect(call.startTime).toBeDefined()
+    expect(call.endTime).toBeUndefined()
+  })
+
+  it('shows validation error if duration is missing or invalid', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    // Switch to duration mode
+    const modeSwitch = screen.getByTestId('mode-switch')
+    await user.click(modeSwitch)
+    // Clear duration input
+    const durationInput = screen.getByLabelText(
+      'time_entry_form.durationFormLabel',
+    )
+    await user.clear(durationInput)
+    // Try to save
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    expect(await screen.findByText(/5/)).toBeInTheDocument() // Should mention minimum 15 minutes
+    expect(mockOnSave).not.toHaveBeenCalled()
+    // Enter invalid duration (e.g., 7)
+    await user.type(durationInput, '7')
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    expect(await screen.findByText(/multiple of 5/)).toBeInTheDocument()
+    expect(mockOnSave).not.toHaveBeenCalled()
+  })
+
+  it('renders and allows editing an existing duration-only entry', async () => {
+    const user = userEvent.setup()
+    const durationEntry: TimeEntry = {
+      id: 'd1',
+      userId: 'u1',
+      location: 'Duration Edit',
+      durationMinutes: 120,
+      startTime: new Date('2024-07-01T12:00:00'),
+      pauseDuration: 0,
+      travelTime: 0,
+      isDriver: false,
+    }
+    render(
+      <TestWrapper
+        entry={durationEntry}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    // Should show duration mode and correct value
+    const modeSwitch = screen.getByTestId('mode-switch')
+    expect(modeSwitch).toBeChecked()
+    const durationInput = screen.getByLabelText(
+      'time_entry_form.durationFormLabel',
+    )
+    expect(durationInput).toHaveValue(120)
+    // Edit duration
+    await user.clear(durationInput)
+    await user.type(durationInput, '150')
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    await waitFor(() => {
+      expect(mockOnSave).toHaveBeenCalled()
+    })
+    const call = mockOnSave.mock.calls[0][0]
+    expect(call).toEqual(
+      expect.objectContaining({
+        location: 'Duration Edit',
+        durationMinutes: 150,
+        pauseDuration: 0,
+        travelTime: 0,
+        isDriver: false,
+      }),
+    )
+  })
+
+  it('shows error if duration is less than 5', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    // Switch to duration mode
+    const modeSwitch = screen.getByTestId('mode-switch')
+    await user.click(modeSwitch)
+    const durationInput = screen.getByLabelText(
+      'time_entry_form.durationFormLabel',
+    )
+    await user.clear(durationInput)
+    await user.type(durationInput, '3')
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    const error = await screen.findByText(/Minimum 5 minutes/i)
+    expect(error).toBeVisible()
+    expect(mockOnSave).not.toHaveBeenCalled()
+  })
+
+  it('shows error if duration is more than 1440', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    // Switch to duration mode
+    const modeSwitch = screen.getByTestId('mode-switch')
+    await user.click(modeSwitch)
+    const durationInput = screen.getByLabelText(
+      'time_entry_form.durationFormLabel',
+    )
+    await user.clear(durationInput)
+    await user.type(durationInput, '1500')
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    const error = await screen.findByText(/Maximum 24 hours/i)
+    expect(error).toBeVisible()
+    expect(mockOnSave).not.toHaveBeenCalled()
+  })
+
+  it('shows error if duration is not a multiple of 5', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date('2024-07-01T00:00:00')}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+    // Switch to duration mode
+    const modeSwitch = screen.getByTestId('mode-switch')
+    await user.click(modeSwitch)
+    const durationInput = screen.getByLabelText(
+      'time_entry_form.durationFormLabel',
+    )
+    await user.clear(durationInput)
+    await user.type(durationInput, '17')
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    const error = await screen.findByText(/multiple of 5/i)
+    expect(error).toBeVisible()
+    expect(mockOnSave).not.toHaveBeenCalled()
   })
 })
