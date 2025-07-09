@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
@@ -24,6 +24,7 @@ const mockedReverseGeocode = reverseGeocode as jest.Mock
 // Mock useTimeTrackerContext
 jest.mock('@/context/time-tracker-context', () => ({
   useTimeTrackerContext: () => ({
+    entries: [], // <-- add this line
     // Add all required context values for TimeEntryForm here
   }),
 }))
@@ -143,10 +144,10 @@ describe('TimeEntryForm', () => {
       />,
     )
 
-    await user.type(
-      screen.getByLabelText('time_entry_form.locationLabel'),
-      'New Location',
-    )
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    expect(locationInput).toBeInTheDocument()
+    await user.type(locationInput, 'New Location')
+    fireEvent.blur(locationInput)
     await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
     await user.type(
       screen.getByLabelText('time_entry_form.startTimeLabel'),

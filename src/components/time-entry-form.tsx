@@ -9,8 +9,6 @@ import {
   AlertTriangle,
   Calendar as CalendarIcon,
   Lightbulb,
-  Loader2,
-  MapPin,
   Save,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -59,9 +57,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
+import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
+import { suggestLocations } from '@/lib/time-entry-suggestions'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
@@ -72,6 +72,7 @@ import {
   timeStringToMinutes,
 } from '@/lib/utils'
 
+import { LocationInput } from './location-input'
 import { Calendar } from './ui/calendar'
 import { Separator } from './ui/separator'
 import { Switch } from './ui/switch'
@@ -151,6 +152,7 @@ export default function TimeEntryForm({
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const isMobile = useIsMobile()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const { entries } = useTimeTrackerContext()
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
   const defaultEndTime = userSettings?.defaultEndTime || '17:00'
@@ -197,6 +199,13 @@ export default function TimeEntryForm({
       getValues('location') as SpecialLocationKey,
     )
   }, [getValues])
+
+  // Compute location suggestions as user types
+  const locationSuggestions = useMemo(() => {
+    const loc = form.getValues('location') || ''
+    if (isSpecialEntry || !loc.trim()) return []
+    return suggestLocations(entries, { filterText: loc, limit: 5 })
+  }, [entries, form, isSpecialEntry])
 
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
@@ -387,13 +396,12 @@ export default function TimeEntryForm({
     }
     onSave(finalEntry)
   }
-
-  const locationDisplayName = useMemo(() => {
+  useMemo(() => {
     if (isSpecialEntry) {
       return t(`special_locations.${entry?.location}`)
     }
     return entry?.location || ''
-  }, [entry, isSpecialEntry, t])
+  }, [entry, isSpecialEntry, t]);
 
   // Helper to format input as HH:mm
   function formatDurationInput(value: string) {
@@ -430,59 +438,25 @@ export default function TimeEntryForm({
         <TooltipProvider>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => {
-                  const displayValue = isSpecialEntry
-                    ? locationDisplayName
-                    : field.value
-                  return (
-                    <FormItem>
-                      <FormLabel>
-                        {t('time_entry_form.locationLabel')}
-                      </FormLabel>
-                      <div className="relative flex items-center">
-                        <FormControl>
-                          <Input
-                            placeholder={t(
-                              'time_entry_form.locationPlaceholder',
-                            )}
-                            {...field}
-                            value={displayValue}
-                            disabled={isSpecialEntry}
-                            className="pr-10"
-                          />
-                        </FormControl>
-                        {!isSpecialEntry && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                type="button"
-                                onClick={handleGetCurrentLocation}
-                                aria-label="Get current location"
-                                disabled={isFetchingLocation}
-                                className="absolute right-0 mr-1 h-8 w-8"
-                              >
-                                {isFetchingLocation ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <MapPin className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{t('tracker.getLocationTooltip')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )
+              <LocationInput
+                value={form.getValues('location')}
+                onChange={(val) => {
+                  form.setValue('location', val, { shouldValidate: true })
                 }}
+                disabled={isSpecialEntry}
+                suggestions={locationSuggestions}
+                isSpecialEntry={isSpecialEntry}
+                label={t('time_entry_form.locationLabel')}
+                placeholder={t('time_entry_form.locationPlaceholder')}
+                onGetCurrentLocation={
+                  !isSpecialEntry ? handleGetCurrentLocation : undefined
+                }
+                isFetchingLocation={isFetchingLocation}
+                error={
+                  form.formState.errors.location?.message as string | undefined
+                }
+                onBlur={() => form.trigger('location')}
+                onFocus={() => {}}
               />
               <FormField
                 control={form.control}
