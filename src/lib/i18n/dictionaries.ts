@@ -177,6 +177,9 @@ export const dictionaries = {
       defaultStartTimeLabel: 'Default start time',
       defaultEndTimeLabel: 'Default end time',
       timeUsageDescription: 'Used for new time entries.',
+      defaultIsDriverLabel: 'Default to main driver',
+      defaultIsDriverDescription:
+        'If enabled, new entries will have "main driver" checked by default.',
       languageLabel: 'Language',
       languageEnglish: 'English',
       languageGerman: 'German',
@@ -196,6 +199,10 @@ export const dictionaries = {
       savedDescription: 'Your new settings have been applied.',
       errorSavingTitle: 'Error',
       errorSavingDescription: 'Could not save your settings.',
+      displayNameLabel: 'Display Name',
+      displayNameDescription:
+        'This name will appear on your export preview and Excel file. Leave blank to use your account name.',
+      displayNamePlaceholder: 'e.g. John Doe',
     },
     // Export Page
     export_page: {
@@ -429,6 +436,9 @@ export const dictionaries = {
       defaultStartTimeLabel: 'Standard-Startzeit',
       defaultEndTimeLabel: 'Standard-Endzeit',
       timeUsageDescription: 'Wird für neue Zeiteinträge verwendet.',
+      defaultIsDriverLabel: 'Standardmäßig als Fahrer',
+      defaultIsDriverDescription:
+        'Wenn aktiviert, ist "Fahrer" bei neuen Einträgen standardmäßig ausgewählt.',
       languageLabel: 'Sprache',
       languageEnglish: 'Englisch',
       languageGerman: 'Deutsch',
@@ -450,6 +460,10 @@ export const dictionaries = {
       errorSavingTitle: 'Fehler',
       errorSavingDescription:
         'Ihre Einstellungen konnten nicht gespeichert werden.',
+      displayNameLabel: 'Anzeigename',
+      displayNameDescription:
+        'Dieser Name erscheint in der Export-Vorschau und in der Excel-Datei. Leer lassen, um den Kontonamen zu verwenden.',
+      displayNamePlaceholder: 'z.B. Max Mustermann',
     },
     // Export Page
     export_page: {

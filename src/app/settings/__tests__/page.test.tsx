@@ -63,12 +63,22 @@ const mockSettings: UserSettings = {
   companyPhone1: '12345',
   companyPhone2: '67890',
   companyFax: '54321',
+  defaultIsDriver: true,
+  displayName: 'Export User',
 }
+
+let currentSettings: UserSettings
 
 beforeEach(() => {
   jest.clearAllMocks()
-  mockedGetUserSettings.mockResolvedValue(mockSettings)
-  mockedSetUserSettings.mockResolvedValue(undefined)
+  currentSettings = { ...mockSettings }
+  mockedGetUserSettings.mockImplementation(() =>
+    Promise.resolve(currentSettings),
+  )
+  mockedSetUserSettings.mockImplementation((uid, newSettings) => {
+    currentSettings = { ...currentSettings, ...newSettings }
+    return Promise.resolve()
+  })
 })
 
 describe('SettingsPage', () => {
@@ -77,6 +87,7 @@ describe('SettingsPage', () => {
     expect(await screen.findByDisplayValue('7.5')).toBeInTheDocument()
     expect(screen.getByDisplayValue('08:30')).toBeInTheDocument()
     expect(screen.getByDisplayValue('16:30')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Export User')).toBeInTheDocument()
     expect(screen.getByRole('combobox')).toHaveTextContent(
       'settings.languageGerman',
     )
@@ -85,6 +96,57 @@ describe('SettingsPage', () => {
     expect(screen.getByDisplayValue('12345')).toBeInTheDocument()
     expect(screen.getByDisplayValue('67890')).toBeInTheDocument()
     expect(screen.getByDisplayValue('54321')).toBeInTheDocument()
+    expect(screen.getByLabelText('settings.defaultIsDriverLabel')).toBeChecked()
+  })
+
+  it('allows user to change displayName and save', async () => {
+    const user = userEvent.setup()
+    render(<SettingsPage />)
+    await waitFor(() =>
+      expect(screen.getByDisplayValue('Export User')).toBeInTheDocument(),
+    )
+    const displayNameInput = screen.getByLabelText('settings.displayNameLabel')
+    await user.clear(displayNameInput)
+    await user.type(displayNameInput, 'New Export Name')
+    await user.tab()
+    await waitFor(() => {
+      expect(displayNameInput).toHaveValue('New Export Name')
+    })
+    await userEvent.click(
+      screen.getByRole('button', { name: 'settings.saveButton' }),
+    )
+    // Wait for toast to appear
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'settings.savedTitle',
+        description: 'settings.savedDescription',
+      })
+    })
+
+    await waitFor(() => {
+      expect(mockedSetUserSettings).toHaveBeenCalledTimes(1)
+      expect(mockedSetUserSettings).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ displayName: 'New Export Name' }),
+      )
+    })
+  })
+
+  it('allows user to clear displayName (blank fallback)', async () => {
+    render(<SettingsPage />)
+    await waitFor(() =>
+      expect(screen.getByDisplayValue('Export User')).toBeInTheDocument(),
+    )
+    const displayNameInput = screen.getByLabelText('settings.displayNameLabel')
+    await userEvent.clear(displayNameInput)
+    await userEvent.tab()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'settings.saveButton' }),
+    )
+    expect(mockedSetUserSettings).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ displayName: '' }),
+    )
   })
 
   it('allows user to change settings and save', async () => {
@@ -110,6 +172,13 @@ describe('SettingsPage', () => {
     const listbox = await screen.findByRole('listbox')
     await userEvent.click(within(listbox).getByText('settings.languageEnglish'))
     await userEvent.tab()
+
+    const driverCheckbox = screen.getByLabelText(
+      'settings.defaultIsDriverLabel',
+    )
+    expect(driverCheckbox).toBeChecked()
+    await userEvent.click(driverCheckbox)
+    await waitFor(() => expect(driverCheckbox).not.toBeChecked())
 
     await userEvent.click(
       screen.getByRole('button', { name: 'settings.saveButton' }),

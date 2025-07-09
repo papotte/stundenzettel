@@ -7,12 +7,15 @@ const userSettings: { [userId: string]: Partial<UserSettings> } = {
     defaultEndTime: '17:00',
     language: 'de',
     companyName: 'Acme Inc.',
+    defaultIsDriver: false,
   },
   'mock-user-2': {
     defaultWorkHours: 7.5,
     defaultStartTime: '08:30',
     defaultEndTime: '16:30',
     language: 'en',
+    defaultIsDriver: false,
+    displayName: 'Max Mustermann',
   },
 }
 
@@ -21,6 +24,8 @@ const defaultSettings: UserSettings = {
   defaultStartTime: '09:00',
   defaultEndTime: '17:00',
   language: 'en',
+  defaultIsDriver: false,
+  displayName: '',
   companyName: '',
   companyEmail: '',
   companyPhone1: '',

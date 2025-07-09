@@ -178,7 +178,10 @@ export default function TimeEntryForm({
       duration: defaultDuration,
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
       travelTime: entry?.travelTime || 0,
-      isDriver: entry?.isDriver || false,
+      isDriver:
+        entry?.isDriver !== undefined
+          ? entry.isDriver
+          : (userSettings?.defaultIsDriver ?? false),
     },
   })
 

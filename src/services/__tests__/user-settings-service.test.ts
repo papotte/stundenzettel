@@ -13,6 +13,8 @@ describe('User Settings Service (Local Implementation)', () => {
     defaultStartTime: '09:00',
     defaultEndTime: '17:00',
     language: 'en',
+    defaultIsDriver: false,
+    displayName: '',
     companyName: '',
     companyEmail: '',
     companyPhone1: '',
@@ -22,10 +24,11 @@ describe('User Settings Service (Local Implementation)', () => {
 
   it('should get custom settings for a pre-configured user', async () => {
     const settings = await getUserSettings(existingUserIdWithCustomSettings)
-
     expect(settings.language).toBe('de')
     expect(settings.companyName).toBe('Acme Inc.')
     expect(settings.defaultWorkHours).toBe(7)
+    expect(settings.displayName).toBe('')
+    expect(settings.defaultIsDriver).toBe(false)
   })
 
   it('should return default settings for a new user', async () => {
@@ -38,19 +41,24 @@ describe('User Settings Service (Local Implementation)', () => {
       language: 'en',
       defaultWorkHours: 8.5,
       companyName: 'Test Corp Inc.',
+      defaultIsDriver: true,
+      displayName: 'Export Name',
     }
-
-    // Cast to UserSettings as the service expects the full object, even though we test partial update logic
     await setUserSettings(newUserId, settingsToSet as UserSettings)
-
     const updatedSettings = await getUserSettings(newUserId)
-
-    // Check that the new settings were applied and merged with defaults
     expect(updatedSettings.language).toBe('en')
     expect(updatedSettings.defaultWorkHours).toBe(8.5)
     expect(updatedSettings.companyName).toBe('Test Corp Inc.')
     expect(updatedSettings.defaultStartTime).toBe(
       defaultSettings.defaultStartTime,
-    ) // Check a default value is still there
+    )
+    expect(updatedSettings.defaultIsDriver).toBe(true)
+    expect(updatedSettings.displayName).toBe('Export Name')
+  })
+
+  it('should allow clearing displayName (blank fallback)', async () => {
+    await setUserSettings(newUserId, { displayName: '' } as UserSettings)
+    const updatedSettings = await getUserSettings(newUserId)
+    expect(updatedSettings.displayName).toBe('')
   })
 })

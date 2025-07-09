@@ -58,6 +58,8 @@ const settingsFormSchema = z.object({
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
   language: z.enum(['en', 'de']),
+  defaultIsDriver: z.boolean().optional(),
+  displayName: z.string().optional(), // New
   companyName: z.string().optional(),
   companyEmail: z.string().email().optional().or(z.literal('')),
   companyPhone1: z.string().optional(),
@@ -83,6 +85,8 @@ export default function SettingsPage() {
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
       language: language,
+      defaultIsDriver: false,
+      displayName: '', // New
       companyName: '',
       companyEmail: '',
       companyPhone1: '',
@@ -116,7 +120,8 @@ export default function SettingsPage() {
       }
       fetchSettings()
     }
-  }, [user, form, toast, t])
+    // Only depend on user and form.reset to avoid unnecessary resets
+  }, [user, form.reset])
 
   const onSubmit = async (data: SettingsFormValues) => {
     if (!user) return
@@ -210,6 +215,52 @@ export default function SettingsPage() {
                       </p>
                     </FormItem>
                   )}
+                />
+                <FormField
+                  control={form.control}
+                  name="defaultIsDriver"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-4 mb-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          id="defaultIsDriver"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel htmlFor="defaultIsDriver">
+                          {t('settings.defaultIsDriverLabel')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t('settings.defaultIsDriverDescription')}
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="displayName"
+                  render={({ field }) => {
+                    console.log('Field props:', field)
+                    return (
+                      <FormItem>
+                        <FormLabel>{t('settings.displayNameLabel')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t('settings.displayNamePlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t('settings.displayNameDescription')}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
                 />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
