@@ -61,7 +61,12 @@ import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
-import { suggestLocations } from '@/lib/time-entry-suggestions'
+import {
+  suggestEndTimes,
+  suggestLocations,
+  suggestStartTimes,
+  suggestTravelTimes,
+} from '@/lib/time-entry-suggestions'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
@@ -193,6 +198,7 @@ export default function TimeEntryForm({
   const endTimeValue = watch('endTime')
   const pauseDurationValue = watch('pauseDuration')
   const travelTimeValue = watch('travelTime')
+  const locationValue = watch('location')
 
   const isSpecialEntry = useMemo(() => {
     return SPECIAL_LOCATION_KEYS.includes(
@@ -202,10 +208,36 @@ export default function TimeEntryForm({
 
   // Compute location suggestions as user types
   const locationSuggestions = useMemo(() => {
-    const loc = form.getValues('location') || ''
+    const loc = locationValue || ''
     if (isSpecialEntry || !loc.trim()) return []
     return suggestLocations(entries, { filterText: loc, limit: 5 })
-  }, [entries, form, isSpecialEntry])
+  }, [entries, locationValue, isSpecialEntry])
+
+  // Smart suggestions for start, end, and travel time
+  const currentStartTime = watch('startTime')
+  const startTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestStartTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    }).filter((s) => s !== currentStartTime)
+  }, [entries, locationValue, isSpecialEntry, currentStartTime])
+  const currentEndTime = watch('endTime')
+  const endTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestEndTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    }).filter((s) => s !== currentEndTime)
+  }, [entries, locationValue, isSpecialEntry, currentEndTime])
+  const currentTravelTime = watch('travelTime')
+  const travelTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestTravelTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    }).filter((s) => s !== currentTravelTime)
+  }, [entries, locationValue, isSpecialEntry, currentTravelTime])
 
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
@@ -401,7 +433,7 @@ export default function TimeEntryForm({
       return t(`special_locations.${entry?.location}`)
     }
     return entry?.location || ''
-  }, [entry, isSpecialEntry, t]);
+  }, [entry, isSpecialEntry, t])
 
   // Helper to format input as HH:mm
   function formatDurationInput(value: string) {
@@ -532,6 +564,34 @@ export default function TimeEntryForm({
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        {/* Start time suggestions */}
+                        {startTimeSuggestions.length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {startTimeSuggestions.map((s) => (
+                              <Tooltip key={s}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                    onClick={() =>
+                                      setValue('startTime', s, {
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    {s}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Based on previous entries for this location.
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -547,6 +607,34 @@ export default function TimeEntryForm({
                         <FormControl>
                           <Input type="time" {...field} />
                         </FormControl>
+                        {/* End time suggestions */}
+                        {endTimeSuggestions.length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {endTimeSuggestions.map((s) => (
+                              <Tooltip key={s}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                    onClick={() =>
+                                      setValue('endTime', s, {
+                                        shouldValidate: true,
+                                      })
+                                    }
+                                  >
+                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    {s}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Based on previous entries for this location.
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -688,6 +776,34 @@ export default function TimeEntryForm({
                               {...field}
                             />
                           </FormControl>
+                          {/* Travel time suggestions */}
+                          {travelTimeSuggestions.length > 0 && (
+                            <div className="flex gap-2 mt-2">
+                              {travelTimeSuggestions.map((s) => (
+                                <Tooltip key={s}>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                      onClick={() =>
+                                        setValue('travelTime', s, {
+                                          shouldValidate: true,
+                                        })
+                                      }
+                                    >
+                                      <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                      {s}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    Based on previous entries for this location.
+                                  </TooltipContent>
+                                </Tooltip>
+                              ))}
+                            </div>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
