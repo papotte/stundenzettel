@@ -1,3 +1,17 @@
+# [1.3.0](https://github.com/papotte/stundenzettel/compare/v1.2.0...v1.3.0) (2025-07-10)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#48](https://github.com/papotte/stundenzettel/issues/48)) ([f791c40](https://github.com/papotte/stundenzettel/commit/f791c4080290c4c48c15280ac7ac1bd7de5563fe))
+* **deps:** update dependency date-fns to v4 ([#43](https://github.com/papotte/stundenzettel/issues/43)) ([e4ae7e5](https://github.com/papotte/stundenzettel/commit/e4ae7e58eec9b550a4cce7946ea8077fbc23aff2))
+* remove unused library ([a0ecbc5](https://github.com/papotte/stundenzettel/commit/a0ecbc5da9e135d84495de109bbd36e094a400b9))
+
+
+### Features
+
+* add smart suggestions to time entry form ([#47](https://github.com/papotte/stundenzettel/issues/47)) ([ae74835](https://github.com/papotte/stundenzettel/commit/ae74835e221ddaeb25e871a46bf3376c71522860))
+
 # [1.2.0](https://github.com/papotte/stundenzettel/compare/v1.1.0...v1.2.0) (2025-07-09)
 
 
