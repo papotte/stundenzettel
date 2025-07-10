@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/papotte/stundenzettel/compare/v1.3.0...v1.3.1) (2025-07-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency zod to v4 ([#50](https://github.com/papotte/stundenzettel/issues/50)) ([08fbeee](https://github.com/papotte/stundenzettel/commit/08fbeee97ee16a2bd299da2667bee9b6408a1100))
+
 # [1.3.0](https://github.com/papotte/stundenzettel/compare/v1.2.0...v1.3.0) (2025-07-10)
 
 
