@@ -146,8 +146,8 @@ test.describe('Settings Page', () => {
     // Check for default driver marked in the time form
     await expect(page.getByLabel('Fahrer')).toBeChecked()
     // Cancel the dialog
-    await page.getByRole('button', { name: /Abbrechen|Cancel/i }).click()
-    await page.getByRole('button', { name: /Verwerfen|Discard/i }).click()
+    await page.getByTestId('sheet-close-button').click()
+
     await expect(dialog).not.toBeVisible()
 
     // Go back to settings and unset default driver
