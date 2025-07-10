@@ -244,7 +244,6 @@ export default function SettingsPage() {
                   control={form.control}
                   name="displayName"
                   render={({ field }) => {
-                    console.log('Field props:', field)
                     return (
                       <FormItem>
                         <FormLabel>{t('settings.displayNameLabel')}</FormLabel>

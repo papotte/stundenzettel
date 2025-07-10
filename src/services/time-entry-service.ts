@@ -10,7 +10,7 @@ const useMockService =
 const service = useMockService ? localService : firestoreService
 
 if (useMockService) {
-  console.log(
+  console.info(
     `Using local time entry service (NEXT_PUBLIC_ENVIRONMENT=${process.env.NEXT_PUBLIC_ENVIRONMENT}).`,
   )
 }
