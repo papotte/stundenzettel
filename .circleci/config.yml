@@ -1,11 +1,8 @@
-# This config was automatically generated from your source code
-# Stacks detected: cicd:github-actions:.github/workflows,deps:node:.,test:jest:
 version: 2.1
 orbs:
   node: circleci/node@5
 jobs:
   lint-format-node:
-    # Lint node project
     executor: node/default
     steps:
       - checkout
@@ -18,7 +15,6 @@ jobs:
           name: Check formatting
           command: npm run format:check
   test-node:
-    # Install node dependencies and run tests
     executor: node/default
     environment:
       JEST_JUNIT_OUTPUT_DIR: ./test-results/
@@ -34,7 +30,6 @@ jobs:
       - store_test_results:
           path: ./test-results/
   build-node:
-    # Build node project
     executor: node/default
     steps:
       - checkout
@@ -45,7 +40,6 @@ jobs:
       - run:
           name: Create the ~/artifacts directory if it doesn't exist
           command: mkdir -p ~/artifacts
-      # Copy output to artifacts dir
       - run:
           name: Copy artifacts
           command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
@@ -53,7 +47,6 @@ jobs:
           path: ~/artifacts
           destination: node-build
   test-node-e2e:
-    # Run end-to-end tests for node project
     executor: node/default
     steps:
       - checkout
@@ -68,11 +61,9 @@ jobs:
           env:
             NEXT_PUBLIC_ENVIRONMENT: test
   deploy:
-    # This is an example deploy job, not actually used by the workflow
     docker:
       - image: cimg/base:stable
     steps:
-      # Replace this with steps to deploy to users
       - run:
           name: deploy
           command: '#e.g. ./deploy.sh'
@@ -87,7 +78,4 @@ workflows:
       - build-node:
           requires:
             - test-node
-      - test-node-e2e:
-    # - deploy:
-    #     requires:
-    #       - build-node
+      - test-node-e2e
