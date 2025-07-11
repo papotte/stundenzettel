@@ -1,3 +1,11 @@
+## [1.3.2](https://github.com/papotte/stundenzettel/compare/v1.3.1...v1.3.2) (2025-07-11)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#54](https://github.com/papotte/stundenzettel/issues/54)) ([1d22b4b](https://github.com/papotte/stundenzettel/commit/1d22b4be81fb836ff97a0f14a9837a40291e8c29))
+* **deps:** update react dependencies to v19 (major) ([#51](https://github.com/papotte/stundenzettel/issues/51)) ([cf5b128](https://github.com/papotte/stundenzettel/commit/cf5b1283b4f983b6087f08e59ef97015b8fdea76))
+
 ## [1.3.1](https://github.com/papotte/stundenzettel/compare/v1.3.0...v1.3.1) (2025-07-10)
 
 
