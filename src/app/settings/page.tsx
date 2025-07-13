@@ -185,7 +185,7 @@ export default function SettingsPage() {
           variant="outline"
           className="mb-8 hidden md:inline-flex"
         >
-          <Link href="/">
+          <Link href="/tracker">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('settings.backButton')}
           </Link>

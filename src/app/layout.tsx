@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { Lora, PT_Sans } from 'next/font/google'
 
-import BottomNav from '@/components/ui/bottom-nav'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { I18nProvider } from '@/context/i18n-context'
 
 import './globals.css'
+import AppLayout from './(app)/layout'
+import LandingLayout from './(landing)/layout'
 
 const lora = Lora({
   subsets: ['latin'],
@@ -51,11 +52,8 @@ export default function RootLayout({
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
         <AuthProvider>
-          <I18nProvider>
-            {children}
-            <BottomNav />
-            <Toaster />
-          </I18nProvider>
+          <I18nProvider>{children}</I18nProvider>
+          <Toaster />
         </AuthProvider>
       </body>
     </html>

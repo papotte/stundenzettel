@@ -40,7 +40,7 @@ export default function ExportPage() {
               variant="outline"
               className="mb-4 hidden md:inline-flex print:hidden"
             >
-              <Link href="/">
+              <Link href="/tracker">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t('export_page.backButton')}
               </Link>

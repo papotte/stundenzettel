@@ -8,7 +8,7 @@ import { useTranslation } from '@/context/i18n-context'
 
 const navItems = [
   {
-    href: '/',
+    href: '/tracker',
     icon: Home,
     labelKey: 'bottomNav.home',
     labelDefault: 'Home',
@@ -30,6 +30,11 @@ const navItems = [
 export default function BottomNav() {
   const pathname = usePathname()
   const { t } = useTranslation()
+
+  // Don't render bottom nav on landing pages
+  if (['/', '/pricing', '/features'].includes(pathname)) {
+    return null
+  }
 
   return (
     <nav
