@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/papotte/stundenzettel/compare/v1.3.2...v1.3.3) (2025-07-14)
+
+
+### Bug Fixes
+
+* bump node version for idx ([0f14c84](https://github.com/papotte/stundenzettel/commit/0f14c84a41b6bb0e57bc33e77e69cb2dfa826a43))
+
 ## [1.3.2](https://github.com/papotte/stundenzettel/compare/v1.3.1...v1.3.2) (2025-07-11)
 
 
