@@ -17,7 +17,10 @@ type Language = keyof typeof dictionaries
 
 interface I18nContextType {
   language: Language
-  t: (key: string, replacements?: Record<string, string | number>) => string
+  t: <T = string>(
+    key: string,
+    replacements?: Record<string, string | number>,
+  ) => T
   setLanguageState: (lang: Language) => void
   loading: boolean
 }
@@ -45,8 +48,8 @@ const LoadingIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const I18nContext = createContext<I18nContextType | null>(null)
 
-const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
-  const value = key
+const getNestedValue = (obj: Record<string, unknown>, key: string): any => {
+  return key
     .split('.')
     .reduce<unknown>(
       (acc, part) =>
@@ -55,7 +58,6 @@ const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
           : undefined,
       obj,
     )
-  return typeof value === 'string' ? value : key
 }
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
@@ -82,26 +84,31 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   }, [user, authLoading])
 
   const t = useCallback(
-    (key: string, replacements?: Record<string, string | number>): string => {
+    (key: string, replacements?: Record<string, string | number>): any => {
       const dict = dictionaries[language] || dictionaries.en
       let value = getNestedValue(dict, key)
 
-      if (typeof value !== 'string') {
+      if (typeof value === 'undefined') {
         console.warn(
           `Translation key '${key}' not found for language '${language}'.`,
         )
         return key
       }
 
-      if (replacements) {
-        Object.keys(replacements).forEach((placeholder) => {
-          value = value.replace(
-            `{${placeholder}}`,
-            String(replacements[placeholder]),
-          )
-        })
+      if (typeof value === 'string') {
+        const stringValue = value as string
+        if (replacements) {
+          Object.keys(replacements).forEach((placeholder) => {
+            value = stringValue.replace(
+              `{${placeholder}}`,
+              String(replacements[placeholder]),
+            )
+          })
+        }
+        return value
       }
 
+      // If value is an array or object, just return it
       return value
     },
     [language],

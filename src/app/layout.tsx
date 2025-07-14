@@ -6,8 +6,6 @@ import { AuthProvider } from '@/context/auth-context'
 import { I18nProvider } from '@/context/i18n-context'
 
 import './globals.css'
-import AppLayout from './(app)/layout'
-import LandingLayout from './(landing)/layout'
 
 const lora = Lora({
   subsets: ['latin'],

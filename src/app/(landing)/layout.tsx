@@ -1,29 +1,35 @@
+'use client'
+
 import Link from 'next/link'
 
 import TimeWiseIcon from '@/components/time-wise-icon'
 import { Button } from '@/components/ui/button'
-
-const navigation = [
-  { name: 'Features', href: '/features' },
-  { name: 'Pricing', href: '/pricing' },
-]
+import { useTranslation } from '@/context/i18n-context'
 
 export default function LandingLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { t } = useTranslation()
+  const navigation = [
+    { name: t('landing.nav.features'), href: '/features' },
+    { name: t('landing.nav.pricing'), href: '/pricing' },
+  ]
   return (
     <div className="bg-background">
-      <header className="absolute inset-x-0 top-0 z-50">
+      <header className="relative z-50 w-full bg-white/80 backdrop-blur">
         <nav
-          className="flex items-center justify-between p-6 lg:px-8"
+          className="flex items-center justify-between p-4 lg:px-8"
           aria-label="Global"
         >
-          <div className="flex lg:flex-1">
-            <Link href="/" className="-m-1.5 p-1.5">
-              <span className="sr-only">TimeWise Tracker</span>
-              <TimeWiseIcon className="h-8 w-auto" />
+          <div className="flex items-center gap-3 lg:flex-1">
+            <Link href="/" className="flex items-center gap-2 group">
+              <span className="sr-only">{t('appName')}</span>
+              <TimeWiseIcon className="h-12 w-auto" />
+              <span className="text-lg font-bold text-primary group-hover:underline">
+                {t('appName')}
+              </span>
             </Link>
           </div>
 
@@ -40,13 +46,13 @@ export default function LandingLayout({
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             <Button asChild>
-              <Link href="/login">Log in</Link>
+              <Link href="/login">{t('topNav.login')}</Link>
             </Button>
           </div>
         </nav>
       </header>
 
-      <div className="relative isolate pt-14">
+      <div className="relative isolate">
         <div
           className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
           aria-hidden="true"
