@@ -1,12 +1,12 @@
 {
-  "extends": ["config:base"],
+  "extends": ["config:recommended"],
   "packageRules": [
     {
-      "updateTypes": ["minor", "patch"],
+      "matchUpdateTypes": ["minor", "patch"],
       "groupName": "all non-major dependencies"
     },
     {
-      "updateTypes": ["patch"],
+      "matchUpdateTypes": ["patch"],
       "automerge": true
     },
     {
@@ -51,11 +51,12 @@
       "groupName": "linting and formatting"
     },
     {
-      "matchPackageNames": ["typescript", "@types/*"],
-      "excludePackageNames": [
-        "@types/react",
-        "@types/react-dom",
-        "@types/react-test-renderer"
+      "matchPackageNames": [
+        "typescript",
+        "@types/*",
+        "!@types/react",
+        "!@types/react-dom",
+        "!@types/react-test-renderer"
       ],
       "groupName": "typescript and types"
     },
