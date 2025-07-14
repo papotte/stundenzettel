@@ -96,7 +96,7 @@ describe('LoginPage', () => {
           'test@example.com',
           'password123',
         )
-        expect(mockPush).toHaveBeenCalledWith('/')
+        expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
     })
 
@@ -127,7 +127,7 @@ describe('LoginPage', () => {
           'new@example.com',
           'newpassword',
         )
-        expect(mockPush).toHaveBeenCalledWith('/')
+        expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
     })
 
@@ -142,7 +142,7 @@ describe('LoginPage', () => {
 
       await waitFor(() => {
         expect(mockSignInWithPopup).toHaveBeenCalled()
-        expect(mockPush).toHaveBeenCalledWith('/')
+        expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
     })
 
@@ -203,7 +203,7 @@ describe('LoginPage', () => {
         email: 'user2@example.com',
         displayName: 'Max Mustermann',
       })
-      expect(mockPush).toHaveBeenCalledWith('/')
+      expect(mockPush).toHaveBeenCalledWith('/tracker')
     })
   })
 })
