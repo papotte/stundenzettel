@@ -4,7 +4,7 @@ test.describe('Authentication', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the login page before each test
     await page.goto('/login')
-  });
+  })
 
   test('should log in and display the main tracker page', async ({ page }) => {
     // In test mode, we expect to see the mock user login screen.

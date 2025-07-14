@@ -3,6 +3,7 @@
 import Link from 'next/link'
 
 import LandingIllustration from '@/components/images/landing-illustration'
+import LandingLayout from '@/components/landing-layout'
 import {
   Accordion,
   AccordionContent,
@@ -20,7 +21,7 @@ export default function LandingPage() {
   const faqs: Array<string> = t('landing.faqs')
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <LandingLayout>
       <main className="flex-1">
         {/* Hero Section */}
         <section className="w-full py-12 md:py-24 lg:py-32">
@@ -162,26 +163,6 @@ export default function LandingPage() {
           </div>
         </section>
       </main>
-
-      <footer className="flex w-full shrink-0 flex-col items-center justify-between gap-2 border-t px-4 py-6 sm:flex-row md:px-6">
-        <p className="text-xs text-muted-foreground">
-          {t('landing.footer.copyright')}
-        </p>
-        <nav className="flex gap-4 sm:gap-6">
-          <Link
-            href="#"
-            className="text-xs hover:underline hover:underline-offset-4"
-          >
-            {t('landing.footer.terms')}
-          </Link>
-          <Link
-            href="#"
-            className="text-xs hover:underline hover:underline-offset-4"
-          >
-            {t('landing.footer.privacy')}
-          </Link>
-        </nav>
-      </footer>
-    </div>
+    </LandingLayout>
   )
 }

@@ -10,7 +10,7 @@ export default function PricingPage() {
   const { t } = useTranslation()
   const includedFeatures = t('landing.pricing.includedFeatures')
   return (
-    <div className="bg-background py-24 sm:py-32">
+    <div className="py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -20,7 +20,7 @@ export default function PricingPage() {
             {t('landing.pricing.headerDescription')}
           </p>
         </div>
-        <div className="mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-border sm:mt-20 lg:mx-0 lg:flex lg:max-w-none">
+        <div className="bg-background items-center mx-auto mt-16 max-w-2xl rounded-3xl ring-1 ring-border sm:mt-20 lg:mx-0 lg:flex lg:max-w-none">
           <div className="p-8 sm:p-10 lg:flex-auto">
             <h3 className="text-2xl font-bold tracking-tight text-foreground">
               {t('landing.pricing.planTitle')}

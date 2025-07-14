@@ -3,13 +3,13 @@ import React from 'react'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import SettingsPage from 'src/app/(app)/settings/page'
+
 import type { AuthenticatedUser, UserSettings } from '@/lib/types'
 import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
-
-import SettingsPage from 'src/app/(app)/settings/page'
 
 // --- MOCKS ---
 const mockPush = jest.fn()

@@ -1,7 +1,13 @@
+import withMDX from '@next/mdx'
+
 import type { NextConfig } from 'next'
 
+const withMdx = withMDX({
+  // You can add MDX-specific options here if needed
+  extension: /\.mdx?$/,
+})
+
 const nextConfig: NextConfig = {
-  /* config options here */
   transpilePackages: ['lucide-react'],
   typescript: {
     ignoreBuildErrors: true,
@@ -21,4 +27,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withMdx(nextConfig)

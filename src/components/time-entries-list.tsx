@@ -28,7 +28,7 @@ const TimeEntriesList: React.FC = () => {
     <Card className="shadow-lg">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className='flex shrink'>
+          <CardTitle className="flex shrink">
             {selectedDate && isSameDay(selectedDate, new Date())
               ? t('tracker.todaysEntries', {
                   date: formattedSelectedDate,
