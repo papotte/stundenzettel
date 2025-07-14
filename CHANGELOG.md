@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/papotte/stundenzettel/compare/v1.3.3...v1.4.0) (2025-07-14)
+
+
+### Features
+
+* add start page and other legal pages ([#58](https://github.com/papotte/stundenzettel/issues/58)) ([a24e9de](https://github.com/papotte/stundenzettel/commit/a24e9de572cefc1229ad6dda69e12a7fd4a2ab19))
+
 ## [1.3.3](https://github.com/papotte/stundenzettel/compare/v1.3.2...v1.3.3) (2025-07-14)
 
 
