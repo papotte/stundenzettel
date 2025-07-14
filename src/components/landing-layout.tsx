@@ -117,6 +117,12 @@ export default function LandingLayout({
             >
               {t('landing.footer.cookiePolicy')}
             </Link>
+            <Link
+              href="#"
+              className="text-xs hover:underline hover:underline-offset-4 termly-display-preferences"
+            >
+              Consent Preferences
+            </Link>
           </nav>
         </div>
       </footer>
