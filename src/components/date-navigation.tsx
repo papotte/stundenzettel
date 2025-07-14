@@ -41,7 +41,7 @@ const DateNavigation: React.FC = () => {
       <h2 className="font-headline text-2xl font-bold">
         {t('tracker.timeEntriesTitle')}
       </h2>
-      <div className="flex w-full items-center gap-2 sm:w-auto">
+      <div className="flex flex-wrap w-full items-center gap-2 sm:w-auto">
         <div className="flex flex-1 items-center gap-1">
           <Button
             variant="outline"

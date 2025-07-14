@@ -33,7 +33,7 @@ export default function ExportPage() {
   return (
     <TooltipProvider>
       <TimeTrackerProvider user={user} toast={toast} t={t} locale={language}>
-        <div className="min-h-screen bg-muted p-4 sm:p-8 print:bg-white print:p-0">
+        <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8 print:bg-white print:p-0">
           <div className="mx-auto max-w-7xl print:mx-0 print:max-w-none">
             <Button
               asChild
