@@ -12,16 +12,18 @@ export default function LanguageSelect({
   value,
   onChange,
   className,
+  id,
   ...props
 }: {
   value: string
   onChange: (lang: string) => void
   className?: string
+  id?: string
 }) {
   const { t } = useTranslation()
   return (
     <Select value={value} onValueChange={onChange} {...props}>
-      <SelectTrigger className={className || 'w-24'}>
+      <SelectTrigger className={className || 'w-24'} id={id}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

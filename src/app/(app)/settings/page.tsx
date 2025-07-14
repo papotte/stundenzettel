@@ -39,6 +39,7 @@ import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
+import { useId } from 'react'
 
 const settingsFormSchema = z.object({
   defaultWorkHours: z.coerce
@@ -70,6 +71,7 @@ export default function SettingsPage() {
   const { t, setLanguageState, language } = useTranslation()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const languageFieldId = useId()
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
@@ -298,11 +300,14 @@ export default function SettingsPage() {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('settings.languageLabel')}</FormLabel>
-                      <LanguageSelect
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
+                      <FormLabel htmlFor={languageFieldId}>{t('settings.languageLabel')}</FormLabel>
+                      <FormControl>
+                        <LanguageSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                          id={languageFieldId}
+                        />
+                      </FormControl>
                       <FormDescription>
                         {t('settings.languageDescription')}
                       </FormDescription>
