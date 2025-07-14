@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useId } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -39,7 +40,6 @@ import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
-import { useId } from 'react'
 
 const settingsFormSchema = z.object({
   defaultWorkHours: z.coerce
@@ -300,7 +300,9 @@ export default function SettingsPage() {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor={languageFieldId}>{t('settings.languageLabel')}</FormLabel>
+                      <FormLabel htmlFor={languageFieldId}>
+                        {t('settings.languageLabel')}
+                      </FormLabel>
                       <FormControl>
                         <LanguageSelect
                           value={field.value}

@@ -18,7 +18,7 @@ export default function LandingPage() {
   const { t } = useTranslation()
   const features = t('landing.features.list')
   const includedFeatures = t('landing.pricing.includedFeatures')
-  const faqs: Array<string> = t('landing.faqs')
+  const faqs = t('landing.faqs')
 
   return (
     <LandingLayout>
@@ -147,16 +147,17 @@ export default function LandingPage() {
           </div>
           <div className="mx-auto mt-8 max-w-3xl">
             <Accordion type="single" collapsible className="w-full">
-              {faqs.map((_, i) => (
-                <AccordionItem key={i} value={`item-${i}`}>
-                  <AccordionTrigger>
-                    {t(`landing.faqs.${i}.question`)}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {t(`landing.faqs.${i}.answer`)}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {Array.isArray(faqs) &&
+                faqs.map((_, i) => (
+                  <AccordionItem key={i} value={`item-${i}`}>
+                    <AccordionTrigger>
+                      {t(`landing.faqs.${i}.question`)}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {t(`landing.faqs.${i}.answer`)}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
             </Accordion>
           </div>
         </div>
