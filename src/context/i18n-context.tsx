@@ -48,7 +48,10 @@ const LoadingIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const I18nContext = createContext<I18nContextType | null>(null)
 
-const getNestedValue = (obj: Record<string, unknown>, key: string): any => {
+function getNestedValue<T = unknown>(
+  obj: Record<string, unknown>,
+  key: string,
+): T {
   return key
     .split('.')
     .reduce<unknown>(
@@ -57,7 +60,7 @@ const getNestedValue = (obj: Record<string, unknown>, key: string): any => {
           ? (acc as Record<string, unknown>)[part]
           : undefined,
       obj,
-    )
+    ) as T
 }
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
@@ -84,15 +87,18 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   }, [user, authLoading])
 
   const t = useCallback(
-    (key: string, replacements?: Record<string, string | number>): any => {
+    function <T = string>(
+      key: string,
+      replacements?: Record<string, string | number>,
+    ): T {
       const dict = dictionaries[language] || dictionaries.en
-      let value = getNestedValue(dict, key)
+      let value = getNestedValue<T>(dict, key)
 
       if (typeof value === 'undefined') {
         console.warn(
           `Translation key '${key}' not found for language '${language}'.`,
         )
-        return key
+        return key as T
       }
 
       if (typeof value === 'string') {
@@ -102,14 +108,14 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
             value = stringValue.replace(
               `{${placeholder}}`,
               String(replacements[placeholder]),
-            )
+            ) as T
           })
         }
-        return value
+        return value as T
       }
 
       // If value is an array or object, just return it
-      return value
+      return value as T
     },
     [language],
   )

@@ -4,16 +4,28 @@ import { render, screen } from '@testing-library/react'
 import LandingLayout from '../landing-layout'
 
 jest.mock('next/link', () => {
-  return ({ children, ...props }: any) => <a {...props}>{children}</a>
+  const Link = (
+    props: React.PropsWithChildren<
+      React.AnchorHTMLAttributes<HTMLAnchorElement>
+    >,
+  ) => <a {...props}>{props.children}</a>
+  Link.displayName = 'MockNextLink'
+  return Link
 })
 
-jest.mock('../language-switcher', () => () => (
-  <div data-testid="language-switcher">LanguageSwitcher</div>
-))
+jest.mock('../language-switcher', () => {
+  const MockLanguageSwitcher = () => (
+    <div data-testid="language-switcher">LanguageSwitcher</div>
+  )
+  MockLanguageSwitcher.displayName = 'MockLanguageSwitcher'
+  return MockLanguageSwitcher
+})
 
-jest.mock('../time-wise-icon', () => () => (
-  <div data-testid="timewise-icon">Icon</div>
-))
+jest.mock('../time-wise-icon', () => {
+  const MockTimeWiseIcon = () => <div data-testid="timewise-icon">Icon</div>
+  MockTimeWiseIcon.displayName = 'MockTimeWiseIcon'
+  return MockTimeWiseIcon
+})
 
 describe('LandingLayout', () => {
   it('renders top navigation, language switcher, login button, and footer', () => {
