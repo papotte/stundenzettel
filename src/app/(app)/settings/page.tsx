@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import LanguageSelect from '@/components/language-select'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -29,13 +30,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/context/i18n-context'
@@ -305,24 +299,10 @@ export default function SettingsPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('settings.languageLabel')}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a language" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="en">
-                            {t('settings.languageEnglish')}
-                          </SelectItem>
-                          <SelectItem value="de">
-                            {t('settings.languageGerman')}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <LanguageSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                       <FormDescription>
                         {t('settings.languageDescription')}
                       </FormDescription>

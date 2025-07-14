@@ -1,12 +1,6 @@
 import { useTranslation } from '@/context/i18n-context'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select'
+import LanguageSelect from './language-select'
 
 export default function LanguageSwitcher({
   className,
@@ -15,16 +9,11 @@ export default function LanguageSwitcher({
 }) {
   const { language, setLanguageState } = useTranslation()
   return (
-    <div data-testid="language-switcher">
-      <Select value={language} onValueChange={setLanguageState}>
-        <SelectTrigger className={className || 'w-24'}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="en">English</SelectItem>
-          <SelectItem value="de">Deutsch</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <LanguageSelect
+      value={language}
+      onChange={(lang) => setLanguageState(lang as 'en' | 'de')}
+      className={className}
+      data-testid="language-switcher"
+    />
   )
 }
