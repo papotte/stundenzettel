@@ -31,11 +31,6 @@ export default function BottomNav() {
   const pathname = usePathname()
   const { t } = useTranslation()
 
-  // Don't render bottom nav on landing pages
-  if (['/', '/pricing', '/features'].includes(pathname)) {
-    return null
-  }
-
   return (
     <nav
       className="fixed bottom-0 left-0 z-50 w-full border-t border-gray-200 bg-white shadow md:hidden"

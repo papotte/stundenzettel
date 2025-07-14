@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Lora, PT_Sans } from 'next/font/google'
 
-import TermlyCMP from '@/components/termly-cmp'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { I18nProvider } from '@/context/i18n-context'
@@ -19,7 +18,7 @@ const ptSans = PT_Sans({
   variable: '--font-pt-sans',
 })
 
-const WEBSITE_UUID = process.env.NEXT_PUBLIC_TERMLY_WEBSITE_UUID
+// const WEBSITE_UUID = process.env.NEXT_PUBLIC_TERMLY_WEBSITE_UUID
 
 export const metadata: Metadata = {
   title: 'TimeWise Tracker',
@@ -54,7 +53,6 @@ export default function RootLayout({
       >
         <AuthProvider>
           <I18nProvider>
-            <TermlyCMP websiteUUID={WEBSITE_UUID} />
             {children}
             <Toaster />
           </I18nProvider>
