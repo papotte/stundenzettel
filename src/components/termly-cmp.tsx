@@ -35,6 +35,7 @@ export default function TermlyCMP({
     if (isScriptAdded.current) return
     const script = document.createElement('script')
     script.src = scriptSrc
+    script.defer = true
     document.head.appendChild(script)
     isScriptAdded.current = true
   }, [scriptSrc])
