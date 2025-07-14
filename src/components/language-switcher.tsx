@@ -15,14 +15,16 @@ export default function LanguageSwitcher({
 }) {
   const { language, setLanguageState } = useTranslation()
   return (
-    <Select value={language} onValueChange={setLanguageState}>
-      <SelectTrigger className={className || 'w-24'}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="en">English</SelectItem>
-        <SelectItem value="de">Deutsch</SelectItem>
-      </SelectContent>
-    </Select>
+    <div data-testid="language-switcher">
+      <Select value={language} onValueChange={setLanguageState}>
+        <SelectTrigger className={className || 'w-24'}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">English</SelectItem>
+          <SelectItem value="de">Deutsch</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
   )
 }

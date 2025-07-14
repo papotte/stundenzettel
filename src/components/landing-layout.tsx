@@ -23,6 +23,7 @@ export default function LandingLayout({
         <nav
           className="flex items-center justify-between p-4 lg:px-8"
           aria-label="Global"
+          data-testid="top-nav"
         >
           <div className="flex items-center gap-3 lg:flex-1">
             <Link href="/" className="flex items-center gap-2 group">
@@ -48,7 +49,9 @@ export default function LandingLayout({
           <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
             <LanguageSwitcher />
             <Button asChild>
-              <Link href="/login">{t('topNav.login')}</Link>
+              <Link href="/login" data-testid="login-link">
+                {t('topNav.login')}
+              </Link>
             </Button>
           </div>
           {/* Mobile language switcher */}
@@ -84,7 +87,7 @@ export default function LandingLayout({
           />
         </div>
       </main>
-      <footer>
+      <footer data-testid="footer">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 sm:flex-row md:px-6">
           <p className="text-xs text-muted-foreground">
             {t('landing.footer.copyright')}

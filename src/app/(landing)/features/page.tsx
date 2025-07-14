@@ -23,7 +23,10 @@ export default function FeaturesPage() {
         </div>
       </div>
 
-      <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
+      <div
+        className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl"
+        data-testid="features-container"
+      >
         <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
           {Array.isArray(features) &&
             features.map((feature, i) => (
