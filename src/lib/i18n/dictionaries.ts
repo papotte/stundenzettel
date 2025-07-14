@@ -1,8 +1,8 @@
 export const dictionaries = {
   en: {
+    appName: 'TimeWise Tracker',
     // Login Page
     login: {
-      title: 'TimeWise Tracker',
       testMode: 'TimeWise Tracker (Test Mode)',
       selectMockUser: 'Select a Mock User',
       mockUserDescription:
@@ -242,11 +242,112 @@ export const dictionaries = {
       settings: 'Settings',
       signOut: 'Sign Out',
     },
+    topNav: {
+      features: 'Features',
+      pricing: 'Pricing',
+      login: 'Log in',
+    },
+    // Landing Page
+    landing: {
+      heroTitle: 'Effortless Time Tracking for Your Business',
+      heroDescription:
+        'TimeWise Tracker helps you and your team manage work hours seamlessly. From live tracking to detailed exports, we have you covered.',
+      getStarted: 'Get Started',
+      learnMore: 'Learn More',
+      features: {
+        keyFeatures: 'Key Features',
+        headerTag: 'Track Time Smarter',
+        headerTitle: "Everything you need, nothing you don't.",
+        headerDescription:
+          'TimeWise Tracker is packed with features designed to make your time tracking as effortless and accurate as possible.',
+        list: [
+          {
+            title: 'Live Time Tracking',
+            desc: 'Start and stop a timer with one click. Your work duration is recorded accurately without any manual calculations.',
+          },
+          {
+            title: 'Manual & Special Entries',
+            desc: 'Easily add or edit entries for past work, or log sick leave, PTO, and holidays with dedicated entry types.',
+          },
+          {
+            title: 'Location & Travel',
+            desc: 'Automatically fetch your current location or manually input it. Track travel time and driver status for accurate compensation.',
+          },
+          {
+            title: 'Seamless Export',
+            desc: 'Generate professional-looking timesheets in Excel and PDF formats, ready to be sent for payroll or records.',
+          },
+          {
+            title: 'Smart Suggestions',
+            desc: 'The app learns your habits and suggests locations and times based on your previous entries to speed up your workflow.',
+          },
+          {
+            title: 'Automatic Pause Calculation',
+            desc: 'Based on your work duration, the app suggests the legally required pause time, which you can apply with one click.',
+          },
+        ],
+      },
+      pricing: {
+        headerTitle: 'Simple, Transparent Pricing',
+        headerDescription:
+          'One plan that includes everything you need. No tiers, no add-ons, no surprises.',
+        planTitle: 'Pro Plan',
+        planDescription:
+          'Everything you need to accurately track time for you and your team, generate reports, and stay organized.',
+        whatsIncluded: 'What’s included',
+        includedFeatures: [
+          'Live Time Tracking',
+          'Manual Time Entries',
+          'Special Entries (Sick, PTO, etc.)',
+          'Location & Travel Tracking',
+          'Excel & PDF Exports',
+          'Multi-language Support (EN/DE)',
+          'Unlimited Entries',
+          'Secure Cloud Storage',
+        ],
+        payPerUser: 'Pay per user, per month',
+        price: '10€',
+        priceCurrency: 'EUR',
+        getAccess: 'Get access',
+        footnote:
+          'Invoices and receipts available for easy company reimbursement.',
+      },
+      faqTitle: 'Frequently Asked Questions',
+      faqs: [
+        {
+          question: 'Is there a free trial available?',
+          answer:
+            'Yes, you can sign up and use TimeWise Tracker with all its features for free for 14 days. No credit card is required to start your trial.',
+        },
+        {
+          question: 'Can I track time for multiple projects or clients?',
+          answer:
+            "Absolutely. The 'Location' field can be used to specify different projects, clients, or tasks. Our upcoming features will include dedicated project and client management for even better organization.",
+        },
+        {
+          question: 'How does the Excel and PDF export work?',
+          answer:
+            'From the "Preview & Export" page, you can select any month and download a professionally formatted timesheet. The Excel file is ready for calculations, and the PDF is perfect for printing and signing.',
+        },
+        {
+          question: 'Is my data secure?',
+          answer:
+            'Yes, your data is securely stored using Firebase, a platform by Google. We use industry-standard security practices to ensure your information is safe.',
+        },
+      ],
+      footer: {
+        copyright: '© 2025 TimeWise Tracker. All rights reserved.',
+        terms: 'Terms of Service',
+        privacy: 'Privacy',
+        imprint: 'Imprint',
+        cookiePolicy: 'Cookie Policy',
+      },
+    },
   },
   de: {
+    appName: 'TimeWise Tracker',
     // Login Page
     login: {
-      title: 'TimeWise Tracker',
       testMode: 'TimeWise Tracker (Testmodus)',
       selectMockUser: 'Wählen Sie einen Testbenutzer',
       mockUserDescription:
@@ -502,6 +603,108 @@ export const dictionaries = {
       export: 'Vorschau & Export',
       settings: 'Einstellungen',
       signOut: 'Abmelden',
+    },
+    topNav: {
+      features: 'Funktionen',
+      pricing: 'Preise',
+      login: 'Anmelden',
+    },
+    // Landing Page
+    landing: {
+      heroTitle: 'Mühelose Zeiterfassung für Ihr Unternehmen',
+      heroDescription:
+        'TimeWise Tracker hilft Ihnen und Ihrem Team, Arbeitszeiten nahtlos zu verwalten. Von der Live-Erfassung bis zu detaillierten Exporten – wir haben alles, was Sie brauchen.',
+      getStarted: 'Jetzt starten',
+      learnMore: 'Mehr erfahren',
+      features: {
+        keyFeatures: 'Hauptfunktionen',
+        headerTag: 'Zeiterfassung, aber schlauer',
+        headerTitle: 'Alles, was Sie brauchen – nichts Überflüssiges.',
+        headerDescription:
+          'TimeWise Tracker ist vollgepackt mit Funktionen, die Ihre Zeiterfassung so einfach und effizient wie möglich machen.',
+        list: [
+          {
+            title: 'Live-Zeiterfassung',
+            desc: 'Starten und stoppen Sie einen Timer mit nur einem Klick. Ihre Arbeitszeit wird genau und ohne manuelle Berechnung erfasst.',
+          },
+          {
+            title: 'Manuelle & spezielle Einträge',
+            desc: 'Fügen Sie ganz einfach Einträge für vergangene Arbeiten hinzu oder erfassen Sie Kranktage, Urlaub und Feiertage mit speziellen Eintragstypen.',
+          },
+          {
+            title: 'Standort & Reisen',
+            desc: 'Ermitteln Sie Ihren aktuellen Standort automatisch oder geben Sie ihn manuell ein. Erfassen Sie Reisezeiten und Fahrerstatus für eine genaue Vergütung.',
+          },
+          {
+            title: 'Nahtloser Export',
+            desc: 'Erstellen Sie professionell aussehende Stundenzettel im Excel- und PDF-Format, bereit zum Versand für die Lohnabrechnung oder zur Ablage.',
+          },
+          {
+            title: 'Intelligente Vorschläge',
+            desc: 'Die App lernt Ihre Gewohnheiten und schlägt basierend auf früheren Einträgen Orte und Zeiten vor, um Ihren Workflow zu beschleunigen.',
+          },
+          {
+            title: 'Automatische Pausenberechnung',
+            desc: 'Basierend auf Ihrer Arbeitszeit schlägt die App die gesetzlich vorgeschriebene Pause vor, die Sie mit einem Klick übernehmen können.',
+          },
+        ],
+      },
+      pricing: {
+        headerTitle: 'Einfache, transparente Preise',
+        headerDescription:
+          'Ein Tarif, der alles enthält, was Sie brauchen. Keine Stufen, keine Zusatzpakete, keine Überraschungen.',
+        planTitle: 'Pro-Tarif',
+        planDescription:
+          'Alles, was Sie für eine präzise Zeiterfassung, Berichte und Organisation für sich und Ihr Team benötigen.',
+        whatsIncluded: 'Das ist enthalten',
+        includedFeatures: [
+          'Live-Zeiterfassung',
+          'Manuelle Zeiteinträge',
+          'Spezielle Einträge (Krank, Urlaub, etc.)',
+          'Standort- & Reisezeiterfassung',
+          'Excel- & PDF-Exporte',
+          'Mehrsprachigkeit (DE/EN)',
+          'Unbegrenzte Einträge',
+          'Sichere Cloud-Speicherung',
+        ],
+        payPerUser: 'Preis pro Nutzer und Monat',
+        price: '10€',
+        priceCurrency: 'EUR',
+        getAccess: 'Zugang erhalten',
+        footnote:
+          'Rechnungen und Quittungen für eine einfache Firmenabrechnung verfügbar.',
+      },
+      faqTitle: 'Häufig gestellte Fragen',
+      faqs: [
+        {
+          question: 'Gibt es eine kostenlose Testphase?',
+          answer:
+            'Ja, Sie können sich anmelden und TimeWise Tracker mit allen Funktionen 14 Tage lang kostenlos nutzen. Es ist keine Kreditkarte erforderlich.',
+        },
+        {
+          question:
+            'Kann ich Zeiten für mehrere Projekte oder Kunden erfassen?',
+          answer:
+            'Auf jeden Fall. Das Feld "Einsatzort" kann für verschiedene Projekte, Kunden oder Aufgaben genutzt werden. Zukünftige Funktionen werden ein eigenes Projekt- und Kundenmanagement bieten.',
+        },
+        {
+          question: 'Wie funktioniert der Excel- und PDF-Export?',
+          answer:
+            'Auf der Seite "Vorschau & Export" können Sie jeden Monat auswählen und einen professionell formatierten Stundenzettel herunterladen. Die Excel-Datei ist für Berechnungen geeignet, das PDF perfekt zum Ausdrucken und Unterschreiben.',
+        },
+        {
+          question: 'Sind meine Daten sicher?',
+          answer:
+            'Ja, Ihre Daten werden sicher mit Firebase, einer Plattform von Google, gespeichert. Wir verwenden branchenübliche Sicherheitsstandards, um Ihre Informationen zu schützen.',
+        },
+      ],
+      footer: {
+        copyright: '© 2025 TimeWise Tracker. Alle Rechte vorbehalten.',
+        terms: 'Nutzungsbedingungen',
+        privacy: 'Datenschutz',
+        imprint: 'Impressum',
+        cookiePolicy: 'Cookie-Richtlinie',
+      },
     },
   },
 }

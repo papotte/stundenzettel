@@ -8,12 +8,12 @@ test.describe('Export Page', () => {
   let weekIndex: number = 0
   test.beforeEach(async ({ page }) => {
     // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/')
+    await page.goto('/login')
     await page
       .getByRole('button', { name: /Log in as/ })
       .first()
       .click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
 
     const week = getWeekOfMonth(new Date())
     weekIndex = week - 1 // Adjust for zero-based index

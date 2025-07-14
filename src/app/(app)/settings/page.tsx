@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import LanguageSelect from '@/components/language-select'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -29,13 +30,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/context/i18n-context'
@@ -76,6 +70,7 @@ export default function SettingsPage() {
   const { t, setLanguageState, language } = useTranslation()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const languageFieldId = useId()
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
@@ -178,14 +173,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8">
+    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
       <div className="mx-auto max-w-xl">
         <Button
           asChild
           variant="outline"
           className="mb-8 hidden md:inline-flex"
         >
-          <Link href="/">
+          <Link href="/tracker">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('settings.backButton')}
           </Link>
@@ -304,25 +299,16 @@ export default function SettingsPage() {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('settings.languageLabel')}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a language" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="en">
-                            {t('settings.languageEnglish')}
-                          </SelectItem>
-                          <SelectItem value="de">
-                            {t('settings.languageGerman')}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel htmlFor={languageFieldId}>
+                        {t('settings.languageLabel')}
+                      </FormLabel>
+                      <FormControl>
+                        <LanguageSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                          id={languageFieldId}
+                        />
+                      </FormControl>
                       <FormDescription>
                         {t('settings.languageDescription')}
                       </FormDescription>

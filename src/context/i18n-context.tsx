@@ -17,7 +17,10 @@ type Language = keyof typeof dictionaries
 
 interface I18nContextType {
   language: Language
-  t: (key: string, replacements?: Record<string, string | number>) => string
+  t: <T = string>(
+    key: string,
+    replacements?: Record<string, string | number>,
+  ) => T
   setLanguageState: (lang: Language) => void
   loading: boolean
 }
@@ -45,8 +48,11 @@ const LoadingIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const I18nContext = createContext<I18nContextType | null>(null)
 
-const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
-  const value = key
+function getNestedValue<T = unknown>(
+  obj: Record<string, unknown>,
+  key: string,
+): T {
+  return key
     .split('.')
     .reduce<unknown>(
       (acc, part) =>
@@ -54,8 +60,7 @@ const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
           ? (acc as Record<string, unknown>)[part]
           : undefined,
       obj,
-    )
-  return typeof value === 'string' ? value : key
+    ) as T
 }
 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
@@ -82,27 +87,35 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   }, [user, authLoading])
 
   const t = useCallback(
-    (key: string, replacements?: Record<string, string | number>): string => {
+    function <T = string>(
+      key: string,
+      replacements?: Record<string, string | number>,
+    ): T {
       const dict = dictionaries[language] || dictionaries.en
-      let value = getNestedValue(dict, key)
+      let value = getNestedValue<T>(dict, key)
 
-      if (typeof value !== 'string') {
+      if (typeof value === 'undefined') {
         console.warn(
           `Translation key '${key}' not found for language '${language}'.`,
         )
-        return key
+        return key as T
       }
 
-      if (replacements) {
-        Object.keys(replacements).forEach((placeholder) => {
-          value = value.replace(
-            `{${placeholder}}`,
-            String(replacements[placeholder]),
-          )
-        })
+      if (typeof value === 'string') {
+        const stringValue = value as string
+        if (replacements) {
+          Object.keys(replacements).forEach((placeholder) => {
+            value = stringValue.replace(
+              `{${placeholder}}`,
+              String(replacements[placeholder]),
+            ) as T
+          })
+        }
+        return value as T
       }
 
-      return value
+      // If value is an array or object, just return it
+      return value as T
     },
     [language],
   )

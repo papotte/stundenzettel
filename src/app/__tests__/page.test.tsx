@@ -1,50 +1,41 @@
-import React from 'react'
-
+import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 
-import { useAuth } from '@/hooks/use-auth'
+import LandingPage from '../page'
 
-import Home from '../page'
-
-// Mocks
-const mockReplace = jest.fn()
-jest.mock('next/navigation', () => ({
-  useRouter: () => ({
-    replace: mockReplace,
-  }),
-}))
-jest.mock('@/components/time-tracker', () => {
-  const MockTimeTracker = () => <div data-testid="time-tracker" />
-  MockTimeTracker.displayName = 'MockTimeTracker'
-  return MockTimeTracker
-})
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: jest.fn(),
-}))
-
-describe('Home Page', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
+describe('StartPage', () => {
+  it('renders the Landing page', () => {
+    render(<LandingPage />)
+    let found = false
+    try {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+      found = true
+    } catch {}
+    if (!found) {
+      expect(
+        screen.getByText(/start|welcome|zeit|tracker/i),
+      ).toBeInTheDocument()
+    }
   })
 
-  it('redirects to login if not authenticated', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({ user: null, loading: false })
-    render(<Home />)
-    expect(mockReplace).toHaveBeenCalledWith('/login')
+  it('should render the feature section', () => {
+    render(<LandingPage />)
+    expect(screen.getByText('landing.features.keyFeatures')).toBeInTheDocument()
   })
 
-  it('renders nothing if loading', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({ user: null, loading: true })
-    const { container } = render(<Home />)
-    expect(container).toBeEmptyDOMElement()
+  it('should render the pricing section', () => {
+    render(<LandingPage />)
+    expect(screen.getByText('landing.pricing.headerTitle')).toBeInTheDocument()
   })
 
-  it('renders TimeTracker if authenticated', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({
-      user: { uid: '123' },
-      loading: false,
-    })
-    render(<Home />)
-    expect(screen.getByTestId('time-tracker')).toBeInTheDocument()
+  it('should render the FAQ section', () => {
+    render(<LandingPage />)
+    expect(screen.getByText('landing.faqTitle')).toBeInTheDocument()
+  })
+
+  it('should render the footer', () => {
+    render(<LandingPage />)
+    expect(screen.getByTestId('footer')).toBeInTheDocument()
+    expect(screen.getByText('landing.footer.copyright')).toBeInTheDocument()
   })
 })

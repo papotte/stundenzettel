@@ -100,7 +100,7 @@ export default function LoginPage() {
     try {
       await setPersistence(auth, browserLocalPersistence)
       await action(email, password)
-      router.push('/')
+      router.push('/tracker')
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
       toast({
@@ -137,7 +137,7 @@ export default function LoginPage() {
     try {
       await setPersistence(auth, browserLocalPersistence)
       await signInWithPopup(auth, provider)
-      router.push('/')
+      router.push('/tracker')
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
       toast({
@@ -153,7 +153,7 @@ export default function LoginPage() {
   const handleMockLogin = (user: AuthenticatedUser) => {
     if (loginAsMockUser) {
       loginAsMockUser(user)
-      router.push('/')
+      router.push('/tracker')
     }
   }
 
@@ -195,7 +195,7 @@ export default function LoginPage() {
       <div className="mb-4 flex items-center gap-2">
         <TimeWiseIcon className="h-8 w-8 text-primary" />
         <h1 className="font-headline text-3xl font-bold tracking-tight">
-          {t('login.title')}
+          {t('appName')}
         </h1>
       </div>
       <Tabs defaultValue="signin" className="w-full max-w-sm">

@@ -1,8 +1,12 @@
 import { expect, test } from '@playwright/test'
 
 test.describe('Authentication', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the login page before each test
+    await page.goto('/login')
+  })
+
   test('should log in and display the main tracker page', async ({ page }) => {
-    await page.goto('/')
     // In test mode, we expect to see the mock user login screen.
     // The language is still English here, before a user is selected.
     await expect(
@@ -14,7 +18,7 @@ test.describe('Authentication', () => {
       .getByRole('button', { name: /Log in as/ })
       .first()
       .click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
 
     // Verify landing on the main tracker page by checking for key elements in German.
     await expect(page.getByText('Live-Zeiterfassung')).toBeVisible()
@@ -25,12 +29,11 @@ test.describe('Authentication', () => {
   })
 
   test('should log out and redirect to login page', async ({ page }) => {
-    await page.goto('/')
     await page
       .getByRole('button', { name: /Log in as/ })
       .first()
       .click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
     // Click the logout button (icon with aria-label or tooltip 'Abmelden' or 'Sign Out')
     await page.getByRole('button', { name: /Abmelden|Sign Out/ }).click()
     // Should be redirected to login page
@@ -43,7 +46,6 @@ test.describe('Authentication', () => {
     page,
   }) => {
     // Try to access main tracker page
-    await page.goto('/')
     await expect(
       page.getByRole('heading', { name: /TimeWise Tracker/ }),
     ).toBeVisible()

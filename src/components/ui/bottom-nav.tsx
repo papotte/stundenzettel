@@ -8,7 +8,7 @@ import { useTranslation } from '@/context/i18n-context'
 
 const navItems = [
   {
-    href: '/',
+    href: '/tracker',
     icon: Home,
     labelKey: 'bottomNav.home',
     labelDefault: 'Home',

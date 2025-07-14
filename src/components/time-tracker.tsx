@@ -38,8 +38,8 @@ function TimeTrackerContent() {
           process.env.NEXT_PUBLIC_ENVIRONMENT === 'test'
         }
       />
-      <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="mx-auto grid max-w-6xl gap-8">
+      <main className="p-2 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+        <div className="mx-auto flex flex-col w-full max-w-full sm:max-w-6xl gap-8">
           <TimeTrackerLiveCard />
           <DailyActionsCard />
           <DateNavigation />

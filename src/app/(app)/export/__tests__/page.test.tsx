@@ -3,10 +3,9 @@ import React from 'react'
 import { TooltipProviderProps } from '@radix-ui/react-tooltip'
 import { render, screen } from '@testing-library/react'
 
+import ExportPage from '@/app/(app)/export/page'
 import { TimeTrackerProviderProps } from '@/context/time-tracker-context'
 import { useAuth } from '@/hooks/use-auth'
-
-import ExportPage from '../page'
 
 // Mocks
 const mockReplace = jest.fn()

@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test'
 test.describe('Settings Page', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/')
+    await page.goto('/login')
     await page
       .getByRole('button', { name: /Log in as/ })
       .first()
       .click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
   })
 
   test('should update settings and reflect changes', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('Settings Page', () => {
 
     // Go back and add a PTO day
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
 
     await page.getByRole('button', { name: 'Urlaub' }).click()
 
@@ -92,7 +92,7 @@ test.describe('Settings Page', () => {
 
     // Go back to overview and then to export page
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
     await page.getByRole('link', { name: 'Vorschau & Export' }).click()
     await page.waitForURL('/export')
     // Check for company details in export preview
@@ -117,7 +117,7 @@ test.describe('Settings Page', () => {
     )
     // Go back to overview and then to export page
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
     await page.getByRole('link', { name: 'Vorschau & Export' }).click()
     await page.waitForURL('/export')
     // Check for display name in export preview
@@ -139,7 +139,7 @@ test.describe('Settings Page', () => {
     )
     // Go back to overview and then to time form
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
     await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
     const dialog = page.locator('div[role="dialog"]')
     await expect(dialog).toBeVisible()
@@ -162,7 +162,7 @@ test.describe('Settings Page', () => {
     )
     // Go back to overview and then to time form
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
     await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
     await expect(dialog).toBeVisible()
     // Check for default driver marked in the time form

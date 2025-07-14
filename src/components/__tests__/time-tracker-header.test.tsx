@@ -32,7 +32,7 @@ describe('TimeTrackerHeader', () => {
 
   it('renders all buttons and links', () => {
     renderWithProvider(<TimeTrackerHeader showClearData={true} />)
-    expect(screen.getByText('login.title')).toBeInTheDocument()
+    expect(screen.getByText('appName')).toBeInTheDocument()
     expect(screen.getByText('tracker.headerExportLink')).toBeInTheDocument()
     expect(
       screen.getByText('tracker.headerClearDataTooltip'),

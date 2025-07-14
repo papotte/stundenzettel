@@ -28,7 +28,7 @@ const TimeEntriesList: React.FC = () => {
     <Card className="shadow-lg">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>
+          <CardTitle className="flex shrink">
             {selectedDate && isSameDay(selectedDate, new Date())
               ? t('tracker.todaysEntries', {
                   date: formattedSelectedDate,
@@ -39,7 +39,7 @@ const TimeEntriesList: React.FC = () => {
                   })
                 : 'Loading...'}
           </CardTitle>
-          <div className="text-lg font-bold text-primary">
+          <div className="text-nowrap text-lg font-bold text-primary">
             {formatHoursAndMinutes(dailyTotal)}
           </div>
         </div>
