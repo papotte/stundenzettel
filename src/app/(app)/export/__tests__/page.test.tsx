@@ -6,7 +6,7 @@ import { render, screen } from '@testing-library/react'
 import { TimeTrackerProviderProps } from '@/context/time-tracker-context'
 import { useAuth } from '@/hooks/use-auth'
 
-import ExportPage from '../page'
+import ExportPage from 'src/app/(app)/export/page'
 
 // Mocks
 const mockReplace = jest.fn()

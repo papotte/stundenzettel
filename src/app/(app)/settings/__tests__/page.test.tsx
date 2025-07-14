@@ -9,7 +9,7 @@ import {
   setUserSettings,
 } from '@/services/user-settings-service'
 
-import SettingsPage from '../page'
+import SettingsPage from 'src/app/(app)/settings/page'
 
 // --- MOCKS ---
 const mockPush = jest.fn()

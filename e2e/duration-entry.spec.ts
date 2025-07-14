@@ -5,12 +5,12 @@ import { addDurationEntry } from './test-helpers'
 test.describe('Duration Entry Form', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/')
+    await page.goto('/login')
     await page
       .getByRole('button', { name: /Log in as/ })
       .first()
       .click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
   })
 
   test('should add, display, and delete a duration-only entry', async ({
@@ -33,7 +33,7 @@ test.describe('Duration Entry Form', () => {
     page,
   }) => {
     // Go to the main page (adjust if your form is on a different route)
-    await page.goto('/')
+    await page.goto('/tracker')
 
     // Open the time entry form (adjust selector as needed)
     await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()

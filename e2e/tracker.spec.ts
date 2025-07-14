@@ -6,12 +6,12 @@ test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---
   test.beforeEach(async ({ page }) => {
     // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/')
+    await page.goto('/login')
     await page
       .getByRole('button', { name: /Log in as/ })
       .first()
       .click()
-    await page.waitForURL('/')
+    await page.waitForURL('/tracker')
   })
 
   // --- LIVE TIME TRACKING ---
@@ -405,7 +405,6 @@ test.describe('Core Tracker Functionality', () => {
 
   test.describe('Accessibility', () => {
     test('should trap focus in dialogs', async ({ page }) => {
-      await page.goto('/')
       await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
       const dialog = page.locator('div[role="dialog"]')
       await expect(dialog).toBeVisible()
@@ -415,7 +414,6 @@ test.describe('Core Tracker Functionality', () => {
     })
 
     test('should have correct ARIA roles', async ({ page }) => {
-      await page.goto('/')
       // Top navigation should always be present
       await expect(
         page.getByRole('navigation', { name: 'Top navigation' }),
@@ -435,7 +433,7 @@ test.describe('Core Tracker Functionality', () => {
       page,
     }) => {
       await page.setViewportSize({ width: 375, height: 667 })
-      await page.goto('/')
+      await page.goto('/tracker')
       // Home should be active
       const homeLink = page
         .getByRole('navigation', { name: 'Bottom navigation' })
@@ -466,7 +464,7 @@ test.describe('Core Tracker Functionality', () => {
           width: viewport.width,
           height: viewport.height,
         })
-        await page.goto('/')
+        await page.goto('/tracker')
         // Top navigation should always be present
         await expect(
           page.getByRole('navigation', { name: 'Top navigation' }),
