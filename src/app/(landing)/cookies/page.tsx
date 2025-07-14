@@ -6,10 +6,14 @@ import dynamic from 'next/dynamic'
 
 import { useTranslation } from '@/context/i18n-context'
 
-const ImprintEn = dynamic(() => import('@/../content/legal/imprint.en.mdx'))
-const ImprintDe = dynamic(() => import('@/../content/legal/imprint.de.mdx'))
+const CookiePolicyEn = dynamic(
+  () => import('@/../content/legal/cookie-policy.en.mdx'),
+)
+const CookiePolicyDe = dynamic(
+  () => import('@/../content/legal/cookie-policy.de.mdx'),
+)
 
-export default function ImprintPage() {
+export default function CookiePolicyPage() {
   const { language } = useTranslation()
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
@@ -18,8 +22,9 @@ export default function ImprintPage() {
 
   if (!mounted) return null
 
-  const Content = language === 'de' ? ImprintDe : ImprintEn
-  const testId = language === 'de' ? 'imprint-de-article' : 'imprint-en-article'
+  const Content = language === 'de' ? CookiePolicyDe : CookiePolicyEn
+  const testId =
+    language === 'de' ? 'cookie-policy-de-article' : 'cookie-policy-en-article'
 
   return (
     <div className="min-h-dvh flex flex-col">

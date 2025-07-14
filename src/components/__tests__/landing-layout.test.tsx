@@ -57,6 +57,7 @@ describe('LandingLayout', () => {
     expect(screen.getByText('landing.footer.terms')).toBeInTheDocument()
     expect(screen.getByText('landing.footer.privacy')).toBeInTheDocument()
     expect(screen.getByText('landing.footer.imprint')).toBeInTheDocument()
+    expect(screen.getByText('landing.footer.cookiePolicy')).toBeInTheDocument()
   })
 
   it('footer links have correct hrefs', () => {
@@ -74,6 +75,9 @@ describe('LandingLayout', () => {
     expect(
       screen.getByText('landing.footer.imprint').closest('a'),
     ).toHaveAttribute('href', '/imprint')
+    expect(
+      screen.getByText('landing.footer.cookiePolicy').closest('a'),
+    ).toHaveAttribute('href', '/cookies')
   })
 
   it('top navigation links are present and correct', () => {

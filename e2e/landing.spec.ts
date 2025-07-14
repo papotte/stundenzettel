@@ -71,4 +71,17 @@ test.describe('Landing Page Routing', () => {
     await expect(page.getByTestId('top-nav')).toBeVisible()
     await expect(page.getByTestId('login-link')).toBeVisible()
   })
+
+  test('should load the cookies page', async ({ page }) => {
+    await page.goto('/cookies')
+    await expect(
+      page.getByRole('heading', {
+        name: /Cookie Policy|Cookie-Richtlinien/i,
+        level: 1,
+      }),
+    ).toBeVisible()
+    await expect(page.getByTestId('footer')).toBeVisible()
+    await expect(page.getByTestId('top-nav')).toBeVisible()
+    await expect(page.getByTestId('login-link')).toBeVisible()
+  })
 })

@@ -111,6 +111,12 @@ export default function LandingLayout({
             >
               {t('landing.footer.imprint')}
             </Link>
+            <Link
+              href="/cookies"
+              className="text-xs hover:underline hover:underline-offset-4"
+            >
+              {t('landing.footer.cookiePolicy')}
+            </Link>
           </nav>
         </div>
       </footer>

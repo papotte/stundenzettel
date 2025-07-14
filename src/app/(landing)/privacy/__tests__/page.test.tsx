@@ -8,7 +8,8 @@ describe('PrivacyPage', () => {
     render(<PrivacyPage />)
     // Check for either language's article
     expect(
-      screen.getByTestId('privacy-en-article') || screen.getByTestId('privacy-de-article')
+      screen.getByTestId('privacy-en-article') ||
+        screen.getByTestId('privacy-de-article'),
     ).toBeInTheDocument()
   })
 })

@@ -8,7 +8,8 @@ describe('ImprintPage', () => {
     render(<ImprintPage />)
     // Check for either language's article
     expect(
-      screen.getByTestId('imprint-en-article') || screen.getByTestId('imprint-de-article')
+      screen.getByTestId('imprint-en-article') ||
+        screen.getByTestId('imprint-de-article'),
     ).toBeInTheDocument()
   })
 })

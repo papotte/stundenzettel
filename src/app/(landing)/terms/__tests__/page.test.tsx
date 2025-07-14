@@ -8,7 +8,8 @@ describe('TermsPage', () => {
     render(<TermsPage />)
     // Check for either language's article
     expect(
-      screen.getByTestId('terms-en-article') || screen.getByTestId('terms-de-article')
+      screen.getByTestId('terms-en-article') ||
+        screen.getByTestId('terms-de-article'),
     ).toBeInTheDocument()
   })
 })
