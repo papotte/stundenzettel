@@ -6,7 +6,7 @@
   },
   "apphosting": [
     {
-      "backendId": "studio",
+      "backendId": "stundenzettel-react",
       "rootDir": "/",
       "ignore": [
         "node_modules",
