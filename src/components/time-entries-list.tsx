@@ -21,6 +21,7 @@ const TimeEntriesList: React.FC = () => {
     dailyTotal,
     openNewEntryForm,
     formattedSelectedDate,
+    userSettings,
   } = useTimeTrackerContext()
   const { t } = useTranslation()
 
@@ -58,6 +59,12 @@ const TimeEntriesList: React.FC = () => {
                 entry={entry}
                 onEdit={handleEditEntry}
                 onDelete={handleDeleteEntry}
+                driverCompensationPercent={
+                  userSettings?.driverCompensationPercent ?? 100
+                }
+                passengerCompensationPercent={
+                  userSettings?.passengerCompensationPercent ?? 100
+                }
               />
             ))}
           </div>

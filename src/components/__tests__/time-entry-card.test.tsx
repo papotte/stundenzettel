@@ -18,8 +18,8 @@ describe('TimeEntryCard', () => {
     startTime: new Date('2024-01-10T09:00:00'),
     endTime: new Date('2024-01-10T17:00:00'),
     pauseDuration: 30,
-    travelTime: 0.5,
-    isDriver: true,
+    driverTimeHours: 0.5,
+    passengerTimeHours: 0.25,
   }
 
   beforeEach(() => {
@@ -30,17 +30,25 @@ describe('TimeEntryCard', () => {
 
   it('renders a standard time entry correctly', () => {
     render(
-      <TimeEntryCard entry={baseEntry} onEdit={onEdit} onDelete={onDelete} />,
+      <TimeEntryCard
+        entry={baseEntry}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        driverCompensationPercent={100}
+        passengerCompensationPercent={100}
+      />,
     )
 
     expect(screen.getByText('Office')).toBeInTheDocument()
     // Use regex to be resilient to locale time formatting
     expect(screen.getByText(/9:00.*-.*5:00/i)).toBeInTheDocument()
-    expect(screen.getByText('time_entry_card.pauseLabel')).toBeInTheDocument()
-    expect(screen.getByText('time_entry_card.travelLabel')).toBeInTheDocument()
-    expect(screen.getByText('time_entry_card.driverLabel')).toBeInTheDocument()
-    // 8 hours work - 30 min pause + 30 min travel = 8 hours total = 28800 seconds
-    expect(screen.getByText('08:00:00')).toBeInTheDocument()
+    expect(screen.getByText(/pause/i)).toBeInTheDocument()
+    expect(screen.getByText('time_entry_card.drivingLabel')).toBeInTheDocument()
+    expect(
+      screen.getByText('time_entry_card.passengerLabel'),
+    ).toBeInTheDocument()
+    // 8 hours work - 30 min pause + 30 min driver + 15 min passenger = 8h 15m
+    expect(screen.getByText('08:15:00')).toBeInTheDocument()
   })
 
   it('renders a special time entry (Sick Leave) correctly', () => {
@@ -79,14 +87,14 @@ describe('TimeEntryCard', () => {
       durationMinutes: 150, // 2h 30m
       startTime: new Date('2024-01-10T12:00:00'),
       pauseDuration: 0,
-      travelTime: 0,
-      isDriver: false,
     }
     render(
       <TimeEntryCard
         entry={durationEntry}
         onEdit={onEdit}
         onDelete={onDelete}
+        driverCompensationPercent={100}
+        passengerCompensationPercent={100}
       />,
     )
 
@@ -108,14 +116,14 @@ describe('TimeEntryCard', () => {
       durationMinutes: 90, // 1h 30m
       startTime: new Date('2024-01-10T12:00:00'),
       pauseDuration: 0,
-      travelTime: 0,
-      isDriver: false,
     }
     render(
       <TimeEntryCard
         entry={newDurationEntry}
         onEdit={onEdit}
         onDelete={onDelete}
+        driverCompensationPercent={100}
+        passengerCompensationPercent={100}
       />,
     )
 

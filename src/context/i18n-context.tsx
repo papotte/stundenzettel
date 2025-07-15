@@ -104,12 +104,14 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
       if (typeof value === 'string') {
         const stringValue = value as string
         if (replacements) {
+          let replaced = stringValue
           Object.keys(replacements).forEach((placeholder) => {
-            value = stringValue.replace(
-              `{${placeholder}}`,
+            replaced = replaced.replace(
+              new RegExp(`\\{${placeholder}\\}`, 'g'),
               String(replacements[placeholder]),
-            ) as T
+            )
           })
+          value = replaced as T
         }
         return value as T
       }

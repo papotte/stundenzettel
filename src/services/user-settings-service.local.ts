@@ -7,15 +7,17 @@ const userSettings: { [userId: string]: Partial<UserSettings> } = {
     defaultEndTime: '17:00',
     language: 'de',
     companyName: 'Acme Inc.',
-    defaultIsDriver: false,
+    driverCompensationPercent: 100,
+    passengerCompensationPercent: 90,
   },
   'mock-user-2': {
     defaultWorkHours: 7.5,
     defaultStartTime: '08:30',
     defaultEndTime: '16:30',
     language: 'en',
-    defaultIsDriver: false,
     displayName: 'Max Mustermann',
+    driverCompensationPercent: 100,
+    passengerCompensationPercent: 90,
   },
 }
 
@@ -24,13 +26,14 @@ const defaultSettings: UserSettings = {
   defaultStartTime: '09:00',
   defaultEndTime: '17:00',
   language: 'en',
-  defaultIsDriver: false,
   displayName: '',
   companyName: '',
   companyEmail: '',
   companyPhone1: '',
   companyPhone2: '',
   companyFax: '',
+  driverCompensationPercent: 100,
+  passengerCompensationPercent: 90,
 }
 
 export const getUserSettings = async (

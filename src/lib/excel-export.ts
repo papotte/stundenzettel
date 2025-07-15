@@ -7,6 +7,7 @@ import {
 } from 'date-fns'
 import ExcelJS from 'exceljs'
 
+import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -28,7 +29,6 @@ interface ExportParams {
   t: (key: string, replacements?: Record<string, string | number>) => string
   locale: Locale
   getEntriesForDay: (day: Date) => TimeEntry[]
-  calculateWeekTotal: (week: Date[]) => number
   getLocationDisplayName: (location: string) => string
 }
 
@@ -39,7 +39,6 @@ export const exportToExcel = async ({
   t,
   locale,
   getEntriesForDay,
-  calculateWeekTotal,
   getLocationDisplayName,
 }: ExportParams) => {
   const workbook = new ExcelJS.Workbook()
@@ -100,9 +99,9 @@ export const exportToExcel = async ({
     { key: 'from', width: 12 },
     { key: 'to', width: 12 },
     { key: 'pause', width: 8 },
-    { key: 'travel', width: 8 },
+    { key: 'driverTime', width: 8 },
     { key: 'compensated', width: 12 },
-    { key: 'driver', width: 5 },
+    { key: 'passengerTime', width: 8 },
     { key: 'mileage', width: 12 },
   ]
 
@@ -126,10 +125,6 @@ export const exportToExcel = async ({
 
   // --- DATA ROWS ---
   const weeksInMonth = getWeeksForMonth(selectedMonth)
-  const monthTotal = weeksInMonth.reduce(
-    (acc, week) => acc + calculateWeekTotal(week),
-    0,
-  )
 
   weeksInMonth.forEach((week) => {
     const weekHasContent = week.some((day) => {
@@ -155,9 +150,9 @@ export const exportToExcel = async ({
       t('export_preview.headerWorkTime'),
       '',
       t('export_preview.headerPauseDuration'),
-      t('export_preview.headerTravelTime'),
+      t('export_preview.headerDriverTime'),
       t('export_preview.headerCompensatedTime'),
-      t('export_preview.headerDriver'),
+      t('export_preview.headerPassengerTime'),
       t('export_preview.headerMileage'),
     ]
 
@@ -266,7 +261,10 @@ export const exportToExcel = async ({
               const compensatedMinutes =
                 workDuration -
                 (entry.pauseDuration || 0) +
-                (entry.travelTime || 0) * 60
+                ((entry.driverTimeHours || 0) *
+                  60 *
+                  (userSettings.driverCompensationPercent ?? 100)) /
+                  100
               compensatedHours =
                 compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
             }
@@ -281,8 +279,14 @@ export const exportToExcel = async ({
           const pauseCellValue =
             !entry.pauseDuration || pauseDecimal === 0 ? '' : pauseDecimal
           // If travelTime is 0, use blank; otherwise, use the value
-          const travelCellValue =
-            !entry.travelTime || entry.travelTime === 0 ? '' : entry.travelTime
+          const driverTimeCellValue =
+            entry.driverTimeHours && entry.driverTimeHours !== 0
+              ? entry.driverTimeHours
+              : ''
+          const passengerTimeCellValue =
+            entry.passengerTimeHours && entry.passengerTimeHours !== 0
+              ? entry.passengerTimeHours
+              : ''
 
           const rowData = [
             '', // Weekday gets merged
@@ -291,9 +295,9 @@ export const exportToExcel = async ({
             fromValue,
             toValue,
             pauseCellValue,
-            travelCellValue,
+            driverTimeCellValue,
             compensatedHours,
-            entry.isDriver ? t('export_preview.driverMark') : '',
+            passengerTimeCellValue,
             '', // Mileage
           ]
           const dataRow = worksheet.addRow(rowData)
@@ -305,10 +309,12 @@ export const exportToExcel = async ({
           dataRow.getCell(6).alignment.horizontal = 'right'
           dataRow.getCell(7).alignment.horizontal = 'right'
           dataRow.getCell(8).alignment.horizontal = 'right'
-          dataRow.getCell(9).alignment.horizontal = 'left'
+          dataRow.getCell(9).alignment.horizontal = 'right'
+          dataRow.getCell(10).alignment.horizontal = 'left'
           dataRow.getCell(6).numFmt = '0.00'
           dataRow.getCell(7).numFmt = '0.00'
           dataRow.getCell(8).numFmt = '0.00'
+          dataRow.getCell(9).numFmt = '0.00'
         })
 
         // Set and merge weekday and date cells
@@ -359,35 +365,108 @@ export const exportToExcel = async ({
     })
 
     // --- RENDER WEEKLY TOTAL ---
-    const weeklyTotal = calculateWeekTotal(week)
+    const weekEntries = week.flatMap(getEntriesForDay)
+    const weekCompTotal = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      userSettings,
+    )
+    const weekPassengerTotal = weekEntries.reduce(
+      (acc, entry) => acc + (entry.passengerTimeHours || 0),
+      0,
+    )
     const totalRow = worksheet.addRow([])
     worksheet.mergeCells(totalRow.number, 1, totalRow.number, 6)
     const totalLabelCell = totalRow.getCell(7)
     totalLabelCell.value = t('export_preview.footerTotalPerWeek')
-    const totalValueCell = totalRow.getCell(10)
-    totalValueCell.value = weeklyTotal
-    totalValueCell.numFmt = '0.00'
-    totalValueCell.border = {
+    const totalCompCell = totalRow.getCell(8)
+    totalCompCell.value = weekCompTotal
+    totalCompCell.numFmt = '0.00'
+    totalCompCell.border = {
       bottom: { style: 'medium', color: { argb: 'FF000000' } },
     }
-    totalValueCell.alignment = { horizontal: 'right' }
-
+    totalCompCell.alignment = { horizontal: 'right' }
+    const totalPassengerCell = totalRow.getCell(9)
+    totalPassengerCell.value = weekPassengerTotal
+    totalPassengerCell.numFmt = '0.00'
+    totalPassengerCell.border = {
+      bottom: { style: 'medium', color: { argb: 'FF000000' } },
+    }
+    totalPassengerCell.alignment = { horizontal: 'right' }
     worksheet.addRow([]) // Blank row for spacing
   })
 
   // --- GRAND TOTAL ---
+  const monthEntries = weeksInMonth.flatMap((week) =>
+    week.flatMap(getEntriesForDay),
+  )
+  const monthCompTotal = monthEntries.reduce((acc, entry) => {
+    let compensated = 0
+    if (typeof entry.durationMinutes === 'number') {
+      compensated = entry.durationMinutes / 60
+    } else if (entry.endTime && entry.startTime) {
+      const workDuration = differenceInMinutes(entry.endTime, entry.startTime)
+      const isCompensatedSpecialDay = [
+        'SICK_LEAVE',
+        'PTO',
+        'BANK_HOLIDAY',
+      ].includes(entry.location)
+      if (isCompensatedSpecialDay) {
+        compensated = workDuration / 60
+      } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
+        const compensatedMinutes =
+          workDuration -
+          (entry.pauseDuration || 0) +
+          ((entry.driverTimeHours || 0) *
+            60 *
+            (userSettings.driverCompensationPercent ?? 100)) /
+            100
+        compensated = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
+      }
+    }
+    return acc + compensated
+  }, 0)
+  const monthPassengerTotal = monthEntries.reduce(
+    (acc, entry) => acc + (entry.passengerTimeHours || 0),
+    0,
+  )
   const grandTotalRow = worksheet.addRow([])
   worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 6)
   const grandTotalLabelCell = grandTotalRow.getCell(7)
   grandTotalLabelCell.value = t('export_preview.footerTotalHours')
-  const grandTotalValueCell = grandTotalRow.getCell(10)
-  grandTotalValueCell.value = monthTotal
-  grandTotalValueCell.numFmt = '0.00'
-  grandTotalValueCell.border = {
+  const grandTotalCompCell = grandTotalRow.getCell(8)
+  grandTotalCompCell.value = monthCompTotal
+  grandTotalCompCell.numFmt = '0.00'
+  grandTotalCompCell.border = {
     bottom: { style: 'double', color: { argb: 'FF000000' } },
   }
-  grandTotalValueCell.alignment = { horizontal: 'right' }
-
+  grandTotalCompCell.alignment = { horizontal: 'right' }
+  const grandTotalPassengerCell = grandTotalRow.getCell(9)
+  grandTotalPassengerCell.value = monthPassengerTotal
+  grandTotalPassengerCell.numFmt = '0.00'
+  grandTotalPassengerCell.border = {
+    bottom: { style: 'double', color: { argb: 'FF000000' } },
+  }
+  grandTotalPassengerCell.alignment = { horizontal: 'right' }
+  // --- SECOND MONTHLY TOTAL ROW ---
+  const passengerCompPercent = userSettings.passengerCompensationPercent ?? 90
+  const compensatedPassengerHours =
+    monthPassengerTotal * (passengerCompPercent / 100)
+  const afterConversionRow = worksheet.addRow([])
+  worksheet.mergeCells(
+    afterConversionRow.number,
+    1,
+    afterConversionRow.number,
+    6,
+  )
+  afterConversionRow.getCell(7).value = t(
+    'export_preview.footerTotalAfterConversion',
+  )
+  afterConversionRow.getCell(8).value =
+    monthCompTotal + compensatedPassengerHours
+  afterConversionRow.getCell(8).numFmt = '0.00'
+  afterConversionRow.getCell(9).value = compensatedPassengerHours
+  afterConversionRow.getCell(9).numFmt = '0.00'
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer()
   const blob = new Blob([buffer], {

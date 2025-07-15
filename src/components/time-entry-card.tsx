@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { differenceInMinutes, format } from 'date-fns'
+import { format } from 'date-fns'
 import {
   BedDouble,
   CarFront,
@@ -12,8 +12,8 @@ import {
   Hourglass,
   Landmark,
   Plane,
-  Timer,
   Trash2,
+  UserPlus,
 } from 'lucide-react'
 
 import {
@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useTranslation } from '@/context/i18n-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
+import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
 import { formatDuration, getLocationDisplayName } from '@/lib/utils'
 
@@ -38,6 +39,8 @@ interface TimeEntryCardProps {
   entry: TimeEntry
   onEdit: (entry: TimeEntry) => void
   onDelete: (id: string) => void
+  driverCompensationPercent?: number // optional, default 100
+  passengerCompensationPercent?: number // optional, default 100
 }
 
 const SpecialIcons: { [key in SpecialLocationKey]?: React.ElementType } = {
@@ -51,6 +54,8 @@ export default function TimeEntryCard({
   entry,
   onEdit,
   onDelete,
+  driverCompensationPercent = 100,
+  passengerCompensationPercent = 100,
 }: TimeEntryCardProps) {
   const { t } = useTranslation()
 
@@ -61,34 +66,12 @@ export default function TimeEntryCard({
     ? SpecialIcons[entry.location as SpecialLocationKey]
     : undefined
 
-  const calculateCompensatedSeconds = () => {
-    if (typeof entry.durationMinutes === 'number') {
-      return entry.durationMinutes * 60
-    }
-    if (!entry.endTime) {
-      if (!entry.startTime) return 0
-      return (new Date().getTime() - entry.startTime.getTime()) / 1000
-    }
-
-    const workDurationInMinutes =
-      entry.startTime && entry.endTime
-        ? differenceInMinutes(entry.endTime, entry.startTime)
-        : entry.durationMinutes || 0
-
-    if (isSpecial) {
-      // For special entries, the duration is just the time between start and end.
-      return workDurationInMinutes * 60
-    }
-
-    const pauseInMinutes = entry.pauseDuration || 0
-    const travelInMinutes = (entry.travelTime || 0) * 60
-    const totalCompensatedMinutes =
-      workDurationInMinutes - pauseInMinutes + travelInMinutes
-
-    return totalCompensatedMinutes > 0 ? totalCompensatedMinutes * 60 : 0
-  }
-
-  const totalCompensatedSeconds = calculateCompensatedSeconds()
+  const totalCompensatedSeconds =
+    calculateTotalCompensatedMinutes(
+      [entry],
+      driverCompensationPercent,
+      passengerCompensationPercent,
+    ) * 60 // convert minutes to seconds for formatDuration
 
   const formattedStartTime = format(entry.startTime, 'p')
   const formattedEndTime =
@@ -202,20 +185,24 @@ export default function TimeEntryCard({
                   </span>
                 </div>
               ) : null}
-              {entry.travelTime && entry.travelTime > 0 ? (
+              {entry.driverTimeHours && entry.driverTimeHours > 0 ? (
                 <div className="flex items-center">
-                  <Timer className="mr-1.5 h-3.5 w-3.5" />
+                  <CarFront className="mr-1.5 h-3.5 w-3.5" />
                   <span>
-                    {t('time_entry_card.travelLabel', {
-                      hours: entry.travelTime,
+                    {t('time_entry_card.drivingLabel', {
+                      hours: entry.driverTimeHours,
                     })}
                   </span>
                 </div>
               ) : null}
-              {entry.isDriver ? (
+              {entry.passengerTimeHours && entry.passengerTimeHours > 0 ? (
                 <div className="flex items-center">
-                  <CarFront className="mr-1.5 h-3.5 w-3.5" />
-                  <span>{t('time_entry_card.driverLabel')}</span>
+                  <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                  <span>
+                    {t('time_entry_card.passengerLabel', {
+                      hours: entry.passengerTimeHours,
+                    })}
+                  </span>
                 </div>
               ) : null}
             </div>

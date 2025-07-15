@@ -1,15 +1,8 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import {
-  addMonths,
-  differenceInMinutes,
-  format,
-  isSameDay,
-  isSameMonth,
-  subMonths,
-} from 'date-fns'
+import { addMonths, format, isSameDay, subMonths } from 'date-fns'
 import { de, enUS } from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Download, Printer } from 'lucide-react'
 
@@ -82,44 +75,6 @@ export default function ExportPreview() {
     [entries],
   )
 
-  const calculateWeekTotal = useCallback(
-    (week: Date[]) => {
-      if (!selectedMonth) return 0
-      let totalMinutes = 0
-      week.forEach((day) => {
-        if (isSameMonth(day, selectedMonth)) {
-          getEntriesForDay(day).forEach((entry) => {
-            if (typeof entry.durationMinutes === 'number') {
-              totalMinutes += entry.durationMinutes
-            } else if (entry.startTime && entry.endTime) {
-              const workMinutes = differenceInMinutes(
-                entry.endTime,
-                entry.startTime,
-              )
-              const isCompensatedSpecialDay = [
-                'SICK_LEAVE',
-                'PTO',
-                'BANK_HOLIDAY',
-              ].includes(entry.location as string)
-
-              if (isCompensatedSpecialDay) {
-                totalMinutes += workMinutes
-              } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-                const compensatedMinutes =
-                  workMinutes -
-                  (entry.pauseDuration || 0) +
-                  (entry.travelTime || 0) * 60
-                totalMinutes += compensatedMinutes > 0 ? compensatedMinutes : 0
-              }
-            }
-          })
-        }
-      })
-      return totalMinutes / 60
-    },
-    [selectedMonth, getEntriesForDay],
-  )
-
   const getLocationDisplayName = useCallback(
     (location: string) => {
       if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
@@ -145,7 +100,6 @@ export default function ExportPreview() {
       t,
       locale,
       getEntriesForDay,
-      calculateWeekTotal,
       getLocationDisplayName,
     })
   }
@@ -331,7 +285,6 @@ export default function ExportPreview() {
             entries={entries}
             userSettings={userSettings}
             getEntriesForDay={getEntriesForDay}
-            calculateWeekTotal={calculateWeekTotal}
             getLocationDisplayName={getLocationDisplayName}
             onEdit={handleEditEntry}
             onAdd={handleAddNewEntry}

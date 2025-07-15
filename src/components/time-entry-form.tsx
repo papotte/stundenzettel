@@ -8,6 +8,7 @@ import { differenceInMinutes, parse, set } from 'date-fns'
 import {
   AlertTriangle,
   Calendar as CalendarIcon,
+  Info,
   Lightbulb,
   Save,
 } from 'lucide-react'
@@ -28,7 +29,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -62,11 +62,13 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import {
+  suggestDriverTimes,
   suggestEndTimes,
   suggestLocations,
+  suggestPassengerTimes,
   suggestStartTimes,
-  suggestTravelTimes,
 } from '@/lib/time-entry-suggestions'
+import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
@@ -100,16 +102,16 @@ const formSchema = z
       .optional(),
     duration: z.coerce
       .number()
-      .min(5, 'Minimum 5 minutes')
+      .min(15, 'Minimum 15 minutes')
       .max(1440, 'Maximum 24 hours')
-      .multipleOf(5, 'Must be a multiple of 5')
+      .multipleOf(15, 'Must be a multiple of 15')
       .optional(),
     pauseDuration: z
       .string()
       .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
       .optional(),
-    travelTime: z.coerce.number().min(0, 'Must be positive').optional(),
-    isDriver: z.boolean().optional(),
+    driverTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
+    passengerTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
   })
   .refine(
     (data) => {
@@ -125,7 +127,9 @@ const formSchema = z
       } else if (data.mode === 'duration') {
         if (!data.duration || Number.isNaN(data.duration)) return false
         return (
-          data.duration >= 5 && data.duration <= 1440 && data.duration % 5 === 0
+          data.duration >= 15 &&
+          data.duration <= 1440 &&
+          data.duration % 15 === 0
         )
       }
       return false
@@ -184,11 +188,8 @@ export default function TimeEntryForm({
           : defaultEndTime,
       duration: defaultDuration,
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
-      travelTime: entry?.travelTime || 0,
-      isDriver:
-        entry?.isDriver !== undefined
-          ? entry.isDriver
-          : (userSettings?.defaultIsDriver ?? false),
+      driverTimeHours: entry?.driverTimeHours || 0,
+      passengerTimeHours: entry?.passengerTimeHours || 0,
     },
   })
 
@@ -197,8 +198,9 @@ export default function TimeEntryForm({
   const startTimeValue = watch('startTime')
   const endTimeValue = watch('endTime')
   const pauseDurationValue = watch('pauseDuration')
-  const travelTimeValue = watch('travelTime')
   const locationValue = watch('location')
+  const driverTimeHoursValue = watch('driverTimeHours')
+  const passengerTimeHoursValue = watch('passengerTimeHours')
 
   const isSpecialEntry = useMemo(() => {
     return SPECIAL_LOCATION_KEYS.includes(
@@ -230,14 +232,22 @@ export default function TimeEntryForm({
       limit: 3,
     }).filter((s) => s !== currentEndTime)
   }, [entries, locationValue, isSpecialEntry, currentEndTime])
-  const currentTravelTime = watch('travelTime')
-  const travelTimeSuggestions = useMemo(() => {
+
+  const driverTimeSuggestions = useMemo(() => {
     if (isSpecialEntry || !locationValue) return []
-    return suggestTravelTimes(entries, {
+    return suggestDriverTimes(entries, {
       location: locationValue,
       limit: 3,
-    }).filter((s) => s !== currentTravelTime)
-  }, [entries, locationValue, isSpecialEntry, currentTravelTime])
+    })
+  }, [entries, locationValue, isSpecialEntry])
+
+  const passengerTimeSuggestions = useMemo(() => {
+    if (isSpecialEntry || !locationValue) return []
+    return suggestPassengerTimes(entries, {
+      location: locationValue,
+      limit: 3,
+    })
+  }, [entries, locationValue, isSpecialEntry])
 
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
@@ -247,8 +257,10 @@ export default function TimeEntryForm({
       if (end <= start) return null
 
       const workDurationInMinutes = differenceInMinutes(end, start)
-      const travelTimeInMinutes = (travelTimeValue || 0) * 60
-      const totalActivityInMinutes = workDurationInMinutes + travelTimeInMinutes
+      const driver = Number(driverTimeHoursValue) || 0
+      const passenger = Number(passengerTimeHoursValue) || 0
+      const totalActivityInMinutes =
+        workDurationInMinutes + (driver + passenger) * 60
 
       if (totalActivityInMinutes > 9 * 60) {
         return { minutes: 45, timeString: '00:45', reason: '9 hours' }
@@ -260,41 +272,78 @@ export default function TimeEntryForm({
     } catch {
       return null
     }
-  }, [startTimeValue, endTimeValue, travelTimeValue, isSpecialEntry])
+  }, [
+    startTimeValue,
+    endTimeValue,
+    isSpecialEntry,
+    driverTimeHoursValue,
+    passengerTimeHoursValue,
+  ])
 
-  const { workDurationInMinutes, totalCompensatedMinutes } = useMemo(() => {
+  const { workDurationInMinutes, compensatedMinutes } = useMemo(() => {
     try {
-      const start = parse(startTimeValue || '00:00', 'HH:mm', new Date())
-      const end = parse(endTimeValue || '00:00', 'HH:mm', new Date())
-      if (end <= start)
-        return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 }
-
-      const workDuration = differenceInMinutes(end, start)
-
-      if (isSpecialEntry) {
-        return {
-          workDurationInMinutes: workDuration,
-          totalCompensatedMinutes: workDuration,
-        }
+      // Build a temporary TimeEntry object from form values
+      const tempEntry: TimeEntry = {
+        id: 'temp',
+        userId: 'temp',
+        location: locationValue,
+        startTime:
+          modeValue === 'interval' && startTimeValue
+            ? parse(startTimeValue, 'HH:mm', new Date(getValues('date')))
+            : set(getValues('date') || new Date(), {
+                hours: 12,
+                minutes: 0,
+                seconds: 0,
+                milliseconds: 0,
+              }),
+        endTime:
+          modeValue === 'interval' && endTimeValue
+            ? parse(endTimeValue, 'HH:mm', new Date(getValues('date')))
+            : undefined,
+        durationMinutes:
+          modeValue === 'duration' ? Number(getValues('duration')) : undefined,
+        pauseDuration: isSpecialEntry
+          ? 0
+          : timeStringToMinutes(String(pauseDurationValue)),
+        driverTimeHours: isSpecialEntry ? 0 : Number(driverTimeHoursValue) || 0,
+        passengerTimeHours: isSpecialEntry
+          ? 0
+          : Number(passengerTimeHoursValue) || 0,
       }
-
-      const pauseInMinutes = timeStringToMinutes(String(pauseDurationValue))
-      const travelInMinutes = (travelTimeValue || 0) * 60
-      const total = workDuration - pauseInMinutes + travelInMinutes
-
+      const driverPercent = userSettings?.driverCompensationPercent ?? 100
+      const passengerPercent = userSettings?.passengerCompensationPercent ?? 100
+      const compensated = calculateTotalCompensatedMinutes(
+        [tempEntry],
+        driverPercent,
+        passengerPercent,
+      )
+      let workDuration = 0
+      if (modeValue === 'interval' && startTimeValue && endTimeValue) {
+        const start = parse(startTimeValue, 'HH:mm', new Date())
+        const end = parse(endTimeValue, 'HH:mm', new Date())
+        workDuration = end > start ? differenceInMinutes(end, start) : 0
+      } else if (modeValue === 'duration') {
+        workDuration = Number(getValues('duration')) || 0
+      }
       return {
         workDurationInMinutes: workDuration,
-        totalCompensatedMinutes: total > 0 ? total : 0,
+        compensatedMinutes: compensated,
       }
     } catch {
-      return { workDurationInMinutes: 0, totalCompensatedMinutes: 0 }
+      return { workDurationInMinutes: 0, compensatedMinutes: 0 }
     }
   }, [
     startTimeValue,
     endTimeValue,
     pauseDurationValue,
-    travelTimeValue,
     isSpecialEntry,
+    driverTimeHoursValue,
+    passengerTimeHoursValue,
+    userSettings?.driverCompensationPercent,
+    userSettings?.passengerCompensationPercent,
+    modeValue,
+    locationValue,
+    getValues,
   ])
 
   const handleGetCurrentLocation = async () => {
@@ -399,8 +448,8 @@ export default function TimeEntryForm({
         pauseDuration: finalIsSpecial
           ? 0
           : timeStringToMinutes(String(values.pauseDuration || '')),
-        travelTime: finalIsSpecial ? 0 : values.travelTime,
-        isDriver: finalIsSpecial ? false : values.isDriver,
+        driverTimeHours: finalIsSpecial ? 0 : values.driverTimeHours,
+        passengerTimeHours: finalIsSpecial ? 0 : values.passengerTimeHours,
       }
     } else {
       // duration mode
@@ -422,8 +471,8 @@ export default function TimeEntryForm({
         durationMinutes: values.duration,
         startTime,
         pauseDuration: 0,
-        travelTime: 0,
-        isDriver: false,
+        driverTimeHours: 0,
+        passengerTimeHours: 0,
       }
     }
     onSave(finalEntry)
@@ -527,7 +576,6 @@ export default function TimeEntryForm({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>
@@ -768,92 +816,162 @@ export default function TimeEntryForm({
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="travelTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t('time_entry_form.travelTimeLabel')}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.25"
-                              placeholder={t(
-                                'time_entry_form.travelTimePlaceholder',
-                              )}
-                              {...field}
-                            />
-                          </FormControl>
-                          {/* Travel time suggestions */}
-                          {travelTimeSuggestions.length > 0 && (
-                            <div className="flex gap-2 mt-2">
-                              {travelTimeSuggestions.map((s) => (
-                                <Tooltip key={s}>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
-                                      onClick={() =>
-                                        setValue('travelTime', s, {
-                                          shouldValidate: true,
-                                        })
-                                      }
-                                    >
-                                      <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
-                                      {s}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    {t(
-                                      'time_entry_form.smartSuggestionTooltip',
-                                    )}
-                                  </TooltipContent>
-                                </Tooltip>
-                              ))}
-                            </div>
-                          )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="flex flex-col gap-4">
+                      <FormField
+                        control={form.control}
+                        name="driverTimeHours"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t('time_entry_form.driverTimeLabel')}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min={0}
+                                step={0.25}
+                                placeholder="e.g. 1.5"
+                                value={field.value?.toString() ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  field.onChange(
+                                    val === '' ? 0 : parseFloat(val),
+                                  )
+                                }}
+                              />
+                            </FormControl>
+                            {driverTimeSuggestions.length > 0 && (
+                              <div className="flex gap-2 mt-2">
+                                {driverTimeSuggestions.map((s) => (
+                                  <Tooltip key={s}>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                        onClick={() =>
+                                          setValue('driverTimeHours', s, {
+                                            shouldValidate: true,
+                                          })
+                                        }
+                                      >
+                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                        {s}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {t(
+                                        'time_entry_form.smartSuggestionTooltip',
+                                      )}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="passengerTimeHours"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t('time_entry_form.passengerTimeLabel')}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                type="number"
+                                min={0}
+                                step={0.25}
+                                placeholder="e.g. 1.5"
+                                value={field.value?.toString() ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  field.onChange(
+                                    val === '' ? 0 : parseFloat(val),
+                                  )
+                                }}
+                              />
+                            </FormControl>
+                            {passengerTimeSuggestions.length > 0 && (
+                              <div className="flex gap-2 mt-2">
+                                {passengerTimeSuggestions.map((s) => (
+                                  <Tooltip key={s}>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                        onClick={() =>
+                                          setValue('passengerTimeHours', s, {
+                                            shouldValidate: true,
+                                          })
+                                        }
+                                      >
+                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                        {s}
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {t(
+                                        'time_entry_form.smartSuggestionTooltip',
+                                      )}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="isDriver"
-                    render={({ field }) => (
-                      <FormItem className="col-span-2 flex flex-row items-center space-x-3 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            {t('time_entry_form.driverLabel')}
-                          </FormLabel>
-                          <FormDescription>
-                            {t('time_entry_form.driverDescription')}
-                          </FormDescription>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
                 </>
               )}
 
               <div className="space-y-4 pt-4">
                 <Separator />
                 <div className="flex items-center justify-between font-medium">
-                  <span className="text-muted-foreground">
+                  <span className="text-muted-foreground flex items-center gap-2">
                     {t('time_entry_form.totalTimeLabel')}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            tabIndex={0}
+                            aria-label={t(
+                              'time_entry_form.compensatedInfoLabel',
+                            )}
+                            className="ml-1 text-primary hover:text-primary/80 focus:outline-none"
+                          >
+                            <Info className="w-4 h-4" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="top"
+                          align="start"
+                          className="max-w-xs text-xs"
+                        >
+                          {t('time_entry_form.compensatedInfo', {
+                            driver:
+                              userSettings?.driverCompensationPercent ?? 100,
+                            passenger:
+                              userSettings?.passengerCompensationPercent ?? 100,
+                          })}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </span>
                   <span className="text-lg text-primary">
-                    {formatHoursAndMinutes(totalCompensatedMinutes)}
+                    {formatHoursAndMinutes(compensatedMinutes)}
                   </span>
                 </div>
                 {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (

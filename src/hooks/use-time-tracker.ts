@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   addDays,
-  differenceInMinutes,
   endOfMonth,
   endOfWeek,
   isSameDay,
@@ -16,6 +15,7 @@ import {
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import type { Toast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
+import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime, formatAppDate } from '@/lib/utils'
 import {
@@ -355,30 +355,6 @@ export function useTimeTracker(
     [entries, selectedDate],
   )
 
-  const calculateTotalCompensatedMinutes = useCallback(
-    (entriesToSum: TimeEntry[]): number => {
-      return entriesToSum.reduce((total, entry) => {
-        if (typeof entry.durationMinutes === 'number') {
-          return total + entry.durationMinutes
-        } else if (entry.startTime && entry.endTime) {
-          const workMinutes = differenceInMinutes(
-            entry.endTime,
-            entry.startTime,
-          )
-
-          if (entry.location === 'TIME_OFF_IN_LIEU') {
-            return total
-          }
-          const travelMinutes = (entry.travelTime || 0) * 60
-          const pauseMinutes = entry.pauseDuration || 0
-          return total + workMinutes - pauseMinutes + travelMinutes
-        }
-        return total
-      }, 0)
-    },
-    [],
-  )
-
   const { dailyTotal, weeklyTotal, monthlyTotal } = useMemo(() => {
     if (!selectedDate || !entries.length) {
       return { dailyTotal: 0, weeklyTotal: 0, monthlyTotal: 0 }
@@ -397,12 +373,26 @@ export function useTimeTracker(
         entry.startTime &&
         isWithinInterval(entry.startTime, { start: monthStart, end: monthEnd }),
     )
+    const driverPercent = userSettings?.driverCompensationPercent ?? 100
+    const passengerPercent = userSettings?.passengerCompensationPercent ?? 100
     return {
-      dailyTotal: calculateTotalCompensatedMinutes(filteredEntries),
-      weeklyTotal: calculateTotalCompensatedMinutes(weekEntries),
-      monthlyTotal: calculateTotalCompensatedMinutes(monthEntries),
+      dailyTotal: calculateTotalCompensatedMinutes(
+        filteredEntries,
+        driverPercent,
+        passengerPercent,
+      ),
+      weeklyTotal: calculateTotalCompensatedMinutes(
+        weekEntries,
+        driverPercent,
+        passengerPercent,
+      ),
+      monthlyTotal: calculateTotalCompensatedMinutes(
+        monthEntries,
+        driverPercent,
+        passengerPercent,
+      ),
     }
-  }, [entries, selectedDate, filteredEntries, calculateTotalCompensatedMinutes])
+  }, [entries, selectedDate, filteredEntries, userSettings])
 
   const openNewEntryForm = useCallback(() => {
     setEditingEntry(null)
