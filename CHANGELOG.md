@@ -1,3 +1,16 @@
+# [1.5.0](https://github.com/papotte/stundenzettel/compare/v1.4.0...v1.5.0) (2025-07-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @next/mdx to v15.4.1 ([#61](https://github.com/papotte/stundenzettel/issues/61)) ([c5db83e](https://github.com/papotte/stundenzettel/commit/c5db83ee53660c9a313580e6a11e6f02771bd9f5))
+* **deps:** update dependency next to v15.4.1 ([#62](https://github.com/papotte/stundenzettel/issues/62)) ([163f57a](https://github.com/papotte/stundenzettel/commit/163f57a29dc2b433a0c665b16d8ebba55fd3b6ba))
+
+
+### Features
+
+* add compensation percentages to driving/passenger times ([#63](https://github.com/papotte/stundenzettel/issues/63)) ([1676099](https://github.com/papotte/stundenzettel/commit/167609929615a1d2a22149a906e35e5135ec16a6))
+
 # [1.4.0](https://github.com/papotte/stundenzettel/compare/v1.3.3...v1.4.0) (2025-07-14)
 
 
