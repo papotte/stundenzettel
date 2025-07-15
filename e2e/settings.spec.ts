@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+
 import { addManualEntry } from './test-helpers'
 
 test.describe('Settings Page', () => {
@@ -125,7 +126,9 @@ test.describe('Settings Page', () => {
     await expect(page.getByText('Malcolm X')).toBeVisible()
   })
 
-  test('changing compensation percentages updates entry compensated time', async ({ page }) => {
+  test('changing compensation percentages updates entry compensated time', async ({
+    page,
+  }) => {
     const location = 'Comp Test'
     // 1. Add an entry
     await addManualEntry(page, location, '09:00', '11:00')
@@ -134,7 +137,9 @@ test.describe('Settings Page', () => {
     const entryCard = page.locator(`[data-location="${location}"]`)
     await expect(entryCard).toBeVisible()
     await entryCard.getByRole('button', { name: 'Bearbeiten' }).click()
-    const editForm = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))')
+    const editForm = page.locator(
+      'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+    )
     await expect(editForm).toBeVisible()
     await editForm.getByLabel('Fahrzeit (als Fahrer)').fill('1')
     await editForm.getByLabel('Fahrzeit (als Beifahrer)').fill('1')
@@ -151,7 +156,9 @@ test.describe('Settings Page', () => {
     await page.getByLabel('Vergütung Fahrerzeit (%)').fill('80')
     await page.getByLabel('Vergütung Beifahrerzeit (%)').fill('60')
     await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
-    await expect(page.locator('[data-testid="toast-title"]')).toContainText('Einstellungen gespeichert')
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Einstellungen gespeichert',
+    )
 
     // 5. Go back to tracker and check compensated time is updated (2h + 0.8h + 0.6h = 3.4h = 03:24:00)
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()

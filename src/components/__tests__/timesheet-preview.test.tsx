@@ -32,8 +32,8 @@ const mockEntries: TimeEntry[] = [
     startTime: new Date('2024-07-01T09:00:00'),
     endTime: new Date('2024-07-01T17:00:00'),
     pauseDuration: 30, // 0.5 hours -> 0.50
-    travelTime: 0.5, // 0.5 hours -> 0.50
-    isDriver: false,
+    driverTimeHours: 0.5, // 0.5 hours as driver
+    passengerTimeHours: 0,
   },
   {
     id: '2',
@@ -41,19 +41,14 @@ const mockEntries: TimeEntry[] = [
     location: 'SICK_LEAVE',
     startTime: new Date('2024-07-02T09:00:00'),
     endTime: new Date('2024-07-02T17:00:00'), // 8 hours
+    pauseDuration: 0,
+    driverTimeHours: 0,
+    passengerTimeHours: 0,
   },
 ]
 
 const mockGetEntriesForDay = (day: Date) =>
   mockEntries.filter((e) => isSameDay(e.startTime, day))
-
-// This mock is now more realistic. It only returns a total for the week that actually contains entries.
-const mockCalculateWeekTotal = jest.fn((week: Date[]) => {
-  const weekHasEntry = week.some((day) =>
-    mockEntries.some((entry) => isSameDay(day, entry.startTime)),
-  )
-  return weekHasEntry ? 16 : 0
-})
 
 const mockGetLocationDisplayName = (location: string) =>
   location === 'SICK_LEAVE' ? 'Sick Leave' : location
@@ -66,7 +61,6 @@ const defaultProps = {
   entries: mockEntries,
   userSettings: mockUserSettings,
   getEntriesForDay: mockGetEntriesForDay,
-  calculateWeekTotal: mockCalculateWeekTotal,
   getLocationDisplayName: mockGetLocationDisplayName,
   onEdit: mockOnEdit,
   onAdd: mockOnAdd,
@@ -95,10 +89,10 @@ describe('TimesheetPreview', () => {
     expect(screen.getAllByText('09:00').length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText('17:00').length).toBeGreaterThanOrEqual(1)
 
-    // For the test data, there's one pause (30min -> 0.50) and one travel time (0.5 -> 0.50).
+    // For the test data, there's one pause (30min -> 0.50) and one driver time (0.5 -> 0.50).
     expect(screen.getAllByText('0.50')).toHaveLength(2)
 
-    // Two entries result in 8.00 compensated hours each
+    // Compensated time: (8h - 0.5h pause + 0.5h driver) = 8.00 for Office, 8.00 for Sick Leave
     expect(screen.getAllByText('8.00')).toHaveLength(2)
 
     // Check second entry (Sick Leave)
@@ -112,8 +106,8 @@ describe('TimesheetPreview', () => {
       screen.getAllByText('export_preview.footerTotalPerWeek').length,
     ).toBeGreaterThan(0)
 
-    // With our improved mock, only the week with entries and the grand total should show "16.00".
-    expect(screen.getAllByText('16.00')).toHaveLength(2)
+    // Only the week with entries, the grand total and the total after conversion should show "16.00" (8+8)
+    expect(screen.getAllByText('16.00')).toHaveLength(3)
 
     // The other weeks should show "0.00"
     expect(screen.getAllByText('0.00').length).toBeGreaterThan(0)
@@ -150,5 +144,42 @@ describe('TimesheetPreview', () => {
     expect(calledDate.getFullYear()).toBe(2024)
     expect(calledDate.getMonth()).toBe(6) // 0-indexed, so 6 is July
     expect(calledDate.getDate()).toBe(3)
+  })
+
+  it('displays correct converted totals with passenger hours', () => {
+    const entriesWithPassenger: TimeEntry[] = [
+      {
+        id: '1',
+        userId: 'test-user',
+        location: 'Office',
+        startTime: new Date('2024-07-01T09:00:00'),
+        endTime: new Date('2024-07-01T17:00:00'),
+        pauseDuration: 30,
+        driverTimeHours: 0,
+        passengerTimeHours: 2, // 2 hours as passenger
+      },
+    ]
+    const userSettingsWithPassengerPercent: UserSettings = {
+      ...mockUserSettings,
+      passengerCompensationPercent: 80,
+    }
+    render(
+      <TimesheetPreview
+        {...defaultProps}
+        entries={entriesWithPassenger}
+        userSettings={userSettingsWithPassengerPercent}
+        getEntriesForDay={(day) =>
+          entriesWithPassenger.filter((e) => isSameDay(e.startTime, day))
+        }
+      />,
+    )
+
+    // Compensated time: (8h - 0.5h pause) + (2h * 0.8) = 7.5 + 1.6 = 9.10
+    // Converted total: 7.5 + 2 = 9.5 (if that's how your UI displays it)
+    // Compensated passenger: 2 * 0.8 = 1.6
+
+    // Check for the converted total (Gesamtstd. nach Umr.)
+    expect(screen.getAllByText('9.10').length).toBeGreaterThan(0) // compensated + converted
+    expect(screen.getAllByText('1.60').length).toBeGreaterThan(0) // compensated passenger only
   })
 })

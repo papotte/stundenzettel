@@ -30,8 +30,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useTranslation } from '@/context/i18n-context'
-import { calculateTotalCompensatedMinutes } from '@/hooks/use-time-tracker'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
+import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
 import { formatDuration, getLocationDisplayName } from '@/lib/utils'
 

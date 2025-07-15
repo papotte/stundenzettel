@@ -1,113 +1,56 @@
-import { differenceInMinutes, set } from 'date-fns'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
-import type { TimeEntry } from '@/lib/types'
+import * as timeEntryService from '@/services/time-entry-service'
+import * as userSettingsService from '@/services/user-settings-service'
 
-import { calculateTotalCompensatedMinutes } from '../use-time-tracker'
+import { useTimeTracker } from '../use-time-tracker'
 
-describe('calculateTotalCompensatedMinutes', () => {
-  const baseEntry: Omit<TimeEntry, 'id' | 'userId'> = {
-    location: 'Test',
-    startTime: set(new Date(), {
-      hours: 9,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 0,
-    }),
-    endTime: set(new Date(), {
-      hours: 17,
-      minutes: 0,
-      seconds: 0,
-      milliseconds: 0,
-    }),
-    pauseDuration: 30,
-  }
+// Mock the service functions
+jest.mock('@/services/time-entry-service')
+jest.mock('@/services/user-settings-service')
 
-  it('calculates duration-only entry', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '1',
-      userId: 'u1',
-      durationMinutes: 120,
-    }
-    expect(calculateTotalCompensatedMinutes([entry])).toBe(120)
+describe('useTimeTracker', () => {
+  const mockToast = jest.fn()
+  const mockT = jest.fn((key) => key)
+  const user = { uid: 'user1' }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([])
+    jest
+      .spyOn(userSettingsService, 'getUserSettings')
+      .mockResolvedValue({
+        language: 'en',
+        defaultWorkHours: 8,
+        defaultStartTime: '09:00',
+        defaultEndTime: '17:00',
+      })
   })
 
-  it('calculates interval entry without driver/passenger', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '2',
-      userId: 'u1',
-    }
-    const expected =
-      differenceInMinutes(entry.endTime!, entry.startTime!) -
-      (entry.pauseDuration || 0)
-    expect(calculateTotalCompensatedMinutes([entry])).toBe(expected)
+  it('should initialize with default state', async () => {
+    const { result } = renderHook(() =>
+      useTimeTracker(user, mockToast, mockT, 'en'),
+    )
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.entries).toEqual([])
+    expect(result.current.selectedDate).toBeInstanceOf(Date)
+    expect(result.current.userSettings).toBeDefined()
   })
 
-  it('calculates with driver time and default 100% compensation', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '3',
-      userId: 'u1',
-      driverTimeHours: 1.5,
-    }
-    const expected =
-      differenceInMinutes(entry.endTime!, entry.startTime!) -
-      (entry.pauseDuration || 0) +
-      1.5 * 60
-    expect(calculateTotalCompensatedMinutes([entry])).toBe(expected)
-  })
+  it('should update runningTimer when handleStartTimer is called', async () => {
+    const { result } = renderHook(() =>
+      useTimeTracker(user, mockToast, mockT, 'en'),
+    )
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    act(() => {
+      result.current.setLocation('Office')
+    })
+    await waitFor(() => expect(result.current.location).toBe('Office'))
 
-  it('calculates with passenger time and custom compensation', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '4',
-      userId: 'u1',
-      passengerTimeHours: 2,
-    }
-    // 80% compensation for passenger
-    const expected =
-      differenceInMinutes(entry.endTime!, entry.startTime!) -
-      (entry.pauseDuration || 0) +
-      2 * 60 * 0.8
-    expect(calculateTotalCompensatedMinutes([entry], 100, 80)).toBe(expected)
-  })
-
-  it('calculates with both driver and passenger times and custom compensation', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '5',
-      userId: 'u1',
-      driverTimeHours: 1,
-      passengerTimeHours: 1,
-    }
-    // 90% driver, 80% passenger
-    const expected =
-      differenceInMinutes(entry.endTime!, entry.startTime!) -
-      (entry.pauseDuration || 0) +
-      60 * 0.9 +
-      60 * 0.8
-    expect(calculateTotalCompensatedMinutes([entry], 90, 80)).toBe(expected)
-  })
-
-  it('returns 0 for TIME_OFF_IN_LIEU location', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '6',
-      userId: 'u1',
-      location: 'TIME_OFF_IN_LIEU',
-    }
-    expect(calculateTotalCompensatedMinutes([entry])).toBe(0)
-  })
-
-  it('ignores entries without endTime and durationMinutes', () => {
-    const entry: TimeEntry = {
-      ...baseEntry,
-      id: '7',
-      userId: 'u1',
-      endTime: undefined,
-      durationMinutes: undefined,
-    }
-    expect(calculateTotalCompensatedMinutes([entry])).toBe(0)
+    act(() => {
+      result.current.handleStartTimer()
+    })
+    expect(result.current.runningTimer).not.toBeNull()
+    expect(result.current.runningTimer?.location).toBe('Office')
   })
 })

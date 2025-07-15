@@ -59,7 +59,6 @@ import {
 import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { calculateTotalCompensatedMinutes } from '@/hooks/use-time-tracker'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import {
@@ -69,6 +68,7 @@ import {
   suggestPassengerTimes,
   suggestStartTimes,
 } from '@/lib/time-entry-suggestions'
+import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
