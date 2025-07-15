@@ -17,14 +17,12 @@ describe('useTimeTracker', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([])
-    jest
-      .spyOn(userSettingsService, 'getUserSettings')
-      .mockResolvedValue({
-        language: 'en',
-        defaultWorkHours: 8,
-        defaultStartTime: '09:00',
-        defaultEndTime: '17:00',
-      })
+    jest.spyOn(userSettingsService, 'getUserSettings').mockResolvedValue({
+      language: 'en',
+      defaultWorkHours: 8,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
+    })
   })
 
   it('should initialize with default state', async () => {
