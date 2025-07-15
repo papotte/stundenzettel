@@ -121,6 +121,12 @@ The application will be available at [http://localhost:9002](http://localhost:90
 
 ---
 
+## Data Model Migration
+
+For information about data model migrations and how to run them, see [MIGRATIONS.md](./MIGRATIONS.md).
+
+---
+
 ## Code Quality (Linting & Formatting)
 
 This project uses [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier.io/) for code formatting to ensure code quality and consistency.
