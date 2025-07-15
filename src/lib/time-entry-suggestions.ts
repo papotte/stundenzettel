@@ -131,7 +131,9 @@ export function suggestEndTimes(
   return sorted.slice(0, limit).map(([time]) => time)
 }
 
-// travelTime is deprecated; function kept for compatibility
+/**
+ * @deprecated This function is kept for compatibility but always returns an empty array.
+ */
 export function suggestTravelTimes() {
   return []
 }
