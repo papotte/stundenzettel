@@ -213,7 +213,7 @@ test.describe('Core Tracker Functionality', () => {
       await expect(form.getByLabel('Pause')).toHaveValue('00:45')
     })
 
-    test('should correctly calculate total worked time with pause and travel', async ({
+    test('should correctly calculate total worked time with pause and driving time', async ({
       page,
     }) => {
       await page.getByRole('button', { name: 'Hinzufügen' }).click()
@@ -225,7 +225,7 @@ test.describe('Core Tracker Functionality', () => {
       await form.getByLabel('Startzeit').fill('08:00')
       await form.getByLabel('Endzeit').fill('12:00') // 4h
       await form.getByLabel('Pause').fill('00:30') // 30 min pause
-      await form.getByLabel('Fahrtzeit (Stunden)').fill('1.5') // 1.5h travel
+      await form.getByLabel('Fahrzeit (als Fahrer)').fill('1.5') // 1.5h driver
       // Should show total compensated time: 4h - 0.5h + 1.5h = 5h
       await expect(form.getByText('Vergütete Gesamtzeit:')).toBeVisible()
       await expect(form.getByText('5h 0m')).toBeVisible()
@@ -234,6 +234,30 @@ test.describe('Core Tracker Functionality', () => {
       const entryCard = page.locator('[data-location="Calc Test"]')
       await expect(entryCard).toBeVisible()
       await expect(entryCard.getByText('05:00:00')).toBeVisible()
+    })
+
+    test('should correctly calculate total worked time with pause, driving, and passenger time', async ({
+      page,
+    }) => {
+      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      const form = page.locator(
+        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+      )
+      await expect(form).toBeVisible()
+      await form.getByLabel('Einsatzort').fill('Calc Test 2')
+      await form.getByLabel('Startzeit').fill('08:00')
+      await form.getByLabel('Endzeit').fill('12:00') // 4h
+      await form.getByLabel('Pause').fill('00:30') // 30 min pause
+      await form.getByLabel('Fahrzeit (als Fahrer)').fill('1') // 1h driver
+      await form.getByLabel('Fahrzeit (als Beifahrer)').fill('0.5') // 0.5h passenger
+      // Should show total compensated time: 4h - 0.5h + 1h + 0.5h*0.9 = 4.95h => 4h 57m
+      await expect(form.getByText('Vergütete Gesamtzeit:')).toBeVisible()
+      await expect(form.getByText('4h 57m')).toBeVisible()
+      // Save and check card
+      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      const entryCard = page.locator('[data-location="Calc Test 2"]')
+      await expect(entryCard).toBeVisible()
+      await expect(entryCard.getByText('04:57:00')).toBeVisible()
     })
 
     test('should allow entry starting and/or ending at midnight', async ({

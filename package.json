@@ -4,8 +4,8 @@
   "private": false,
   "license": "MPL-2.0",
   "scripts": {
-    "dev": "next dev --turbopack -p 9002",
-    "dev:test": "NEXT_PUBLIC_ENVIRONMENT=test next dev --turbopack -p 9003",
+    "dev": "next dev -p 9002",
+    "dev:test": "NEXT_PUBLIC_ENVIRONMENT=test next dev -p 9003",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

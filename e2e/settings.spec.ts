@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { addManualEntry } from './test-helpers'
 
 test.describe('Settings Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -124,48 +125,37 @@ test.describe('Settings Page', () => {
     await expect(page.getByText('Malcolm X')).toBeVisible()
   })
 
-  test('should update default driver and see it marked in the time form', async ({
-    page,
-  }) => {
-    // Go to settings
+  test('changing compensation percentages updates entry compensated time', async ({ page }) => {
+    const location = 'Comp Test'
+    // 1. Add an entry
+    await addManualEntry(page, location, '09:00', '11:00')
+
+    // 2. Edit the entry to set driver and passenger time to 1
+    const entryCard = page.locator(`[data-location="${location}"]`)
+    await expect(entryCard).toBeVisible()
+    await entryCard.getByRole('button', { name: 'Bearbeiten' }).click()
+    const editForm = page.locator('div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))')
+    await expect(editForm).toBeVisible()
+    await editForm.getByLabel('Fahrzeit (als Fahrer)').fill('1')
+    await editForm.getByLabel('Fahrzeit (als Beifahrer)').fill('1')
+    await editForm.getByRole('button', { name: 'Eintrag speichern' }).click()
+    await expect(editForm).not.toBeVisible()
+
+    // 3. Assert compensated time is correct for default percentages (2h work + 1h driver + 0.9h passenger = 3.9h = 03:54:00)
+    // But the default is 100% driver, 90% passenger, so 2h + 1h + 0.9h = 3.9h = 03:54:00
+    await expect(entryCard.getByText('03:54:00')).toBeVisible()
+
+    // 4. Go to settings and change compensation percentages
     await page.getByRole('link', { name: 'Einstellungen' }).click()
     await page.waitForURL('/settings')
-    // Set default driver checkbox
-    await page.getByLabel('Standardmäßig als Fahrer').click()
-    await expect(page.getByLabel('Standardmäßig als Fahrer')).toBeChecked()
+    await page.getByLabel('Vergütung Fahrerzeit (%)').fill('80')
+    await page.getByLabel('Vergütung Beifahrerzeit (%)').fill('60')
     await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
-    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
-      'Einstellungen gespeichert',
-    )
-    // Go back to overview and then to time form
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText('Einstellungen gespeichert')
+
+    // 5. Go back to tracker and check compensated time is updated (2h + 0.8h + 0.6h = 3.4h = 03:24:00)
     await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
     await page.waitForURL('/tracker')
-    await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
-    const dialog = page.locator('div[role="dialog"]')
-    await expect(dialog).toBeVisible()
-    // Check for default driver marked in the time form
-    await expect(page.getByLabel('Fahrer')).toBeChecked()
-    // Cancel the dialog
-    await page.getByTestId('sheet-close-button').click()
-
-    await expect(dialog).not.toBeVisible()
-
-    // Go back to settings and unset default driver
-    await page.getByRole('link', { name: 'Einstellungen' }).click()
-    await page.waitForURL('/settings')
-    // Unset default driver checkbox
-    await page.getByLabel('Standardmäßig als Fahrer').click()
-    await expect(page.getByLabel('Standardmäßig als Fahrer')).not.toBeChecked()
-    await page.getByRole('button', { name: 'Einstellungen speichern' }).click()
-    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
-      'Einstellungen gespeichert',
-    )
-    // Go back to overview and then to time form
-    await page.getByRole('link', { name: 'Zurück zur Übersicht' }).click()
-    await page.waitForURL('/tracker')
-    await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
-    await expect(dialog).toBeVisible()
-    // Check for default driver marked in the time form
-    await expect(page.getByLabel('Fahrer')).not.toBeChecked()
+    await expect(entryCard.getByText('03:24:00')).toBeVisible()
   })
 })
