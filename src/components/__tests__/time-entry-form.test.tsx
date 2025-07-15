@@ -35,8 +35,8 @@ const entries = [
     startTime: new Date('2024-06-01T09:15:00'),
     endTime: new Date('2024-06-01T17:15:00'),
     pauseDuration: 30,
-    travelTime: 0.5,
-    isDriver: true,
+    driverTimeHours: 0.5,
+    passengerTimeHours: 0.25,
   },
   {
     id: '2',
@@ -45,8 +45,8 @@ const entries = [
     startTime: new Date('2024-06-02T08:00:00'),
     endTime: new Date('2024-06-02T16:00:00'),
     pauseDuration: 30,
-    travelTime: 0.25,
-    isDriver: false,
+    driverTimeHours: 0.25,
+    passengerTimeHours: 0.5,
   },
 ]
 
@@ -128,8 +128,8 @@ describe('TimeEntryForm', () => {
       startTime: new Date('2024-01-10T10:00:00'),
       endTime: new Date('2024-01-10T18:30:00'),
       pauseDuration: 45,
-      travelTime: 0.5,
-      isDriver: true,
+      driverTimeHours: 0.5,
+      passengerTimeHours: 0.25,
     }
 
     render(
@@ -155,9 +155,11 @@ describe('TimeEntryForm', () => {
       '00:45',
     )
     expect(
-      screen.getByLabelText('time_entry_form.travelTimeLabel'),
+      screen.getByLabelText('time_entry_form.driverTimeLabel'),
     ).toHaveValue(0.5)
-    expect(screen.getByLabelText('time_entry_form.driverLabel')).toBeChecked()
+    expect(
+      screen.getByLabelText('time_entry_form.passengerTimeLabel'),
+    ).toHaveValue(0.25)
     expect(screen.getByText('time_entry_form.editTitle')).toBeInTheDocument()
   })
 
@@ -558,8 +560,8 @@ describe('Duration-only entries', () => {
         location: 'Duration Project',
         durationMinutes: 90,
         pauseDuration: 0,
-        travelTime: 0,
-        isDriver: false,
+        driverTimeHours: 0,
+        passengerTimeHours: 0,
       }),
     )
     // Should not have startTime/endTime fields (or they should be undefined)
@@ -590,14 +592,14 @@ describe('Duration-only entries', () => {
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
-    expect(await screen.findByText(/5/)).toBeInTheDocument() // Should mention minimum 15 minutes
+    expect(await screen.findByText(/15 minutes/)).toBeInTheDocument() // Should mention minimum 15 minutes
     expect(mockOnSave).not.toHaveBeenCalled()
-    // Enter invalid duration (e.g., 7)
-    await user.type(durationInput, '7')
+    // Enter invalid duration (e.g., 17)
+    await user.type(durationInput, '17')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
-    expect(await screen.findByText(/multiple of 5/)).toBeInTheDocument()
+    expect(await screen.findByText(/multiple of 15/)).toBeInTheDocument()
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
@@ -605,13 +607,12 @@ describe('Duration-only entries', () => {
     const user = userEvent.setup()
     const durationEntry: TimeEntry = {
       id: 'd1',
-      userId: 'u1',
+      userId: 'user-1',
       location: 'Duration Edit',
-      durationMinutes: 120,
-      startTime: new Date('2024-07-01T12:00:00'),
+      durationMinutes: 150,
+      startTime: new Date('2024-07-01T10:00:00'),
       pauseDuration: 0,
-      travelTime: 0,
-      isDriver: false,
+      // No drivingTimeHours or passengerTimeHours
     }
     render(
       <TestWrapper
@@ -628,7 +629,7 @@ describe('Duration-only entries', () => {
     const durationInput = screen.getByLabelText(
       'time_entry_form.durationFormLabel',
     )
-    expect(durationInput).toHaveValue(120)
+    expect(durationInput).toHaveValue(150)
     // Edit duration
     await user.clear(durationInput)
     await user.type(durationInput, '150')
@@ -644,13 +645,13 @@ describe('Duration-only entries', () => {
         location: 'Duration Edit',
         durationMinutes: 150,
         pauseDuration: 0,
-        travelTime: 0,
-        isDriver: false,
+        driverTimeHours: 0,
+        passengerTimeHours: 0,
       }),
     )
   })
 
-  it('shows error if duration is less than 5', async () => {
+  it('shows error if duration is less than 15', async () => {
     const user = userEvent.setup()
     render(
       <TestWrapper
@@ -672,7 +673,7 @@ describe('Duration-only entries', () => {
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
-    const error = await screen.findByText(/Minimum 5 minutes/i)
+    const error = await screen.findByText(/Minimum 15 minutes/i)
     expect(error).toBeVisible()
     expect(mockOnSave).not.toHaveBeenCalled()
   })
@@ -704,7 +705,7 @@ describe('Duration-only entries', () => {
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
-  it('shows error if duration is not a multiple of 5', async () => {
+  it('shows error if duration is not a multiple of 15', async () => {
     const user = userEvent.setup()
     render(
       <TestWrapper
@@ -726,7 +727,7 @@ describe('Duration-only entries', () => {
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
-    const error = await screen.findByText(/multiple of 5/i)
+    const error = await screen.findByText(/multiple of 15/i)
     expect(error).toBeVisible()
     expect(mockOnSave).not.toHaveBeenCalled()
   })
@@ -740,8 +741,7 @@ describe('Special entry location field', () => {
       startTime: new Date('2024-07-01T12:00:00'),
       durationMinutes: 480,
       pauseDuration: 0,
-      travelTime: 0,
-      isDriver: false,
+      // No drivingTimeHours or passengerTimeHours
       userId: 'test-user',
     }
     render(

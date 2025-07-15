@@ -13,8 +13,8 @@ export interface TimeEntry {
   durationMinutes?: number // Only for duration-only entries
   location: string
   pauseDuration?: number // in minutes
-  travelTime?: number // in decimal hours
-  isDriver?: boolean
+  driverTimeHours?: number // optional, decimal hours spent as driver
+  passengerTimeHours?: number // optional, decimal hours spent as passenger
 }
 
 export interface UserSettings {
@@ -22,13 +22,14 @@ export interface UserSettings {
   defaultStartTime: string
   defaultEndTime: string
   language: 'en' | 'de'
-  defaultIsDriver?: boolean
   displayName?: string
   companyName?: string
   companyEmail?: string
   companyPhone1?: string
   companyPhone2?: string
   companyFax?: string
+  driverCompensationPercent?: number // percent, default 100
+  passengerCompensationPercent?: number // percent, default 90
 }
 
 export interface AuthenticatedUser {

@@ -80,6 +80,8 @@ export const dictionaries = {
       travelLabel: '{hours}h travel',
       driverLabel: 'Driver',
       runningLabel: 'Now',
+      drivingLabel: '{hours}h driving',
+      passengerLabel: '{hours}h passenger',
     },
     // Time Entry Form
     time_entry_form: {
@@ -107,6 +109,9 @@ export const dictionaries = {
       travelTimePlaceholder: 'e.g. 1.5',
       driverLabel: 'Driver',
       driverDescription: 'Were you the designated driver?',
+      driverTimeLabel: 'Driving Time (as Driver)',
+      passengerTimeLabel: 'Driving Time (as Passenger)',
+      passengerTimeTotalLabel: 'Time as Passenger',
       totalTimeLabel: 'Total Compensated Time:',
       warning10HoursTitle: 'Warning: Exceeds 10 Hours',
       warning10HoursDescription:
@@ -137,6 +142,8 @@ export const dictionaries = {
       durationFormLabel: 'Duration (minutes)',
       durationInvalid:
         'Please enter a valid duration in minutes. Minimum is 5 minutes.',
+      compensatedInfo:
+        'Compensated time = Worked time - Pause + Driver time × {driver}% + Passenger time × {passenger}%',
     },
     // Toasts
     toasts: {
@@ -203,6 +210,12 @@ export const dictionaries = {
       displayNameDescription:
         'This name will appear on your export preview and Excel file. Leave blank to use your account name.',
       displayNamePlaceholder: 'e.g. John Doe',
+      driverCompensationPercentLabel: 'Driver time compensation (%)',
+      driverCompensationPercentDescription:
+        'Percentage of driving time as driver that is counted as compensated time.',
+      passengerCompensationPercentLabel: 'Passenger time compensation (%)',
+      passengerCompensationPercentDescription:
+        'Percentage of driving time as passenger that is counted as compensated time.',
     },
     // Export Page
     export_page: {
@@ -423,7 +436,7 @@ export const dictionaries = {
         'Diese Aktion kann nicht rückgängig gemacht werden. Der Zeiteintrag für "{location}" wird dauerhaft gelöscht.',
       deleteAlertCancel: 'Abbrechen',
       deleteAlertConfirm: 'Löschen',
-      pauseLabel: 'Pause',
+      pauseLabel: '{minutes}m Pause',
       pauseDurationLabel: 'Pausendauer (HH:mm)',
       pauseDurationDescription:
         'Geben Sie die Gesamtdauer Ihrer Pause im Format HH:mm ein (z.B. {example} für 30 Minuten).',
@@ -432,6 +445,8 @@ export const dictionaries = {
       travelLabel: '{hours} Std. Fahrt',
       driverLabel: 'Fahrer',
       runningLabel: 'Jetzt',
+      drivingLabel: '{hours} Std. Fahrer',
+      passengerLabel: '{hours} Std. Beifahrer',
     },
     // Time Entry Form
     time_entry_form: {
@@ -460,6 +475,9 @@ export const dictionaries = {
       travelTimePlaceholder: 'z.B. 1,5',
       driverLabel: 'Fahrer',
       driverDescription: 'Waren Sie der designierte Fahrer?',
+      driverTimeLabel: 'Fahrzeit (als Fahrer)',
+      passengerTimeLabel: 'Fahrzeit (als Beifahrer)',
+      passengerTimeTotalLabel: 'Zeit als Beifahrer',
       totalTimeLabel: 'Vergütete Gesamtzeit:',
       warning10HoursTitle: 'Warnung: 10 Stunden überschritten',
       warning10HoursDescription:
@@ -492,6 +510,8 @@ export const dictionaries = {
       durationFormLabel: 'Dauer (Minuten)',
       durationInvalid:
         'Bitte geben Sie eine gültige Dauer in Minuten ein. Mindestdauer ist 5 Minuten.',
+      compensatedInfo:
+        'Vergütete Zeit = Arbeitszeit - Pause + Fahrerzeit × {driver}% + Beifahrerzeit × {passenger}%',
     },
     // Toasts
     toasts: {
@@ -565,6 +585,12 @@ export const dictionaries = {
       displayNameDescription:
         'Dieser Name erscheint in der Export-Vorschau und in der Excel-Datei. Leer lassen, um den Kontonamen zu verwenden.',
       displayNamePlaceholder: 'z.B. Max Mustermann',
+      driverCompensationPercentLabel: 'Vergütung Fahrerzeit (%)',
+      driverCompensationPercentDescription:
+        'Prozentsatz der Fahrerzeit, der als vergütete Zeit angerechnet wird.',
+      passengerCompensationPercentLabel: 'Vergütung Beifahrerzeit (%)',
+      passengerCompensationPercentDescription:
+        'Prozentsatz der Beifahrerzeit, der als vergütete Zeit angerechnet wird.',
     },
     // Export Page
     export_page: {

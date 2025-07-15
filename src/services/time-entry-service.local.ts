@@ -24,8 +24,7 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
         milliseconds: 0,
       }),
       pauseDuration: 30,
-      travelTime: 1,
-      isDriver: false,
+      passengerTimeHours: 1,
     },
     {
       id: '2',
@@ -44,8 +43,7 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
         milliseconds: 0,
       }),
       pauseDuration: 45,
-      travelTime: 0.5,
-      isDriver: false,
+      passengerTimeHours: 0.5,
     },
     {
       id: '3',
@@ -64,8 +62,7 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
         milliseconds: 0,
       }),
       pauseDuration: 0,
-      travelTime: 1,
-      isDriver: true,
+      driverTimeHours: 1,
     },
     {
       id: '4',
@@ -84,8 +81,7 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
         milliseconds: 0,
       }),
       pauseDuration: 30,
-      travelTime: 0,
-      isDriver: false,
+      passengerTimeHours: 0,
     },
     {
       id: '5',
@@ -104,8 +100,8 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
         milliseconds: 0,
       }),
       pauseDuration: 30,
-      travelTime: 1,
-      isDriver: true,
+      driverTimeHours: 1,
+      passengerTimeHours: 1,
     },
     {
       id: '6',
@@ -124,8 +120,7 @@ if (process.env.NEXT_PUBLIC_ENVIRONMENT == 'development') {
         milliseconds: 0,
       }),
       pauseDuration: 0,
-      travelTime: 0,
-      isDriver: false,
+      passengerTimeHours: 0,
     },
     {
       id: '7',

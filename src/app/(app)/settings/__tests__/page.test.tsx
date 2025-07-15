@@ -62,8 +62,9 @@ const mockSettings: UserSettings = {
   companyPhone1: '12345',
   companyPhone2: '67890',
   companyFax: '54321',
-  defaultIsDriver: true,
   displayName: 'Export User',
+  driverCompensationPercent: 100,
+  passengerCompensationPercent: 90,
 }
 
 let currentSettings: UserSettings
@@ -95,7 +96,8 @@ describe('SettingsPage', () => {
     expect(screen.getByDisplayValue('12345')).toBeInTheDocument()
     expect(screen.getByDisplayValue('67890')).toBeInTheDocument()
     expect(screen.getByDisplayValue('54321')).toBeInTheDocument()
-    expect(screen.getByLabelText('settings.defaultIsDriverLabel')).toBeChecked()
+    expect(screen.getByDisplayValue('100')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('90')).toBeInTheDocument()
   })
 
   it('allows user to change displayName and save', async () => {
@@ -172,19 +174,34 @@ describe('SettingsPage', () => {
     await userEvent.click(within(listbox).getByText('settings.languageEnglish'))
     await userEvent.tab()
 
-    const driverCheckbox = screen.getByLabelText(
-      'settings.defaultIsDriverLabel',
+    // Change compensation percentages
+    const driverPercentInput = screen.getByLabelText(
+      'settings.driverCompensationPercentLabel',
     )
-    expect(driverCheckbox).toBeChecked()
-    await userEvent.click(driverCheckbox)
-    await waitFor(() => expect(driverCheckbox).not.toBeChecked())
+    await userEvent.clear(driverPercentInput)
+    await userEvent.type(driverPercentInput, '80')
+    await userEvent.tab()
+    const passengerPercentInput = screen.getByLabelText(
+      'settings.passengerCompensationPercentLabel',
+    )
+    await userEvent.clear(passengerPercentInput)
+    await userEvent.type(passengerPercentInput, '70')
+    await userEvent.tab()
 
     await userEvent.click(
       screen.getByRole('button', { name: 'settings.saveButton' }),
     )
 
     expect(mockedSetUserSettings).toHaveBeenCalledTimes(1)
-
+    expect(mockedSetUserSettings).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        defaultWorkHours: 8,
+        companyName: 'New Awesome Inc.',
+        driverCompensationPercent: 80,
+        passengerCompensationPercent: 70,
+      }),
+    )
     expect(mockSetLanguageState).toHaveBeenCalledTimes(1)
     expect(mockToast).toHaveBeenCalledWith({
       title: 'settings.savedTitle',

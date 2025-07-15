@@ -131,31 +131,36 @@ export function suggestEndTimes(
   return sorted.slice(0, limit).map(([time]) => time)
 }
 
+// travelTime is deprecated; function kept for compatibility
+export function suggestTravelTimes() {
+  return []
+}
+
 /**
- * Returns the most common travel times, optionally filtered by location.
+ * Returns the most common driver times, optionally filtered by location.
  * @param entries Array of TimeEntry objects
  * @param options Optional: { location, limit }
  */
-export function suggestTravelTimes(
+export function suggestDriverTimes(
   entries: TimeEntry[],
   options?: { location?: string; limit?: number },
 ) {
   if (!entries.length) return []
   let filtered = entries.filter(
-    (e) => typeof e.travelTime === 'number' && e.travelTime > 0,
+    (e) => typeof e.driverTimeHours === 'number' && e.driverTimeHours > 0,
   )
   if (options?.location) {
     filtered = filtered.filter((e) => e.location === options.location)
   }
   const timeMap = new Map<number, { count: number; lastUsed: number }>()
   filtered.forEach((e) => {
-    const travel = e.travelTime!
+    const driver = e.driverTimeHours!
     const lastUsed = e.startTime.getTime()
-    if (!timeMap.has(travel)) {
-      timeMap.set(travel, { count: 1, lastUsed })
+    if (!timeMap.has(driver)) {
+      timeMap.set(driver, { count: 1, lastUsed })
     } else {
-      const prev = timeMap.get(travel)!
-      timeMap.set(travel, {
+      const prev = timeMap.get(driver)!
+      timeMap.set(driver, {
         count: prev.count + 1,
         lastUsed: Math.max(prev.lastUsed, lastUsed),
       })
@@ -166,5 +171,43 @@ export function suggestTravelTimes(
     return b[1].lastUsed - a[1].lastUsed
   })
   const limit = options?.limit ?? 3
-  return sorted.slice(0, limit).map(([travel]) => travel)
+  return sorted.slice(0, limit).map(([driver]) => driver)
+}
+
+/**
+ * Returns the most common passenger times, optionally filtered by location.
+ * @param entries Array of TimeEntry objects
+ * @param options Optional: { location, limit }
+ */
+export function suggestPassengerTimes(
+  entries: TimeEntry[],
+  options?: { location?: string; limit?: number },
+) {
+  if (!entries.length) return []
+  let filtered = entries.filter(
+    (e) => typeof e.passengerTimeHours === 'number' && e.passengerTimeHours > 0,
+  )
+  if (options?.location) {
+    filtered = filtered.filter((e) => e.location === options.location)
+  }
+  const timeMap = new Map<number, { count: number; lastUsed: number }>()
+  filtered.forEach((e) => {
+    const passenger = e.passengerTimeHours!
+    const lastUsed = e.startTime.getTime()
+    if (!timeMap.has(passenger)) {
+      timeMap.set(passenger, { count: 1, lastUsed })
+    } else {
+      const prev = timeMap.get(passenger)!
+      timeMap.set(passenger, {
+        count: prev.count + 1,
+        lastUsed: Math.max(prev.lastUsed, lastUsed),
+      })
+    }
+  })
+  const sorted = Array.from(timeMap.entries()).sort((a, b) => {
+    if (b[1].count !== a[1].count) return b[1].count - a[1].count
+    return b[1].lastUsed - a[1].lastUsed
+  })
+  const limit = options?.limit ?? 3
+  return sorted.slice(0, limit).map(([passenger]) => passenger)
 }

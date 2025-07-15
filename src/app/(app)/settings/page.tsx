@@ -52,13 +52,19 @@ const settingsFormSchema = z.object({
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
   language: z.enum(['en', 'de']),
-  defaultIsDriver: z.boolean().optional(),
   displayName: z.string().optional(), // New
   companyName: z.string().optional(),
   companyEmail: z.string().email().optional().or(z.literal('')),
   companyPhone1: z.string().optional(),
   companyPhone2: z.string().optional(),
   companyFax: z.string().optional(),
+  driverCompensationPercent: z.coerce.number().int().min(0).max(100).optional(),
+  passengerCompensationPercent: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(100)
+    .optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>
@@ -80,13 +86,14 @@ export default function SettingsPage() {
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
       language: language,
-      defaultIsDriver: false,
-      displayName: '', // New
+      displayName: '',
       companyName: '',
       companyEmail: '',
       companyPhone1: '',
       companyPhone2: '',
       companyFax: '',
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 90,
     },
   })
 
@@ -213,30 +220,6 @@ export default function SettingsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="defaultIsDriver"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center gap-4 mb-2">
-                      <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={(e) => field.onChange(e.target.checked)}
-                          id="defaultIsDriver"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel htmlFor="defaultIsDriver">
-                          {t('settings.defaultIsDriverLabel')}
-                        </FormLabel>
-                        <FormDescription>
-                          {t('settings.defaultIsDriverDescription')}
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="displayName"
                   render={({ field }) => {
                     return (
@@ -311,6 +294,54 @@ export default function SettingsPage() {
                       </FormControl>
                       <FormDescription>
                         {t('settings.languageDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="driverCompensationPercent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t('settings.driverCompensationPercentLabel')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {t('settings.driverCompensationPercentDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="passengerCompensationPercent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t('settings.passengerCompensationPercentLabel')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {t('settings.passengerCompensationPercentDescription')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

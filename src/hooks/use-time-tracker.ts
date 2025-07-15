@@ -16,6 +16,7 @@ import {
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import type { Toast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
+import { SPECIAL_LOCATION_KEYS } from '@/lib/constants'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime, formatAppDate } from '@/lib/utils'
 import {
@@ -26,6 +27,41 @@ import {
   updateTimeEntry,
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
+
+// Move this outside the hook for export
+function calculateTotalCompensatedMinutes(
+  entriesToSum: TimeEntry[],
+  driverCompPercent: number = 100,
+  passengerCompPercent: number = 100,
+): number {
+  return entriesToSum.reduce((total, entry) => {
+    if (typeof entry.durationMinutes === 'number') {
+      return total + entry.durationMinutes
+    } else if (entry.startTime && entry.endTime) {
+      const workMinutes = differenceInMinutes(entry.endTime, entry.startTime)
+      if (entry.location === 'TIME_OFF_IN_LIEU') {
+        return total
+      }
+      // For special entries, only count work duration
+      if (SPECIAL_LOCATION_KEYS.includes(entry.location as any)) {
+        return total + workMinutes
+      }
+      const pauseMinutes = entry.pauseDuration || 0
+      const driver = entry.driverTimeHours || 0
+      const passenger = entry.passengerTimeHours || 0
+      const driverPercent = driverCompPercent / 100
+      const passengerPercent = passengerCompPercent / 100
+      // Compensated: work - pause + driver time * driver% + passenger time * passenger%
+      const compensated =
+        workMinutes -
+        pauseMinutes +
+        driver * 60 * driverPercent +
+        passenger * 60 * passengerPercent
+      return total + (compensated > 0 ? compensated : 0)
+    }
+    return total
+  }, 0)
+}
 
 export function useTimeTracker(
   user: { uid: string } | null,
@@ -355,30 +391,6 @@ export function useTimeTracker(
     [entries, selectedDate],
   )
 
-  const calculateTotalCompensatedMinutes = useCallback(
-    (entriesToSum: TimeEntry[]): number => {
-      return entriesToSum.reduce((total, entry) => {
-        if (typeof entry.durationMinutes === 'number') {
-          return total + entry.durationMinutes
-        } else if (entry.startTime && entry.endTime) {
-          const workMinutes = differenceInMinutes(
-            entry.endTime,
-            entry.startTime,
-          )
-
-          if (entry.location === 'TIME_OFF_IN_LIEU') {
-            return total
-          }
-          const travelMinutes = (entry.travelTime || 0) * 60
-          const pauseMinutes = entry.pauseDuration || 0
-          return total + workMinutes - pauseMinutes + travelMinutes
-        }
-        return total
-      }, 0)
-    },
-    [],
-  )
-
   const { dailyTotal, weeklyTotal, monthlyTotal } = useMemo(() => {
     if (!selectedDate || !entries.length) {
       return { dailyTotal: 0, weeklyTotal: 0, monthlyTotal: 0 }
@@ -397,12 +409,26 @@ export function useTimeTracker(
         entry.startTime &&
         isWithinInterval(entry.startTime, { start: monthStart, end: monthEnd }),
     )
+    const driverPercent = userSettings?.driverCompensationPercent ?? 100
+    const passengerPercent = userSettings?.passengerCompensationPercent ?? 100
     return {
-      dailyTotal: calculateTotalCompensatedMinutes(filteredEntries),
-      weeklyTotal: calculateTotalCompensatedMinutes(weekEntries),
-      monthlyTotal: calculateTotalCompensatedMinutes(monthEntries),
+      dailyTotal: calculateTotalCompensatedMinutes(
+        filteredEntries,
+        driverPercent,
+        passengerPercent,
+      ),
+      weeklyTotal: calculateTotalCompensatedMinutes(
+        weekEntries,
+        driverPercent,
+        passengerPercent,
+      ),
+      monthlyTotal: calculateTotalCompensatedMinutes(
+        monthEntries,
+        driverPercent,
+        passengerPercent,
+      ),
     }
-  }, [entries, selectedDate, filteredEntries, calculateTotalCompensatedMinutes])
+  }, [entries, selectedDate, filteredEntries, userSettings])
 
   const openNewEntryForm = useCallback(() => {
     setEditingEntry(null)
@@ -449,3 +475,5 @@ export function useTimeTracker(
     formattedSelectedDate,
   }
 }
+
+export { calculateTotalCompensatedMinutes }

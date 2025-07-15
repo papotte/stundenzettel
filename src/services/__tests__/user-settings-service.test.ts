@@ -3,7 +3,6 @@ import type { UserSettings } from '@/lib/types'
 import { getUserSettings, setUserSettings } from '../user-settings-service'
 
 // These tests will automatically use the local implementation due to the environment.
-
 describe('User Settings Service (Local Implementation)', () => {
   const existingUserIdWithCustomSettings = 'mock-user-1'
   const newUserId = 'new-user-for-settings-test'
@@ -13,13 +12,14 @@ describe('User Settings Service (Local Implementation)', () => {
     defaultStartTime: '09:00',
     defaultEndTime: '17:00',
     language: 'en',
-    defaultIsDriver: false,
     displayName: '',
     companyName: '',
     companyEmail: '',
     companyPhone1: '',
     companyPhone2: '',
     companyFax: '',
+    driverCompensationPercent: 100,
+    passengerCompensationPercent: 90,
   }
 
   it('should get custom settings for a pre-configured user', async () => {
@@ -28,7 +28,8 @@ describe('User Settings Service (Local Implementation)', () => {
     expect(settings.companyName).toBe('Acme Inc.')
     expect(settings.defaultWorkHours).toBe(7)
     expect(settings.displayName).toBe('')
-    expect(settings.defaultIsDriver).toBe(false)
+    expect(settings.driverCompensationPercent).toBe(100)
+    expect(settings.passengerCompensationPercent).toBe(90)
   })
 
   it('should return default settings for a new user', async () => {
@@ -41,8 +42,9 @@ describe('User Settings Service (Local Implementation)', () => {
       language: 'en',
       defaultWorkHours: 8.5,
       companyName: 'Test Corp Inc.',
-      defaultIsDriver: true,
       displayName: 'Export Name',
+      driverCompensationPercent: 80,
+      passengerCompensationPercent: 70,
     }
     await setUserSettings(newUserId, settingsToSet as UserSettings)
     const updatedSettings = await getUserSettings(newUserId)
@@ -52,8 +54,9 @@ describe('User Settings Service (Local Implementation)', () => {
     expect(updatedSettings.defaultStartTime).toBe(
       defaultSettings.defaultStartTime,
     )
-    expect(updatedSettings.defaultIsDriver).toBe(true)
     expect(updatedSettings.displayName).toBe('Export Name')
+    expect(updatedSettings.driverCompensationPercent).toBe(80)
+    expect(updatedSettings.passengerCompensationPercent).toBe(70)
   })
 
   it('should allow clearing displayName (blank fallback)', async () => {
