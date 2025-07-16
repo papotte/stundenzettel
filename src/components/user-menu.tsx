@@ -66,6 +66,7 @@ export default function UserMenu({
         <TooltipTrigger asChild>
           <DropdownMenuTrigger asChild>
             <Button
+              data-testid="user-menu-btn"
               variant={variant}
               size={size}
               className={`relative rounded-full hover:bg-green-600 hover:text-white transition-colors ${className}`}

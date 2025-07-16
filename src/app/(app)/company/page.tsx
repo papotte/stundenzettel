@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Building } from 'lucide-react';
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -163,7 +163,7 @@ export default function CompanyPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span>🏢</span>
+              <Building className="h-5 w-5" />
               {t('settings.company')}
             </CardTitle>
             <CardDescription>
