@@ -37,3 +37,85 @@ export interface AuthenticatedUser {
   displayName: string | null
   email: string | null
 }
+
+// Payment and Subscription Types
+export interface Subscription {
+  stripeSubscriptionId: string
+  stripeCustomerId: string
+  status:
+    | 'active'
+    | 'canceled'
+    | 'incomplete'
+    | 'incomplete_expired'
+    | 'past_due'
+    | 'trialing'
+    | 'unpaid'
+    | 'inactive'
+  currentPeriodStart: Date
+  currentPeriodEnd: Date
+  cancelAtPeriodEnd: boolean
+  priceId: string
+  quantity?: number
+  updatedAt: Date
+}
+
+export interface Payment {
+  invoiceId: string
+  amount: number
+  status: 'succeeded' | 'failed' | 'pending'
+  paidAt?: Date
+  failedAt?: Date
+}
+
+export interface PricingPlan {
+  id: string
+  name: string
+  price: number
+  currency: string
+  interval: 'month' | 'year'
+  features: string[]
+  stripePriceId: string
+  maxUsers?: number // For team plans
+  tieredPricing?: {
+    tiers: Array<{ from: number; to?: number; price: number; currency: string }>
+    displayText: string
+  }
+}
+
+// Team Management Types
+export interface Team {
+  id: string
+  name: string
+  description?: string
+  ownerId: string
+  createdAt: Date
+  updatedAt: Date
+  subscription?: Subscription
+}
+
+export interface TeamMember {
+  id: string
+  email: string
+  role: 'owner' | 'admin' | 'member'
+  joinedAt: Date
+  invitedBy: string
+}
+
+export interface TeamInvitation {
+  id: string
+  teamId: string
+  email: string
+  role: 'admin' | 'member'
+  invitedBy: string
+  invitedAt: Date
+  expiresAt: Date
+  status: 'pending' | 'accepted' | 'expired'
+}
+
+// User Profile with Subscription
+export interface UserProfile extends AuthenticatedUser {
+  subscription?: Subscription
+  teams?: TeamMember[]
+  isSubscribed: boolean
+  isTeamMember: boolean
+}

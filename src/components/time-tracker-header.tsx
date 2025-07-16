@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Cog, FileSpreadsheet, LogOut, Trash2 } from 'lucide-react'
+import { FileSpreadsheet, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 import {
@@ -15,16 +15,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
-import { useAuth } from '@/hooks/use-auth'
 
 import TimeWiseIcon from './time-wise-icon'
+import UserMenu from './user-menu'
 
 interface TimeTrackerHeaderProps {
   showClearData: boolean
@@ -35,12 +31,7 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
 }) => {
   const { t } = useTranslation()
   const { handleClearData } = useTimeTrackerContext()
-  const { signOut } = useAuth()
 
-  const handleSignOut = async () => {
-    await signOut()
-    // The auth context and page guard will handle redirection
-  }
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex items-center gap-2">
@@ -103,44 +94,8 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
             </AlertDialogContent>
           </AlertDialog>
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="hidden md:flex"
-            >
-              <Link href="/settings">
-                <Cog className="h-4 w-4" />
-                <span className="sr-only">
-                  {t('tracker.headerSettingsTooltip')}
-                </span>
-              </Link>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('tracker.headerSettingsTooltip')}</p>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSignOut}
-              data-testid="sign-out-btn"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="sr-only">
-                {t('tracker.headerSignOutTooltip')}
-              </span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('tracker.headerSignOutTooltip')}</p>
-          </TooltipContent>
-        </Tooltip>
+
+        <UserMenu />
       </div>
     </header>
   )
