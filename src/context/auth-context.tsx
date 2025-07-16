@@ -3,8 +3,8 @@
 import React, { ReactNode, createContext, useEffect, useState } from 'react'
 
 import { signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
-import { LoaderIcon } from 'lucide-react'
 
+import LoadingIcon from '@/components/ui/loading-icon'
 import { auth as firebaseAuth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
 
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {loading ? (
         <div className="flex h-screen items-center justify-center bg-background">
           <div className="flex flex-col items-center space-y-4">
-            <LoaderIcon className="h-12 w-12 animate-spin text-primary" />
+            <LoadingIcon size="xl" />
             <p className="text-muted-foreground">Loading TimeWise Tracker...</p>
           </div>
         </div>

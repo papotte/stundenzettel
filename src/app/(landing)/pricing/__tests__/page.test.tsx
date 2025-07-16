@@ -12,9 +12,7 @@ describe('PricingPage', () => {
       found = true
     } catch {}
     if (!found) {
-      expect(
-        screen.getByText('landing.pricing.headerTitle'),
-      ).toBeInTheDocument()
+      expect(screen.getByText('pricing.title')).toBeInTheDocument()
     }
   })
 })

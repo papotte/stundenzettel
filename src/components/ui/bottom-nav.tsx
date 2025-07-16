@@ -1,6 +1,6 @@
 'use client'
 
-import { Cog, FileSpreadsheet, Home } from 'lucide-react'
+import { FileSpreadsheet, Home } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -18,12 +18,6 @@ const navItems = [
     icon: FileSpreadsheet,
     labelKey: 'bottomNav.export',
     labelDefault: 'Export',
-  },
-  {
-    href: '/settings',
-    icon: Cog,
-    labelKey: 'bottomNav.settings',
-    labelDefault: 'Settings',
   },
 ]
 

@@ -19,10 +19,10 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import ColorfulBackground from '@/components/ui/colorful-background'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -159,7 +159,7 @@ export default function LoginPage() {
 
   if (useMocks) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
+      <ColorfulBackground className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="mb-4 flex items-center gap-2">
           <TimeWiseIcon className="h-8 w-8 text-primary" />
           <h1 className="font-headline text-3xl font-bold tracking-tight">
@@ -186,124 +186,124 @@ export default function LoginPage() {
             ))}
           </CardContent>
         </Card>
-      </div>
+      </ColorfulBackground>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
+    <ColorfulBackground className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="mb-4 flex items-center gap-2">
         <TimeWiseIcon className="h-8 w-8 text-primary" />
         <h1 className="font-headline text-3xl font-bold tracking-tight">
           {t('appName')}
         </h1>
       </div>
-      <Tabs defaultValue="signin" className="w-full max-w-sm">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="signin">{t('login.signInTab')}</TabsTrigger>
-          <TabsTrigger value="signup">{t('login.signUpTab')}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="signin">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('login.signInTitle')}</CardTitle>
-              <CardDescription>{t('login.signInDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-signin">{t('login.emailLabel')}</Label>
-                <Input
-                  id="email-signin"
-                  type="email"
-                  placeholder={t('login.emailPlaceholder')}
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password-signin">
-                  {t('login.passwordLabel')}
-                </Label>
-                <Input
-                  id="password-signin"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={handleSignIn}
-                disabled={loading}
-                className="w-full"
+      <Card className="w-full max-w-sm">
+        <CardContent className="pt-6">
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
+              <TabsTrigger
+                value="signin"
+                className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-gray-200"
               >
-                {loading ? t('login.signingInButton') : t('login.signInButton')}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        <TabsContent value="signup">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('login.signUpTitle')}</CardTitle>
-              <CardDescription>{t('login.signUpDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-signup">{t('login.emailLabel')}</Label>
-                <Input
-                  id="email-signup"
-                  type="email"
-                  placeholder={t('login.emailPlaceholder')}
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password-signup">
-                  {t('login.passwordLabel')}
-                </Label>
-                <Input
-                  id="password-signup"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={handleSignUp}
-                disabled={loading}
-                className="w-full"
+                {t('login.signInTab')}
+              </TabsTrigger>
+              <TabsTrigger
+                value="signup"
+                className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-gray-200"
               >
-                {loading
-                  ? t('login.creatingAccountButton')
-                  : t('login.signUpButton')}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                {t('login.signUpTab')}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="mt-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email-signin">{t('login.emailLabel')}</Label>
+                  <Input
+                    id="email-signin"
+                    type="email"
+                    placeholder={t('login.emailPlaceholder')}
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-signin">
+                    {t('login.passwordLabel')}
+                  </Label>
+                  <Input
+                    id="password-signin"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleSignIn}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading
+                    ? t('login.signingInButton')
+                    : t('login.signInButton')}
+                </Button>
+              </div>
+            </TabsContent>
+            <TabsContent value="signup" className="mt-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email-signup">{t('login.emailLabel')}</Label>
+                  <Input
+                    id="email-signup"
+                    type="email"
+                    placeholder={t('login.emailPlaceholder')}
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-signup">
+                    {t('login.passwordLabel')}
+                  </Label>
+                  <Input
+                    id="password-signup"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleSignUp}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading
+                    ? t('login.creatingAccountButton')
+                    : t('login.signUpButton')}
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
       <div className="w-full max-w-sm">
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-muted px-2 text-muted-foreground">
+            <span className="bg-background px-2 text-muted-foreground">
               {t('login.continueWith')}
             </span>
           </div>
         </div>
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full bg-white hover:bg-gray-50"
           onClick={handleGoogleSignIn}
           disabled={loading}
         >
@@ -311,6 +311,6 @@ export default function LoginPage() {
           {t('login.signInWithGoogle')}
         </Button>
       </div>
-    </div>
+    </ColorfulBackground>
   )
 }

@@ -38,7 +38,7 @@ describe('TimeTrackerHeader', () => {
       screen.getByText('tracker.headerClearDataTooltip'),
     ).toBeInTheDocument()
     expect(
-      screen.getByText('tracker.headerSettingsTooltip'),
+      screen.getByText('tracker.headerUserMenuTooltip'),
     ).toBeInTheDocument()
     expect(screen.getByText('tracker.headerSignOutTooltip')).toBeInTheDocument()
   })
@@ -47,7 +47,7 @@ describe('TimeTrackerHeader', () => {
     renderWithProvider(<TimeTrackerHeader showClearData={true} />)
     fireEvent.click(screen.getByTestId('clear-data-btn'))
     fireEvent.click(screen.getByTestId('clear-data-confirm-btn'))
-    fireEvent.click(screen.getByTestId('sign-out-btn'))
+    fireEvent.click(screen.getByTestId('user-menu-dropdown'))
     expect(handleClearData).toHaveBeenCalled()
     expect(signOut).toHaveBeenCalled()
   })

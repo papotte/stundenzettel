@@ -1,3 +1,13 @@
+// TODO: Clean up unused translation keys
+// After all recent changes, check for any keys that are no longer used in the codebase
+// and remove them to keep the dictionaries clean and maintainable.
+//
+// Steps to identify unused keys:
+// 1. Search for all t('key') calls in the codebase
+// 2. Compare with keys defined in dictionaries
+// 3. Remove any keys that are no longer referenced
+// 4. Test the app to ensure no missing key errors
+//
 export const dictionaries = {
   en: {
     appName: 'TimeWise Tracker',
@@ -53,6 +63,7 @@ export const dictionaries = {
       headerExportLink: 'Preview & Export',
       headerClearDataTooltip: 'Clear all data',
       headerSettingsTooltip: 'Settings',
+      headerUserMenuTooltip: 'User Menu',
       headerSignOutTooltip: 'Sign Out',
       clearDataAlertTitle: 'Are you absolutely sure?',
       clearDataAlertDescription:
@@ -216,6 +227,171 @@ export const dictionaries = {
       passengerCompensationPercentLabel: 'Passenger time compensation (%)',
       passengerCompensationPercentDescription:
         'Percentage of driving time as passenger that is counted as compensated time.',
+      // Subscription Management
+      subscriptionTitle: 'Subscription',
+      subscriptionDescription: 'Manage your subscription and billing.',
+      subscriptionStatus: 'Status',
+      nextBilling: 'Next billing date',
+      manageBilling: 'Manage Billing',
+      upgrade: 'Upgrade',
+      noSubscription: 'No active subscription',
+      getStarted: 'Get Started',
+      active: 'Active',
+      inactive: 'Inactive',
+      // Team Management
+      teamsTitle: 'Teams',
+      teamsDescription: 'Manage your team memberships.',
+      manageTeams: 'Manage Teams',
+      owner: 'Owner',
+      member: 'Member',
+      errorPortalTitle: 'Portal Error',
+      errorPortalDescription:
+        'Failed to open billing portal. Please try again.',
+      noTeams: 'You are not part of any teams yet.',
+      createFirstTeam: 'Create First Team',
+      createNewTeam: 'Create New Team',
+      // New Settings Navigation
+      preferences: 'My Preferences',
+      preferencesDescription: 'Personal settings and display preferences',
+      company: 'Company',
+      companyDescription: 'Company information for exports',
+      security: 'Security',
+      securityDescription: 'Password and account management',
+      manageTeam: 'Manage Team',
+      manageTeamDescription: 'Team memberships and permissions',
+      manageSubscription: 'Manage Subscription',
+      manageSubscriptionDescription: 'Billing and subscription settings',
+      // Security Section
+      changePassword: 'Change Password',
+      changePasswordDescription: 'Update your account password',
+      deleteAccount: 'Delete Account',
+      deleteAccountDescription: 'Permanently delete your account and all data',
+      deleteAccountWarning:
+        'This action cannot be undone. All your data will be permanently deleted.',
+      // Navigation
+      backToTracker: 'Back to Tracker',
+      // Form fields
+      selectLanguage: 'Select language',
+      defaultStartTime: 'Default Start Time',
+      defaultStartTimeDescription: 'Default start time for new entries.',
+      defaultEndTime: 'Default End Time',
+      defaultEndTimeDescription: 'Default end time for new entries.',
+      companyNamePlaceholder: 'Your Company Name',
+      companyEmailPlaceholder: 'contact@company.com',
+      companyEmailDescription: 'Contact email for your company.',
+      companyPhone1Placeholder: '+1 234 567 890',
+      companyPhone2Placeholder: '+1 234 567 891',
+      companyFaxPlaceholder: '+1 234 567 892',
+      compensationSettings: 'Compensation Settings',
+      // Security page
+      accountEmail: 'Account Email',
+      password: 'Password',
+      passwordDescription: 'Change your account password',
+      twoFactorAuth: 'Two-Factor Authentication',
+      twoFactorAuthDescription:
+        'Add an extra layer of security to your account',
+      dangerZone: 'Danger Zone',
+      dangerZoneDescription: 'Irreversible and destructive actions',
+      signOutDescription: 'Sign out of your account',
+      deleteAccountConfirmTitle: 'Are you absolutely sure?',
+      deleteAccountConfirmDescription:
+        'This action cannot be undone. All your data will be permanently deleted.',
+
+      // Team page
+      noTeamsDescription:
+        'You are not part of any teams yet. Create your first team to start collaborating.',
+      teamMembers: '{count} members',
+      manageAllTeams: 'Manage All Teams',
+      // Subscription page
+      noSubscriptionDescription:
+        'Upgrade to a paid plan to unlock all features.',
+      unknownPlan: 'Unknown Plan',
+      changePlan: 'Change Plan',
+      trialing: 'Trial',
+      // Common
+      saving: 'Saving...',
+    },
+    // Pricing Page
+    pricing: {
+      title: 'Choose Your Plan',
+      subtitle: 'Select the perfect plan for your time tracking needs',
+      loadingPlans: 'Loading plans...',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      save20: 'Save 20%',
+      perUserPerMonth: 'per user per month',
+      month: 'month',
+      year: 'year',
+      upTo: 'Up to',
+      users: 'users',
+      mostPopular: 'Most Popular',
+      getStarted: 'Get Started',
+      createTeam: 'Create Team',
+      processing: 'Processing...',
+      faqTitle: 'Frequently Asked Questions',
+      faq1Question: 'Can I cancel anytime?',
+      faq1Answer:
+        "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.",
+      faq2Question: 'What payment methods do you accept?',
+      faq2Answer:
+        'We accept all major credit cards and debit cards through our secure payment processor.',
+      faq3Question: 'Is there a free trial?',
+      faq3Answer:
+        'Yes, we offer a 14-day free trial for all plans. No credit card required to start.',
+      faq4Question: 'Can I change plans later?',
+      faq4Answer:
+        'Absolutely! You can upgrade or downgrade your plan at any time from your account settings.',
+      loginRequiredTitle: 'Login Required',
+      loginRequiredDescription: 'Please log in to subscribe to a plan.',
+      errorTitle: 'Payment Error',
+      errorDescription:
+        'There was an error processing your payment. Please try again.',
+    },
+    // Subscription Guard
+    subscription: {
+      checking: 'Checking subscription...',
+      loginRequiredTitle: 'Login Required',
+      loginRequiredDescription: 'Please log in to access this feature.',
+      loginButton: 'Log In',
+      requiredTitle: 'Subscription Required',
+      requiredDescription:
+        'You need an active subscription to access this feature.',
+      choosePlanButton: 'Choose a Plan',
+      manageSubscriptionButton: 'Manage Subscription',
+    },
+    // Teams Page
+    teams: {
+      title: 'Team Management',
+      subtitle: 'Manage your teams and team members',
+      createTeam: 'Create Team',
+      noTeamsTitle: 'No Teams Yet',
+      noTeamsDescription:
+        'Create your first team to start collaborating with others.',
+      createFirstTeam: 'Create First Team',
+      yourTeams: 'Your Teams',
+      owner: 'Owner',
+      member: 'Member',
+      subscription: 'Subscription',
+      currentPeriod: 'Current period',
+      licensedUsers: 'Licensed users',
+      manageBilling: 'Manage Billing',
+      upgrade: 'Upgrade',
+      noSubscription: 'No active subscription',
+      getStarted: 'Get Started',
+      members: 'Members',
+      joined: 'Joined',
+      inviteMember: 'Invite Member',
+      manage: 'Manage',
+      errorLoadingTitle: 'Error Loading Teams',
+      errorLoadingDescription: 'Failed to load your teams. Please try again.',
+      errorPortalTitle: 'Portal Error',
+      errorPortalDescription:
+        'Failed to open billing portal. Please try again.',
+      roles: {
+        owner: 'Owner',
+        admin: 'Admin',
+        member: 'Member',
+      },
     },
     // Export Page
     export_page: {
@@ -414,6 +590,7 @@ export const dictionaries = {
       headerExportLink: 'Vorschau & Export',
       headerClearDataTooltip: 'Alle Daten löschen',
       headerSettingsTooltip: 'Einstellungen',
+      headerUserMenuTooltip: 'Benutzermenü',
       headerSignOutTooltip: 'Abmelden',
       clearDataAlertTitle: 'Sind Sie absolut sicher?',
       clearDataAlertDescription:
@@ -592,6 +769,163 @@ export const dictionaries = {
       passengerCompensationPercentLabel: 'Vergütung Beifahrerzeit (%)',
       passengerCompensationPercentDescription:
         'Prozentsatz der Beifahrerzeit, der als vergütete Zeit angerechnet wird.',
+      // Subscription Management
+      subscriptionTitle: 'Abonnement',
+      subscriptionDescription:
+        'Verwalten Sie Ihr Abonnement und die Abrechnung.',
+      subscriptionStatus: 'Status',
+      nextBilling: 'Nächster Abrechnungstermin',
+      manageBilling: 'Abrechnung verwalten',
+      upgrade: 'Upgrade',
+      noSubscription: 'Kein aktives Abonnement',
+      getStarted: 'Jetzt starten',
+      active: 'Aktiv',
+      inactive: 'Inaktiv',
+      // Team Management
+      teamsTitle: 'Teams',
+      teamsDescription: 'Verwalten Sie Ihre Teammitgliedschaften.',
+      manageTeams: 'Teams verwalten',
+      owner: 'Besitzer',
+      member: 'Mitglied',
+      errorPortalTitle: 'Portal-Fehler',
+      errorPortalDescription:
+        'Das Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.',
+      noTeams: 'Sie sind noch nicht Teil eines Teams.',
+      createFirstTeam: 'Erstes Team erstellen',
+      createNewTeam: 'Neues Team erstellen',
+      // New Settings Navigation
+      preferences: 'Meine Einstellungen',
+      preferencesDescription:
+        'Persönliche Einstellungen und Anzeigepräferenzen',
+      company: 'Firma',
+      companyDescription: 'Firmeninformationen für Exporte',
+      security: 'Sicherheit',
+      securityDescription: 'Passwort- und Kontoverwaltung',
+      manageTeam: 'Team verwalten',
+      manageTeamDescription: 'Teammitgliedschaften und Berechtigungen',
+      manageSubscription: 'Abonnement verwalten',
+      manageSubscriptionDescription: 'Abrechnung und Abonnementeinstellungen',
+      // Security Section
+      changePassword: 'Passwort ändern',
+      changePasswordDescription: 'Aktualisieren Sie Ihr Kontopasswort',
+      deleteAccount: 'Konto löschen',
+      deleteAccountDescription: 'Ihr Konto und alle Daten dauerhaft löschen',
+      deleteAccountWarning:
+        'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
+      // Form fields
+      selectLanguage: 'Sprache auswählen',
+      defaultStartTime: 'Standard-Startzeit',
+      defaultStartTimeDescription: 'Standard-Startzeit für neue Einträge.',
+      defaultEndTime: 'Standard-Endzeit',
+      defaultEndTimeDescription: 'Standard-Endzeit für neue Einträge.',
+      companyNamePlaceholder: 'Ihr Firmenname',
+      companyEmailPlaceholder: 'kontakt@firma.com',
+      companyEmailDescription: 'Kontakt-E-Mail für Ihre Firma.',
+      companyPhone1Placeholder: '+49 123 456 789',
+      companyPhone2Placeholder: '+49 123 456 790',
+      companyFaxPlaceholder: '+49 123 456 791',
+      compensationSettings: 'Vergütungseinstellungen',
+      // Security page
+      accountEmail: 'Konto-E-Mail',
+      password: 'Passwort',
+      passwordDescription: 'Ändern Sie Ihr Kontopasswort',
+      twoFactorAuth: 'Zwei-Faktor-Authentifizierung',
+      twoFactorAuthDescription:
+        'Fügen Sie eine zusätzliche Sicherheitsebene zu Ihrem Konto hinzu',
+      dangerZone: 'Gefahrenbereich',
+      dangerZoneDescription: 'Unumkehrbare und zerstörerische Aktionen',
+      signOutDescription: 'Von Ihrem Konto abmelden',
+      deleteAccountConfirmTitle: 'Sind Sie sich absolut sicher?',
+      deleteAccountConfirmDescription:
+        'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
+      // Team page
+      noTeamsDescription:
+        'Sie sind noch nicht Teil eines Teams. Erstellen Sie Ihr erstes Team, um mit anderen zusammenzuarbeiten.',
+      teamMembers: '{count} Mitglieder',
+      manageAllTeams: 'Alle Teams verwalten',
+      // Subscription page
+      noSubscriptionDescription:
+        'Upgraden Sie zu einem kostenpflichtigen Tarif, um alle Funktionen freizuschalten.',
+      unknownPlan: 'Unbekannter Tarif',
+      changePlan: 'Tarif ändern',
+      trialing: 'Testphase',
+      // Common
+      saving: 'Wird gespeichert...',
+      // Navigation
+      backToTracker: 'Zurück zur Übersicht',
+    },
+    // Teams Page
+    teams: {
+      title: 'Team-Verwaltung',
+      subtitle: 'Verwalten Sie Ihre Teams und Teammitglieder',
+      createTeam: 'Team erstellen',
+      noTeamsTitle: 'Noch keine Teams',
+      noTeamsDescription:
+        'Erstellen Sie Ihr erstes Team, um mit anderen zusammenzuarbeiten.',
+      createFirstTeam: 'Erstes Team erstellen',
+      yourTeams: 'Ihre Teams',
+      owner: 'Besitzer',
+      member: 'Mitglied',
+      subscription: 'Abonnement',
+      currentPeriod: 'Aktueller Zeitraum',
+      licensedUsers: 'Lizenzierte Nutzer',
+      manageBilling: 'Abrechnung verwalten',
+      upgrade: 'Upgrade',
+      noSubscription: 'Kein aktives Abonnement',
+      getStarted: 'Jetzt starten',
+      members: 'Mitglieder',
+      joined: 'Beigetreten',
+      inviteMember: 'Mitglied einladen',
+      manage: 'Verwalten',
+      errorLoadingTitle: 'Fehler beim Laden der Teams',
+      errorLoadingDescription:
+        'Ihre Teams konnten nicht geladen werden. Bitte versuchen Sie es erneut.',
+      errorPortalTitle: 'Portal-Fehler',
+      errorPortalDescription:
+        'Das Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.',
+      roles: {
+        owner: 'Besitzer',
+        admin: 'Administrator',
+        member: 'Mitglied',
+      },
+    },
+    // Pricing Page
+    pricing: {
+      title: 'Wählen Sie Ihren Tarif',
+      subtitle:
+        'Wählen Sie den perfekten Tarif für Ihre Zeiterfassungsbedürfnisse',
+      loadingPlans: 'Tarife werden geladen...',
+      monthly: 'Monatlich',
+      yearly: 'Jährlich',
+      save20: '20% sparen',
+      perUserPerMonth: 'pro Nutzer pro Monat',
+      month: 'Monat',
+      year: 'Jahr',
+      upTo: 'Bis zu',
+      users: 'Nutzer',
+      mostPopular: 'Am beliebtesten',
+      getStarted: 'Jetzt starten',
+      createTeam: 'Team erstellen',
+      processing: 'Wird verarbeitet...',
+      faqTitle: 'Häufig gestellte Fragen',
+      faq1Question: 'Kann ich jederzeit kündigen?',
+      faq1Answer:
+        'Ja, Sie können Ihr Abonnement jederzeit kündigen. Sie haben weiterhin Zugang bis zum Ende Ihres Abrechnungszeitraums.',
+      faq2Question: 'Welche Zahlungsmethoden akzeptieren Sie?',
+      faq2Answer:
+        'Wir akzeptieren alle gängigen Kredit- und Debitkarten über unseren sicheren Zahlungsabwickler.',
+      faq3Question: 'Gibt es eine kostenlose Testphase?',
+      faq3Answer:
+        'Ja, wir bieten eine 14-tägige kostenlose Testphase für alle Tarife. Keine Kreditkarte erforderlich.',
+      faq4Question: 'Kann ich später den Tarif wechseln?',
+      faq4Answer:
+        'Absolut! Sie können Ihren Tarif jederzeit in Ihren Kontoeinstellungen upgraden oder downgraden.',
+      loginRequiredTitle: 'Anmeldung erforderlich',
+      loginRequiredDescription:
+        'Bitte melden Sie sich an, um einen Tarif zu abonnieren.',
+      errorTitle: 'Zahlungsfehler',
+      errorDescription:
+        'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.',
     },
     // Export Page
     export_page: {
@@ -733,6 +1067,19 @@ export const dictionaries = {
         imprint: 'Impressum',
         cookiePolicy: 'Cookie-Richtlinie',
       },
+    },
+    // Subscription Guard
+    subscription: {
+      checking: 'Abonnement wird überprüft...',
+      loginRequiredTitle: 'Anmeldung erforderlich',
+      loginRequiredDescription:
+        'Bitte melden Sie sich an, um auf diese Funktion zuzugreifen.',
+      loginButton: 'Anmelden',
+      requiredTitle: 'Abonnement erforderlich',
+      requiredDescription:
+        'Sie benötigen ein aktives Abonnement, um auf diese Funktion zuzugreifen.',
+      choosePlanButton: 'Tarif wählen',
+      manageSubscriptionButton: 'Abonnement verwalten',
     },
   },
 }
