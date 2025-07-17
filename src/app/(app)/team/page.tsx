@@ -75,11 +75,10 @@ export default function TeamPage() {
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">
-                Team Management Coming Soon
+                {t('settings.teamManagementComingSoon')}
               </h3>
               <p className="text-muted-foreground">
-                Team management functionality will be available in a future
-                update.
+                {t('settings.teamManagementFunctionalityWillBeAvailable')}
               </p>
             </div>
           </CardContent>

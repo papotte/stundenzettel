@@ -109,7 +109,7 @@ export default function SubscriptionGuard({
               </Button>
               <Button
                 variant="outline"
-                onClick={() => (window.location.href = '/settings')}
+                onClick={() => (window.location.href = '/subscription')}
                 className="w-full"
               >
                 {t('subscription.manageSubscriptionButton')}

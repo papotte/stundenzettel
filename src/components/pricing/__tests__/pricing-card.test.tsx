@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import type { PricingPlan } from '@/lib/types'
 
-import PricingCard from '../pricing/pricing-card'
+import PricingCard from '../pricing-card'
 
 describe('PricingCard', () => {
   const mockOnSubscribe = jest.fn()
