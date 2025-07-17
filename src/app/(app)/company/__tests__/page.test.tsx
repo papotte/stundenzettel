@@ -9,7 +9,7 @@ import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
-import { createMockAuthContext, createMockUser, authScenarios } from '@/test-utils/auth-mocks'
+import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import CompanyPage from '../page'
 

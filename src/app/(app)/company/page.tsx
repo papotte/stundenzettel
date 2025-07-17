@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -165,23 +166,19 @@ export default function CompanyPage() {
             {t('settings.backToTracker')}
           </Link>
         </Button>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" />
-              {t('settings.company')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.companyDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  {t('settings.company')}
+                </CardTitle>
+                <CardDescription>
+                  {t('settings.companyDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 <FormField
                   control={form.control}
                   name="companyName"
@@ -341,6 +338,8 @@ export default function CompanyPage() {
                     />
                   </div>
                 </div>
+              </CardContent>
+              <CardFooter>
                 <Button
                   type="submit"
                   disabled={isSaving}
@@ -357,10 +356,10 @@ export default function CompanyPage() {
                   )}
                   {isSaving ? t('settings.saving') : t('settings.save')}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </CardFooter>
+            </Card>
+          </form>
+        </Form>
       </div>
     </div>
   )

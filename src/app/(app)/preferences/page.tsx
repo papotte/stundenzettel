@@ -157,7 +157,7 @@ export default function PreferencesPage() {
           </Link>
         </Button>
         <Form {...form}>
-          <form role="form" onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

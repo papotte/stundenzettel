@@ -294,7 +294,9 @@ describe('SecurityPage', () => {
 
     xit('shows error when account deletion fails', async () => {
       const user = userEvent.setup()
-      mockAuthContext.deleteAccount!.mockRejectedValue(new Error('Deletion failed'))
+      mockAuthContext.deleteAccount!.mockRejectedValue(
+        new Error('Deletion failed'),
+      )
       renderWithProviders(<SecurityPage />)
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()

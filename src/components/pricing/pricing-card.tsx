@@ -19,7 +19,6 @@ import type { PricingPlan } from '@/lib/types'
 
 interface PricingCardProps {
   plan: PricingPlan
-  isYearly: boolean
   loading: string | null
   onSubscribe: (plan: PricingPlan) => void
   onTeamSubscribe: (plan: PricingPlan) => void

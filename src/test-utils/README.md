@@ -87,6 +87,7 @@ const authWithAccountDeletion = authScenarios.withAccountDeletion()
 #### Simple Component Test
 
 **Before:**
+
 ```typescript
 const mockUseAuth = {
   user: null,
@@ -103,6 +104,7 @@ mockUseAuth.user = { uid: 'test-id', email: 'test@example.com' }
 ```
 
 **After:**
+
 ```typescript
 import { createMockAuthContext } from '@/test-utils/auth-mocks'
 
@@ -118,6 +120,7 @@ mockAuthContext.user = { uid: 'test-id', email: 'test@example.com' }
 #### Component with Auth Scenarios
 
 **Before:**
+
 ```typescript
 const mockUseAuth = {
   user: null,
@@ -144,6 +147,7 @@ describe('when user is not authenticated', () => {
 ```
 
 **After:**
+
 ```typescript
 import { authScenarios } from '@/test-utils/auth-mocks'
 
