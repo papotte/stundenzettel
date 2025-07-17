@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft, Building } from 'lucide-react';
+import { ArrowLeft, Building, Loader2, Save } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -43,8 +43,13 @@ const companyFormSchema = z.object({
   companyPhone1: z.string().optional(),
   companyPhone2: z.string().optional(),
   companyFax: z.string().optional(),
-  driverCompensationPercent: z.number().min(0).max(200),
-  passengerCompensationPercent: z.number().min(0).max(200),
+  driverCompensationPercent: z.coerce.number().int().min(0).max(100).optional(),
+  passengerCompensationPercent: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(100)
+    .optional(),
 })
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>
@@ -106,7 +111,8 @@ export default function CompanyPage() {
       }
       fetchData()
     }
-  }, [user, form.reset, t, toast])
+    // Only depend on user and form.reset to avoid unnecessary resets
+  }, [user, form.reset])
 
   const onSubmit = async (data: CompanyFormValues) => {
     if (!user) return
@@ -335,8 +341,20 @@ export default function CompanyPage() {
                     />
                   </div>
                 </div>
-
-                <Button type="submit" disabled={isSaving} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isSaving}
+                  className="w-full"
+                  data-testid="saveButton"
+                >
+                  {isSaving ? (
+                    <Loader2
+                      className="mr-2 h-4 w-4 animate-spin"
+                      data-testid="loader-icon"
+                    />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
                   {isSaving ? t('settings.saving') : t('settings.save')}
                 </Button>
               </form>

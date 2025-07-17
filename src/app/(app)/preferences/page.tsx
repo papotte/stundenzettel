@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft, Settings } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -46,9 +47,16 @@ import {
 
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
-  defaultWorkHours: z.number().min(1).max(24),
-  defaultStartTime: z.string(),
-  defaultEndTime: z.string(),
+  defaultWorkHours: z
+    .number()
+    .min(1, 'Must be at least 1 hour')
+    .max(10, 'Cannot be more than 10 hours'),
+  defaultStartTime: z
+    .string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
+  defaultEndTime: z
+    .string()
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
   language: z.enum(['en', 'de']),
 })
 
@@ -85,13 +93,7 @@ export default function PreferencesPage() {
       const fetchData = async () => {
         try {
           const settings = await getUserSettings(user.uid)
-          form.reset({
-            displayName: settings.displayName || '',
-            defaultWorkHours: settings.defaultWorkHours || 7,
-            defaultStartTime: settings.defaultStartTime || '09:00',
-            defaultEndTime: settings.defaultEndTime || '17:00',
-            language: settings.language || language,
-          })
+          form.reset(settings)
         } catch (error) {
           console.error('Failed to fetch user settings', error)
           toast({
@@ -105,7 +107,8 @@ export default function PreferencesPage() {
       }
       fetchData()
     }
-  }, [user, form.reset, language, t, toast])
+    // Only depend on user and form.reset to avoid unnecessary resets
+  }, [user, form.reset])
 
   const onSubmit = async (data: PreferencesFormValues) => {
     if (!user) return
@@ -153,23 +156,19 @@ export default function PreferencesPage() {
             {t('settings.backToTracker')}
           </Link>
         </Button>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              {t('settings.preferences')}
-            </CardTitle>
-            <CardDescription>
-              {t('settings.preferencesDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
+        <Form {...form}>
+          <form role="form" onSubmit={form.handleSubmit(onSubmit)}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  {t('settings.preferences')}
+                </CardTitle>
+                <CardDescription>
+                  {t('settings.preferencesDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <FormField
                   control={form.control}
                   name="displayName"
@@ -280,14 +279,28 @@ export default function PreferencesPage() {
                     )}
                   />
                 </div>
-
-                <Button type="submit" disabled={isSaving} className="w-full">
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  disabled={isSaving}
+                  className="w-full"
+                  data-testid="saveButton"
+                >
+                  {isSaving ? (
+                    <Loader2
+                      className="mr-2 h-4 w-4 animate-spin"
+                      data-testid="loader-icon"
+                    />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
                   {isSaving ? t('settings.saving') : t('settings.save')}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </CardFooter>
+            </Card>
+          </form>
+        </Form>
       </div>
     </div>
   )
