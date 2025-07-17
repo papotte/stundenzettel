@@ -20,12 +20,13 @@ export async function POST(request: NextRequest) {
       origin,
     })
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const message =
-      error?.message === 'Missing required parameters'
-        ? error.message
+      errorMessage === 'Missing required parameters'
+        ? errorMessage
         : 'Failed to create checkout session'
-    const status = error?.message === 'Missing required parameters' ? 400 : 500
+    const status = errorMessage === 'Missing required parameters' ? 400 : 500
     console.error('Error creating checkout session:', error)
     return NextResponse.json({ error: message }, { status })
   }

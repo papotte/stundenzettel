@@ -6,7 +6,7 @@ import {
 
 // Mock Stripe module with shared mock instance
 jest.mock('stripe', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { mockStripeInstance } = require('@/test-utils/stripe-mocks')
   return jest.fn().mockImplementation(() => mockStripeInstance)
 })
@@ -107,6 +107,7 @@ describe('createTeamCheckoutSession', () => {
         userId: 'u',
         teamId: 't',
         priceId: 'p',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         quantity: undefined as any,
         origin: 'o',
       }),

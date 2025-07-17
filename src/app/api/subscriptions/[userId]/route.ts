@@ -18,12 +18,13 @@ export async function GET(
 
     const subscription = await getUserSubscription(userId)
     return NextResponse.json(subscription)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const message =
-      error?.message === 'User ID is required'
-        ? error.message
+      errorMessage === 'User ID is required'
+        ? errorMessage
         : 'Failed to fetch subscription'
-    const status = error?.message === 'User ID is required' ? 400 : 500
+    const status = errorMessage === 'User ID is required' ? 400 : 500
     console.error('Error fetching subscription:', error)
     return NextResponse.json({ error: message }, { status })
   }

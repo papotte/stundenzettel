@@ -6,7 +6,7 @@ import {
 
 // Mock Stripe module with shared mock instance
 jest.mock('stripe', () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { mockStripeInstance } = require('@/test-utils/stripe-mocks')
   return jest.fn().mockImplementation(() => mockStripeInstance)
 })
