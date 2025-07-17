@@ -238,9 +238,9 @@ export const dictionaries = {
       deleteAccountConfirmDescription:
         'This action cannot be undone. All your data will be permanently deleted.',
       // Team page
-      noTeams: 'You are not part of any teams yet.',
-      noTeamsDescription:
-        'You are not part of any teams yet. Create your first team to start collaborating.',
+      noTeam: 'You are not part of any team yet.',
+      noTeamDescription:
+        'You are not part of any team yet. Create your team to start collaborating.',
       teamMembers: '{count} members',
       manageAllTeams: 'Manage All Teams',
       createTeam: 'Create Team',
@@ -693,9 +693,9 @@ export const dictionaries = {
       deleteAccountConfirmDescription:
         'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
       // Team page
-      noTeams: 'Sie sind noch nicht Teil eines Teams.',
-      noTeamsDescription:
-        'Sie sind noch nicht Teil eines Teams. Erstellen Sie Ihr erstes Team, um mit anderen zusammenzuarbeiten.',
+      noTeam: 'Sie sind noch nicht Teil eines Teams.',
+      noTeamDescription:
+        'Sie sind noch nicht Teil eines Teams. Erstellen Sie Ihr Team, um mit anderen zusammenzuarbeiten',
       teamMembers: '{count} Mitglieder',
       manageAllTeams: 'Alle Teams verwalten',
       createTeam: 'Team erstellen',

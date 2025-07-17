@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import type { Subscription } from '@/lib/types'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -28,7 +29,9 @@ export default function SubscriptionPage() {
   const { toast } = useToast()
   const { t } = useTranslation()
   const [pageLoading, setPageLoading] = useState(true)
-  const [userSubscription, setUserSubscription] = useState<any>(null)
+  const [userSubscription, setUserSubscription] = useState<Subscription | null>(
+    null,
+  )
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -142,8 +145,7 @@ export default function SubscriptionPage() {
                   <div>
                     <h3 className="font-medium">{t('settings.currentPlan')}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {userSubscription?.product?.name ||
-                        t('settings.unknownPlan')}
+                      {t('settings.unknownPlan')}
                     </p>
                     <Badge variant="default" className="mt-1">
                       {userSubscription?.status === 'active'
@@ -153,16 +155,14 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
 
-                {userSubscription?.current_period_end && (
+                {userSubscription?.currentPeriodEnd && (
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-medium">
                         {t('settings.nextBilling')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(
-                          userSubscription.current_period_end * 1000,
-                        ).toLocaleDateString()}
+                        {userSubscription.currentPeriodEnd.toLocaleDateString()}
                       </p>
                     </div>
                   </div>

@@ -116,8 +116,8 @@ export default function PricingSection({
       return
     }
 
-    // For team plans, we'll redirect to team creation first
-    window.location.href = `/teams/create?plan=${plan.id}`
+    // For team plans, redirect to team page for now
+    window.location.href = `/team`
   }
 
   const containerClasses =

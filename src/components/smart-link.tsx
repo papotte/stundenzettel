@@ -8,7 +8,7 @@ interface SmartLinkProps {
   href: string
   children: React.ReactNode
   className?: string
-  [key: string]: any // Allow other props to pass through
+  [key: string]: unknown // Allow other props to pass through
 }
 
 export default function SmartLink({

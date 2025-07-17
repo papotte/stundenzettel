@@ -1,6 +1,9 @@
 'use client'
 
+import React from 'react'
+
 import { Check } from 'lucide-react'
+import Image from 'next/image'
 
 import { useTranslation } from '@/context/i18n-context'
 
@@ -46,11 +49,12 @@ export default function FeaturesPage() {
       </div>
 
       <div className="my-32 text-center">
-        <img
-          className="mx-auto rounded-xl shadow-2xl ring-1 ring-gray-900/10"
-          src="https://placehold.co/1200x800.png"
-          data-ai-hint="app screenshot"
-          alt="App screenshot"
+        <Image
+          src="/images/tracker.png"
+          alt="Tracker"
+          width={600}
+          height={400}
+          className="mx-auto rounded-lg shadow-lg"
         />
       </div>
     </div>

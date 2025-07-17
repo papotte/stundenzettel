@@ -255,29 +255,25 @@ export class TeamService {
     await updateDoc(docRef, { status: 'expired' })
   }
 
-  // User's teams
-  async getUserTeams(userId: string): Promise<Team[]> {
+  // User's team (single)
+  async getUserTeam(userId: string): Promise<Team | null> {
     const membersQuery = query(
       collection(db, 'teams'),
       where('members', 'array-contains', userId),
     )
 
     const querySnapshot = await getDocs(membersQuery)
-    const teams: Team[] = []
-
-    for (const doc of querySnapshot.docs) {
-      const data = doc.data()
-      teams.push({
-        id: doc.id,
-        name: data.name,
-        description: data.description,
-        ownerId: data.ownerId,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        updatedAt: data.updatedAt?.toDate() || new Date(),
-      })
+    if (querySnapshot.empty) return null
+    const doc = querySnapshot.docs[0]
+    const data = doc.data()
+    return {
+      id: doc.id,
+      name: data.name,
+      description: data.description,
+      ownerId: data.ownerId,
+      createdAt: data.createdAt?.toDate() || new Date(),
+      updatedAt: data.updatedAt?.toDate() || new Date(),
     }
-
-    return teams
   }
 
   // Team subscription

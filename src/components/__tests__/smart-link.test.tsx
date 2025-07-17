@@ -8,7 +8,17 @@ import SmartLink from '../smart-link'
 
 // Mock Next.js Link component
 jest.mock('next/link', () => {
-  return function MockLink({ href, children, className, ...props }: any) {
+  return function MockLink({
+    href,
+    children,
+    className,
+    ...props
+  }: {
+    href: string
+    children: React.ReactNode
+    className?: string
+    [_: string]: unknown
+  }) {
     return (
       <a href={href} className={className} {...props}>
         {children}

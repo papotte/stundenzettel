@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: successUrl || `${request.nextUrl.origin}/teams?success=true`,
+      success_url: successUrl || `${request.nextUrl.origin}/team?success=true`,
       cancel_url:
         cancelUrl || `${request.nextUrl.origin}/pricing?canceled=true`,
       metadata: {
