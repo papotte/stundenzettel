@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { render, screen } from '@testing-library/react'
+import { createMockAuthContext } from '@/test-utils/auth-mocks'
 
 import SmartLink from '../smart-link'
 
@@ -15,13 +16,10 @@ jest.mock('next/link', () => {
   }
 })
 
-// Mock the auth hook
-const mockUseAuth = {
-  user: null as any,
-}
-
+// Use centralized auth mock
+const mockAuthContext = createMockAuthContext()
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
+  useAuth: () => mockAuthContext,
 }))
 
 describe('SmartLink', () => {
@@ -31,7 +29,7 @@ describe('SmartLink', () => {
 
   describe('when user is not logged in', () => {
     beforeEach(() => {
-      mockUseAuth.user = null
+      mockAuthContext.user = null
     })
 
     it('renders a link to the specified href', () => {
@@ -71,9 +69,10 @@ describe('SmartLink', () => {
 
   describe('when user is logged in', () => {
     beforeEach(() => {
-      mockUseAuth.user = {
+      mockAuthContext.user = {
         uid: 'test-user-id',
         email: 'test@example.com',
+        displayName: 'Test User',
       }
     })
 

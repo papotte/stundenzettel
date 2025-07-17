@@ -28,6 +28,20 @@ jest.mock('@/context/i18n-context', () => ({
   }),
 }))
 
+// Global mock for useAuth that can be overridden in individual tests
+const defaultMockAuth = {
+  user: null,
+  loading: false,
+  signOut: jest.fn(),
+}
+
+jest.mock('@/hooks/use-auth', () => ({
+  useAuth: () => defaultMockAuth,
+}))
+
+// Export for use in tests
+export { defaultMockAuth }
+
 // Add this at the very top of your test file or in jest.setup.ts
 if (!window.matchMedia) {
   window.matchMedia = function () {
