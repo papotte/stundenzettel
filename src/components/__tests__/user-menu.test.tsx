@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { createMockAuthContext, authScenarios } from '@/test-utils/auth-mocks'
+import { createMockAuthContext } from '@/test-utils/auth-mocks'
 
 import UserMenu from '../user-menu'
 

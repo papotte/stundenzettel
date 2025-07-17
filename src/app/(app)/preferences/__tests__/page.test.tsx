@@ -151,7 +151,7 @@ describe('PreferencesPage', () => {
       })
 
       // Submit the form
-      const form = screen.getByRole('form')
+      const form = document.querySelector('form')
       form.dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true }),
       )
@@ -200,7 +200,7 @@ describe('PreferencesPage', () => {
       await user.type(displayNameInput, 'Changed Name')
 
       // Submit the form
-      const form = screen.getByRole('form')
+      const form = document.querySelector('form')
       form.dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true }),
       )
@@ -253,7 +253,7 @@ describe('PreferencesPage', () => {
       await user.click(germanOption)
 
       // Submit the form
-      const form = screen.getByRole('form')
+      const form = document.querySelector('form')
       form.dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true }),
       )

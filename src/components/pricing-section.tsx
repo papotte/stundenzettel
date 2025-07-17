@@ -174,7 +174,6 @@ export default function PricingSection({
                 >
                   <PricingCard
                     plan={plan}
-                    isYearly={isYearly}
                     loading={loading}
                     onSubscribe={handleSubscribe}
                     onTeamSubscribe={handleTeamSubscribe}

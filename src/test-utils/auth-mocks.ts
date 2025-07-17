@@ -12,7 +12,9 @@ export interface MockAuthContext {
 /**
  * Creates a mock auth context for testing
  */
-export const createMockAuthContext = (overrides: Partial<MockAuthContext> = {}): MockAuthContext => {
+export const createMockAuthContext = (
+  overrides: Partial<MockAuthContext> = {},
+): MockAuthContext => {
   return {
     user: null,
     loading: false,
@@ -24,7 +26,9 @@ export const createMockAuthContext = (overrides: Partial<MockAuthContext> = {}):
 /**
  * Creates a mock authenticated user
  */
-export const createMockUser = (overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUser => {
+export const createMockUser = (
+  overrides: Partial<AuthenticatedUser> = {},
+): AuthenticatedUser => {
   return {
     uid: 'test-user-id',
     email: 'test@example.com',
@@ -46,35 +50,35 @@ export const setupAuthMock = (mockAuthContext: MockAuthContext) => {
  * Common auth scenarios for testing
  */
 export const authScenarios = {
-  authenticated: (userOverrides?: Partial<AuthenticatedUser>) => 
+  authenticated: (userOverrides?: Partial<AuthenticatedUser>) =>
     createMockAuthContext({
       user: createMockUser(userOverrides),
       loading: false,
     }),
-  
-  unauthenticated: () => 
+
+  unauthenticated: () =>
     createMockAuthContext({
       user: null,
       loading: false,
     }),
-  
-  loading: () => 
+
+  loading: () =>
     createMockAuthContext({
       user: null,
       loading: true,
     }),
-  
-  withPasswordUpdate: (userOverrides?: Partial<AuthenticatedUser>) => 
+
+  withPasswordUpdate: (userOverrides?: Partial<AuthenticatedUser>) =>
     createMockAuthContext({
       user: createMockUser(userOverrides),
       loading: false,
       updatePassword: jest.fn(),
     }),
-  
-  withAccountDeletion: (userOverrides?: Partial<AuthenticatedUser>) => 
+
+  withAccountDeletion: (userOverrides?: Partial<AuthenticatedUser>) =>
     createMockAuthContext({
       user: createMockUser(userOverrides),
       loading: false,
       deleteAccount: jest.fn(),
     }),
-} 
+}
