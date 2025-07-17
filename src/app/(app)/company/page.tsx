@@ -113,6 +113,7 @@ export default function CompanyPage() {
       fetchData()
     }
     // Only depend on user and form.reset to avoid unnecessary resets
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, form.reset])
 
   const onSubmit = async (data: CompanyFormValues) => {

@@ -183,6 +183,9 @@ export const dictionaries = {
       securityDescription: 'Password and account management',
       manageTeam: 'Manage Team',
       manageTeamDescription: 'Team memberships and permissions',
+      teamManagementComingSoon: 'Team Management Coming Soon',
+      teamManagementFunctionalityWillBeAvailable:
+        'Team management functionality will be available in a future update.',
       manageSubscription: 'Manage Subscription',
       manageSubscriptionDescription: 'Billing and subscription settings',
       errorLoadingTitle: 'Error',
@@ -636,6 +639,9 @@ export const dictionaries = {
       securityDescription: 'Passwort- und Kontoverwaltung',
       manageTeam: 'Team verwalten',
       manageTeamDescription: 'Teammitgliedschaften und Berechtigungen',
+      teamManagementComingSoon: 'Team-Verwaltung kommt bald',
+      teamManagementFunctionalityWillBeAvailable:
+        'Die Team-Verwaltungsfunktionalität wird in einem zukünftigen Update verfügbar sein.',
       manageSubscription: 'Abonnement verwalten',
       manageSubscriptionDescription: 'Abrechnung und Abonnementeinstellungen',
       errorLoadingTitle: 'Fehler',

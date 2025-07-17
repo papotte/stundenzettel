@@ -1,0 +1,170 @@
+import React from 'react'
+
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+import { useRouter } from 'next/navigation'
+
+import { AuthProvider } from '@/context/auth-context'
+import type { Subscription } from '@/lib/types'
+import { subscriptionService } from '@/services/subscription-service'
+import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
+
+import SubscriptionPage from '../page'
+
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}))
+
+// Mock services
+jest.mock('@/services/subscription-service', () => ({
+  subscriptionService: {
+    getUserSubscription: jest.fn(),
+  },
+}))
+
+jest.mock('@/services/payment-service', () => ({
+  paymentService: {
+    createCustomerPortalSession: jest.fn(),
+    redirectToCustomerPortal: jest.fn(),
+  },
+}))
+
+// Mock toast
+jest.mock('@/hooks/use-toast', () => ({
+  useToast: () => ({
+    toast: jest.fn(),
+  }),
+}))
+
+const mockRouter = {
+  replace: jest.fn(),
+}
+
+const mockSubscriptionService = jest.mocked(subscriptionService)
+
+// Use centralized auth mock
+const mockAuthContext = createMockAuthContext()
+jest.mock('@/hooks/use-auth', () => ({
+  useAuth: () => mockAuthContext,
+}))
+
+const renderWithProviders = (component: React.ReactElement) => {
+  return render(<AuthProvider>{component}</AuthProvider>)
+}
+
+describe('SubscriptionPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+
+    // Reset auth context to authenticated state
+    mockAuthContext.user = createMockUser()
+    mockAuthContext.loading = false
+  })
+
+  it('redirects to login when user is not authenticated', async () => {
+    mockAuthContext.user = null
+
+    renderWithProviders(<SubscriptionPage />)
+
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith('/login')
+    })
+  })
+
+  it('shows loading skeleton when auth is loading', () => {
+    mockAuthContext.loading = true
+    mockAuthContext.user = null
+
+    renderWithProviders(<SubscriptionPage />)
+
+    expect(screen.getAllByTestId('skeleton')).toHaveLength(2)
+  })
+
+  it('shows no subscription state when user has no subscription', async () => {
+    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+
+    renderWithProviders(<SubscriptionPage />)
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('settings.noSubscription')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  it('shows active subscription details', async () => {
+    const mockSubscription: Subscription = {
+      stripeSubscriptionId: 'sub_stripe_123',
+      stripeCustomerId: 'cus_123',
+      status: 'active',
+      currentPeriodStart: new Date('2024-01-01'),
+      currentPeriodEnd: new Date('2024-12-31'),
+      cancelAtPeriodEnd: false,
+      priceId: 'price_123',
+      updatedAt: new Date(),
+    }
+
+    mockSubscriptionService.getUserSubscription.mockResolvedValue(
+      mockSubscription,
+    )
+
+    renderWithProviders(<SubscriptionPage />)
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('settings.currentPlan')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  it('handles upgrade button click', async () => {
+    const user = userEvent.setup()
+    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+
+    // Mock window.location
+    const originalLocation = window.location
+    Object.defineProperty(window, 'location', {
+      value: { href: '' },
+      writable: true,
+    })
+
+    renderWithProviders(<SubscriptionPage />)
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('settings.upgrade')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+
+    await user.click(screen.getByText('settings.upgrade'))
+
+    expect(window.location.href).toBe('/pricing')
+
+    // Restore original location
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+    })
+  })
+
+  it('calls subscription service with correct user ID', async () => {
+    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+
+    renderWithProviders(<SubscriptionPage />)
+
+    await waitFor(
+      () => {
+        expect(
+          mockSubscriptionService.getUserSubscription,
+        ).toHaveBeenCalledWith('test-user-id')
+      },
+      { timeout: 3000 },
+    )
+  })
+})

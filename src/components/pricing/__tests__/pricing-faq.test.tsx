@@ -2,7 +2,7 @@ import React from 'react'
 
 import { render, screen } from '@testing-library/react'
 
-import PricingFAQ from '../pricing/pricing-faq'
+import PricingFAQ from '../pricing-faq'
 
 describe('PricingFAQ', () => {
   it('renders the FAQ title', () => {

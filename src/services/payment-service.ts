@@ -13,6 +13,17 @@ let cachedPricingPlans: PricingPlan[] | null = null
 let cacheExpiry: number = 0
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
+// TEST-ONLY: Reset cache for tests
+export function _resetPricingPlansCacheForTest() {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error(
+      '_resetPricingPlansCacheForTest can only be called in test environment',
+    )
+  }
+  cachedPricingPlans = null
+  cacheExpiry = 0
+}
+
 // Get pricing plans with caching
 export async function getPricingPlans(): Promise<PricingPlan[]> {
   const now = Date.now()
@@ -28,7 +39,7 @@ export async function getPricingPlans(): Promise<PricingPlan[]> {
   } catch (error) {
     console.error('Error fetching pricing plans:', error)
     // Return fallback plans if API fails
-    return StripeService.getPricingPlans()
+    return []
   }
 }
 

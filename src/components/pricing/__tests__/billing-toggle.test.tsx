@@ -2,7 +2,7 @@ import React from 'react'
 
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import BillingToggle from '../pricing/billing-toggle'
+import BillingToggle from '../billing-toggle'
 
 describe('BillingToggle', () => {
   const mockOnToggle = jest.fn()

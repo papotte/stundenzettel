@@ -151,7 +151,7 @@ describe('SubscriptionGuard', () => {
       expect(mockLocation.href).toBe('/pricing')
     })
 
-    it('redirects to settings when manage subscription button is clicked', async () => {
+    it('redirects to subscription when manage subscription button is clicked', async () => {
       renderWithProviders(
         <SubscriptionGuard>
           <div>Protected content</div>
@@ -169,7 +169,7 @@ describe('SubscriptionGuard', () => {
       })
       manageButton.click()
 
-      expect(mockLocation.href).toBe('/settings')
+      expect(mockLocation.href).toBe('/subscription')
     })
   })
 
