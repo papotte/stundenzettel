@@ -1,8 +1,7 @@
 import React from 'react'
 
 import { render, screen } from '@testing-library/react'
-
-import { useAuth } from '@/hooks/use-auth'
+import { authScenarios } from '@/test-utils/auth-mocks'
 
 import Home from '../page'
 
@@ -18,8 +17,11 @@ jest.mock('@/components/time-tracker', () => {
   MockTimeTracker.displayName = 'MockTimeTracker'
   return MockTimeTracker
 })
+
+// Use centralized auth mock
+const mockAuthContext = authScenarios.unauthenticated()
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: jest.fn(),
+  useAuth: () => mockAuthContext,
 }))
 
 describe('Home Page', () => {
@@ -28,22 +30,19 @@ describe('Home Page', () => {
   })
 
   it('redirects to login if not authenticated', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({ user: null, loading: false })
+    Object.assign(mockAuthContext, authScenarios.unauthenticated())
     render(<Home />)
     expect(mockReplace).toHaveBeenCalledWith('/login')
   })
 
   it('renders nothing if loading', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({ user: null, loading: true })
+    Object.assign(mockAuthContext, authScenarios.loading())
     const { container } = render(<Home />)
     expect(container).toBeEmptyDOMElement()
   })
 
   it('renders TimeTracker if authenticated', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({
-      user: { uid: '123' },
-      loading: false,
-    })
+    Object.assign(mockAuthContext, authScenarios.authenticated({ uid: '123' }))
     render(<Home />)
     expect(screen.getByTestId('time-tracker')).toBeInTheDocument()
   })

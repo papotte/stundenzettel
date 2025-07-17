@@ -9,6 +9,7 @@ import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
+import { createMockAuthContext } from '@/test-utils/auth-mocks'
 
 import PreferencesPage from '../page'
 
@@ -19,14 +20,11 @@ jest.mock('next/navigation', () => ({
     replace: mockPush,
   }),
 }))
-// Mock the auth hook
-const mockUseAuth = {
-  user: null as any,
-  loading: false,
-}
 
+// Use centralized auth mock
+const mockAuthContext = createMockAuthContext()
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
+  useAuth: () => mockAuthContext,
 }))
 
 // Mock the toast hook
@@ -66,11 +64,12 @@ const renderWithProviders = (component: React.ReactElement) => {
 describe('PreferencesPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUseAuth.user = {
+    mockAuthContext.user = {
       uid: 'test-user-id',
       email: 'test@example.com',
+      displayName: 'Test User',
     }
-    mockUseAuth.loading = false
+    mockAuthContext.loading = false
 
     currentSettings = { ...mockSettings }
     mockedGetUserSettings.mockImplementation(() =>
@@ -84,7 +83,7 @@ describe('PreferencesPage', () => {
 
   describe('when user is not authenticated', () => {
     beforeEach(() => {
-      mockUseAuth.user = null
+      mockAuthContext.user = null
     })
 
     it('redirects to login page', async () => {

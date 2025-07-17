@@ -4,18 +4,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { createMockAuthContext, authScenarios } from '@/test-utils/auth-mocks'
 
 import UserMenu from '../user-menu'
 
-// Mock the auth hook
-const mockSignOut = jest.fn()
-const mockUseAuth = {
-  user: null as any,
-  signOut: mockSignOut,
-}
+// Use centralized auth mock with signOut function
+const mockAuthContext = createMockAuthContext({
+  signOut: jest.fn(),
+})
 
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
+  useAuth: () => mockAuthContext,
 }))
 
 // Mock the toast hook
@@ -36,7 +35,7 @@ describe('UserMenu', () => {
 
   describe('when user is not logged in', () => {
     beforeEach(() => {
-      mockUseAuth.user = null
+      mockAuthContext.user = null
     })
 
     it('renders login button', () => {
@@ -57,7 +56,7 @@ describe('UserMenu', () => {
 
   describe('when user is logged in', () => {
     beforeEach(() => {
-      mockUseAuth.user = {
+      mockAuthContext.user = {
         uid: 'test-user-id',
         email: 'test@example.com',
         displayName: 'Test User',
@@ -189,11 +188,11 @@ describe('UserMenu', () => {
       const signOutButton = screen.getByTestId('sign-out-btn')
       await user.click(signOutButton)
 
-      expect(mockSignOut).toHaveBeenCalledTimes(1)
+      expect(mockAuthContext.signOut).toHaveBeenCalledTimes(1)
     })
 
     it('displays user email when displayName is not available', async () => {
-      mockUseAuth.user = {
+      mockAuthContext.user = {
         uid: 'test-user-id',
         email: 'test@example.com',
         displayName: null,

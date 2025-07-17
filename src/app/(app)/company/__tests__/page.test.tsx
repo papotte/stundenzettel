@@ -9,17 +9,14 @@ import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
+import { createMockAuthContext, createMockUser, authScenarios } from '@/test-utils/auth-mocks'
 
 import CompanyPage from '../page'
 
-// Mock the auth hook
-const mockUseAuth = {
-  user: null as any,
-  loading: false,
-}
-
+// Use centralized auth mock
+const mockAuthContext = createMockAuthContext()
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
+  useAuth: () => mockAuthContext,
 }))
 
 // Mock the toast hook
@@ -75,16 +72,13 @@ describe('CompanyPage', () => {
       currentSettings = { ...currentSettings, ...newSettings }
       return Promise.resolve()
     })
-    mockUseAuth.user = {
-      uid: 'test-user-id',
-      email: 'test@example.com',
-    }
-    mockUseAuth.loading = false
+    mockAuthContext.user = createMockUser()
+    mockAuthContext.loading = false
   })
 
   describe('when user is not authenticated', () => {
     beforeEach(() => {
-      mockUseAuth.user = null
+      mockAuthContext.user = null
     })
 
     it('redirects to login page', async () => {
