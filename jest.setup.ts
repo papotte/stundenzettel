@@ -5,6 +5,11 @@ import '@testing-library/jest-dom'
 // This ensures that the application uses mock services instead of live ones.
 process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
 
+// Polyfill fetch for Stripe and other libraries that need it
+if (typeof global.fetch === 'undefined') {
+  global.fetch = jest.fn()
+}
+
 // Mock ResizeObserver for Radix UI components
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

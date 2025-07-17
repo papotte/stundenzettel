@@ -1,4 +1,8 @@
-import { _resetPricingPlansCacheForTest, getPricingPlans, paymentService } from '../payment-service'
+import {
+  _resetPricingPlansCacheForTest,
+  getPricingPlans,
+  paymentService,
+} from '../payment-service'
 import { StripeService } from '../stripe-service'
 
 // Mock Stripe
