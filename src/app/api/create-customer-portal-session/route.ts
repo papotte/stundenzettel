@@ -18,17 +18,18 @@ export async function POST(request: NextRequest) {
       origin,
     })
     return NextResponse.json(result)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const message =
-      error?.message === 'Missing required parameters'
-        ? error.message
-        : error?.message === 'Customer not found'
-          ? error.message
+      errorMessage === 'Missing required parameters'
+        ? errorMessage
+        : errorMessage === 'Customer not found'
+          ? errorMessage
           : 'Failed to create customer portal session'
     const status =
-      error?.message === 'Missing required parameters'
+      errorMessage === 'Missing required parameters'
         ? 400
-        : error?.message === 'Customer not found'
+        : errorMessage === 'Customer not found'
           ? 404
           : 500
     console.error('Error creating customer portal session:', error)

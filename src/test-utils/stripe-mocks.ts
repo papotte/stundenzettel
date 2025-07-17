@@ -34,8 +34,8 @@ export function setupStripeEnv() {
 
 // Get the mocked Stripe instance for test assertions
 export const getMockStripeInstance = () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return (require('stripe') as jest.MockedClass<any>)()
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+  return (require('stripe') as any)() as typeof mockStripeInstance
 }
 
 // Reset all Stripe mocks
@@ -45,6 +45,7 @@ export const resetStripeMocks = () => {
     if (typeof service === 'object' && service !== null) {
       Object.values(service).forEach((method) => {
         if (typeof method === 'function' && 'mockClear' in method) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(method as any).mockClear()
         }
       })
