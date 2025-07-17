@@ -589,7 +589,8 @@ export const dictionaries = {
         'Bitte geben Sie eine gültige Dauer in Minuten ein. Mindestdauer ist 5 Minuten.',
       compensatedInfo:
         'Vergütete Zeit = Arbeitszeit - Pause + Fahrerzeit × {driver}% + Beifahrerzeit × {passenger}%',
-      smartSuggestionTooltip: 'Intelligente Vorschläge basierend auf Ihren vorherigen Einträgen',
+      smartSuggestionTooltip:
+        'Intelligente Vorschläge basierend auf Ihren vorherigen Einträgen',
     },
     // Toasts
     toasts: {
