@@ -1,47 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil',
-})
+import { createCustomerPortalSession } from '@/services/stripe'
 
 export async function POST(request: NextRequest) {
   try {
     const { userId, returnUrl } = await request.json()
-
+    const origin = request.nextUrl.origin
     if (!userId) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 },
       )
     }
-
-    // Find customer by userId
-    const customers = await stripe.customers.list({
-      email: userId, // Using userId as email for now
-      limit: 1,
+    const result = await createCustomerPortalSession({
+      userId,
+      returnUrl,
+      origin,
     })
-
-    if (customers.data.length === 0) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
-    }
-
-    const customer = customers.data[0]
-
-    // Create customer portal session
-    const session = await stripe.billingPortal.sessions.create({
-      customer: customer.id,
-      return_url: returnUrl || `${request.nextUrl.origin}/settings`,
-    })
-
-    return NextResponse.json({
-      url: session.url,
-    })
-  } catch (error) {
+    return NextResponse.json(result)
+  } catch (error: any) {
+    const message =
+      error?.message === 'Missing required parameters'
+        ? error.message
+        : error?.message === 'Customer not found'
+          ? error.message
+          : 'Failed to create customer portal session'
+    const status =
+      error?.message === 'Missing required parameters'
+        ? 400
+        : error?.message === 'Customer not found'
+          ? 404
+          : 500
     console.error('Error creating customer portal session:', error)
-    return NextResponse.json(
-      { error: 'Failed to create customer portal session' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: message }, { status })
   }
 }
