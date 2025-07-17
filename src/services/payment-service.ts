@@ -1,4 +1,4 @@
-import { loadStripe } from '@stripe/stripe-js'
+import { Stripe, loadStripe } from '@stripe/stripe-js'
 
 import type { PricingPlan } from '@/lib/types'
 
@@ -37,7 +37,7 @@ export const PRICING_PLANS: PricingPlan[] = []
 
 export class PaymentService {
   private static instance: PaymentService
-  private stripe: any = null
+  private stripe: Stripe | null = null
 
   private constructor() {}
 

@@ -38,7 +38,7 @@ export async function GET() {
               metadata: fullPrice.metadata,
               // Add tiered pricing info if available
               tiers: fullPrice.tiers
-                ? fullPrice.tiers.map((tier: any) => ({
+                ? fullPrice.tiers.map((tier: Stripe.Price.Tier) => ({
                     up_to: tier.up_to,
                     unit_amount: tier.unit_amount,
                     flat_amount: tier.flat_amount,

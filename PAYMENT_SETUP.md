@@ -104,7 +104,7 @@ firebase deploy --only firestore:rules
 
 2. Navigate to `/pricing` to see the pricing page
 3. Try creating a subscription (use Stripe test cards)
-4. Check the `/teams` page for team management
+4. Check the `/team` page for team management
 5. Verify subscription status in `/settings`
 
 ## Test Cards

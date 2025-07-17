@@ -192,10 +192,8 @@ export const createTeamCheckoutSession = onRequest(
             quantity: quantity,
           },
         ],
-        success_url:
-          successUrl || `${req.headers.origin}/teams/${teamId}?success=true`,
-        cancel_url:
-          cancelUrl || `${req.headers.origin}/teams/${teamId}?canceled=true`,
+        success_url: successUrl || `${req.headers.origin}/team?success=true`,
+        cancel_url: cancelUrl || `${req.headers.origin}/team?canceled=true`,
         metadata: {
           firebase_uid: userId,
           team_id: teamId,

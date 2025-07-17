@@ -52,15 +52,23 @@ export async function GET(
       stripeCustomerId: stripeSubscription.customer as string,
       status: stripeSubscription.status as AppSubscription['status'],
       currentPeriodStart: new Date(
-        (stripeSubscription as any).current_period_start * 1000,
+        (
+          stripeSubscription as Stripe.Subscription & {
+            current_period_start: number
+          }
+        ).current_period_start * 1000,
       ),
       currentPeriodEnd: new Date(
-        (stripeSubscription as any).current_period_end * 1000,
+        (
+          stripeSubscription as Stripe.Subscription & {
+            current_period_end: number
+          }
+        ).current_period_end * 1000,
       ),
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
       priceId: stripeSubscription.items.data[0]?.price.id || '',
       quantity: stripeSubscription.items.data[0]?.quantity,
-      updatedAt: new Date((stripeSubscription as any).updated * 1000),
+      updatedAt: new Date(stripeSubscription.created * 1000),
     }
 
     return NextResponse.json(subscriptionData)

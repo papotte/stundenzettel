@@ -28,7 +28,9 @@ interface StripeProductWithPrices extends StripeProduct {
 }
 
 export class StripeService {
-  private static async fetchStripeData(endpoint: string): Promise<any> {
+  private static async fetchStripeData(
+    endpoint: string,
+  ): Promise<StripeProductWithPrices[]> {
     const response = await fetch(`/api/stripe/${endpoint}`)
     if (!response.ok) {
       throw new Error(`Failed to fetch Stripe data: ${response.statusText}`)
