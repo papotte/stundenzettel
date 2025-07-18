@@ -19,7 +19,8 @@ export async function GET(
     const subscription = await getUserSubscription(userId)
     return NextResponse.json(subscription)
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
     const message =
       errorMessage === 'User ID is required'
         ? errorMessage

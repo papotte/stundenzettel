@@ -152,7 +152,7 @@ describe('PreferencesPage', () => {
 
       // Submit the form
       const form = document.querySelector('form')
-      form.dispatchEvent(
+      form?.dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true }),
       )
 
@@ -201,7 +201,7 @@ describe('PreferencesPage', () => {
 
       // Submit the form
       const form = document.querySelector('form')
-      form.dispatchEvent(
+      form?.dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true }),
       )
 
@@ -249,12 +249,12 @@ describe('PreferencesPage', () => {
       })
       await user.click(languageSelect)
 
-      const germanOption = screen.getByRole('option', { name: /deutsch/i })
+      const germanOption = screen.getByRole('option', { name: /settings\.languageGerman/i })
       await user.click(germanOption)
 
       // Submit the form
       const form = document.querySelector('form')
-      form.dispatchEvent(
+      form?.dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true }),
       )
 

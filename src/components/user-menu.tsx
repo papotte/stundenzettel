@@ -98,31 +98,31 @@ export default function UserMenu({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/preferences">
+            <Link href="/preferences" data-testid="preferences">
               <Settings className="mr-2 h-4 w-4" />
               {t('settings.preferences')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/company">
+            <Link href="/company" data-testid="company">
               <Building2 className="mr-2 h-4 w-4" />
               {t('settings.company')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/security">
+            <Link href="/security" data-testid="security">
               <Shield className="mr-2 h-4 w-4" />
               {t('settings.security')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/team">
+            <Link href="/team" data-testid="team">
               <Users className="mr-2 h-4 w-4" />
               {t('settings.manageTeam')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/subscription">
+            <Link href="/subscription" data-testid="subscription">
               <CreditCard className="mr-2 h-4 w-4" />
               {t('settings.manageSubscription')}
             </Link>

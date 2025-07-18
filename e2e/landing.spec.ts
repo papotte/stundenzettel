@@ -32,7 +32,9 @@ test.describe('Landing Page Routing', () => {
   test('should load the pricing page', async ({ page }) => {
     await page.goto('/pricing')
     await expect(
-      page.getByRole('heading', { name: /Pricing|Preise/i, level: 2 }),
+      page.getByRole('heading', {
+        name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
+      }),
     ).toBeVisible()
     await expect(page.getByTestId('footer')).toBeVisible()
     await expect(page.getByTestId('top-nav')).toBeVisible()
