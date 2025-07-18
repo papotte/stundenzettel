@@ -88,6 +88,7 @@ describe('PaymentService', () => {
 
         const result = await paymentService.createCheckoutSession(
           'user123',
+          'user@test.com',
           'price_123',
           'https://success.com',
           'https://cancel.com',
@@ -101,6 +102,7 @@ describe('PaymentService', () => {
           },
           body: JSON.stringify({
             userId: 'user123',
+            userEmail: 'user@test.com',
             priceId: 'price_123',
             successUrl: 'https://success.com',
             cancelUrl: 'https://cancel.com',
@@ -115,7 +117,11 @@ describe('PaymentService', () => {
         } as Response)
 
         await expect(
-          paymentService.createCheckoutSession('user123', 'price_123'),
+          paymentService.createCheckoutSession(
+            'user123',
+            'user@test.com',
+            'price_123',
+          ),
         ).rejects.toThrow('Failed to create checkout session')
       })
     })

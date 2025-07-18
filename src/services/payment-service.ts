@@ -67,23 +67,26 @@ export class PaymentService {
 
   async createCheckoutSession(
     userId: string,
+    userEmail: string,
     priceId: string,
     successUrl?: string,
     cancelUrl?: string,
   ): Promise<{ sessionId: string; url: string }> {
     await this.initialize()
 
+    let params = JSON.stringify({
+      userId,
+      userEmail,
+      priceId,
+      successUrl,
+      cancelUrl,
+    })
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        userId,
-        priceId,
-        successUrl,
-        cancelUrl,
-      }),
+      body: params,
     })
 
     if (!response.ok) {

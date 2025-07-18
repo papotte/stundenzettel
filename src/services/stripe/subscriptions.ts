@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 
 import type { Subscription as AppSubscription } from '@/lib/types'
+import { Subscription } from '@/lib/types'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
@@ -8,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function getUserSubscription(
   userId: string,
-): Promise<AppSubscription | null> {
+): Promise<Subscription | undefined> {
   if (!userId) {
     throw new Error('User ID is required')
   }
@@ -20,7 +21,7 @@ export async function getUserSubscription(
   })
 
   if (customers.data.length === 0) {
-    return null
+    return undefined
   }
 
   const customer = customers.data[0]
@@ -33,30 +34,32 @@ export async function getUserSubscription(
   })
 
   if (subscriptions.data.length === 0) {
-    return null
+    return undefined
   }
 
   const stripeSubscription = subscriptions.data[0]
 
+  // Get plan information for displaying
+  if (
+    !stripeSubscription.items.data.length ||
+    !stripeSubscription.items.data[0]?.price
+  ) {
+    return undefined
+  }
+  const productId = stripeSubscription.items.data[0].price.product as string
+  const product = await stripe.products.retrieve(productId)
+
+  const startDate = stripeSubscription.start_date
+  const endDate = stripeSubscription.cancel_at
   // Convert to our Subscription type
   return {
     stripeSubscriptionId: stripeSubscription.id,
     stripeCustomerId: stripeSubscription.customer as string,
+    planName: product.name,
+    planDescription: product.description || '',
     status: stripeSubscription.status as AppSubscription['status'],
-    currentPeriodStart: new Date(
-      (
-        stripeSubscription as Stripe.Subscription & {
-          current_period_start: number
-        }
-      ).current_period_start * 1000,
-    ),
-    currentPeriodEnd: new Date(
-      (
-        stripeSubscription as Stripe.Subscription & {
-          current_period_end: number
-        }
-      ).current_period_end * 1000,
-    ),
+    currentPeriodStart: new Date(startDate * 1000),
+    currentPeriodEnd: endDate ? new Date(endDate * 1000) : undefined,
     cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
     priceId: stripeSubscription.items.data[0]?.price.id || '',
     quantity: stripeSubscription.items.data[0]?.quantity,

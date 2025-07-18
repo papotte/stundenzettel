@@ -35,7 +35,7 @@ export interface UserSettings {
 export interface AuthenticatedUser {
   uid: string
   displayName: string | null
-  email: string | null
+  email: string
 }
 
 // Payment and Subscription Types
@@ -52,9 +52,11 @@ export interface Subscription {
     | 'unpaid'
     | 'inactive'
   currentPeriodStart: Date
-  currentPeriodEnd: Date
+  currentPeriodEnd: Date | undefined
   cancelAtPeriodEnd: boolean
   priceId: string
+  planName: string
+  planDescription: string
   quantity?: number
   updatedAt: Date
 }

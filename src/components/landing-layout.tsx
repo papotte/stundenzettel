@@ -26,7 +26,7 @@ export default function LandingLayout({
           aria-label="Global"
           data-testid="top-nav"
         >
-          <div className="flex items-center gap-3 lg:flex-1">
+          <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 group">
               <span className="sr-only">{t('appName')}</span>
               <TimeWiseIcon className="h-12 w-auto" />

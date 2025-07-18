@@ -4,9 +4,10 @@ import { createCheckoutSession } from '@/services/stripe'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, priceId, successUrl, cancelUrl } = await request.json()
+    const { userId, userEmail, priceId, successUrl, cancelUrl } =
+      await request.json()
     const origin = request.nextUrl.origin
-    if (!userId || !priceId) {
+    if (!userId || !userEmail || !priceId) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 },
@@ -14,6 +15,7 @@ export async function POST(request: NextRequest) {
     }
     const result = await createCheckoutSession({
       userId,
+      userEmail,
       priceId,
       successUrl,
       cancelUrl,

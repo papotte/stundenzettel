@@ -3,9 +3,7 @@ import type { UserSettings } from '@/lib/types'
 import * as firestoreService from './user-settings-service.firestore'
 import * as localService from './user-settings-service.local'
 
-const useMockService =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+const useMockService = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test'
 
 const service = useMockService ? localService : firestoreService
 
