@@ -49,7 +49,7 @@ describe('ExportPage', () => {
   it('redirects to login if not authenticated', () => {
     Object.assign(mockAuthContext, authScenarios.unauthenticated())
     render(<ExportPage />)
-    expect(mockReplace).toHaveBeenCalledWith('/login')
+    expect(mockReplace).toHaveBeenCalledWith('/login?returnUrl=/export')
   })
 
   it('renders nothing if loading', () => {

@@ -26,7 +26,7 @@ export default function TeamPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/team')
     }
   }, [user, authLoading, router])
 

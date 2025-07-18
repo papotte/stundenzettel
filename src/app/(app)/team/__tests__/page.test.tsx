@@ -43,7 +43,7 @@ describe('TeamPage', () => {
     renderWithProviders(<TeamPage />)
 
     await waitFor(() => {
-      expect(mockRouter.replace).toHaveBeenCalledWith('/login')
+      expect(mockRouter.replace).toHaveBeenCalledWith('/login?returnUrl=/team')
     })
   })
 

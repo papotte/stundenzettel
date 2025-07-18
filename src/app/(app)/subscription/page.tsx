@@ -36,7 +36,7 @@ export default function SubscriptionPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/subscription')
     }
   }, [user, authLoading, router])
 

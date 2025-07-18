@@ -79,7 +79,7 @@ export default function PreferencesPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/preferences')
     }
   }, [user, authLoading, router])
 

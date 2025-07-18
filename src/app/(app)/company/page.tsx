@@ -79,7 +79,7 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/company')
     }
   }, [user, authLoading, router])
 

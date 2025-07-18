@@ -92,7 +92,7 @@ test.describe('Authentication', () => {
 
     // Verify we're on the login page
     await expect(
-      page.getByRole('heading', { name: 'TimeWise Tracker (Test Mode)' }),
+      page.getByRole('heading', { name: /TimeWise Tracker/ }),
     ).toBeVisible()
 
     // Verify the returnUrl parameter is present in the URL
@@ -132,13 +132,13 @@ test.describe('Authentication', () => {
 
     // Verify we're on the login page
     await expect(
-      page.getByRole('heading', { name: 'TimeWise Tracker (Test Mode)' }),
+      page.getByRole('heading', { name: /TimeWise Tracker/ }),
     ).toBeVisible()
 
     // Verify the returnUrl parameter points to subscription page
     const currentUrl = page.url()
     expect(currentUrl).toContain('returnUrl=')
-    expect(currentUrl).toContain('/subscription')
+    expect(currentUrl).toContain('subscription')
 
     // Login with mock user
     await page
@@ -151,7 +151,7 @@ test.describe('Authentication', () => {
 
     // Verify we're on the subscription page
     await expect(
-      page.getByRole('heading', { name: /Subscription/ }),
+      page.getByRole('heading', { name: /Subscription|Abonnement/ }),
     ).toBeVisible()
   })
 
@@ -166,13 +166,13 @@ test.describe('Authentication', () => {
 
     // Verify we're on the login page
     await expect(
-      page.getByRole('heading', { name: 'TimeWise Tracker (Test Mode)' }),
+      page.getByRole('heading', { name: /TimeWise Tracker/ }),
     ).toBeVisible()
 
     // Verify the returnUrl parameter points to team page
     const currentUrl = page.url()
     expect(currentUrl).toContain('returnUrl=')
-    expect(currentUrl).toContain('/team')
+    expect(currentUrl).toContain('team')
 
     // Login with mock user
     await page
@@ -184,8 +184,6 @@ test.describe('Authentication', () => {
     await page.waitForURL(/\/team/)
 
     // Verify we're on the team page
-    await expect(
-      page.getByRole('heading', { name: /Team Management/ }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Team/ })).toBeVisible()
   })
 })

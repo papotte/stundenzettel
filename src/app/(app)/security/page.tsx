@@ -39,7 +39,7 @@ export default function SecurityPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/security')
     }
   }, [user, authLoading, router])
 

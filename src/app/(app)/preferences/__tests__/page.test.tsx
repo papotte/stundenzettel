@@ -90,7 +90,9 @@ describe('PreferencesPage', () => {
       renderWithProviders(<PreferencesPage />)
 
       await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith('/login')
+        expect(mockReplace).toHaveBeenCalledWith(
+          '/login?returnUrl=/preferences',
+        )
       })
     })
   })

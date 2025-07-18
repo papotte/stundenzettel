@@ -22,7 +22,7 @@ export default function ExportPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/export')
     }
   }, [user, loading, router])
 

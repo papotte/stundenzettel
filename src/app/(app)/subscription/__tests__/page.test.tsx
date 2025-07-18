@@ -70,7 +70,9 @@ describe('SubscriptionPage', () => {
     renderWithProviders(<SubscriptionPage />)
 
     await waitFor(() => {
-      expect(mockRouter.replace).toHaveBeenCalledWith('/login')
+      expect(mockRouter.replace).toHaveBeenCalledWith(
+        '/login?returnUrl=/subscription',
+      )
     })
   })
 
@@ -102,7 +104,7 @@ describe('SubscriptionPage', () => {
       stripeCustomerId: 'cus_123',
       status: 'active',
       currentPeriodStart: new Date('2024-01-01'),
-      currentPeriodEnd: new Date('2024-12-31'),
+      cancelAt: new Date('2024-12-31'),
       cancelAtPeriodEnd: false,
       priceId: 'price_123',
       updatedAt: new Date(),

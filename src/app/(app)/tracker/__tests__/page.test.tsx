@@ -25,7 +25,7 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
 
-describe('Home Page', () => {
+describe('Tracker Page', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -33,7 +33,7 @@ describe('Home Page', () => {
   it('redirects to login if not authenticated', () => {
     Object.assign(mockAuthContext, authScenarios.unauthenticated())
     render(<Home />)
-    expect(mockReplace).toHaveBeenCalledWith('/login')
+    expect(mockReplace).toHaveBeenCalledWith('/login?returnUrl=/tracker')
   })
 
   it('renders nothing if loading', () => {

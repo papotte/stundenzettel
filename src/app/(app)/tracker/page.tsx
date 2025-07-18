@@ -13,7 +13,7 @@ export default function TrackerPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/login')
+      router.replace('/login?returnUrl=/tracker')
     }
   }, [user, loading, router])
 

@@ -85,7 +85,7 @@ describe('CompanyPage', () => {
       renderWithProviders(<CompanyPage />)
 
       await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith('/login')
+        expect(mockReplace).toHaveBeenCalledWith('/login?returnUrl=/company')
       })
     })
   })

@@ -55,7 +55,7 @@ describe('SecurityPage', () => {
     it('redirects to login page', async () => {
       renderWithProviders(<SecurityPage />)
       await waitFor(() => {
-        expect(mockReplace).toHaveBeenCalledWith('/login')
+        expect(mockReplace).toHaveBeenCalledWith('/login?returnUrl=/security')
       })
     })
   })
