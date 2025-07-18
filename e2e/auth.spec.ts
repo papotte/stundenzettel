@@ -34,8 +34,13 @@ test.describe('Authentication', () => {
       .first()
       .click()
     await page.waitForURL('/tracker')
-    // Click the logout button (icon with aria-label or tooltip 'Abmelden' or 'Sign Out')
-    await page.getByRole('button', { name: /Abmelden|Sign Out/ }).click()
+
+    // Click the user menu button to open dropdown
+    await page.getByTestId('user-menu-btn').click()
+
+    // Click the logout button in the dropdown
+    await page.getByTestId('sign-out-btn').click()
+
     // Should be redirected to login page
     await expect(
       page.getByRole('heading', { name: /TimeWise Tracker/ }),
@@ -51,7 +56,7 @@ test.describe('Authentication', () => {
     ).toBeVisible()
 
     // Try to access settings page
-    await page.goto('/settings')
+    await page.goto('/preferences')
     await expect(
       page.getByRole('heading', { name: /TimeWise Tracker/ }),
     ).toBeVisible()

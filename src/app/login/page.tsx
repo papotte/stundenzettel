@@ -75,6 +75,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('signin')
   const router = useRouter()
   const { toast } = useToast()
   const { loginAsMockUser } = useAuth()
@@ -121,6 +122,17 @@ export default function LoginPage() {
     handleAuthAction((email, password) =>
       createUserWithEmailAndPassword(auth, email, password),
     )
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      e.preventDefault()
+      if (activeTab === 'signin') {
+        handleSignIn()
+      } else {
+        handleSignUp()
+      }
+    }
+  }
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
@@ -200,7 +212,11 @@ export default function LoginPage() {
       </div>
       <Card className="w-full max-w-sm">
         <CardContent className="pt-6">
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
               <TabsTrigger
                 value="signin"
@@ -226,6 +242,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                 </div>
                 <div className="space-y-2">
@@ -238,6 +255,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                 </div>
                 <Button
@@ -262,6 +280,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                 </div>
                 <div className="space-y-2">
@@ -274,6 +293,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
                   />
                 </div>
                 <Button

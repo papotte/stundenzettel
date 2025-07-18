@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import LanguageSelect from '@/components/language-select'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -29,13 +30,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
@@ -69,6 +63,7 @@ export default function PreferencesPage() {
   const { t, setLanguageState, language } = useTranslation()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const languageFieldId = useId()
 
   const form = useForm<PreferencesFormValues>({
     resolver: zodResolver(preferencesFormSchema),
@@ -189,29 +184,22 @@ export default function PreferencesPage() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('settings.language')}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={t('settings.selectLanguage')}
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="de">Deutsch</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel htmlFor={languageFieldId}>
+                        {t('settings.language')}
+                      </FormLabel>
+                      <FormControl>
+                        <LanguageSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                          id={languageFieldId}
+                          className={'w-full'}
+                        />
+                      </FormControl>
                       <FormDescription>
                         {t('settings.languageDescription')}
                       </FormDescription>
@@ -219,7 +207,6 @@ export default function PreferencesPage() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="defaultWorkHours"
@@ -229,8 +216,7 @@ export default function PreferencesPage() {
                       <FormControl>
                         <Input
                           type="number"
-                          min="1"
-                          max="24"
+                          step="0.5"
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
