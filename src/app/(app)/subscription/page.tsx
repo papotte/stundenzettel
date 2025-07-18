@@ -44,7 +44,7 @@ export default function SubscriptionPage() {
       const fetchSubscription = async () => {
         try {
           const subscription = await subscriptionService.getUserSubscription(
-            user.uid,
+            user.email,
           )
           setUserSubscription(subscription)
         } catch (error) {
@@ -143,9 +143,15 @@ export default function SubscriptionPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <h3 className="font-medium">{t('settings.currentPlan')}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.unknownPlan')}
+                    <h4 className="text-xs font-medium mb-2">
+                      {t('settings.currentPlan')}
+                    </h4>
+                    <h3 className="font-headline text-xl font-semibold leading-none tracking-tight">
+                      {userSubscription?.planName ?? t('settings.unknownPlan')}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {userSubscription?.planDescription ??
+                        t('settings.unknownPlanDescription')}
                     </p>
                     <Badge variant="default" className="mt-1">
                       {userSubscription?.status === 'active'

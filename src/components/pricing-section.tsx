@@ -37,11 +37,6 @@ export default function PricingSection({
     const loadPricingPlans = async () => {
       try {
         const plans = await getPricingPlans()
-        console.log('Pricing plans:', plans)
-        console.log(
-          'Plans with tiered pricing:',
-          plans.filter((p) => p.tieredPricing),
-        )
         setPricingPlans(plans)
       } catch (error) {
         console.error('Error loading pricing plans:', error)
@@ -85,9 +80,11 @@ export default function PricingSection({
     setLoading(plan.id)
     try {
       // Use email for mock users, uid for real users
-      const userId = user.email || user.uid
+      const userId: string = user.uid || user.email
+
       const { url } = await paymentService.createCheckoutSession(
         userId,
+        user.email,
         plan.stripePriceId,
         `${window.location.origin}/subscription?success=true`,
         `${window.location.origin}/pricing?canceled=true`,

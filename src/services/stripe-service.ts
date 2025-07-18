@@ -41,7 +41,6 @@ export class StripeService {
   static async getPricingPlans(): Promise<PricingPlan[]> {
     try {
       const products = await this.fetchStripeData('products')
-      console.log('Fetched products from Stripe:', products)
 
       const plans = products
         .map((product: StripeProductWithPrices) => {
@@ -74,13 +73,6 @@ export class StripeService {
             const hasTieredPricing = prices.some(
               (p) => p.tiers && p.tiers.length > 0,
             )
-            console.log(`Product ${product.name} ${interval}:`, {
-              pricesCount: prices.length,
-              hasTieredPricing,
-              pricesWithTiers: prices.filter(
-                (p) => p.tiers && p.tiers.length > 0,
-              ).length,
-            })
 
             const plan = {
               id: `${product.name.toLowerCase().replace(/\s+/g, '-')}-${interval}`,
