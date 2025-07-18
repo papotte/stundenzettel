@@ -23,7 +23,7 @@ describe('createCheckoutSession', () => {
 
   it('creates session for existing customer', async () => {
     mockStripeInstance.customers.list.mockResolvedValue({
-      data: [{ id: 'cus_1' }],
+      data: [{ id: 'cus_1', metadata: { firebase_uid: 'u' } }],
     })
     mockStripeInstance.checkout.sessions.create.mockResolvedValue({
       id: 'sess_1',
@@ -31,12 +31,13 @@ describe('createCheckoutSession', () => {
     })
     const result = await createCheckoutSession({
       userId: 'u',
+      userEmail: 'u@example.com',
       priceId: 'p',
       origin: 'http://localhost',
     })
     expect(result).toEqual({ sessionId: 'sess_1', url: 'url' })
     expect(mockStripeInstance.customers.list).toHaveBeenCalledWith({
-      email: 'u',
+      email: 'u@example.com',
       limit: 1,
     })
     expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalled()
@@ -51,32 +52,48 @@ describe('createCheckoutSession', () => {
     })
     const result = await createCheckoutSession({
       userId: 'u2',
+      userEmail: 'u2@example.com',
       priceId: 'p2',
       origin: 'http://localhost',
     })
     expect(result).toEqual({ sessionId: 'sess_2', url: 'url2' })
     expect(mockStripeInstance.customers.create).toHaveBeenCalledWith({
-      email: 'u2',
-      metadata: { userId: 'u2' },
+      email: 'u2@example.com',
+      metadata: { firebase_uid: 'u2' },
     })
   })
 
   it('throws on missing userId', async () => {
     await expect(
-      createCheckoutSession({ userId: '', priceId: 'p', origin: 'o' }),
+      createCheckoutSession({
+        userId: '',
+        userEmail: 'u@example.com',
+        priceId: 'p',
+        origin: 'o',
+      }),
     ).rejects.toThrow('Missing required parameters')
   })
 
   it('throws on missing priceId', async () => {
     await expect(
-      createCheckoutSession({ userId: 'u', priceId: '', origin: 'o' }),
+      createCheckoutSession({
+        userId: 'u',
+        userEmail: 'u@example.com',
+        priceId: '',
+        origin: 'o',
+      }),
     ).rejects.toThrow('Missing required parameters')
   })
 
   it('throws on Stripe error', async () => {
     mockStripeInstance.customers.list.mockRejectedValue(new Error('fail'))
     await expect(
-      createCheckoutSession({ userId: 'u', priceId: 'p', origin: 'o' }),
+      createCheckoutSession({
+        userId: 'u',
+        userEmail: 'u@example.com',
+        priceId: 'p',
+        origin: 'o',
+      }),
     ).rejects.toThrow('fail')
   })
 })

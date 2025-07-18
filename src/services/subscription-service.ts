@@ -44,8 +44,8 @@ export class SubscriptionService {
     }
   }
 
-  async hasActiveSubscription(userId: string): Promise<boolean> {
-    const subscription = await this.getUserSubscription(userId)
+  async hasActiveSubscription(userEmail: string): Promise<boolean> {
+    const subscription = await this.getUserSubscription(userEmail)
     return subscription?.status === 'active'
   }
 

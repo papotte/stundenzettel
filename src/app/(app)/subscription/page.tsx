@@ -1,6 +1,5 @@
 'use client'
 
-import { formatAppDate } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
 import { ArrowLeft, CreditCard, Crown, ExternalLink } from 'lucide-react'
@@ -21,6 +20,7 @@ import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription } from '@/lib/types'
+import { formatAppDate } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -45,7 +45,7 @@ export default function SubscriptionPage() {
       const fetchSubscription = async () => {
         try {
           const subscription = await subscriptionService.getUserSubscription(
-            user.email,
+            user.uid,
           )
           setUserSubscription(subscription)
         } catch (error) {

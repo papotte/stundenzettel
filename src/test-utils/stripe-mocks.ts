@@ -19,6 +19,7 @@ export const mockStripeInstance = {
   },
   products: {
     list: jest.fn(),
+    retrieve: jest.fn(),
   },
   prices: {
     list: jest.fn(),

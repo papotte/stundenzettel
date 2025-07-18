@@ -55,8 +55,8 @@ export interface Subscription {
   cancelAt: Date | undefined
   cancelAtPeriodEnd: boolean
   priceId: string
-  planName: string
-  planDescription: string
+  planName?: string
+  planDescription?: string
   quantity?: number
   updatedAt: Date
 }

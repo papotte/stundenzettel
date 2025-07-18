@@ -53,7 +53,12 @@ export default function UserMenu({
 
   if (!user) {
     return (
-      <Button asChild variant={variant} size={size} className={className}>
+      <Button
+        asChild
+        variant={variant}
+        size={size}
+        className={`w-auto px-2 ${className}`}
+      >
         <Link href="/login" data-testid="login-link">
           {t('topNav.login')}
         </Link>

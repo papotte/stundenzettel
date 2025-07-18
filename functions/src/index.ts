@@ -123,7 +123,9 @@ async function handleIndividualSubscriptionChange(
     stripeCustomerId: subscription.customer as string,
     status: subscription.status,
     currentPeriodStart: currentPeriodStart,
-    cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+    cancelAt: subscription.cancel_at
+      ? new Date(subscription.cancel_at * 1000)
+      : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     priceId: subscription.items.data[0]?.price.id,
     updatedAt: new Date(),
@@ -149,7 +151,9 @@ async function handleTeamSubscriptionChange(
     currentPeriodStart: new Date(
       (subscription as any).current_period_start * 1000,
     ),
-    cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+    cancelAt: subscription.cancel_at
+      ? new Date(subscription.cancel_at * 1000)
+      : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     priceId: subscription.items.data[0]?.price.id,
     quantity: subscription.items.data[0]?.quantity || 0,
