@@ -36,7 +36,7 @@ export default function LandingLayout({
             </Link>
           </div>
 
-          <div className="hidden lg:flex lg:gap-x-12">
+          <div className="hidden md:flex md:gap-x-12">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -47,13 +47,13 @@ export default function LandingLayout({
               </Link>
             ))}
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher />
             <UserMenu />
           </div>
           {/* Mobile language switcher */}
-          <div className="flex flex-1 justify-end items-center gap-2 lg:hidden">
-            <LanguageSwitcher className="w-20" />
+          <div className="flex flex-1 justify-end items-center gap-2 md:hidden">
+            <UserMenu />
           </div>
         </nav>
       </header>
