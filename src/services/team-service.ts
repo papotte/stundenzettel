@@ -291,11 +291,13 @@ export class TeamService {
       stripeCustomerId: data.stripeCustomerId,
       status: data.status,
       currentPeriodStart: data.currentPeriodStart?.toDate() || new Date(),
-      currentPeriodEnd: data.currentPeriodEnd?.toDate() || new Date(),
+      cancelAt: data.cancelAt?.toDate() || undefined,
       cancelAtPeriodEnd: data.cancelAtPeriodEnd,
       priceId: data.priceId,
       quantity: data.quantity,
       updatedAt: data.updatedAt?.toDate() || new Date(),
+      planName: data.planName,
+      planDescription: data.planDescription,
     }
   }
 
@@ -340,11 +342,13 @@ export class TeamService {
           stripeCustomerId: data.stripeCustomerId,
           status: data.status,
           currentPeriodStart: data.currentPeriodStart?.toDate() || new Date(),
-          currentPeriodEnd: data.currentPeriodEnd?.toDate() || new Date(),
+          cancelAt: data.cancelAt?.toDate() || undefined,
           cancelAtPeriodEnd: data.cancelAtPeriodEnd,
           priceId: data.priceId,
           quantity: data.quantity,
           updatedAt: data.updatedAt?.toDate() || new Date(),
+          planName: data.planName,
+          planDescription: data.planDescription,
         }
         callback(subscription)
       },

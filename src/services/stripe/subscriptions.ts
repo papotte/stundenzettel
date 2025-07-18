@@ -50,7 +50,7 @@ export async function getUserSubscription(
   const product = await stripe.products.retrieve(productId)
 
   const startDate = stripeSubscription.start_date
-  const endDate = stripeSubscription.cancel_at
+  const cancelAt = stripeSubscription.cancel_at
   // Convert to our Subscription type
   return {
     stripeSubscriptionId: stripeSubscription.id,
@@ -59,7 +59,7 @@ export async function getUserSubscription(
     planDescription: product.description || '',
     status: stripeSubscription.status as AppSubscription['status'],
     currentPeriodStart: new Date(startDate * 1000),
-    currentPeriodEnd: endDate ? new Date(endDate * 1000) : undefined,
+    cancelAt: cancelAt ? new Date(cancelAt * 1000) : undefined,
     cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
     priceId: stripeSubscription.items.data[0]?.price.id || '',
     quantity: stripeSubscription.items.data[0]?.quantity,
