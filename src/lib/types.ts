@@ -52,7 +52,7 @@ export interface Subscription {
     | 'unpaid'
     | 'inactive'
   currentPeriodStart: Date
-  currentPeriodEnd: Date | undefined
+  cancelAt: Date | undefined
   cancelAtPeriodEnd: boolean
   priceId: string
   planName: string

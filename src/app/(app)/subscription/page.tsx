@@ -1,5 +1,6 @@
 'use client'
 
+import { formatAppDate } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
 import { ArrowLeft, CreditCard, Crown, ExternalLink } from 'lucide-react'
@@ -67,7 +68,7 @@ export default function SubscriptionPage() {
 
     try {
       const { url } = await paymentService.createCustomerPortalSession(
-        user.uid,
+        user.email,
         `${window.location.origin}/subscription`,
       )
       await paymentService.redirectToCustomerPortal(url)
@@ -161,14 +162,14 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
 
-                {userSubscription?.currentPeriodEnd && (
+                {userSubscription?.cancelAt && (
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-medium">
-                        {t('settings.nextBilling')}
+                        {t('settings.cancellationDate')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {userSubscription.currentPeriodEnd.toLocaleDateString()}
+                        {formatAppDate(userSubscription.cancelAt)}
                       </p>
                     </div>
                   </div>
@@ -178,15 +179,6 @@ export default function SubscriptionPage() {
                   <Button onClick={handleManageBilling} className="w-full">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     {t('settings.manageBilling')}
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={handleUpgrade}
-                    className="w-full"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    {t('settings.changePlan')}
                   </Button>
                 </div>
               </div>
