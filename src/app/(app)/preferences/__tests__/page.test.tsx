@@ -249,7 +249,9 @@ describe('PreferencesPage', () => {
       })
       await user.click(languageSelect)
 
-      const germanOption = screen.getByRole('option', { name: /settings\.languageGerman/i })
+      const germanOption = screen.getByRole('option', {
+        name: /settings\.languageGerman/i,
+      })
       await user.click(germanOption)
 
       // Submit the form

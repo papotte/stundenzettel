@@ -32,7 +32,6 @@ export default function PricingSection({
   const [loading, setLoading] = useState<string | null>(null)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
   const [isLoadingPlans, setIsLoadingPlans] = useState(true)
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
   useEffect(() => {
     const loadPricingPlans = async () => {
@@ -59,7 +58,6 @@ export default function PricingSection({
     const urlParams = new URLSearchParams(window.location.search)
     const planId = urlParams.get('plan')
     if (planId) {
-      setSelectedPlan(planId)
       // Auto-scroll to the selected plan
       setTimeout(() => {
         const planElement = document.getElementById(`plan-${planId}`)
@@ -86,10 +84,12 @@ export default function PricingSection({
 
     setLoading(plan.id)
     try {
+      // Use email for mock users, uid for real users
+      const userId = user.email || user.uid
       const { url } = await paymentService.createCheckoutSession(
-        user.uid,
+        userId,
         plan.stripePriceId,
-        `${window.location.origin}/settings?success=true`,
+        `${window.location.origin}/subscription?success=true`,
         `${window.location.origin}/pricing?canceled=true`,
       )
 
@@ -163,15 +163,7 @@ export default function PricingSection({
               className={`grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(filteredPlans.length, 4)}`}
             >
               {filteredPlans.map((plan: PricingPlan) => (
-                <div
-                  key={plan.id}
-                  id={`plan-${plan.id}`}
-                  className={
-                    selectedPlan === plan.id
-                      ? 'ring-2 ring-primary ring-offset-2 rounded-lg'
-                      : ''
-                  }
-                >
+                <div key={plan.id} id={`plan-${plan.id}`}>
                   <PricingCard
                     plan={plan}
                     loading={loading}

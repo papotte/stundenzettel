@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
   GoogleAuthProvider,
@@ -11,7 +11,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
 } from 'firebase/auth'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import TimeWiseIcon from '@/components/time-wise-icon'
 import { Button } from '@/components/ui/button'
@@ -76,10 +76,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('signin')
+  const [returnUrl, setReturnUrl] = useState('/tracker')
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const { loginAsMockUser } = useAuth()
   const { t } = useTranslation()
+
+  // Get return URL from query parameters
+  useEffect(() => {
+    const url = searchParams.get('returnUrl')
+    if (url) {
+      setReturnUrl(decodeURIComponent(url))
+    }
+  }, [searchParams])
 
   const useMocks =
     process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
@@ -101,7 +111,7 @@ export default function LoginPage() {
     try {
       await setPersistence(auth, browserLocalPersistence)
       await action(email, password)
-      router.push('/tracker')
+      router.push(returnUrl)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
       toast({
@@ -149,7 +159,7 @@ export default function LoginPage() {
     try {
       await setPersistence(auth, browserLocalPersistence)
       await signInWithPopup(auth, provider)
-      router.push('/tracker')
+      router.push(returnUrl)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
       toast({
@@ -165,7 +175,7 @@ export default function LoginPage() {
   const handleMockLogin = (user: AuthenticatedUser) => {
     if (loginAsMockUser) {
       loginAsMockUser(user)
-      router.push('/tracker')
+      router.push(returnUrl)
     }
   }
 

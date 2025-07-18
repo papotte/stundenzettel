@@ -13,6 +13,7 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 // This mock is crucial. It prevents the real firebase.ts from running and
