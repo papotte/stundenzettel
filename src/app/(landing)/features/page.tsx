@@ -48,7 +48,7 @@ export default function FeaturesPage() {
         </dl>
       </div>
 
-      <div className="my-32 text-center">
+      <div className="flex my-32 text-center">
         <Image
           src="/images/tracker.png"
           alt="Tracker"

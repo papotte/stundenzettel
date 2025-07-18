@@ -426,6 +426,11 @@ export const dictionaries = {
           },
         ],
       },
+      pricing: {
+        headerTitle: 'Simple, Transparent Pricing',
+        headerDescription:
+          'One plan that includes everything you need. No tiers, no add-ons, no surprises.',
+      },
       faqTitle: 'Frequently Asked Questions',
       faqs: [
         {
@@ -875,6 +880,11 @@ export const dictionaries = {
             desc: 'Basierend auf Ihrer Arbeitszeit schlägt die App die gesetzlich vorgeschriebene Pause vor, die Sie mit einem Klick übernehmen können.',
           },
         ],
+      },
+      pricing: {
+        headerTitle: 'Einfache, transparente Preise',
+        headerDescription:
+          'Ein Tarif, der alles enthält, was Sie brauchen. Keine Stufen, keine Zusatzpakete, keine Überraschungen.',
       },
       faqTitle: 'Häufig gestellte Fragen',
       faqs: [

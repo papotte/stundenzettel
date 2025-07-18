@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser({
           uid: firebaseUser.uid,
           displayName: firebaseUser.displayName,
-          email: firebaseUser.email,
+          email: firebaseUser.email || '',
         })
       } else {
         setUser(null)

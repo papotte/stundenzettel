@@ -238,8 +238,9 @@ describe('PricingSection', () => {
         await waitFor(() => {
           expect(paymentService.createCheckoutSession).toHaveBeenCalledWith(
             'test-user-id',
+            'test@example.com',
             'price_basic_monthly',
-            'http://localhost:3000/settings?success=true',
+            'http://localhost:3000/subscription?success=true',
             'http://localhost:3000/pricing?canceled=true',
           )
           expect(paymentService.redirectToCheckout).toHaveBeenCalledWith(

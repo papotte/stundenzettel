@@ -47,12 +47,8 @@ export default function LandingLayout({
               </Link>
             ))}
           </div>
-          <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            <UserMenu />
-          </div>
-          {/* Mobile language switcher */}
-          <div className="flex flex-1 justify-end items-center gap-2 md:hidden">
             <UserMenu />
           </div>
         </nav>

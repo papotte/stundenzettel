@@ -74,7 +74,7 @@ export class PaymentService {
   ): Promise<{ sessionId: string; url: string }> {
     await this.initialize()
 
-    let params = JSON.stringify({
+    const params = JSON.stringify({
       userId,
       userEmail,
       priceId,

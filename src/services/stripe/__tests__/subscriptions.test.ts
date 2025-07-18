@@ -27,18 +27,23 @@ describe('getUserSubscription', () => {
       id: 'sub_123',
       customer: 'cus_123',
       status: 'active',
-      current_period_start: 1640995200,
-      current_period_end: 1643673600,
+      start_date: 1640995200,
       cancel_at_period_end: false,
       created: 1640995200,
       items: {
         data: [
           {
-            price: { id: 'price_123' },
+            price: { id: 'price_123', product: 'prod_123' },
             quantity: 1,
           },
         ],
       },
+    }
+
+    const mockProduct = {
+      id: 'prod_123',
+      name: 'Premium Plan',
+      description: 'Premium subscription plan',
     }
 
     mockStripeInstance.customers.list.mockResolvedValue({
@@ -47,15 +52,18 @@ describe('getUserSubscription', () => {
     mockStripeInstance.subscriptions.list.mockResolvedValue({
       data: [mockSubscription],
     })
+    mockStripeInstance.products.retrieve.mockResolvedValue(mockProduct)
 
     const result = await getUserSubscription('user@example.com')
 
     expect(result).toEqual({
       stripeSubscriptionId: 'sub_123',
       stripeCustomerId: 'cus_123',
+      planName: 'Premium Plan',
+      planDescription: 'Premium subscription plan',
       status: 'active',
       currentPeriodStart: new Date(1640995200000),
-      currentPeriodEnd: new Date(1643673600000),
+      cancelAt: undefined,
       cancelAtPeriodEnd: false,
       priceId: 'price_123',
       quantity: 1,
@@ -63,15 +71,15 @@ describe('getUserSubscription', () => {
     })
   })
 
-  it('returns null when customer not found', async () => {
+  it('returns undefined when customer not found', async () => {
     mockStripeInstance.customers.list.mockResolvedValue({ data: [] })
 
     const result = await getUserSubscription('user@example.com')
 
-    expect(result).toBeNull()
+    expect(result).toBeUndefined()
   })
 
-  it('returns null when customer has no subscriptions', async () => {
+  it('returns undefined when customer has no subscriptions', async () => {
     mockStripeInstance.customers.list.mockResolvedValue({
       data: [{ id: 'cus_123' }],
     })
@@ -79,7 +87,7 @@ describe('getUserSubscription', () => {
 
     const result = await getUserSubscription('user@example.com')
 
-    expect(result).toBeNull()
+    expect(result).toBeUndefined()
   })
 
   it('throws on missing userId', async () => {
