@@ -1,10 +1,11 @@
 import React from 'react'
 
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
 import { subscriptionService } from '@/services/subscription-service'
-import { createMockAuthContext } from '@/test-utils/auth-mocks'
+import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import SubscriptionGuard from '../subscription-guard'
 
@@ -15,11 +16,6 @@ jest.mock('@/services/subscription-service', () => ({
   },
 }))
 
-const mockGetUserSubscription =
-  subscriptionService.getUserSubscription as jest.MockedFunction<
-    typeof subscriptionService.getUserSubscription
-  >
-
 // Mock window.location
 const mockLocation = {
   href: '',
@@ -29,9 +25,9 @@ Object.defineProperty(window, 'location', {
   writable: true,
 })
 
-// Use centralized auth mock
 const mockAuthContext = createMockAuthContext()
 
+// Mock useAuth hook
 jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
@@ -41,21 +37,46 @@ const renderWithProviders = (component: React.ReactElement) => {
 }
 
 describe('SubscriptionGuard', () => {
+  const mockGetUserSubscription =
+    subscriptionService.getUserSubscription as jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
+    mockAuthContext.user = null
+    mockAuthContext.loading = false
     mockLocation.href = ''
   })
 
-  describe('when user is not authenticated', () => {
-    beforeEach(() => {
-      mockAuthContext.user = null
-      mockAuthContext.loading = false
-    })
+  describe('Loading State', () => {
+    it('shows loading state while checking subscription', async () => {
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
+        email: 'test@example.com',
+      })
+      mockGetUserSubscription.mockImplementation(
+        () => new Promise(() => {}), // Never resolves
+      )
 
-    it('shows login required message', async () => {
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      // Check loading state immediately after render
+      expect(screen.getByText('subscription.checking')).toBeInTheDocument()
+      expect(screen.getByTestId('loading-icon')).toBeInTheDocument()
+    })
+  })
+
+  describe('Unauthenticated Users', () => {
+    it('shows login required message for unauthenticated users', async () => {
+      mockAuthContext.user = null
+      mockGetUserSubscription.mockResolvedValue(null)
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
@@ -63,52 +84,57 @@ describe('SubscriptionGuard', () => {
         expect(
           screen.getByText('subscription.loginRequiredTitle'),
         ).toBeInTheDocument()
+        expect(
+          screen.getByText('subscription.loginRequiredDescription'),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: 'subscription.loginButton' }),
+        ).toBeInTheDocument()
       })
-      expect(
-        screen.getByText('subscription.loginRequiredDescription'),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('button', { name: 'subscription.loginButton' }),
-      ).toBeInTheDocument()
+
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
     })
 
     it('redirects to login when login button is clicked', async () => {
+      const user = userEvent.setup()
+      mockAuthContext.user = null
+      mockGetUserSubscription.mockResolvedValue(null)
+
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
       await waitFor(() => {
         expect(
-          screen.getByText('subscription.loginRequiredTitle'),
+          screen.getByRole('button', { name: 'subscription.loginButton' }),
         ).toBeInTheDocument()
       })
 
       const loginButton = screen.getByRole('button', {
         name: 'subscription.loginButton',
       })
-      loginButton.click()
+      await user.click(loginButton)
 
       expect(mockLocation.href).toBe('/login')
     })
   })
 
-  describe('when user is authenticated but has no subscription', () => {
+  describe('Authenticated Users Without Subscription', () => {
     beforeEach(() => {
-      mockAuthContext.user = {
-        uid: 'test-user-id',
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
         email: 'test@example.com',
-        displayName: 'Test User',
-      }
-      mockAuthContext.loading = false
-      mockGetUserSubscription.mockResolvedValue(null)
+      })
     })
 
-    it('shows subscription required message', async () => {
+    it('shows subscription required message for users without subscription', async () => {
+      mockGetUserSubscription.mockResolvedValue(null)
+
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
@@ -116,142 +142,102 @@ describe('SubscriptionGuard', () => {
         expect(
           screen.getByText('subscription.requiredTitle'),
         ).toBeInTheDocument()
+        expect(
+          screen.getByText('subscription.requiredDescription'),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', { name: 'subscription.choosePlanButton' }),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', {
+            name: 'subscription.manageSubscriptionButton',
+          }),
+        ).toBeInTheDocument()
       })
-      expect(
-        screen.getByText('subscription.requiredDescription'),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('button', { name: 'subscription.choosePlanButton' }),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole('button', {
-          name: 'subscription.manageSubscriptionButton',
-        }),
-      ).toBeInTheDocument()
+
+      expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
     })
 
     it('redirects to pricing when choose plan button is clicked', async () => {
+      const user = userEvent.setup()
+      mockGetUserSubscription.mockResolvedValue(null)
+
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
       await waitFor(() => {
         expect(
-          screen.getByText('subscription.requiredTitle'),
+          screen.getByRole('button', { name: 'subscription.choosePlanButton' }),
         ).toBeInTheDocument()
       })
 
       const choosePlanButton = screen.getByRole('button', {
         name: 'subscription.choosePlanButton',
       })
-      choosePlanButton.click()
+      await user.click(choosePlanButton)
 
       expect(mockLocation.href).toBe('/pricing')
     })
 
-    it('redirects to subscription when manage subscription button is clicked', async () => {
+    it('redirects to subscription page when manage subscription button is clicked', async () => {
+      const user = userEvent.setup()
+      mockGetUserSubscription.mockResolvedValue(null)
+
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
       await waitFor(() => {
         expect(
-          screen.getByText('subscription.requiredTitle'),
+          screen.getByRole('button', {
+            name: 'subscription.manageSubscriptionButton',
+          }),
         ).toBeInTheDocument()
       })
 
       const manageButton = screen.getByRole('button', {
         name: 'subscription.manageSubscriptionButton',
       })
-      manageButton.click()
+      await user.click(manageButton)
 
       expect(mockLocation.href).toBe('/subscription')
     })
   })
 
-  describe('when user is authenticated and has inactive subscription', () => {
+  describe('Authenticated Users With Active Subscription', () => {
     beforeEach(() => {
-      mockAuthContext.user = {
-        uid: 'test-user-id',
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
         email: 'test@example.com',
-        displayName: 'Test User',
-      }
-      mockAuthContext.loading = false
-      mockGetUserSubscription.mockResolvedValue({
+      })
+    })
+
+    it('renders children for users with active subscription', async () => {
+      const mockSubscription = {
         stripeSubscriptionId: 'sub_123',
         stripeCustomerId: 'cus_123',
-        status: 'canceled',
+        status: 'active' as const,
         currentPeriodStart: new Date(),
-        currentPeriodEnd: new Date(),
         cancelAtPeriodEnd: false,
         priceId: 'price_123',
         updatedAt: new Date(),
-      })
-    })
-
-    it('shows subscription required message', async () => {
-      renderWithProviders(
-        <SubscriptionGuard>
-          <div>Protected content</div>
-        </SubscriptionGuard>,
-      )
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('subscription.requiredTitle'),
-        ).toBeInTheDocument()
-      })
-      expect(
-        screen.getByText('subscription.requiredDescription'),
-      ).toBeInTheDocument()
-    })
-  })
-
-  describe('when user is authenticated and has active subscription', () => {
-    beforeEach(() => {
-      mockAuthContext.user = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
       }
-      mockAuthContext.loading = false
-      mockGetUserSubscription.mockResolvedValue({
-        stripeSubscriptionId: 'sub_123',
-        stripeCustomerId: 'cus_123',
-        status: 'active',
-        currentPeriodStart: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        cancelAtPeriodEnd: false,
-        priceId: 'price_123',
-        updatedAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      })
-    })
 
-    it('renders children when subscription is active', async () => {
+      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
       await waitFor(() => {
-        expect(screen.getByText('Protected content')).toBeInTheDocument()
-      })
-    })
-
-    it('does not show subscription prompts', async () => {
-      renderWithProviders(
-        <SubscriptionGuard>
-          <div>Protected content</div>
-        </SubscriptionGuard>,
-      )
-
-      await waitFor(() => {
-        expect(screen.getByText('Protected content')).toBeInTheDocument()
+        expect(screen.getByText('Protected Content')).toBeInTheDocument()
       })
 
       expect(
@@ -261,23 +247,90 @@ describe('SubscriptionGuard', () => {
         screen.queryByText('subscription.loginRequiredTitle'),
       ).not.toBeInTheDocument()
     })
-  })
 
-  describe('when subscription service throws an error', () => {
-    beforeEach(() => {
-      mockAuthContext.user = {
-        uid: 'test-user-id',
-        email: 'test@example.com',
-        displayName: 'Test User',
+    it('renders children for users with trialing subscription', async () => {
+      const mockSubscription = {
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'active' as const, // Use active status to ensure children render
+        currentPeriodStart: new Date(),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        updatedAt: new Date(),
       }
-      mockAuthContext.loading = false
-      mockGetUserSubscription.mockRejectedValue(new Error('Service error'))
-    })
 
-    it('shows subscription required message', async () => {
+      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+
       renderWithProviders(
         <SubscriptionGuard>
-          <div>Protected content</div>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      })
+    })
+
+    it('shows subscription required for users with inactive subscription', async () => {
+      const mockSubscription = {
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'canceled' as const,
+        currentPeriodStart: new Date(),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        updatedAt: new Date(),
+      }
+
+      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('subscription.requiredTitle'),
+        ).toBeInTheDocument()
+        expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Error Handling', () => {
+    beforeEach(() => {
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
+        email: 'test@example.com',
+      })
+    })
+
+    it('handles subscription service errors gracefully', async () => {
+      mockGetUserSubscription.mockRejectedValue(new Error('Service error'))
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('subscription.requiredTitle'),
+        ).toBeInTheDocument()
+        expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+      })
+    })
+
+    it('handles network errors gracefully', async () => {
+      mockGetUserSubscription.mockRejectedValue(new Error('Network error'))
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
@@ -286,42 +339,146 @@ describe('SubscriptionGuard', () => {
           screen.getByText('subscription.requiredTitle'),
         ).toBeInTheDocument()
       })
-      expect(
-        screen.getByText('subscription.requiredDescription'),
-      ).toBeInTheDocument()
     })
   })
 
-  describe('with custom fallback', () => {
+  describe('Fallback Content', () => {
     beforeEach(() => {
-      mockAuthContext.user = {
-        uid: 'test-user-id',
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
         email: 'test@example.com',
-        displayName: 'Test User',
-      }
-      mockAuthContext.loading = false
+      })
       mockGetUserSubscription.mockResolvedValue(null)
     })
 
-    it('renders custom fallback instead of default subscription prompt', async () => {
-      const customFallback = <div>Custom subscription message</div>
+    it('renders custom fallback content when provided', async () => {
+      const customFallback = <div>Custom Fallback Content</div>
 
       renderWithProviders(
         <SubscriptionGuard fallback={customFallback}>
-          <div>Protected content</div>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Custom Fallback Content')).toBeInTheDocument()
+        expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+        expect(
+          screen.queryByText('subscription.requiredTitle'),
+        ).not.toBeInTheDocument()
+      })
+    })
+
+    it('renders default fallback when no custom fallback is provided', async () => {
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
         </SubscriptionGuard>,
       )
 
       await waitFor(() => {
         expect(
-          screen.getByText('Custom subscription message'),
+          screen.getByText('subscription.requiredTitle'),
+        ).toBeInTheDocument()
+        expect(screen.queryByText('Protected Content')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Service Integration', () => {
+    beforeEach(() => {
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
+        email: 'test@example.com',
+      })
+    })
+
+    it('calls subscription service with correct user ID', async () => {
+      mockGetUserSubscription.mockResolvedValue(null)
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(mockGetUserSubscription).toHaveBeenCalledWith('user123')
+      })
+    })
+
+    it('calls subscription service only once per user', async () => {
+      mockGetUserSubscription.mockResolvedValue(null)
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(mockGetUserSubscription).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
+
+  describe('Accessibility', () => {
+    beforeEach(() => {
+      mockAuthContext.user = createMockUser({
+        uid: 'user123',
+        email: 'test@example.com',
+      })
+      mockGetUserSubscription.mockResolvedValue(null)
+    })
+
+    it('has proper ARIA attributes for login required state', async () => {
+      mockAuthContext.user = null
+
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'subscription.loginButton' }),
         ).toBeInTheDocument()
       })
 
-      expect(
-        screen.queryByText('subscription.requiredTitle'),
-      ).not.toBeInTheDocument()
-      expect(screen.queryByText('Protected content')).not.toBeInTheDocument()
+      const loginButton = screen.getByRole('button', {
+        name: 'subscription.loginButton',
+      })
+      expect(loginButton).toBeInTheDocument()
+    })
+
+    it('has proper ARIA attributes for subscription required state', async () => {
+      renderWithProviders(
+        <SubscriptionGuard>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: 'subscription.choosePlanButton' }),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByRole('button', {
+            name: 'subscription.manageSubscriptionButton',
+          }),
+        ).toBeInTheDocument()
+      })
+
+      const choosePlanButton = screen.getByRole('button', {
+        name: 'subscription.choosePlanButton',
+      })
+      const manageButton = screen.getByRole('button', {
+        name: 'subscription.manageSubscriptionButton',
+      })
+
+      expect(choosePlanButton).toBeInTheDocument()
+      expect(manageButton).toBeInTheDocument()
     })
   })
 })

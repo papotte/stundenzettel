@@ -53,6 +53,8 @@ export default function SubscriptionGuard({
     checkSubscription()
   }, [user])
 
+  console.log('subscription', subscription)
+  console.log('loading', loading)
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">

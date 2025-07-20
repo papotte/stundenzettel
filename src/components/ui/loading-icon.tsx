@@ -21,6 +21,7 @@ const LoadingIcon = ({
 
   return (
     <LoaderPinwheel
+      data-testid="loading-icon"
       className={`${sizeClasses[size]} animate-spin text-primary ${className}`}
       {...props}
     />

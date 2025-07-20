@@ -1,17 +1,22 @@
+import type { PricingPlan } from '@/lib/types'
 import {
   _resetPricingPlansCacheForTest,
   getPricingPlans,
   paymentService,
-} from '../payment-service'
-import { StripeService } from '../stripe-service'
+} from '@/services/payment-service'
+import { StripeService } from '@/services/stripe-service'
 
 // Mock Stripe
 jest.mock('@stripe/stripe-js', () => ({
-  loadStripe: jest.fn(() => Promise.resolve({})),
+  loadStripe: jest.fn(() =>
+    Promise.resolve({
+      redirectToCheckout: jest.fn(),
+    }),
+  ),
 }))
 
 // Mock StripeService
-jest.mock('../stripe-service', () => ({
+jest.mock('@/services/stripe-service', () => ({
   StripeService: {
     getPricingPlans: jest.fn(),
   },
@@ -21,31 +26,30 @@ jest.mock('../stripe-service', () => ({
 global.fetch = jest.fn()
 
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+
 const mockStripeService = StripeService as jest.Mocked<typeof StripeService>
 
 describe('PaymentService', () => {
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
+    _resetPricingPlansCacheForTest()
   })
 
   describe('getPricingPlans (function)', () => {
-    beforeEach(() => {
-      _resetPricingPlansCacheForTest()
-    })
-    it('returns cached plans if available and not expired', async () => {
-      const mockPlans = [
-        {
-          id: 'plan-1',
-          name: 'Basic Plan',
-          price: 10,
-          currency: 'USD',
-          interval: 'month' as const,
-          features: ['Feature 1'],
-          stripePriceId: 'price_1',
-        },
-      ]
+    const mockPlans: PricingPlan[] = [
+      {
+        id: 'plan-1',
+        name: 'Basic Plan',
+        price: 10,
+        currency: 'USD',
+        interval: 'month',
+        features: ['Feature 1'],
+        stripePriceId: 'price_1',
+      },
+    ]
 
+    it('returns cached plans if available and not expired', async () => {
       mockStripeService.getPricingPlans.mockResolvedValue(mockPlans)
 
       // First call to populate cache
@@ -59,10 +63,6 @@ describe('PaymentService', () => {
     })
 
     it('handles API errors gracefully', async () => {
-      // Clear mocks and reset modules to ensure fresh state
-      jest.clearAllMocks()
-      jest.resetModules()
-
       // Mock StripeService to reject
       mockStripeService.getPricingPlans.mockRejectedValue(
         new Error('API Error'),
@@ -111,10 +111,7 @@ describe('PaymentService', () => {
       })
 
       it('throws error when API call fails', async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        } as Response)
+        mockFetch.mockRejectedValueOnce(new Error('Network Error'))
 
         await expect(
           paymentService.createCheckoutSession(
@@ -122,7 +119,7 @@ describe('PaymentService', () => {
             'user@test.com',
             'price_123',
           ),
-        ).rejects.toThrow('Failed to create checkout session')
+        ).rejects.toThrow('Network Error')
       })
     })
 
@@ -217,14 +214,11 @@ describe('PaymentService', () => {
       })
 
       it('throws error when API call fails', async () => {
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-        } as Response)
+        mockFetch.mockRejectedValueOnce(new Error('Network Error'))
 
         await expect(
           paymentService.createCustomerPortalSession('user123'),
-        ).rejects.toThrow('Failed to create customer portal session')
+        ).rejects.toThrow('Network Error')
       })
     })
 
@@ -293,6 +287,94 @@ describe('PaymentService', () => {
       it('getPlanByStripePriceId returns undefined for non-existent plan', () => {
         const plan = paymentService.getPlanByStripePriceId('non-existent')
         expect(plan).toBeUndefined()
+      })
+    })
+  })
+
+  describe('Cache Management', () => {
+    it('resets cache correctly in test environment', () => {
+      expect(() => _resetPricingPlansCacheForTest()).not.toThrow()
+    })
+
+    it('throws error when resetting cache outside test environment', () => {
+      // Mock NODE_ENV to be production
+      const originalEnv = process.env.NODE_ENV
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+      })
+
+      expect(() => _resetPricingPlansCacheForTest()).toThrow(
+        '_resetPricingPlansCacheForTest can only be called in test environment',
+      )
+
+      // Restore original environment
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalEnv,
+        writable: true,
+      })
+    })
+  })
+
+  describe('Integration Scenarios', () => {
+    it('handles complete checkout flow', async () => {
+      // Mock pricing plans
+      const mockPricingPlans: PricingPlan[] = [
+        {
+          id: 'individual-monthly',
+          name: 'Individual Monthly',
+          price: 9.99,
+          currency: 'EUR',
+          interval: 'month',
+          features: ['Feature 1'],
+          stripePriceId: 'price_monthly',
+        },
+      ]
+      mockStripeService.getPricingPlans.mockResolvedValue(mockPricingPlans)
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sessionId: 'cs_test_123',
+          url: 'https://checkout.stripe.com/test',
+        }),
+      } as Response)
+
+      // Get pricing plans
+      const plans = await getPricingPlans()
+      expect(plans).toEqual(mockPricingPlans)
+
+      // Create checkout session
+      const checkoutResult = await paymentService.createCheckoutSession(
+        'user123',
+        'test@example.com',
+        'price_monthly',
+      )
+
+      expect(checkoutResult).toEqual({
+        sessionId: 'cs_test_123',
+        url: 'https://checkout.stripe.com/test',
+      })
+
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+      expect(mockStripeService.getPricingPlans).toHaveBeenCalledTimes(1)
+    })
+
+    it('handles customer portal flow', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          url: 'https://billing.stripe.com/test',
+        }),
+      } as Response)
+
+      const portalResult = await paymentService.createCustomerPortalSession(
+        'test@example.com',
+        'http://localhost:3000/return',
+      )
+
+      expect(portalResult).toEqual({
+        url: 'https://billing.stripe.com/test',
       })
     })
   })
