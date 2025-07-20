@@ -1,5 +1,8 @@
 import { NextRequest } from 'next/server'
 
+import { Subscription } from '@/lib/types'
+import * as stripeSubscriptionsService from '@/services/stripe/subscriptions'
+
 import { GET } from '../[userId]/route'
 
 // Mock the Stripe subscriptions service
@@ -8,7 +11,7 @@ jest.mock('@/services/stripe/subscriptions', () => ({
 }))
 
 const mockGetUserSubscription = jest.mocked(
-  require('@/services/stripe/subscriptions').getUserSubscription,
+  stripeSubscriptionsService.getUserSubscription,
 )
 
 describe('/api/subscriptions/[userId]', () => {
@@ -23,21 +26,17 @@ describe('/api/subscriptions/[userId]', () => {
   describe('GET', () => {
     it('should fetch user subscription successfully', async () => {
       const userId = 'user123'
-      const mockSubscription = {
-        id: 'sub_123',
+      const mockSubscription: Subscription = {
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
         status: 'active',
-        current_period_end: 1234567890,
-        cancel_at_period_end: false,
-        product: {
-          id: 'prod_123',
-          name: 'Basic Plan',
-        },
-        price: {
-          id: 'price_123',
-          unit_amount: 1000,
-          currency: 'usd',
-          recurring: { interval: 'month' },
-        },
+        currentPeriodStart: new Date('2024-01-01'),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        planName: 'Basic Plan',
+        planDescription: 'Basic features',
+        quantity: 1,
+        updatedAt: new Date('2024-01-01'),
       }
 
       mockGetUserSubscription.mockResolvedValue(mockSubscription)
@@ -67,7 +66,7 @@ describe('/api/subscriptions/[userId]', () => {
     })
 
     it('should return 400 when userId is null', async () => {
-      const params = Promise.resolve({ userId: null as any })
+      const params = Promise.resolve({ userId: null as unknown as string })
 
       const request = {} as NextRequest
       const response = await GET(request, { params })
@@ -81,7 +80,7 @@ describe('/api/subscriptions/[userId]', () => {
     })
 
     it('should return 400 when userId is undefined', async () => {
-      const params = Promise.resolve({ userId: undefined as any })
+      const params = Promise.resolve({ userId: undefined as unknown as string })
 
       const request = {} as NextRequest
       const response = await GET(request, { params })
@@ -146,7 +145,7 @@ describe('/api/subscriptions/[userId]', () => {
 
     it('should handle null subscription from service', async () => {
       const userId = 'user123'
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetUserSubscription.mockResolvedValue(undefined)
 
       const request = {} as NextRequest
       const params = createMockParams(userId)
@@ -155,7 +154,7 @@ describe('/api/subscriptions/[userId]', () => {
       expect(mockGetUserSubscription).toHaveBeenCalledWith(userId)
       expect(response.status).toBe(200)
       const responseData = await response.json()
-      expect(responseData).toBeNull()
+      expect(responseData).toBeUndefined()
     })
 
     it('should handle params promise rejection', async () => {

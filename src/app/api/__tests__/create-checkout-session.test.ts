@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
 
+import * as stripeService from '@/services/stripe'
+
 import { POST } from '../create-checkout-session/route'
 
 // Mock the Stripe service
@@ -8,7 +10,7 @@ jest.mock('@/services/stripe', () => ({
 }))
 
 const mockCreateCheckoutSession = jest.mocked(
-  require('@/services/stripe').createCheckoutSession,
+  stripeService.createCheckoutSession,
 )
 
 describe('/api/create-checkout-session', () => {
@@ -16,7 +18,10 @@ describe('/api/create-checkout-session', () => {
     jest.clearAllMocks()
   })
 
-  const createMockRequest = (body: any, origin = 'http://localhost:3000') => {
+  const createMockRequest = (
+    body: Record<string, unknown>,
+    origin = 'http://localhost:3000',
+  ) => {
     return {
       json: jest.fn().mockResolvedValue(body),
       nextUrl: { origin },

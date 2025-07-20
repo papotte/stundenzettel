@@ -1,3 +1,5 @@
+import * as stripeProductsService from '@/services/stripe/products'
+
 import { GET } from '../products/route'
 
 // Mock the Stripe products service
@@ -6,7 +8,7 @@ jest.mock('@/services/stripe/products', () => ({
 }))
 
 const mockGetStripeProducts = jest.mocked(
-  require('@/services/stripe/products').getStripeProducts,
+  stripeProductsService.getStripeProducts,
 )
 
 describe('/api/stripe/products', () => {
@@ -28,7 +30,7 @@ describe('/api/stripe/products', () => {
               product: 'prod_123',
               unit_amount: 1000,
               currency: 'usd',
-              recurring: { interval: 'month' },
+              recurring: { interval: 'month', interval_count: 1 },
               metadata: {},
             },
           ],
@@ -44,12 +46,12 @@ describe('/api/stripe/products', () => {
               product: 'prod_456',
               unit_amount: 5000,
               currency: 'usd',
-              recurring: { interval: 'month' },
+              recurring: { interval: 'month', interval_count: 1 },
               metadata: {},
             },
           ],
         },
-      ]
+      ] as stripeProductsService.StripeProduct[]
 
       mockGetStripeProducts.mockResolvedValue(mockProducts)
 

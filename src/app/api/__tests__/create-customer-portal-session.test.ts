@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
 
+import * as stripeService from '@/services/stripe'
+
 import { POST } from '../create-customer-portal-session/route'
 
 // Mock the Stripe service
@@ -8,7 +10,7 @@ jest.mock('@/services/stripe', () => ({
 }))
 
 const mockCreateCustomerPortalSession = jest.mocked(
-  require('@/services/stripe').createCustomerPortalSession,
+  stripeService.createCustomerPortalSession,
 )
 
 describe('/api/create-customer-portal-session', () => {
@@ -16,7 +18,10 @@ describe('/api/create-customer-portal-session', () => {
     jest.clearAllMocks()
   })
 
-  const createMockRequest = (body: any, origin = 'http://localhost:3000') => {
+  const createMockRequest = (
+    body: Record<string, unknown>,
+    origin = 'http://localhost:3000',
+  ) => {
     return {
       json: jest.fn().mockResolvedValue(body),
       nextUrl: { origin },
