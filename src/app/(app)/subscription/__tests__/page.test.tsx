@@ -21,6 +21,10 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
+    isInTrial: jest.fn(),
+    getTrialEndDate: jest.fn(),
+    getDaysRemainingInTrial: jest.fn(),
+    isTrialExpiringSoon: jest.fn(),
   },
 }))
 

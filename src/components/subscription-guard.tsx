@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 
+import TrialBanner from '@/components/trial-banner'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -19,11 +20,13 @@ import { subscriptionService } from '@/services/subscription-service'
 interface SubscriptionGuardProps {
   children: React.ReactNode
   fallback?: React.ReactNode
+  showTrialBanner?: boolean // Whether to show trial banner for trial users
 }
 
 export default function SubscriptionGuard({
   children,
   fallback,
+  showTrialBanner = true,
 }: SubscriptionGuardProps) {
   const { user } = useAuth()
   const { t } = useTranslation()
@@ -53,8 +56,6 @@ export default function SubscriptionGuard({
     checkSubscription()
   }, [user])
 
-  console.log('subscription', subscription)
-  console.log('loading', loading)
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -90,8 +91,13 @@ export default function SubscriptionGuard({
     )
   }
 
-  // If user has no subscription, show subscription prompt
-  if (!subscription || subscription.status !== 'active') {
+  // Check if user has active subscription or is in trial
+  const hasValidSubscription =
+    subscription &&
+    (subscription.status === 'active' || subscription.status === 'trialing')
+
+  // If user has no valid subscription, show subscription prompt
+  if (!hasValidSubscription) {
     return (
       fallback || (
         <div className="flex h-screen items-center justify-center bg-background">
@@ -123,6 +129,19 @@ export default function SubscriptionGuard({
     )
   }
 
-  // User has active subscription, render children
+  // User has valid subscription (active or trialing)
+  const isInTrial = subscriptionService.isInTrial(subscription)
+
+  // If user is in trial and showTrialBanner is enabled, show trial banner
+  if (isInTrial && showTrialBanner) {
+    return (
+      <div className="min-h-screen bg-background">
+        <TrialBanner subscription={subscription} />
+        <div className="relative">{children}</div>
+      </div>
+    )
+  }
+
+  // User has active subscription, render children normally
   return <>{children}</>
 }

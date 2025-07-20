@@ -88,6 +88,7 @@ export default function PricingSection({
         plan.stripePriceId,
         `${window.location.origin}/subscription?success=true`,
         `${window.location.origin}/pricing?canceled=true`,
+        true, // Enable trials by default
       )
 
       await paymentService.redirectToCheckout(url)

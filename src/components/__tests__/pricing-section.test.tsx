@@ -263,6 +263,7 @@ describe('PricingSection', () => {
           'price_monthly',
           'http://localhost:3000/subscription?success=true',
           'http://localhost:3000/pricing?canceled=true',
+          true,
         )
         expect(mockRedirectToCheckout).toHaveBeenCalledWith(
           'https://checkout.stripe.com/test',

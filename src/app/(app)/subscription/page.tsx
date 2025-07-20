@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react'
 
-import { ArrowLeft, CreditCard, Crown, ExternalLink } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Clock,
+  CreditCard,
+  Crown,
+  ExternalLink,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -86,6 +93,16 @@ export default function SubscriptionPage() {
     window.location.href = '/pricing'
   }
 
+  // Trial-specific helpers
+  const isInTrial = subscriptionService.isInTrial(userSubscription)
+  const trialEndDate = subscriptionService.getTrialEndDate(userSubscription)
+  const daysRemaining =
+    subscriptionService.getDaysRemainingInTrial(userSubscription)
+  const isTrialExpiringSoon = subscriptionService.isTrialExpiringSoon(
+    userSubscription,
+    3,
+  )
+
   if (authLoading || pageLoading) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
@@ -154,7 +171,10 @@ export default function SubscriptionPage() {
                       {userSubscription?.planDescription ??
                         t('settings.unknownPlanDescription')}
                     </p>
-                    <Badge variant="default" className="mt-1">
+                    <Badge
+                      variant={isInTrial ? 'secondary' : 'default'}
+                      className="mt-1"
+                    >
                       {userSubscription?.status === 'active'
                         ? t('settings.active')
                         : t('settings.trialing')}
@@ -162,6 +182,49 @@ export default function SubscriptionPage() {
                   </div>
                 </div>
 
+                {/* Trial Information */}
+                {isInTrial && trialEndDate && (
+                  <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-blue-900 dark:text-blue-100">
+                          {t('settings.trialStatus')}
+                        </h3>
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                          {daysRemaining !== null && daysRemaining > 0
+                            ? t('settings.trialDaysRemaining', {
+                                days: daysRemaining,
+                              })
+                            : t('settings.trialEndsToday')}
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                          {t('settings.trialEndsOn')}:{' '}
+                          {formatAppDate(trialEndDate)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Trial Expiration Warning */}
+                {isInTrial && isTrialExpiringSoon && (
+                  <div className="p-4 border border-orange-200 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-orange-900 dark:text-orange-100">
+                          {t('settings.trialExpiringSoon')}
+                        </h3>
+                        <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+                          {t('settings.trialExpiringDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Cancellation Information */}
                 {userSubscription?.cancelAt && (
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
@@ -178,7 +241,9 @@ export default function SubscriptionPage() {
                 <div className="pt-4 border-t space-y-3">
                   <Button onClick={handleManageBilling} className="w-full">
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    {t('settings.manageBilling')}
+                    {isInTrial
+                      ? t('settings.addPaymentMethod')
+                      : t('settings.manageBilling')}
                   </Button>
                 </div>
               </div>

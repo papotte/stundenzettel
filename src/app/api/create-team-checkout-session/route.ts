@@ -4,8 +4,16 @@ import { createTeamCheckoutSession } from '@/services/stripe'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, teamId, priceId, quantity, successUrl, cancelUrl } =
-      await request.json()
+    const {
+      userId,
+      teamId,
+      priceId,
+      quantity,
+      successUrl,
+      cancelUrl,
+      trialEnabled,
+      requirePaymentMethod,
+    } = await request.json()
     const origin = request.nextUrl.origin
     if (!userId || !teamId || !priceId || !quantity) {
       return NextResponse.json(
@@ -21,6 +29,8 @@ export async function POST(request: NextRequest) {
       successUrl,
       cancelUrl,
       origin,
+      trialEnabled, // Pass through trial configuration
+      requirePaymentMethod, // Pass through payment method requirement
     })
     return NextResponse.json(result)
   } catch (error: unknown) {

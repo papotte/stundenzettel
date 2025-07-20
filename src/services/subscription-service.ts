@@ -25,17 +25,26 @@ export class SubscriptionService {
     }
 
     try {
-      // TODO: Implement actual subscription check from your backend
-      // For now, we'll return null (no subscription)
-      // This should be replaced with a call to your backend API
+      console.log(`Fetching subscription for userId: ${userId}`)
       const response = await fetch(`/api/subscriptions/${userId}`)
 
       if (response.ok) {
         const subscription = await response.json()
+        console.log('Subscription data received:', subscription)
         cachedSubscription = subscription
         cacheExpiry = now + CACHE_DURATION
         return subscription
       }
+
+      // Log the error response
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: 'Failed to parse error response' }))
+      console.error('Subscription API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      })
 
       return null
     } catch (error) {
@@ -67,6 +76,42 @@ export class SubscriptionService {
   // Helper method to check if subscription is canceled
   isCanceled(subscription: Subscription | null): boolean {
     return subscription?.status === 'canceled'
+  }
+
+  // Helper method to get trial end date
+  getTrialEndDate(subscription: Subscription | null): Date | undefined {
+    return subscription?.trialEnd
+  }
+
+  // Helper method to check if trial is expiring soon (within X days)
+  isTrialExpiringSoon(
+    subscription: Subscription | null,
+    daysThreshold: number = 3,
+  ): boolean {
+    if (!subscription?.trialEnd || subscription.status !== 'trialing') {
+      return false
+    }
+
+    const now = new Date()
+    const trialEnd = new Date(subscription.trialEnd)
+    const daysUntilExpiry =
+      (trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+
+    return daysUntilExpiry <= daysThreshold
+  }
+
+  // Helper method to get days remaining in trial
+  getDaysRemainingInTrial(subscription: Subscription | null): number | null {
+    if (!subscription?.trialEnd || subscription.status !== 'trialing') {
+      return null
+    }
+
+    const now = new Date()
+    const trialEnd = new Date(subscription.trialEnd)
+    const daysRemaining =
+      (trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+
+    return Math.max(0, Math.ceil(daysRemaining))
   }
 }
 

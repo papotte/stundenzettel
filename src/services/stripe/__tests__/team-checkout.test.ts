@@ -35,6 +35,7 @@ describe('createTeamCheckoutSession', () => {
       priceId: 'p',
       quantity: 2,
       origin: 'http://localhost',
+      trialEnabled: false, // Disable trials for this test
     })
     expect(result).toEqual({ sessionId: 'sess_1', url: 'url' })
     expect(mockStripeInstance.customers.list).toHaveBeenCalledWith({
@@ -57,6 +58,7 @@ describe('createTeamCheckoutSession', () => {
       priceId: 'p2',
       quantity: 3,
       origin: 'http://localhost',
+      trialEnabled: false, // Disable trials for this test
     })
     expect(result).toEqual({ sessionId: 'sess_2', url: 'url2' })
     expect(mockStripeInstance.customers.create).toHaveBeenCalledWith({
@@ -123,7 +125,98 @@ describe('createTeamCheckoutSession', () => {
         priceId: 'p',
         quantity: 1,
         origin: 'o',
+        trialEnabled: false, // Disable trials for this test
       }),
     ).rejects.toThrow('fail')
+  })
+
+  describe('Trial Optimization', () => {
+    beforeEach(() => {
+      mockStripeInstance.customers.list.mockResolvedValue({
+        data: [{ id: 'cus_1' }],
+      })
+      mockStripeInstance.checkout.sessions.create.mockResolvedValue({
+        id: 'sess_1',
+        url: 'url',
+      })
+    })
+
+    it('queries price when trial is enabled', async () => {
+      mockStripeInstance.prices.retrieve.mockResolvedValue({
+        id: 'price_1',
+        recurring: { trial_period_days: 14 },
+      })
+
+      await createTeamCheckoutSession({
+        userId: 'u',
+        teamId: 't',
+        priceId: 'p',
+        quantity: 2,
+        origin: 'http://localhost',
+        trialEnabled: true,
+      })
+
+      expect(mockStripeInstance.prices.retrieve).toHaveBeenCalledWith('p')
+    })
+
+    it('does not query price when trial is disabled', async () => {
+      await createTeamCheckoutSession({
+        userId: 'u',
+        teamId: 't',
+        priceId: 'p',
+        quantity: 2,
+        origin: 'http://localhost',
+        trialEnabled: false,
+      })
+
+      expect(mockStripeInstance.prices.retrieve).not.toHaveBeenCalled()
+    })
+
+    it('creates session with trial metadata when price has trial period', async () => {
+      mockStripeInstance.prices.retrieve.mockResolvedValue({
+        id: 'price_1',
+        recurring: { trial_period_days: 14 },
+      })
+
+      await createTeamCheckoutSession({
+        userId: 'u',
+        teamId: 't',
+        priceId: 'p',
+        quantity: 2,
+        origin: 'http://localhost',
+        trialEnabled: true,
+      })
+
+      expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            trial_enabled: 'true',
+            trial_days: '14',
+            has_trial_period: 'true',
+          }),
+        }),
+      )
+    })
+
+    it('creates session without trial metadata when trial is disabled', async () => {
+      await createTeamCheckoutSession({
+        userId: 'u',
+        teamId: 't',
+        priceId: 'p',
+        quantity: 2,
+        origin: 'http://localhost',
+        trialEnabled: false,
+      })
+
+      expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            trial_enabled: 'false',
+            trial_days: '0',
+            has_trial_period: 'false',
+          }),
+        }),
+      )
+    })
   })
 })

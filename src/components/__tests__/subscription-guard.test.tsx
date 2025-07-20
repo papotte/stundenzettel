@@ -13,6 +13,9 @@ import SubscriptionGuard from '../subscription-guard'
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
+    isInTrial: jest.fn(),
+    getDaysRemainingInTrial: jest.fn(),
+    isTrialExpiringSoon: jest.fn(),
   },
 }))
 
@@ -39,12 +42,22 @@ const renderWithProviders = (component: React.ReactElement) => {
 describe('SubscriptionGuard', () => {
   const mockGetUserSubscription =
     subscriptionService.getUserSubscription as jest.Mock
+  const mockIsInTrial = subscriptionService.isInTrial as jest.Mock
+  const mockGetDaysRemainingInTrial =
+    subscriptionService.getDaysRemainingInTrial as jest.Mock
+  const mockIsTrialExpiringSoon =
+    subscriptionService.isTrialExpiringSoon as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
     mockAuthContext.user = null
     mockAuthContext.loading = false
     mockLocation.href = ''
+
+    // Default mock implementations
+    mockIsInTrial.mockReturnValue(false)
+    mockGetDaysRemainingInTrial.mockReturnValue(null)
+    mockIsTrialExpiringSoon.mockReturnValue(false)
   })
 
   describe('Loading State', () => {
@@ -252,7 +265,7 @@ describe('SubscriptionGuard', () => {
       const mockSubscription = {
         stripeSubscriptionId: 'sub_123',
         stripeCustomerId: 'cus_123',
-        status: 'active' as const, // Use active status to ensure children render
+        status: 'trialing' as const,
         currentPeriodStart: new Date(),
         cancelAtPeriodEnd: false,
         priceId: 'price_123',
@@ -268,6 +281,62 @@ describe('SubscriptionGuard', () => {
       )
 
       await waitFor(() => {
+        expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      })
+    })
+
+    it('shows trial banner for users with trialing subscription when showTrialBanner is true', async () => {
+      const mockSubscription = {
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'trialing' as const,
+        currentPeriodStart: new Date(),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        updatedAt: new Date(),
+      }
+
+      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockIsInTrial.mockReturnValue(true)
+      mockGetDaysRemainingInTrial.mockReturnValue(5)
+      mockIsTrialExpiringSoon.mockReturnValue(false)
+
+      renderWithProviders(
+        <SubscriptionGuard showTrialBanner={true}>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId('trial-banner')).toBeInTheDocument()
+        expect(screen.getByText('Protected Content')).toBeInTheDocument()
+      })
+    })
+
+    it('does not show trial banner when showTrialBanner is false', async () => {
+      const mockSubscription = {
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'trialing' as const,
+        currentPeriodStart: new Date(),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        updatedAt: new Date(),
+      }
+
+      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockIsInTrial.mockReturnValue(true)
+      mockGetDaysRemainingInTrial.mockReturnValue(5)
+      mockIsTrialExpiringSoon.mockReturnValue(false)
+
+      renderWithProviders(
+        <SubscriptionGuard showTrialBanner={false}>
+          <div>Protected Content</div>
+        </SubscriptionGuard>,
+      )
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('trial-banner')).not.toBeInTheDocument()
         expect(screen.getByText('Protected Content')).toBeInTheDocument()
       })
     })

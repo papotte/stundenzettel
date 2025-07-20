@@ -23,8 +23,11 @@ export const navigateToPricing = async (page: Page) => {
 // Helper function to navigate to subscription page and verify it loads
 export const navigateToSubscription = async (page: Page) => {
   await page.goto('/subscription')
+  // Look for the subscription management title within the CardTitle (div with font-headline class)
   await expect(
-    page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+    page.locator('div.font-headline').filter({
+      hasText: /Manage Subscription|Abonnement verwalten/,
+    }),
   ).toBeVisible()
 }
 
@@ -263,4 +266,92 @@ export const testAuthRedirect = async (page: Page, protectedPath: string) => {
   const currentUrl = page.url()
   expect(currentUrl).toContain('returnUrl=')
   expect(currentUrl).toContain(protectedPath.replace('/', ''))
+}
+
+// Helper function to verify trial banner is visible
+export const verifyTrialBanner = async (page: Page) => {
+  // Check for trial status heading
+  await expect(page.getByText(/Trial Status|Test-Status/)).toBeVisible()
+  // Check for trial days remaining text
+  await expect(page.getByText(/days remaining|Tage verbleibend/)).toBeVisible()
+  // Check for add payment method button (shown during trial)
+  await expect(
+    page.getByRole('button', {
+      name: /Add Payment Method|Zahlungsmethode hinzufügen/,
+    }),
+  ).toBeVisible()
+}
+
+// Helper function to verify trial expiration warning
+export const verifyTrialExpirationWarning = async (page: Page) => {
+  // Check for trial expiring soon heading
+  await expect(
+    page.getByText(/Trial Expiring Soon|Testphase läuft bald ab/),
+  ).toBeVisible()
+  // Check for trial expiring description
+  await expect(
+    page.getByText(/Your trial will end soon|Ihre Testphase endet bald/),
+  ).toBeVisible()
+  // Check for add payment method button
+  await expect(
+    page.getByRole('button', {
+      name: /Add Payment Method|Zahlungsmethode hinzufügen/,
+    }),
+  ).toBeVisible()
+}
+
+// Helper function to verify expired trial state
+export const verifyExpiredTrialState = async (page: Page) => {
+  // Check for no subscription state (since trial expired)
+  await expect(
+    page.getByText(/No active subscription|Kein aktives Abonnement/),
+  ).toBeVisible()
+  // Check for upgrade button
+  await expect(page.getByRole('button', { name: /Upgrade/ })).toBeVisible()
+}
+
+// Helper function to mock trial subscription response
+export const mockTrialSubscription = async (
+  page: Page,
+  options: {
+    daysRemaining?: number
+    isExpired?: boolean
+    status?: 'trialing' | 'past_due' | 'active'
+  } = {},
+) => {
+  const { daysRemaining = 7, isExpired = false, status = 'trialing' } = options
+
+  const trialEnd = isExpired
+    ? new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // 1 day ago
+    : new Date(Date.now() + daysRemaining * 24 * 60 * 60 * 1000).toISOString()
+
+  // Mock the subscription API with the correct pattern that matches the actual API call
+  await mockApiResponse(page, '**/api/subscriptions/*', {
+    status: 200,
+    body: {
+      status,
+      trialEnd,
+      currentPeriodEnd: trialEnd,
+      cancelAtPeriodEnd: false,
+    },
+  })
+}
+
+// Helper function to verify trial checkout parameters
+export const verifyTrialCheckoutParameters = (postData: any) => {
+  expect(postData).toHaveProperty('trialEnabled', true)
+  expect(postData).toHaveProperty('priceId')
+  expect(postData).toHaveProperty('userId')
+
+  if (postData.billingCycle) {
+    expect(['monthly', 'yearly']).toContain(postData.billingCycle)
+  }
+}
+
+// Helper function to verify team trial checkout parameters
+export const verifyTeamTrialCheckoutParameters = (postData: any) => {
+  expect(postData).toHaveProperty('trialEnabled', true)
+  expect(postData).toHaveProperty('teamId')
+  expect(postData).toHaveProperty('quantity')
+  expect(postData.quantity).toBeGreaterThan(0)
 }

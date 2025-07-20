@@ -49,6 +49,8 @@ describe('StripeService', () => {
         stripePriceId: 'price_123',
         maxUsers: undefined,
         tieredPricing: undefined,
+        trialDays: undefined,
+        trialEnabled: false,
       })
     })
 
@@ -90,6 +92,8 @@ describe('StripeService', () => {
         stripePriceId: 'price_456',
         maxUsers: 25,
         tieredPricing: undefined,
+        trialDays: undefined,
+        trialEnabled: false,
       })
     })
 
@@ -131,6 +135,8 @@ describe('StripeService', () => {
         stripePriceId: 'price_789',
         maxUsers: undefined,
         tieredPricing: undefined,
+        trialDays: undefined,
+        trialEnabled: false,
       })
     })
 

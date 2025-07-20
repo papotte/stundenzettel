@@ -14,17 +14,30 @@ export async function getUserSubscription(
     throw new Error('User ID is required')
   }
 
-  // Find customer by userId (using userId as email for now)
-  const customers = await stripe.customers.list({
-    email: userId,
-    limit: 1,
-  })
+  // Try to find customer by email first (if userId is an email)
+  let customer: Stripe.Customer | undefined
 
-  if (customers.data.length === 0) {
-    return undefined
+  // Check if userId looks like an email
+  if (userId.includes('@')) {
+    const customersByEmail = await stripe.customers.list({
+      email: userId,
+      limit: 1,
+    })
+    customer = customersByEmail.data[0]
   }
 
-  const customer = customers.data[0]
+  // If not found by email, search by firebase_uid metadata
+  if (!customer) {
+    const customers = await stripe.customers.list({
+      limit: 100, // Get more customers to search through
+    })
+    customer = customers.data.find((c) => c.metadata.firebase_uid === userId)
+  }
+
+  if (!customer) {
+    console.log(`No customer found for userId: ${userId}`)
+    return undefined
+  }
 
   // Get active subscriptions for the customer
   const subscriptions = await stripe.subscriptions.list({
@@ -33,17 +46,24 @@ export async function getUserSubscription(
     limit: 1,
   })
 
+  console.log(
+    `Found ${subscriptions.data.length} subscriptions for customer ${customer.id}`,
+  )
+
   if (subscriptions.data.length === 0) {
+    console.log(`No subscriptions found for customer ${customer.id}`)
     return undefined
   }
 
   const stripeSubscription = subscriptions.data[0]
+  console.log(`Subscription status: ${stripeSubscription.status}`)
 
   // Get plan information for displaying
   if (
     !stripeSubscription.items.data.length ||
     !stripeSubscription.items.data[0]?.price
   ) {
+    console.log('No subscription items found')
     return undefined
   }
   const productId = stripeSubscription.items.data[0].price.product as string
@@ -51,6 +71,8 @@ export async function getUserSubscription(
 
   const startDate = stripeSubscription.start_date
   const cancelAt = stripeSubscription.cancel_at
+  const trialEnd = stripeSubscription.trial_end
+
   // Convert to our Subscription type
   return {
     stripeSubscriptionId: stripeSubscription.id,
@@ -64,5 +86,7 @@ export async function getUserSubscription(
     priceId: stripeSubscription.items.data[0]?.price.id || '',
     quantity: stripeSubscription.items.data[0]?.quantity,
     updatedAt: new Date(stripeSubscription.created * 1000),
+    // Add trial information
+    trialEnd: trialEnd ? new Date(trialEnd * 1000) : undefined,
   }
 }

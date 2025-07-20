@@ -59,6 +59,7 @@ export interface Subscription {
   planDescription?: string
   quantity?: number
   updatedAt: Date
+  trialEnd?: Date // When the trial ends
 }
 
 export interface Payment {
@@ -82,6 +83,8 @@ export interface PricingPlan {
     tiers: Array<{ from: number; to?: number; price: number; currency: string }>
     displayText: string
   }
+  trialDays?: number // Number of trial days, undefined if no trial
+  trialEnabled?: boolean // Whether this plan offers trials
 }
 
 // Team Management Types

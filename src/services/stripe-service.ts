@@ -14,6 +14,7 @@ interface StripePrice {
   currency: string
   recurring: {
     interval: 'month' | 'year'
+    trial_period_days?: number
   } | null
   metadata: Record<string, string>
   tiers?: Array<{
@@ -74,6 +75,13 @@ export class StripeService {
               (p) => p.tiers && p.tiers.length > 0,
             )
 
+            // Check if this price has a trial period
+            const hasTrialPeriod = Boolean(
+              price.recurring?.trial_period_days &&
+                price.recurring.trial_period_days > 0,
+            )
+            const trialDays = price.recurring?.trial_period_days || undefined
+
             const plan = {
               id: `${product.name.toLowerCase().replace(/\s+/g, '-')}-${interval}`,
               name: `${product.name} ${interval === 'month' ? 'Monthly' : 'Yearly'}`,
@@ -89,6 +97,9 @@ export class StripeService {
               tieredPricing: hasTieredPricing
                 ? this.getTieredPricingInfo(prices)
                 : undefined,
+              // Add trial information
+              trialDays,
+              trialEnabled: hasTrialPeriod,
             }
 
             console.log('Created plan:', plan)
@@ -257,6 +268,8 @@ export class StripeService {
           'Email support',
         ],
         stripePriceId: 'price_fallback_individual_monthly',
+        trialDays: 14,
+        trialEnabled: true,
       },
       {
         id: 'individual-yearly',
@@ -272,6 +285,8 @@ export class StripeService {
           '2 months free',
         ],
         stripePriceId: 'price_fallback_individual_yearly',
+        trialDays: 14,
+        trialEnabled: true,
       },
       {
         id: 'team-monthly',
@@ -290,6 +305,8 @@ export class StripeService {
         ],
         stripePriceId: 'price_fallback_team_monthly',
         maxUsers: 50,
+        trialDays: 14,
+        trialEnabled: true,
       },
       {
         id: 'team-yearly',
@@ -309,6 +326,8 @@ export class StripeService {
         ],
         stripePriceId: 'price_fallback_team_yearly',
         maxUsers: 50,
+        trialDays: 14,
+        trialEnabled: true,
       },
     ]
   }

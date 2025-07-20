@@ -253,6 +253,7 @@ export const dictionaries = {
       noSubscriptionDescription:
         'Upgrade to a paid plan to unlock all features.',
       unknownPlan: 'Unknown Plan',
+      unknownPlanDescription: 'Plan details not available',
       changePlan: 'Change Plan',
       active: 'Active',
       trialing: 'Trial',
@@ -264,6 +265,16 @@ export const dictionaries = {
       errorPortalTitle: 'Portal Error',
       errorPortalDescription:
         'Failed to open billing portal. Please try again.',
+      // Trial-specific
+      trialStatus: 'Trial Status',
+      trialDaysRemaining: '{days} days remaining',
+      trialEndsToday: 'Trial ends today',
+      trialEndsOn: 'Trial ends on',
+      trialExpiringSoon: 'Trial Expiring Soon',
+      trialExpiringDescription:
+        'Your trial will end soon. Add a payment method to continue your subscription.',
+      addPaymentMethod: 'Add Payment Method',
+      viewPlans: 'View Plans',
       // Common
       saving: 'Saving...',
       save: 'Save',
@@ -303,6 +314,9 @@ export const dictionaries = {
       errorTitle: 'Payment Error',
       errorDescription:
         'There was an error processing your payment. Please try again.',
+      tryForFree: 'Try for Free',
+      freeTrial: 'Free Trial',
+      noCreditCard: 'No credit card required',
     },
     // Subscription Guard
     subscription: {
@@ -315,6 +329,12 @@ export const dictionaries = {
         'You need an active subscription to access this feature.',
       choosePlanButton: 'Choose a Plan',
       manageSubscriptionButton: 'Manage Subscription',
+      // Trial-specific
+      trial: 'Trial',
+      trialBannerTitle: "You're currently on a free trial",
+      trialBannerDaysRemaining: '{days} days remaining',
+      trialBannerEndsToday: 'Trial ends today',
+      manageTrial: 'Manage Trial',
     },
     // Teams Page
     teams: {
@@ -718,6 +738,7 @@ export const dictionaries = {
       noSubscriptionDescription:
         'Upgraden Sie zu einem kostenpflichtigen Tarif, um alle Funktionen freizuschalten.',
       unknownPlan: 'Unbekannter Tarif',
+      unknownPlanDescription: 'Tarifdetails nicht verfügbar',
       changePlan: 'Tarif ändern',
       active: 'Aktiv',
       trialing: 'Testphase',
@@ -729,6 +750,16 @@ export const dictionaries = {
       errorPortalTitle: 'Portal-Fehler',
       errorPortalDescription:
         'Das Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.',
+      // Trial-specific
+      trialStatus: 'Test-Status',
+      trialDaysRemaining: '{days} Tage verbleibend',
+      trialEndsToday: 'Testphase endet heute',
+      trialEndsOn: 'Testphase endet am',
+      trialExpiringSoon: 'Testphase läuft bald ab',
+      trialExpiringDescription:
+        'Ihre Testphase endet bald. Fügen Sie eine Zahlungsmethode hinzu, um Ihr Abonnement fortzusetzen.',
+      addPaymentMethod: 'Zahlungsmethode hinzufügen',
+      viewPlans: 'Tarife anzeigen',
       // Common
       saving: 'Wird gespeichert...',
       save: 'Speichern',
@@ -805,6 +836,9 @@ export const dictionaries = {
       errorTitle: 'Zahlungsfehler',
       errorDescription:
         'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.',
+      tryForFree: 'Kostenlos testen',
+      freeTrial: 'Kostenlose Testphase',
+      noCreditCard: 'Keine Kreditkarte erforderlich',
     },
     // Export Page
     export_page: {
@@ -931,6 +965,12 @@ export const dictionaries = {
         'Sie benötigen ein aktives Abonnement, um auf diese Funktion zuzugreifen.',
       choosePlanButton: 'Tarif wählen',
       manageSubscriptionButton: 'Abonnement verwalten',
+      // Trial-specific
+      trial: 'Testphase',
+      trialBannerTitle: 'Sie befinden sich in einer kostenlosen Testphase',
+      trialBannerDaysRemaining: '{days} Tage verbleibend',
+      trialBannerEndsToday: 'Testphase endet heute',
+      manageTrial: 'Testphase verwalten',
     },
   },
 }

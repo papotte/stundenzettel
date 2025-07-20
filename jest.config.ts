@@ -38,6 +38,7 @@ const config: Config = {
     '!src/lib/i18n/dictionaries.ts',
     '!src/ai/dev.ts',
     '!src/ai/genkit.ts',
+    '!src/test-utils/**',
     '!jest.config.ts',
     '!jest.setup.ts',
   ],

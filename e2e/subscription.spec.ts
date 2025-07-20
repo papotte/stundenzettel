@@ -7,6 +7,7 @@ import {
   interceptApiCall,
   loginWithMockUser,
   mockApiResponse,
+  mockTrialSubscription,
   navigateToPricing,
   navigateToSubscription,
   navigateToTeam,
@@ -15,10 +16,14 @@ import {
   toggleBillingPeriod,
   verifyCheckoutParameters,
   verifyErrorHandling,
+  verifyExpiredTrialState,
   verifyMobileLayout,
   verifyPortalParameters,
   verifySubscriptionGuard,
   verifySubscriptionState,
+  verifyTrialBanner,
+  verifyTrialCheckoutParameters,
+  verifyTrialExpirationWarning,
   waitForLoadingState,
 } from './subscription-helpers'
 
@@ -288,6 +293,212 @@ test.describe('Subscription Workflow (Simplified)', () => {
         }),
       ).toBeVisible()
       expect(page.url()).toContain('canceled=true')
+    })
+  })
+
+  test.describe('Trial Flow', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginWithMockUser(page)
+    })
+
+    test('should display trial information on pricing page', async ({
+      page,
+    }) => {
+      await navigateToPricing(page)
+
+      // Verify trial badges are visible
+      await expect(
+        page.getByText(
+          /No credit card required|Keine Kreditkarte erforderlich/,
+        ),
+      ).toBeVisible()
+
+      // Verify trial button
+      await expect(
+        page.getByRole('button', { name: /Kostenlos testen|Try for Free/ }),
+      ).toBeVisible()
+    })
+
+    test('should create checkout session with trial parameters', async ({
+      page,
+    }) => {
+      const checkoutRequest = await interceptApiCall(
+        page,
+        '**/api/create-checkout-session',
+      )
+      await navigateToPricing(page)
+      await clickPricingPlan(page)
+      await page.waitForTimeout(2000)
+
+      if (checkoutRequest) {
+        const postData = checkoutRequest.postDataJSON()
+        verifyTrialCheckoutParameters(postData)
+      }
+    })
+
+    test('should display trial banner for trial users', async ({ page }) => {
+      await mockTrialSubscription(page, { daysRemaining: 7 })
+
+      await navigateToSubscription(page)
+
+      await verifyTrialBanner(page)
+    })
+
+    test('should show trial expiration warning', async ({ page }) => {
+      await mockTrialSubscription(page, { daysRemaining: 1 })
+
+      await navigateToSubscription(page)
+
+      await verifyTrialExpirationWarning(page)
+    })
+
+    test('should allow trial users to access protected pages', async ({
+      page,
+    }) => {
+      await mockTrialSubscription(page, { daysRemaining: 7 })
+
+      // Should be able to access protected page
+      await page.goto('/protected')
+      await page.waitForLoadState('networkidle')
+
+      // Should see the protected content
+      await expect(
+        page.getByRole('heading', { name: /Protected Content/ }),
+      ).toBeVisible()
+      await expect(
+        page.getByText(/Welcome to the Premium Features!/),
+      ).toBeVisible()
+
+      // Should not see subscription guard
+      await expect(
+        page.getByText(/Choose a Plan|Tarif wählen/),
+      ).not.toBeVisible()
+    })
+
+    test('should handle trial-to-paid conversion', async ({ page }) => {
+      await mockTrialSubscription(page, { daysRemaining: 7 })
+
+      await navigateToSubscription(page)
+      await page.waitForLoadState('networkidle')
+
+      // Click add payment method button (for trial users)
+      await page
+        .getByRole('button', {
+          name: /Add Payment Method|Zahlungsmethode hinzufügen/,
+        })
+        .click()
+
+      // Should redirect to customer portal
+      await page.waitForTimeout(2000)
+      // Note: In real scenario, this would redirect to Stripe customer portal
+    })
+
+    test('should handle expired trial', async ({ page }) => {
+      await mockTrialSubscription(page, { isExpired: true, status: 'past_due' })
+
+      await navigateToSubscription(page)
+      await page.waitForLoadState('networkidle')
+
+      await verifyExpiredTrialState(page)
+    })
+
+    test('should block access to protected pages after trial expires', async ({
+      page,
+    }) => {
+      await mockTrialSubscription(page, { isExpired: true, status: 'past_due' })
+
+      // Should show subscription guard
+      await page.goto('/protected')
+      await page.waitForLoadState('networkidle')
+      await verifySubscriptionGuard(page)
+      // Should show subscription required message since trial expired
+      await expect(page.getByText(/Choose a Plan|Tarif wählen/)).toBeVisible()
+    })
+
+    test('should handle trial checkout with different billing periods', async ({
+      page,
+    }) => {
+      await navigateToPricing(page)
+
+      // Test monthly trial
+      await toggleBillingPeriod(page, 'monthly')
+      const monthlyCheckoutRequest = await interceptApiCall(
+        page,
+        '**/api/create-checkout-session',
+      )
+      await clickPricingPlan(page)
+      await page.waitForTimeout(2000)
+
+      if (monthlyCheckoutRequest) {
+        const postData = monthlyCheckoutRequest.postDataJSON()
+        expect(postData).toHaveProperty('trialEnabled', true)
+        expect(postData).toHaveProperty('billingCycle', 'monthly')
+      }
+
+      // Test yearly trial
+      await page.goto('/pricing')
+      await toggleBillingPeriod(page, 'yearly')
+      const yearlyCheckoutRequest = await interceptApiCall(
+        page,
+        '**/api/create-checkout-session',
+      )
+      await clickPricingPlan(page)
+      await page.waitForTimeout(2000)
+
+      if (yearlyCheckoutRequest) {
+        const postData = yearlyCheckoutRequest.postDataJSON()
+        expect(postData).toHaveProperty('trialEnabled', true)
+        expect(postData).toHaveProperty('billingCycle', 'yearly')
+      }
+    })
+
+    test('should handle team trial flow', async ({ page }) => {
+      await navigateToPricing(page)
+
+      const teamCheckoutRequest = await interceptApiCall(
+        page,
+        '**/api/create-team-checkout-session',
+      )
+
+      const success = await clickPricingPlan(page, 'team')
+      if (success) {
+        await page.waitForTimeout(2000)
+
+        if (teamCheckoutRequest) {
+          const postData = teamCheckoutRequest.postDataJSON()
+          expect(postData).toHaveProperty('trialEnabled', true)
+          expect(postData).toHaveProperty('teamId')
+          expect(postData).toHaveProperty('quantity')
+        }
+      }
+    })
+
+    test('should handle trial API errors gracefully', async ({ page }) => {
+      // Mock API error for trial subscription
+      await mockApiResponse(page, '**/api/subscriptions/*', {
+        status: 500,
+        body: { error: 'Failed to fetch trial subscription' },
+      })
+
+      await navigateToSubscription(page)
+      await page.waitForLoadState('networkidle')
+
+      // Should fall back to no subscription state
+      await verifySubscriptionState(page, 'none')
+    })
+
+    test('should handle trial checkout errors', async ({ page }) => {
+      await mockApiResponse(page, '**/api/create-checkout-session', {
+        status: 500,
+        body: { error: 'Failed to create trial checkout session' },
+      })
+
+      await navigateToPricing(page)
+      const choosePlanButton = page
+        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .first()
+      await clickPricingPlan(page)
+      await verifyErrorHandling(page, choosePlanButton)
     })
   })
 })

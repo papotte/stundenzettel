@@ -71,6 +71,8 @@ export class PaymentService {
     priceId: string,
     successUrl?: string,
     cancelUrl?: string,
+    trialEnabled?: boolean,
+    requirePaymentMethod?: boolean,
   ): Promise<{ sessionId: string; url: string }> {
     await this.initialize()
 
@@ -80,6 +82,8 @@ export class PaymentService {
       priceId,
       successUrl,
       cancelUrl,
+      trialEnabled,
+      requirePaymentMethod,
     })
     const response = await fetch('/api/create-checkout-session', {
       method: 'POST',
@@ -103,6 +107,8 @@ export class PaymentService {
     quantity: number,
     successUrl?: string,
     cancelUrl?: string,
+    trialEnabled?: boolean,
+    requirePaymentMethod?: boolean,
   ): Promise<{ sessionId: string; url: string }> {
     await this.initialize()
 
@@ -118,6 +124,8 @@ export class PaymentService {
         quantity,
         successUrl,
         cancelUrl,
+        trialEnabled,
+        requirePaymentMethod,
       }),
     })
 

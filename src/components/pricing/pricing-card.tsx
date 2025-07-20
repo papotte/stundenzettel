@@ -4,6 +4,7 @@ import React from 'react'
 
 import { Check, Star, Users } from 'lucide-react'
 
+import TryForFreeButton from '@/components/try-for-free-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -98,6 +99,15 @@ export default function PricingCard({
             Price shown is for 10+ users
           </p>
         )}
+
+        {/* Trial badge - only show if plan has trials */}
+        {plan.trialEnabled && (
+          <div className="mt-2">
+            <Badge variant="secondary" className="text-xs">
+              {t('pricing.freeTrial')} • {t('pricing.noCreditCard')}
+            </Badge>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -113,7 +123,20 @@ export default function PricingCard({
         </ul>
       </CardContent>
 
-      <CardFooter>
+      <CardFooter className="flex flex-col space-y-2">
+        {/* Try for Free button - only show if plan has trials */}
+        {plan.trialEnabled && (
+          <TryForFreeButton
+            plan={plan}
+            variant={
+              plan.features.includes('Priority support') ? 'default' : 'outline'
+            }
+            className="w-full"
+            showIcon={true}
+          />
+        )}
+
+        {/* Get Started button - primary action if no trial, secondary if trial available */}
         <Button
           onClick={() =>
             isIndividualPlan ? onSubscribe(plan) : onTeamSubscribe(plan)
