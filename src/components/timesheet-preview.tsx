@@ -391,10 +391,7 @@ export default function TimesheetPreview({
                   })}
                 </TableBody>
               </Table>
-              <div
-                className="mt-2 flex w-full justify-end print:mt-1 print:text-xs"
-                data-testid={`timesheet-week-${weekIndex}-total`}
-              >
+              <div className="mt-2 flex w-full justify-end print:mt-1 print:text-xs">
                 <div className="flex w-full justify-end">
                   <div style={{ flex: '0 0 50%' }}></div>
                   <div className="flex gap-8 w-1/2 justify-between">
@@ -402,10 +399,16 @@ export default function TimesheetPreview({
                       {t('export_preview.footerTotalPerWeek')}
                     </div>
                     <div className="flex flex-1 gap-8 border-b-2 border-black pb-1">
-                      <div className="flex-1 text-right print:pb-0.5">
+                      <div
+                        className="flex-1 text-right print:pb-0.5"
+                        data-testid={`timesheet-week-${weekIndex}-total`}
+                      >
                         {weekCompTotal.toFixed(2)}
                       </div>
-                      <div className="flex-1 text-right print:pb-0.5">
+                      <div
+                        className="flex-1 text-right print:pb-0.5"
+                        data-testid={`timesheet-week-${weekIndex}-passenger`}
+                      >
                         {weekPassengerTotal.toFixed(2)}
                       </div>
                       <div className="flex-1 print:pb-1"></div>
@@ -417,10 +420,7 @@ export default function TimesheetPreview({
           )
         })}
         {/* after all weeks, add monthly totals */}
-        <div
-          className="mt-8 flex w-full justify-end print:mt-4 print:text-xs"
-          data-testid="timesheet-month-total"
-        >
+        <div className="mt-8 flex w-full justify-end print:mt-4 print:text-xs">
           <div className="flex w-full justify-end">
             <div style={{ flex: '0 0 50%' }}></div>
             <div className="flex gap-8 w-1/2 justify-between">
@@ -428,13 +428,19 @@ export default function TimesheetPreview({
                 {t('export_preview.footerTotalHours')}
               </div>
               <div className="flex flex-1 gap-8 border-b-4 border-double border-black pb-2">
-                <div className="flex-1 text-right print:pb-1">
+                <div
+                  className="flex-1 text-right print:pb-1"
+                  data-testid="timesheet-month-total"
+                >
                   {monthCompTotal.toFixed(2)}
                 </div>
-                <div className="flex-1 text-right print:pb-1">
+                <div
+                  className="flex-1 text-right print:pb-1"
+                  data-testid="timesheet-month-passenger-total"
+                >
                   {monthPassengerTotal.toFixed(2)}
                 </div>
-                <div className="flex-1 print:pb-1">Km: </div>
+                <div className="flex-1 print:pb-1">Km:</div>
               </div>
             </div>
           </div>
@@ -446,7 +452,10 @@ export default function TimesheetPreview({
               {t('export_preview.footerTotalAfterConversion')}
             </div>
             <div className="flex flex-1 gap-8 pb-2">
-              <div className="flex-1 text-right print:pb-1">
+              <div
+                className="flex-1 text-right print:pb-1"
+                data-testid="timesheet-month-adjusted"
+              >
                 {(monthCompTotal + compensatedPassengerHours).toFixed(2)}
               </div>
               <div className="flex-1 text-right print:pb-1">

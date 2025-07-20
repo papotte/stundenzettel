@@ -62,3 +62,21 @@ if (!window.matchMedia) {
     }
   }
 }
+
+// Mock Next.js server modules for API route testing
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn().mockImplementation((input, init) => ({
+    ...input,
+    ...init,
+    json: jest.fn(),
+    nextUrl: { origin: 'http://localhost:3000' },
+  })),
+  NextResponse: {
+    json: jest.fn().mockImplementation((data, init) => ({
+      ...init,
+      json: jest.fn().mockResolvedValue(data),
+      status: init?.status || 200,
+      ok: (init?.status || 200) < 400,
+    })),
+  },
+}))

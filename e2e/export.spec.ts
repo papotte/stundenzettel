@@ -15,7 +15,7 @@ test.describe('Export Page', () => {
       .click()
     await page.waitForURL('/tracker')
 
-    const week = getWeekOfMonth(new Date())
+    const week = getWeekOfMonth(new Date(), { weekStartsOn: 1 })
     weekIndex = week - 1 // Adjust for zero-based index
   })
 
@@ -38,6 +38,9 @@ test.describe('Export Page', () => {
       preview.getByTestId(`timesheet-week-${weekIndex}-total`),
     ).toContainText('4.00')
     await expect(preview.getByTestId('timesheet-month-total')).toContainText(
+      '4.00',
+    )
+    await expect(preview.getByTestId('timesheet-month-adjusted')).toContainText(
       '4.00',
     )
 
