@@ -96,6 +96,8 @@ firebase deploy --only firestore:rules
 
 ## Step 5: Test the Integration
 
+### 5.1 Manual Testing
+
 1. Start your development server:
 
    ```bash
@@ -106,6 +108,37 @@ firebase deploy --only firestore:rules
 3. Try creating a subscription (use Stripe test cards)
 4. Check the `/team` page for team management
 5. Verify subscription status in `/settings`
+
+### 5.2 Debugging Scripts
+
+For development and debugging, you can use the scripts in the `scripts/` directory:
+
+```bash
+# Verify Stripe setup
+node scripts/verify-stripe-setup.js
+
+# Test webhook flow (requires Firebase emulators)
+node scripts/test-webhook-flow.js
+
+# Test full subscription flow
+node scripts/test-full-subscription-flow.js
+```
+
+⚠️ **Note**: These are debugging tools for manual testing, not proper automated tests. For automated testing, use the Jest test suite (`npm test`) and Playwright E2E tests (`npm run test:e2e`).
+
+### 5.3 Automated Testing
+
+For proper automated testing:
+
+```bash
+# Unit and integration tests
+npm test
+
+# End-to-end tests
+npm run test:e2e
+```
+
+See `scripts/SUBSCRIPTION_TESTING_GUIDE.md` for detailed testing instructions.
 
 ## Test Cards
 

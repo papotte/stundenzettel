@@ -43,63 +43,108 @@ npm run dev
 
 This will start the app on port 9002.
 
-## Step 2: Automated Testing
+## Step 2: Debugging Scripts (Manual Testing)
 
-### 2.1 Test Basic Subscription Endpoints
+⚠️ **Important**: The scripts in the `scripts/` directory are **debugging tools** for manual testing and development, not proper automated tests. They are designed to help you verify your Stripe integration during development.
 
-```bash
-npm run test:subscription
-```
-
-This tests:
-
-- Stripe products API
-- Checkout session creation
-- Customer portal creation
-
-### 2.2 Test Full Subscription Flow
+### 2.1 Verify Stripe Setup
 
 ```bash
-npm run test:subscription:full
+node scripts/verify-stripe-setup.js
 ```
 
-This comprehensive test:
+This debugging script:
 
-- Creates test products in Stripe
-- Tests all API endpoints
-- Simulates webhook events
-- Validates the complete flow
+- Checks environment variables
+- Tests Stripe API connection
+- Lists available products and prices
+- Creates and cleans up a test customer
 
-### 2.3 Test Webhook Flow
+### 2.2 Test Webhook Flow (Debugging)
 
 ```bash
-npm run test:webhook
+node scripts/test-webhook-flow.js
 ```
 
-This specialized test:
+This debugging script:
 
 - Creates test customers and subscriptions
 - Sends properly signed webhook events
 - Tests all webhook event types
 - Validates Firestore data updates
 
-## Step 3: Manual Testing Flow
+**Note**: Requires Firebase emulators to be running.
 
-### 3.1 Pricing Page Test
+### 2.3 Test Full Subscription Flow (Debugging)
+
+```bash
+node scripts/test-full-subscription-flow.js
+```
+
+This comprehensive debugging script:
+
+- Creates test products in Stripe
+- Tests all API endpoints
+- Simulates webhook events
+- Validates the complete flow
+
+## Step 3: Proper Testing Approaches
+
+### 3.1 Unit Tests
+
+For proper automated testing, use the existing Jest test suite:
+
+```bash
+npm test
+```
+
+Key test files:
+
+- `src/services/__tests__/stripe-service.test.ts` - Stripe service tests
+- `src/services/__tests__/payment-service.test.ts` - Payment service tests
+- `src/app/api/__tests__/` - API route tests
+- `src/components/__tests__/` - Component tests
+
+### 3.2 Integration Tests
+
+For integration testing, consider:
+
+1. **API Route Testing**: Test your Next.js API routes with mocked Stripe responses
+2. **Component Testing**: Test pricing components with mocked data
+3. **Service Testing**: Test your services with mocked external dependencies
+
+### 3.3 End-to-End Tests
+
+For E2E testing, use Playwright:
+
+```bash
+npm run test:e2e
+```
+
+Key E2E test files:
+
+- `e2e/subscription.spec.ts` - Subscription flow tests
+- `e2e/checkout.spec.ts` - Checkout process tests
+
+### 3.4 Manual Testing Flow
+
+For manual testing during development:
+
+#### 3.4.1 Pricing Page Test
 
 1. Open `http://localhost:9002/pricing`
 2. Verify pricing plans are displayed
 3. Check that prices are fetched from Stripe
 4. Verify "Choose Plan" buttons are present
 
-### 3.2 Authentication Flow
+#### 3.4.2 Authentication Flow
 
 1. Click "Choose Plan" on any plan
 2. Verify redirect to login page if not authenticated
 3. Login with test user
 4. Verify redirect back to pricing page
 
-### 3.3 Checkout Flow
+#### 3.4.3 Checkout Flow
 
 1. Click "Choose Plan" while authenticated
 2. Verify redirect to Stripe Checkout
@@ -107,14 +152,14 @@ This specialized test:
 4. Complete payment
 5. Verify redirect to success page
 
-### 3.4 Subscription Management
+#### 3.4.4 Subscription Management
 
 1. Navigate to `/subscription`
 2. Verify subscription details are displayed
 3. Test "Manage Billing" button
 4. Verify customer portal access
 
-### 3.5 Subscription Guard Test
+#### 3.4.5 Subscription Guard Test
 
 1. Navigate to protected pages
 2. Verify subscription guard works
@@ -134,7 +179,7 @@ To test with real Stripe webhooks:
 
 2. **Create a test subscription**
    - Use the Stripe Dashboard
-   - Or use the test scripts above
+   - Or use the debugging scripts above
 
 3. **Monitor webhook events**
    - Check Firebase Functions logs
@@ -316,7 +361,7 @@ FIREBASE_CLIENT_EMAIL=...
 
 - Firebase Functions logs in emulator terminal
 - Next.js development server logs
-- Test script outputs
+- Debug script outputs
 
 ## Next Steps
 
