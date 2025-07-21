@@ -239,6 +239,14 @@ export const dictionaries = {
       deleteAccountConfirmTitle: 'Are you absolutely sure?',
       deleteAccountConfirmDescription:
         'This action cannot be undone. All your data will be permanently deleted.',
+      deleteAccountPasswordLabel: 'Enter your password to confirm',
+      deleteAccountPasswordPlaceholder: 'Your password',
+      deleteAccountPasswordRequired: 'Password is required to delete your account',
+      deleteAccountConfirmButton: 'Delete my account',
+      deleteAccountProcessing: 'Deleting account...',
+      deleteAccountSuccess: 'Account deleted successfully',
+      deleteAccountError: 'Failed to delete account',
+      deleteAccountInvalidPassword: 'Invalid password. Please try again.',
       // Team page
       noTeam: 'You are not part of any team yet.',
       noTeamDescription:
@@ -724,6 +732,14 @@ export const dictionaries = {
       deleteAccountConfirmTitle: 'Sind Sie sich absolut sicher?',
       deleteAccountConfirmDescription:
         'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
+      deleteAccountPasswordLabel: 'Geben Sie Ihr Passwort zur Bestätigung ein',
+      deleteAccountPasswordPlaceholder: 'Ihr Passwort',
+      deleteAccountPasswordRequired: 'Passwort ist erforderlich, um Ihr Konto zu löschen',
+      deleteAccountConfirmButton: 'Mein Konto löschen',
+      deleteAccountProcessing: 'Konto wird gelöscht...',
+      deleteAccountSuccess: 'Konto erfolgreich gelöscht',
+      deleteAccountError: 'Konto konnte nicht gelöscht werden',
+      deleteAccountInvalidPassword: 'Ungültiges Passwort. Bitte versuchen Sie es erneut.',
       // Team page
       noTeam: 'Sie sind noch nicht Teil eines Teams.',
       noTeamDescription:

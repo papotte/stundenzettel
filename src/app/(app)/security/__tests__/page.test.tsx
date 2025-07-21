@@ -8,6 +8,14 @@ import { authScenarios } from '@/test-utils/auth-mocks'
 
 import SecurityPage from '../page'
 
+// Mock the delete user account service
+jest.mock('@/services/user-deletion-service', () => ({
+  deleteUserAccount: jest.fn(),
+}))
+
+import { deleteUserAccount } from '@/services/user-deletion-service'
+const mockDeleteUserAccount = deleteUserAccount as jest.MockedFunction<typeof deleteUserAccount>
+
 // Use centralized auth mock with password update and account deletion functions
 const mockAuthContext = authScenarios.withPasswordUpdate()
 mockAuthContext.deleteAccount = jest.fn()
@@ -45,6 +53,7 @@ describe('SecurityPage', () => {
       displayName: 'Test User',
     }
     mockAuthContext.loading = false
+    mockDeleteUserAccount.mockClear()
   })
 
   describe('when user is not authenticated', () => {
@@ -239,12 +248,14 @@ describe('SecurityPage', () => {
         expect(
           screen.getByText(/settings\.deleteAccountConfirmDescription/i),
         ).toBeInTheDocument()
+        expect(
+          screen.getByText(/settings\.deleteAccountPasswordLabel/i),
+        ).toBeInTheDocument()
       })
     })
 
-    xit('deletes account when confirmed', async () => {
+    it('requires password to enable delete confirmation button', async () => {
       const user = userEvent.setup()
-      mockAuthContext.deleteAccount!.mockResolvedValue(undefined)
       renderWithProviders(<SecurityPage />)
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()
@@ -252,18 +263,127 @@ describe('SecurityPage', () => {
       await user.click(
         screen.getByRole('button', { name: /settings\.deleteAccount/i }),
       )
+      
+      await waitFor(() => {
+        const confirmButton = screen.getByRole('button', { name: /settings\.deleteAccountConfirmButton/i })
+        expect(confirmButton).toBeDisabled()
+      })
+
+      // Enter password
+      const passwordInput = screen.getByPlaceholderText(/settings\.deleteAccountPasswordPlaceholder/i)
+      await user.type(passwordInput, 'testpassword')
+
+      await waitFor(() => {
+        const confirmButton = screen.getByRole('button', { name: /settings\.deleteAccountConfirmButton/i })
+        expect(confirmButton).not.toBeDisabled()
+      })
+    })
+
+    it('deletes account when confirmed with password', async () => {
+      const user = userEvent.setup()
+      mockDeleteUserAccount.mockResolvedValue(undefined)
+      renderWithProviders(<SecurityPage />)
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      await user.click(
+        screen.getByRole('button', { name: /settings\.deleteAccount/i }),
+      )
+      
       await waitFor(() => {
         expect(
           screen.getByText(/settings\.deleteAccountConfirmTitle/i),
         ).toBeInTheDocument()
       })
-      // Confirm delete (button has same text as open)
-      const confirmDeleteButton = screen.getAllByRole('button', {
-        name: /settings\.deleteAccount/i,
-      })[1]
-      await user.click(confirmDeleteButton)
+
+      // Enter password
+      const passwordInput = screen.getByPlaceholderText(/settings\.deleteAccountPasswordPlaceholder/i)
+      await user.type(passwordInput, 'testpassword')
+
+      // Confirm delete
+      const confirmButton = screen.getByRole('button', { name: /settings\.deleteAccountConfirmButton/i })
+      await user.click(confirmButton)
+
       await waitFor(() => {
-        expect(mockAuthContext.deleteAccount).toHaveBeenCalled()
+        expect(mockDeleteUserAccount).toHaveBeenCalledWith('test-user-id', 'testpassword')
+      })
+    })
+
+    it('shows success toast and redirects after successful deletion', async () => {
+      const user = userEvent.setup()
+      mockDeleteUserAccount.mockResolvedValue(undefined)
+      renderWithProviders(<SecurityPage />)
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      await user.click(
+        screen.getByRole('button', { name: /settings\.deleteAccount/i }),
+      )
+      
+      const passwordInput = screen.getByPlaceholderText(/settings\.deleteAccountPasswordPlaceholder/i)
+      await user.type(passwordInput, 'testpassword')
+
+      const confirmButton = screen.getByRole('button', { name: /settings\.deleteAccountConfirmButton/i })
+      await user.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'settings.deleteAccountSuccess',
+          description: 'settings.deleteAccountConfirmDescription',
+        })
+        expect(mockReplace).toHaveBeenCalledWith('/login')
+      })
+    })
+
+    it('shows error when account deletion fails', async () => {
+      const user = userEvent.setup()
+      mockDeleteUserAccount.mockRejectedValue(new Error('Deletion failed'))
+      renderWithProviders(<SecurityPage />)
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      await user.click(
+        screen.getByRole('button', { name: /settings\.deleteAccount/i }),
+      )
+      
+      const passwordInput = screen.getByPlaceholderText(/settings\.deleteAccountPasswordPlaceholder/i)
+      await user.type(passwordInput, 'testpassword')
+
+      const confirmButton = screen.getByRole('button', { name: /settings\.deleteAccountConfirmButton/i })
+      await user.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'settings.deleteAccountError',
+          description: 'settings.deleteAccountError',
+          variant: 'destructive',
+        })
+      })
+    })
+
+    it('shows invalid password error for credential errors', async () => {
+      const user = userEvent.setup()
+      mockDeleteUserAccount.mockRejectedValue(new Error('Invalid password credential'))
+      renderWithProviders(<SecurityPage />)
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      await user.click(
+        screen.getByRole('button', { name: /settings\.deleteAccount/i }),
+      )
+      
+      const passwordInput = screen.getByPlaceholderText(/settings\.deleteAccountPasswordPlaceholder/i)
+      await user.type(passwordInput, 'wrongpassword')
+
+      const confirmButton = screen.getByRole('button', { name: /settings\.deleteAccountConfirmButton/i })
+      await user.click(confirmButton)
+
+      await waitFor(() => {
+        expect(mockToast).toHaveBeenCalledWith({
+          title: 'settings.deleteAccountError',
+          description: 'settings.deleteAccountInvalidPassword',
+          variant: 'destructive',
+        })
       })
     })
 
