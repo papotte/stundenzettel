@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import TrialBanner from '@/components/trial-banner'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import {
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
-import type { Subscription } from '@/lib/types'
+import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { subscriptionService } from '@/services/subscription-service'
 
 interface SubscriptionGuardProps {
@@ -30,31 +30,8 @@ export default function SubscriptionGuard({
 }: SubscriptionGuardProps) {
   const { user } = useAuth()
   const { t } = useTranslation()
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const checkSubscription = async () => {
-      if (!user) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const userSubscription = await subscriptionService.getUserSubscription(
-          user.uid,
-        )
-        setSubscription(userSubscription)
-      } catch (error) {
-        console.error('Error checking subscription:', error)
-        setSubscription(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkSubscription()
-  }, [user])
+  const { hasValidSubscription, loading, subscription } =
+    useSubscriptionStatus(user)
 
   if (loading) {
     return (
@@ -90,11 +67,6 @@ export default function SubscriptionGuard({
       </div>
     )
   }
-
-  // Check if user has active subscription or is in trial
-  const hasValidSubscription =
-    subscription &&
-    (subscription.status === 'active' || subscription.status === 'trialing')
 
   // If user has no valid subscription, show subscription prompt
   if (!hasValidSubscription) {

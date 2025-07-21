@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
 
 import { Slot } from '@radix-ui/react-slot'
 
@@ -7,8 +6,8 @@ import { type VariantProps, cva } from 'class-variance-authority'
 
 import { ProBadge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/use-auth'
+import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { cn } from '@/lib/utils'
-import { subscriptionService } from '@/services/subscription-service'
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
@@ -62,32 +61,14 @@ Button.displayName = 'Button'
 // Button that is only enabled for subscribed users, shows ProBadge if not
 export function SubscriptionGuardButton({ children, ...props }: ButtonProps) {
   const { user } = useAuth()
-  const [hasValidSubscription, setHasValidSubscription] = useState<
-    boolean | null
-  >(null)
-
-  useEffect(() => {
-    let mounted = true
-    async function check() {
-      if (!user) {
-        if (mounted) setHasValidSubscription(false)
-        return
-      }
-      const sub = await subscriptionService.getUserSubscription(user.uid)
-      if (mounted)
-        setHasValidSubscription(
-          sub && (sub.status === 'active' || sub.status === 'trialing'),
-        )
-    }
-    check()
-    return () => {
-      mounted = false
-    }
-  }, [user])
+  const { hasValidSubscription, loading } = useSubscriptionStatus(user)
 
   // While loading, disable button
   const disabled =
-    hasValidSubscription === null || !hasValidSubscription || props.disabled
+    loading ||
+    hasValidSubscription === null ||
+    !hasValidSubscription ||
+    props.disabled
 
   return (
     <Button {...props} disabled={disabled}>

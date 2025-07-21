@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import {
   AlertTriangle,
@@ -25,8 +25,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
+import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { useToast } from '@/hooks/use-toast'
-import type { Subscription } from '@/lib/types'
 import { formatAppDate } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
@@ -36,10 +36,12 @@ export default function SubscriptionPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { t } = useTranslation()
-  const [pageLoading, setPageLoading] = useState(true)
-  const [userSubscription, setUserSubscription] = useState<Subscription | null>(
-    null,
-  )
+  const {
+    subscription,
+    loading: subLoading,
+    error,
+  } = useSubscriptionStatus(user)
+  const pageLoading = subLoading
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -48,27 +50,14 @@ export default function SubscriptionPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      const fetchSubscription = async () => {
-        try {
-          const subscription = await subscriptionService.getUserSubscription(
-            user.uid,
-          )
-          setUserSubscription(subscription)
-        } catch (error) {
-          console.error('Failed to fetch user subscription', error)
-          toast({
-            title: t('settings.errorLoadingTitle'),
-            description: t('settings.errorLoadingDescription'),
-            variant: 'destructive',
-          })
-        } finally {
-          setPageLoading(false)
-        }
-      }
-      fetchSubscription()
+    if (error) {
+      toast({
+        title: t('settings.errorLoadingTitle'),
+        description: t('settings.errorLoadingDescription'),
+        variant: 'destructive',
+      })
     }
-  }, [user, t, toast])
+  }, [error, t, toast])
 
   const handleManageBilling = async () => {
     if (!user) return
@@ -94,12 +83,12 @@ export default function SubscriptionPage() {
   }
 
   // Trial-specific helpers
-  const isInTrial = subscriptionService.isInTrial(userSubscription)
-  const trialEndDate = subscriptionService.getTrialEndDate(userSubscription)
+  const isInTrial = subscriptionService.isInTrial(subscription)
+  const trialEndDate = subscriptionService.getTrialEndDate(subscription)
   const daysRemaining =
-    subscriptionService.getDaysRemainingInTrial(userSubscription)
+    subscriptionService.getDaysRemainingInTrial(subscription)
   const isTrialExpiringSoon = subscriptionService.isTrialExpiringSoon(
-    userSubscription,
+    subscription,
     3,
   )
 
@@ -119,8 +108,7 @@ export default function SubscriptionPage() {
   }
 
   const isSubscribed =
-    userSubscription?.status === 'active' ||
-    userSubscription?.status === 'trialing'
+    subscription?.status === 'active' || subscription?.status === 'trialing'
 
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
@@ -165,17 +153,17 @@ export default function SubscriptionPage() {
                       {t('settings.currentPlan')}
                     </h4>
                     <h3 className="font-headline text-xl font-semibold leading-none tracking-tight">
-                      {userSubscription?.planName ?? t('settings.unknownPlan')}
+                      {subscription?.planName ?? t('settings.unknownPlan')}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      {userSubscription?.planDescription ??
+                      {subscription?.planDescription ??
                         t('settings.unknownPlanDescription')}
                     </p>
                     <Badge
                       variant={isInTrial ? 'secondary' : 'default'}
                       className="mt-1"
                     >
-                      {userSubscription?.status === 'active'
+                      {subscription?.status === 'active'
                         ? t('settings.active')
                         : t('settings.trialing')}
                     </Badge>
@@ -225,14 +213,14 @@ export default function SubscriptionPage() {
                 )}
 
                 {/* Cancellation Information */}
-                {userSubscription?.cancelAt && (
+                {subscription?.cancelAt && (
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-medium">
                         {t('settings.cancellationDate')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {formatAppDate(userSubscription.cancelAt)}
+                        {formatAppDate(subscription.cancelAt)}
                       </p>
                     </div>
                   </div>

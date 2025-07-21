@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { useRouter } from 'next/navigation'
 
 import { AuthProvider } from '@/context/auth-context'
+import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
@@ -62,7 +63,7 @@ describe('SubscriptionPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
-
+    __clearSubscriptionCacheForTests()
     // Reset auth context to authenticated state
     mockAuthContext.user = createMockUser()
     mockAuthContext.loading = false

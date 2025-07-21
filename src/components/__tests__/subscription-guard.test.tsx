@@ -4,6 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
+import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
@@ -53,6 +54,7 @@ describe('SubscriptionGuard', () => {
     mockAuthContext.user = null
     mockAuthContext.loading = false
     mockLocation.href = ''
+    __clearSubscriptionCacheForTests()
 
     // Default mock implementations
     mockIsInTrial.mockReturnValue(false)
