@@ -190,7 +190,8 @@ describe('TeamService', () => {
 
       await teamService.deleteTeam('team123')
 
-      expect(mockBatch.delete).toHaveBeenCalledTimes(6) // team + 2 members + 2 users + subscription
+      const EXPECTED_DELETION_COUNT = 6 // team + 2 members + 2 users + subscription
+      expect(mockBatch.delete).toHaveBeenCalledTimes(EXPECTED_DELETION_COUNT)
       expect(mockBatch.commit).toHaveBeenCalled()
     })
   })
