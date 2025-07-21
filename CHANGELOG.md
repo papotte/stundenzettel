@@ -1,3 +1,15 @@
+# [1.7.0](https://github.com/papotte/stundenzettel/compare/v1.6.0...v1.7.0) (2025-07-21)
+
+
+### Bug Fixes
+
+* add environment variable for google credentials ([e93f24e](https://github.com/papotte/stundenzettel/commit/e93f24e112968a18eb7bc81931d5a9bc5aeff868))
+
+
+### Features
+
+* implement secure user account deletion feature with password confirmation (Issue [#75](https://github.com/papotte/stundenzettel/issues/75)) ([#79](https://github.com/papotte/stundenzettel/issues/79)) ([cf77094](https://github.com/papotte/stundenzettel/commit/cf7709409c52a1c97994092a9221fe8ccaa8145a))
+
 # [1.6.0](https://github.com/papotte/stundenzettel/compare/v1.5.3...v1.6.0) (2025-07-21)
 
 
