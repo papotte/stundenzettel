@@ -10,6 +10,7 @@ import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan } from '@/lib/types'
+import { getUserId } from '@/lib/utils'
 import { getPricingPlans, paymentService } from '@/services/payment-service'
 
 interface PricingSectionProps {
@@ -80,7 +81,16 @@ export default function PricingSection({
     setLoading(plan.id)
     try {
       // Use email for mock users, uid for real users
-      const userId: string = user.uid || user.email
+      const userId: string | undefined = getUserId(user)
+      if (!userId) {
+        toast({
+          title: t('pricing.errorTitle'),
+          description: 'User ID is missing (neither uid nor email found).',
+          variant: 'destructive',
+        })
+        setLoading(null)
+        return
+      }
 
       const { url } = await paymentService.createCheckoutSession(
         userId,

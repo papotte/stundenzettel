@@ -9,6 +9,7 @@ import {
   formatDuration,
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
+  getUserId,
   timeStringToMinutes,
 } from '../utils'
 
@@ -185,6 +186,26 @@ describe('utils', () => {
     it('formats 23:59 correctly', () => {
       const date = new Date('2024-01-10T23:59:00')
       expect(formatAppTime(date)).toBe('23:59')
+    })
+  })
+
+  describe('getUserId', () => {
+    it('returns uid if present', () => {
+      expect(getUserId({ uid: 'abc123', email: 'test@example.com' })).toBe(
+        'abc123',
+      )
+    })
+    it('returns email if uid is missing', () => {
+      expect(getUserId({ email: 'test@example.com' })).toBe('test@example.com')
+    })
+    it('returns undefined if user is null', () => {
+      expect(getUserId(null)).toBeUndefined()
+    })
+    it('returns undefined if user is undefined', () => {
+      expect(getUserId(undefined)).toBeUndefined()
+    })
+    it('returns undefined if neither uid nor email is present', () => {
+      expect(getUserId({})).toBeUndefined()
     })
   })
 })

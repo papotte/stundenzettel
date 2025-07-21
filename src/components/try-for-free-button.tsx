@@ -9,6 +9,7 @@ import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan } from '@/lib/types'
+import { getUserId } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 
 interface TryForFreeButtonProps {
@@ -60,7 +61,10 @@ export default function TryForFreeButton({
     setLoading(true)
     try {
       // Use email for mock users, uid for real users
-      const userId: string = user.uid || user.email
+      const userId: string | undefined = getUserId(user)
+      if (!userId) {
+        throw new Error('User ID is missing (neither uid nor email found)')
+      }
 
       const { url } = await paymentService.createCheckoutSession(
         userId,

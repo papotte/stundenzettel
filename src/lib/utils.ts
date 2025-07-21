@@ -163,3 +163,13 @@ export function getLocationDisplayName(
   }
   return location
 }
+
+/**
+ * Returns a unique user identifier, preferring uid but falling back to email for mock users.
+ */
+export function getUserId(
+  user: { uid?: string; email?: string } | null | undefined,
+): string | undefined {
+  if (!user) return undefined
+  return user.uid || user.email
+}
