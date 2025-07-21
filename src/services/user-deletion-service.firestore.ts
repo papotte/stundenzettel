@@ -1,7 +1,9 @@
 import {
   deleteUser,
   EmailAuthProvider,
+  GoogleAuthProvider,
   reauthenticateWithCredential,
+  reauthenticateWithPopup,
 } from 'firebase/auth'
 import {
   collection,
@@ -33,6 +35,69 @@ export const deleteUserAccount = async (
   if (user.email) {
     const credential = EmailAuthProvider.credential(user.email, password)
     await reauthenticateWithCredential(user, credential)
+  }
+
+  try {
+    // Delete all user data from Firestore
+    await deleteAllUserData(userId)
+
+    // Delete the Firebase Auth user account
+    await deleteUser(user)
+  } catch (error) {
+    console.error('Error during account deletion:', error)
+    throw error
+  }
+}
+
+/**
+ * Deletes user account using Google re-authentication.
+ * This is a permanent operation that cannot be undone.
+ */
+export const deleteUserAccountWithGoogle = async (
+  userId: string,
+): Promise<void> => {
+  if (!userId) throw new Error('User not authenticated')
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    throw new Error('User not authenticated or mismatched user ID')
+  }
+
+  // Re-authenticate with Google before deletion for security
+  const provider = new GoogleAuthProvider()
+  await reauthenticateWithPopup(user, provider)
+
+  try {
+    // Delete all user data from Firestore
+    await deleteAllUserData(userId)
+
+    // Delete the Firebase Auth user account
+    await deleteUser(user)
+  } catch (error) {
+    console.error('Error during account deletion:', error)
+    throw error
+  }
+}
+
+/**
+ * Deletes user account using email confirmation as fallback.
+ * This is a permanent operation that cannot be undone.
+ */
+export const deleteUserAccountWithEmail = async (
+  userId: string,
+  email: string,
+): Promise<void> => {
+  if (!userId) throw new Error('User not authenticated')
+  if (!email) throw new Error('Email is required for account deletion')
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    throw new Error('User not authenticated or mismatched user ID')
+  }
+
+  // Verify email matches the current user
+  if (user.email !== email) {
+    throw new Error('Email does not match current user')
   }
 
   try {

@@ -23,6 +23,46 @@ export const deleteUserAccount = async (
     throw new Error('Invalid password')
   }
 
+  await deleteUserData(userId)
+}
+
+/**
+ * Deletes user account using Google re-authentication (mock implementation).
+ */
+export const deleteUserAccountWithGoogle = async (
+  userId: string,
+): Promise<void> => {
+  if (!userId) throw new Error('User not authenticated')
+  
+  // In mock mode, simulate successful Google re-authentication
+  console.info(`Mock Google re-authentication successful for user ${userId}`)
+  
+  await deleteUserData(userId)
+}
+
+/**
+ * Deletes user account using email confirmation (mock implementation).
+ */
+export const deleteUserAccountWithEmail = async (
+  userId: string,
+  email: string,
+): Promise<void> => {
+  if (!userId) throw new Error('User not authenticated')
+  if (!email) throw new Error('Email is required for account deletion')
+  
+  // In mock mode, validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    throw new Error('Invalid email format')
+  }
+  
+  await deleteUserData(userId)
+}
+
+/**
+ * Common function to delete user data from localStorage
+ */
+const deleteUserData = async (userId: string): Promise<void> => {
   try {
     // Delete user settings from localStorage
     const settingsKey = `${USER_SETTINGS_KEY_PREFIX}${userId}`

@@ -1,8 +1,9 @@
-import { deleteUserAccount } from '../user-deletion-service.local'
+import { deleteUserAccount, deleteUserAccountWithEmail, deleteUserAccountWithGoogle } from '../user-deletion-service.local'
 
 describe('User Deletion Service - Local Implementation', () => {
   const mockUserId = 'test-user-123'
   const mockPassword = 'validpassword'
+  const mockEmail = 'test@example.com'
 
   beforeEach(() => {
     // Clear localStorage before each test
@@ -11,7 +12,7 @@ describe('User Deletion Service - Local Implementation', () => {
     // Setup some test data
     localStorage.setItem('mockUser', JSON.stringify({
       uid: mockUserId,
-      email: 'test@example.com',
+      email: mockEmail,
       displayName: 'Test User'
     }))
     localStorage.setItem(`userSettings_${mockUserId}`, JSON.stringify({
@@ -28,7 +29,7 @@ describe('User Deletion Service - Local Implementation', () => {
     localStorage.clear()
   })
 
-  describe('Successful deletion', () => {
+  describe('Password-based deletion', () => {
     it('should delete all user data from localStorage', async () => {
       // Verify data exists before deletion
       expect(localStorage.getItem('mockUser')).not.toBeNull()
@@ -75,8 +76,67 @@ describe('User Deletion Service - Local Implementation', () => {
     })
   })
 
+  describe('Email-based deletion', () => {
+    it('should delete all user data from localStorage', async () => {
+      // Verify data exists before deletion
+      expect(localStorage.getItem('mockUser')).not.toBeNull()
+
+      await deleteUserAccountWithEmail(mockUserId, mockEmail)
+
+      // Verify all user-related data is deleted
+      expect(localStorage.getItem('mockUser')).toBeNull()
+      expect(localStorage.getItem(`userSettings_${mockUserId}`)).toBeNull()
+    })
+
+    it('should validate email format', async () => {
+      const invalidEmails = ['invalid', 'test@', '@domain.com', 'test.domain']
+
+      for (const email of invalidEmails) {
+        await expect(deleteUserAccountWithEmail(mockUserId, email)).rejects.toThrow(
+          'Invalid email format'
+        )
+      }
+    })
+
+    it('should accept valid email formats', async () => {
+      const validEmails = ['test@example.com', 'user.name@domain.co.uk', 'test+tag@gmail.com']
+
+      for (const email of validEmails) {
+        // Reset localStorage for each test
+        localStorage.setItem('mockUser', JSON.stringify({ uid: mockUserId }))
+        
+        await expect(deleteUserAccountWithEmail(mockUserId, email)).resolves.not.toThrow()
+      }
+    })
+  })
+
+  describe('Google-based deletion', () => {
+    it('should delete all user data from localStorage', async () => {
+      // Verify data exists before deletion
+      expect(localStorage.getItem('mockUser')).not.toBeNull()
+
+      await deleteUserAccountWithGoogle(mockUserId)
+
+      // Verify all user-related data is deleted
+      expect(localStorage.getItem('mockUser')).toBeNull()
+      expect(localStorage.getItem(`userSettings_${mockUserId}`)).toBeNull()
+    })
+
+    it('should log Google re-authentication success', async () => {
+      const consoleSpy = jest.spyOn(console, 'info').mockImplementation()
+
+      await deleteUserAccountWithGoogle(mockUserId)
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        `Mock Google re-authentication successful for user ${mockUserId}`
+      )
+
+      consoleSpy.mockRestore()
+    })
+  })
+
   describe('Error handling', () => {
-    it('should throw error for empty userId', async () => {
+    it('should throw error for empty userId in password deletion', async () => {
       await expect(deleteUserAccount('', mockPassword)).rejects.toThrow(
         'User not authenticated'
       )
@@ -91,6 +151,24 @@ describe('User Deletion Service - Local Implementation', () => {
     it('should throw error for short password', async () => {
       await expect(deleteUserAccount(mockUserId, '12345')).rejects.toThrow(
         'Invalid password'
+      )
+    })
+
+    it('should throw error for empty userId in email deletion', async () => {
+      await expect(deleteUserAccountWithEmail('', mockEmail)).rejects.toThrow(
+        'User not authenticated'
+      )
+    })
+
+    it('should throw error for empty email', async () => {
+      await expect(deleteUserAccountWithEmail(mockUserId, '')).rejects.toThrow(
+        'Email is required for account deletion'
+      )
+    })
+
+    it('should throw error for empty userId in Google deletion', async () => {
+      await expect(deleteUserAccountWithGoogle('')).rejects.toThrow(
+        'User not authenticated'
       )
     })
   })

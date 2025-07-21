@@ -29,7 +29,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { deleteUserAccount } from '@/services/user-deletion-service'
+import { auth } from '@/lib/firebase'
+import { deleteUserAccount, deleteUserAccountWithEmail, deleteUserAccountWithGoogle } from '@/services/user-deletion-service'
 
 export default function SecurityPage() {
   const { user, loading: authLoading } = useAuth()
@@ -39,8 +40,10 @@ export default function SecurityPage() {
   const [pageLoading, setPageLoading] = useState(true)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [authMethod, setAuthMethod] = useState<'password' | 'google' | 'email' | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -51,11 +54,56 @@ export default function SecurityPage() {
   useEffect(() => {
     if (user) {
       setPageLoading(false)
+      detectAuthMethod()
     }
   }, [user])
 
+  const detectAuthMethod = () => {
+    // In mock mode, default to password authentication for testing
+    const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || 
+                     process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+    
+    if (useMocks) {
+      setAuthMethod('password')
+      return
+    }
+
+    // For Firebase users, check provider data
+    const firebaseUser = auth.currentUser
+    if (firebaseUser && firebaseUser.providerData) {
+      const hasGoogleProvider = firebaseUser.providerData.some(
+        provider => provider.providerId === 'google.com'
+      )
+      const hasPasswordProvider = firebaseUser.providerData.some(
+        provider => provider.providerId === 'password'
+      )
+      
+      if (hasPasswordProvider) {
+        setAuthMethod('password')
+      } else if (hasGoogleProvider) {
+        setAuthMethod('google')
+      } else {
+        // Fallback to email confirmation for other providers
+        setAuthMethod('email')
+      }
+    } else {
+      // Fallback to email confirmation
+      setAuthMethod('email')
+    }
+  }
+
   const handleDeleteAccount = async () => {
-    if (!user || !password.trim()) {
+    if (!user) {
+      toast({
+        title: t('settings.deleteAccountError'),
+        description: 'User not authenticated',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Check validation before starting the deletion process
+    if (authMethod === 'password' && !password.trim()) {
       toast({
         title: t('settings.deleteAccountError'),
         description: t('settings.deleteAccountPasswordRequired'),
@@ -64,9 +112,27 @@ export default function SecurityPage() {
       return
     }
 
+    if (authMethod === 'email' && !email.trim()) {
+      toast({
+        title: t('settings.deleteAccountError'),
+        description: t('settings.deleteAccountEmailRequired'),
+        variant: 'destructive',
+      })
+      return
+    }
+
     setIsDeleting(true)
     try {
-      await deleteUserAccount(user.uid, password)
+      if (authMethod === 'password') {
+        await deleteUserAccount(user.uid, password)
+      } else if (authMethod === 'google') {
+        await deleteUserAccountWithGoogle(user.uid)
+      } else if (authMethod === 'email') {
+        await deleteUserAccountWithEmail(user.uid, email)
+      } else {
+        throw new Error('Unknown authentication method')
+      }
+
       toast({
         title: t('settings.deleteAccountSuccess'),
         description: t('settings.deleteAccountConfirmDescription'),
@@ -75,11 +141,17 @@ export default function SecurityPage() {
       router.replace('/login')
     } catch (error) {
       console.error('Account deletion failed:', error)
-      const errorMessage = error instanceof Error 
-        ? error.message.includes('password') || error.message.includes('credential')
-          ? t('settings.deleteAccountInvalidPassword')
-          : t('settings.deleteAccountError')
-        : t('settings.deleteAccountError')
+      let errorMessage = t('settings.deleteAccountError')
+      
+      if (error instanceof Error) {
+        if (error.message.includes('password') || error.message.includes('credential')) {
+          errorMessage = t('settings.deleteAccountInvalidPassword')
+        } else if (error.message.includes('email')) {
+          errorMessage = t('settings.deleteAccountInvalidEmail')
+        } else if (error.message.includes('cancelled') || error.message.includes('popup')) {
+          errorMessage = t('settings.deleteAccountCancelled')
+        }
+      }
       
       toast({
         title: t('settings.deleteAccountError'),
@@ -94,6 +166,7 @@ export default function SecurityPage() {
   const resetDeleteDialog = () => {
     setIsDeleteDialogOpen(false)
     setPassword('')
+    setEmail('')
     setShowPassword(false)
     setIsDeleting(false)
   }
@@ -196,40 +269,76 @@ export default function SecurityPage() {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="password">
-                          {t('settings.deleteAccountPasswordLabel')}
-                        </Label>
-                        <div className="relative">
+                      {authMethod === 'password' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="password">
+                            {t('settings.deleteAccountPasswordLabel')}
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="password"
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder={t('settings.deleteAccountPasswordPlaceholder')}
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              disabled={isDeleting}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && password.trim()) {
+                                  handleDeleteAccount()
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                              disabled={isDeleting}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {authMethod === 'google' && (
+                        <div className="space-y-2">
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-800">
+                              {t('settings.deleteAccountGoogleMessage')}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {authMethod === 'email' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="confirm-email">
+                            {t('settings.deleteAccountEmailLabel')}
+                          </Label>
                           <Input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder={t('settings.deleteAccountPasswordPlaceholder')}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            id="confirm-email"
+                            type="email"
+                            placeholder={t('settings.deleteAccountEmailPlaceholder')}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             disabled={isDeleting}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' && password.trim()) {
+                              if (e.key === 'Enter' && email.trim()) {
                                 handleDeleteAccount()
                               }
                             }}
                           />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                            disabled={isDeleting}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            {t('settings.deleteAccountEmailHelper')}
+                          </p>
                         </div>
-                      </div>
+                      )}
                     </div>
                     <AlertDialogFooter>
                       <Button
@@ -242,7 +351,11 @@ export default function SecurityPage() {
                       <Button
                         variant="destructive"
                         onClick={handleDeleteAccount}
-                        disabled={!password.trim() || isDeleting}
+                        disabled={
+                          (authMethod === 'password' && !password.trim()) ||
+                          (authMethod === 'email' && !email.trim()) ||
+                          isDeleting
+                        }
                       >
                         {isDeleting ? (
                           <>
