@@ -13,12 +13,12 @@ jest.mock('stripe', () => {
 
 setupStripeEnv()
 
-// Get the mocked instance for test assertions
-const mockStripeInstance = getMockStripeInstance()
-
 describe('createCustomerPortalSession', () => {
+  let mockStripeInstance: ReturnType<typeof getMockStripeInstance>;
+
   beforeEach(() => {
     jest.clearAllMocks()
+    mockStripeInstance = getMockStripeInstance()
   })
 
   it('creates portal session for existing customer', async () => {
