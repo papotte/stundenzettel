@@ -239,6 +239,23 @@ export const dictionaries = {
       deleteAccountConfirmTitle: 'Are you absolutely sure?',
       deleteAccountConfirmDescription:
         'This action cannot be undone. All your data will be permanently deleted.',
+      deleteAccountPasswordLabel: 'Enter your password to confirm',
+      deleteAccountPasswordPlaceholder: 'Your password',
+      deleteAccountPasswordRequired:
+        'Password is required to delete your account',
+      deleteAccountEmailLabel: 'Enter your email to confirm',
+      deleteAccountEmailPlaceholder: 'Your email address',
+      deleteAccountEmailRequired: 'Email is required to delete your account',
+      deleteAccountEmailHelper: 'Type your email to confirm account deletion',
+      deleteAccountInvalidEmail: 'Email does not match your account',
+      deleteAccountGoogleMessage:
+        'You will be asked to re-authenticate with Google to confirm deletion.',
+      deleteAccountCancelled: 'Account deletion was cancelled',
+      deleteAccountConfirmButton: 'Delete my account',
+      deleteAccountProcessing: 'Deleting account...',
+      deleteAccountSuccess: 'Account deleted successfully',
+      deleteAccountError: 'Failed to delete account',
+      deleteAccountInvalidPassword: 'Invalid password. Please try again.',
       // Team page
       noTeam: 'You are not part of any team yet.',
       noTeamDescription:
@@ -724,6 +741,26 @@ export const dictionaries = {
       deleteAccountConfirmTitle: 'Sind Sie sich absolut sicher?',
       deleteAccountConfirmDescription:
         'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
+      deleteAccountPasswordLabel: 'Geben Sie Ihr Passwort zur Bestätigung ein',
+      deleteAccountPasswordPlaceholder: 'Ihr Passwort',
+      deleteAccountPasswordRequired:
+        'Passwort ist erforderlich, um Ihr Konto zu löschen',
+      deleteAccountEmailLabel: 'Geben Sie Ihre E-Mail zur Bestätigung ein',
+      deleteAccountEmailPlaceholder: 'Ihre E-Mail-Adresse',
+      deleteAccountEmailRequired:
+        'E-Mail ist erforderlich, um Ihr Konto zu löschen',
+      deleteAccountEmailHelper:
+        'Geben Sie Ihre E-Mail ein, um die Kontolöschung zu bestätigen',
+      deleteAccountInvalidEmail: 'E-Mail stimmt nicht mit Ihrem Konto überein',
+      deleteAccountGoogleMessage:
+        'Sie werden aufgefordert, sich erneut mit Google zu authentifizieren, um die Löschung zu bestätigen.',
+      deleteAccountCancelled: 'Kontolöschung wurde abgebrochen',
+      deleteAccountConfirmButton: 'Mein Konto löschen',
+      deleteAccountProcessing: 'Konto wird gelöscht...',
+      deleteAccountSuccess: 'Konto erfolgreich gelöscht',
+      deleteAccountError: 'Konto konnte nicht gelöscht werden',
+      deleteAccountInvalidPassword:
+        'Ungültiges Passwort. Bitte versuchen Sie es erneut.',
       // Team page
       noTeam: 'Sie sind noch nicht Teil eines Teams.',
       noTeamDescription:
