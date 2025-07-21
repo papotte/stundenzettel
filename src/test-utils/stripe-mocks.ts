@@ -31,7 +31,7 @@ export const mockStripeInstance = {
 export function setupStripeEnv() {
   process.env.STRIPE_SECRET_KEY = 'test_stripe_secret_key'
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = 'test_stripe_publishable_key'
-  process.env.STRIPE_TRIAL_ENABLED = 'true'
+  process.env.NEXT_PUBLIC_STRIPE_TRIAL_ENABLED = 'true'
 }
 
 // Get the mocked Stripe instance for test assertions

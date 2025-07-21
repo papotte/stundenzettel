@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// Load environment variables
+require('dotenv').config({ path: '.env.local' })
+
 const crypto = require('crypto')
 const fetch = require('node-fetch')
 const Stripe = require('stripe')
@@ -34,7 +37,7 @@ async function sendWebhookEvent(event, webhookSecret) {
   const { signature } = generateWebhookSignature(payload, webhookSecret)
 
   try {
-    const response = await fetch(`${FUNCTIONS_URL}/stripeWebhook`, {
+    const response = await fetch(`${FUNCTIONS_URL}/timewise-tracker-61lqb/us-central1/stripeWebhook`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -274,8 +277,13 @@ async function testPaymentFailedWebhook() {
 
   console.log(`   ✅ Subscription created: ${subscription.id}`)
 
-  // Get the invoice
-  const invoice = await stripe.invoices.retrieve(subscription.latest_invoice)
+  // Get the invoice - handle both string and object cases
+  let invoice
+  if (typeof subscription.latest_invoice === 'string') {
+    invoice = await stripe.invoices.retrieve(subscription.latest_invoice)
+  } else {
+    invoice = subscription.latest_invoice
+  }
 
   // Create webhook event for failed payment
   const event = {
@@ -369,15 +377,23 @@ async function runWebhookTests() {
 
   // Check if Firebase Functions are running
   try {
-    const response = await fetch(`${FUNCTIONS_URL}/`)
-    if (response.status !== 200) {
-      console.log('❌ Firebase Functions are not running!')
-      console.log(
-        '   Please start the emulators with: firebase emulators:start',
-      )
+    const response = await fetch(`${FUNCTIONS_URL}/timewise-tracker-61lqb/us-central1/stripeWebhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'stripe-signature': 'test',
+      },
+      body: JSON.stringify({ test: 'data' }),
+    })
+    
+    // We expect 400 (bad signature) which means the endpoint is accessible
+    if (response.status === 400) {
+      console.log('✅ Firebase Functions are running')
+    } else {
+      console.log('❌ Firebase Functions are not responding correctly!')
+      console.log(`   Expected 400, got ${response.status}`)
       return
     }
-    console.log('✅ Firebase Functions are running')
   } catch (error) {
     console.log('❌ Cannot connect to Firebase Functions')
     console.log('   Please start the emulators with: firebase emulators:start')
