@@ -17,6 +17,10 @@ export async function GET(
     }
 
     const subscription = await getUserSubscription(userId)
+    if (!subscription) {
+      return NextResponse.json(undefined)
+    }
+    // Serialize Date fields to ISO strings
     return NextResponse.json(subscription)
   } catch (error: unknown) {
     const errorMessage =
