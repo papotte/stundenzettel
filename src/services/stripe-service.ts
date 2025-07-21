@@ -43,7 +43,7 @@ export class StripeService {
     try {
       const products = await this.fetchStripeData('products')
 
-      const plans = products
+      return products
         .map((product: StripeProductWithPrices) => {
           // Group prices by interval (month/year)
           const pricesByInterval = product.prices.reduce(
@@ -82,7 +82,7 @@ export class StripeService {
             )
             const trialDays = price.recurring?.trial_period_days || undefined
 
-            const plan = {
+            return {
               id: `${product.name.toLowerCase().replace(/\s+/g, '-')}-${interval}`,
               name: `${product.name} ${interval === 'month' ? 'Monthly' : 'Yearly'}`,
               price: price.unit_amount ? price.unit_amount / 100 : 0, // Convert from cents, handle null
@@ -101,19 +101,9 @@ export class StripeService {
               trialDays,
               trialEnabled: hasTrialPeriod,
             }
-
-            console.log('Created plan:', plan)
-            console.log('Has tiered pricing:', hasTieredPricing)
-            if (hasTieredPricing) {
-              console.log('Tiered pricing info:', plan.tieredPricing)
-            }
-            return plan
           })
         })
         .flat()
-
-      console.log('Final plans:', plans)
-      return plans
     } catch (error) {
       console.error('Error fetching pricing plans:', error)
       // Fallback to hardcoded plans if API fails

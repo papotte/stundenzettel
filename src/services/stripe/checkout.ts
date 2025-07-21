@@ -76,7 +76,7 @@ export async function createCheckoutSession({
 
     // Log trial information for debugging
     if (hasTrialPeriod) {
-      console.log(
+      console.info(
         `Creating checkout session with ${trialDays}-day trial for price: ${priceId}`,
       )
     } else {
@@ -85,7 +85,9 @@ export async function createCheckoutSession({
       )
     }
   } else {
-    console.log(`Creating checkout session without trial for price: ${priceId}`)
+    console.info(
+      `Creating checkout session without trial for price: ${priceId}`,
+    )
   }
 
   // Prepare checkout session parameters

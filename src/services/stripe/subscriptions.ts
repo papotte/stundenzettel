@@ -35,7 +35,7 @@ export async function getUserSubscription(
   }
 
   if (!customer) {
-    console.log(`No customer found for userId: ${userId}`)
+    console.error(`No customer found for userId: ${userId}`)
     return undefined
   }
 
@@ -46,24 +46,19 @@ export async function getUserSubscription(
     limit: 1,
   })
 
-  console.log(
-    `Found ${subscriptions.data.length} subscriptions for customer ${customer.id}`,
-  )
-
   if (subscriptions.data.length === 0) {
-    console.log(`No subscriptions found for customer ${customer.id}`)
+    console.warn(`No subscriptions found for customer ${customer.id}`)
     return undefined
   }
 
   const stripeSubscription = subscriptions.data[0]
-  console.log(`Subscription status: ${stripeSubscription.status}`)
 
   // Get plan information for displaying
   if (
     !stripeSubscription.items.data.length ||
     !stripeSubscription.items.data[0]?.price
   ) {
-    console.log('No subscription items found')
+    console.warn('No subscription items found')
     return undefined
   }
   const productId = stripeSubscription.items.data[0].price.product as string

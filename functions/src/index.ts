@@ -87,7 +87,7 @@ export const stripeWebhook = onRequest(
           await handlePaymentFailed(event.data.object as Stripe.Invoice, stripe)
           break
         default:
-          console.log(`Unhandled event type: ${event.type}`)
+          console.warn(`Unhandled event type: ${event.type}`)
       }
 
       res.json({ received: true })

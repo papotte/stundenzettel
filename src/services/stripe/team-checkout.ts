@@ -75,16 +75,16 @@ export async function createTeamCheckoutSession({
 
     // Log trial information for debugging
     if (hasTrialPeriod) {
-      console.log(
+      console.info(
         `Creating team checkout session with ${trialDays}-day trial for price: ${priceId}`,
       )
     } else {
-      console.warn(
+      console.info(
         `Trial requested but price ${priceId} has no trial period configured`,
       )
     }
   } else {
-    console.log(
+    console.info(
       `Creating team checkout session without trial for price: ${priceId}`,
     )
   }

@@ -25,12 +25,10 @@ export class SubscriptionService {
     }
 
     try {
-      console.log(`Fetching subscription for userId: ${userId}`)
       const response = await fetch(`/api/subscriptions/${userId}`)
 
       if (response.ok) {
         const subscription = await response.json()
-        console.log('Subscription data received:', subscription)
         cachedSubscription = subscription
         cacheExpiry = now + CACHE_DURATION
         return subscription
