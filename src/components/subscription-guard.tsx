@@ -23,6 +23,66 @@ interface SubscriptionGuardProps {
   showTrialBanner?: boolean // Whether to show trial banner for trial users
 }
 
+// Extracted fallback UI for unauthenticated and unsubscribed users
+function SubscriptionFallback({
+  type,
+  t,
+}: {
+  type: 'login' | 'subscription'
+  t: (key: string) => string
+}) {
+  if (type === 'login') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>{t('subscription.loginRequiredTitle')}</CardTitle>
+            <CardDescription>
+              {t('subscription.loginRequiredDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button
+              onClick={() => (window.location.href = '/login')}
+              className="w-full"
+            >
+              {t('subscription.loginButton')}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+  // type === 'subscription'
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
+          <CardDescription>
+            {t('subscription.requiredDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center space-y-4">
+          <Button
+            onClick={() => (window.location.href = '/pricing')}
+            className="w-full"
+          >
+            {t('subscription.choosePlanButton')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => (window.location.href = '/subscription')}
+            className="w-full"
+          >
+            {t('subscription.manageSubscriptionButton')}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function SubscriptionGuard({
   children,
   fallback,
@@ -46,59 +106,12 @@ export default function SubscriptionGuard({
 
   // If user is not authenticated, show login prompt
   if (!user) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle>{t('subscription.loginRequiredTitle')}</CardTitle>
-            <CardDescription>
-              {t('subscription.loginRequiredDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button
-              onClick={() => (window.location.href = '/login')}
-              className="w-full"
-            >
-              {t('subscription.loginButton')}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <SubscriptionFallback type="login" t={t} />
   }
 
   // If user has no valid subscription, show subscription prompt
   if (!hasValidSubscription) {
-    return (
-      fallback || (
-        <div className="flex h-screen items-center justify-center bg-background">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
-              <CardDescription>
-                {t('subscription.requiredDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <Button
-                onClick={() => (window.location.href = '/pricing')}
-                className="w-full"
-              >
-                {t('subscription.choosePlanButton')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => (window.location.href = '/subscription')}
-                className="w-full"
-              >
-                {t('subscription.manageSubscriptionButton')}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    )
+    return fallback || <SubscriptionFallback type="subscription" t={t} />
   }
 
   // User has valid subscription (active or trialing)
