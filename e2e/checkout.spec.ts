@@ -39,7 +39,7 @@ test.describe('Checkout and Payment Flow', () => {
       await expect(page.url()).toMatch(
         /^https:\/\/checkout\.stripe\.com\/c\/pay\/[a-zA-Z0-9_]+(#.*)?$/,
       )
-      await expect(page).toHaveTitle(/Checkout|Stripe/)
+      await expect(page).toHaveTitle(/sandbox/)
     })
 
     test('should handle checkout session creation errors', async ({ page }) => {
