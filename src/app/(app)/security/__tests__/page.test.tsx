@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
 import { deleteUserAccount } from '@/services/user-deletion-service'
+import { hasPasswordAuthentication } from '@/services/password-update-service'
 import { authScenarios } from '@/test-utils/auth-mocks'
 
 import SecurityPage from '../page'
@@ -14,8 +15,17 @@ jest.mock('@/services/user-deletion-service', () => ({
   deleteUserAccount: jest.fn(),
 }))
 
+// Mock the password update service
+jest.mock('@/services/password-update-service', () => ({
+  hasPasswordAuthentication: jest.fn(),
+}))
+
 const mockDeleteUserAccount = deleteUserAccount as jest.MockedFunction<
   typeof deleteUserAccount
+>
+
+const mockHasPasswordAuthentication = hasPasswordAuthentication as jest.MockedFunction<
+  typeof hasPasswordAuthentication
 >
 
 // Use centralized auth mock with password update and account deletion functions
@@ -56,6 +66,7 @@ describe('SecurityPage', () => {
     }
     mockAuthContext.loading = false
     mockDeleteUserAccount.mockClear()
+    mockHasPasswordAuthentication.mockResolvedValue(true)
   })
 
   describe('when user is not authenticated', () => {
@@ -83,15 +94,44 @@ describe('SecurityPage', () => {
       expect(screen.getByText('settings.backToTracker')).toBeInTheDocument()
     })
 
-    it('shows change password section', async () => {
+    it('shows change password section for users with password authentication', async () => {
+      mockHasPasswordAuthentication.mockResolvedValue(true)
       renderWithProviders(<SecurityPage />)
+      
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()
       })
-      expect(screen.getByText('settings.password')).toBeInTheDocument()
-      expect(
-        screen.getByText('settings.passwordDescription'),
-      ).toBeInTheDocument()
+      
+      await waitFor(() => {
+        expect(screen.getByText('settings.password')).toBeInTheDocument()
+      })
+      
+      expect(screen.getByText('settings.passwordDescription')).toBeInTheDocument()
+      expect(screen.getByTestId('change-password-trigger')).toBeInTheDocument()
+    })
+
+    it('hides change password section for users without password authentication', async () => {
+      mockHasPasswordAuthentication.mockResolvedValue(false)
+      renderWithProviders(<SecurityPage />)
+      
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      
+      // Wait a bit to ensure async operations complete
+      await waitFor(() => {
+        expect(screen.queryByText('settings.password')).not.toBeInTheDocument()
+      })
+      
+      expect(screen.queryByTestId('change-password-trigger')).not.toBeInTheDocument()
+    })
+
+    it('calls hasPasswordAuthentication on mount', async () => {
+      renderWithProviders(<SecurityPage />)
+      
+      await waitFor(() => {
+        expect(mockHasPasswordAuthentication).toHaveBeenCalledWith('test-user-id')
+      })
     })
 
     it('shows delete account section', async () => {
@@ -109,129 +149,6 @@ describe('SecurityPage', () => {
       expect(
         screen.getByRole('button', { name: /settings\.deleteAccount/i }),
       ).toBeInTheDocument()
-    })
-
-    xit('changes password successfully', async () => {
-      const user = userEvent.setup()
-      mockAuthContext.updatePassword!.mockResolvedValue(undefined)
-      renderWithProviders(<SecurityPage />)
-      await waitFor(() => {
-        expect(screen.getByText('settings.security')).toBeInTheDocument()
-      })
-      await user.type(screen.getByLabelText(/current password/i), 'oldpassword')
-      await user.type(screen.getByLabelText(/new password/i), 'newpassword123')
-      await user.type(
-        screen.getByLabelText(/confirm new password/i),
-        'newpassword123',
-      )
-      await user.click(
-        screen.getByRole('button', { name: /settings\.change/i }),
-      )
-      await waitFor(() => {
-        expect(mockAuthContext.updatePassword).toHaveBeenCalledWith(
-          'oldpassword',
-          'newpassword123',
-        )
-      })
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'settings.passwordUpdated',
-          description: 'settings.passwordUpdatedDescription',
-        })
-      })
-      // Form should be cleared
-      expect(screen.getByLabelText(/current password/i)).toHaveValue('')
-      expect(screen.getByLabelText(/new password/i)).toHaveValue('')
-      expect(screen.getByLabelText(/confirm new password/i)).toHaveValue('')
-    })
-
-    xit('shows error when passwords do not match', async () => {
-      const user = userEvent.setup()
-      renderWithProviders(<SecurityPage />)
-      await waitFor(() => {
-        expect(screen.getByText('settings.security')).toBeInTheDocument()
-      })
-      await user.type(screen.getByLabelText(/current password/i), 'oldpassword')
-      await user.type(screen.getByLabelText(/new password/i), 'newpassword123')
-      await user.type(
-        screen.getByLabelText(/confirm new password/i),
-        'differentpassword',
-      )
-      await user.click(
-        screen.getByRole('button', { name: /settings\.change/i }),
-      )
-      await waitFor(() => {
-        expect(
-          screen.getByText(/settings\.passwordsDoNotMatch/i),
-        ).toBeInTheDocument()
-      })
-    })
-
-    xit('shows error when password change fails', async () => {
-      const user = userEvent.setup()
-      mockAuthContext.updatePassword!.mockRejectedValue(
-        new Error('Invalid password'),
-      )
-      renderWithProviders(<SecurityPage />)
-      await waitFor(() => {
-        expect(screen.getByText('settings.security')).toBeInTheDocument()
-      })
-      await user.type(screen.getByLabelText(/current password/i), 'oldpassword')
-      await user.type(screen.getByLabelText(/new password/i), 'newpassword123')
-      await user.type(
-        screen.getByLabelText(/confirm new password/i),
-        'newpassword123',
-      )
-      await user.click(
-        screen.getByRole('button', { name: /settings\.change/i }),
-      )
-      await waitFor(() => {
-        expect(mockToast).toHaveBeenCalledWith({
-          title: 'settings.error',
-          description: 'settings.passwordUpdateError',
-          variant: 'destructive',
-        })
-      })
-    })
-
-    xit('validates password requirements', async () => {
-      const user = userEvent.setup()
-      renderWithProviders(<SecurityPage />)
-      await waitFor(() => {
-        expect(screen.getByText('settings.security')).toBeInTheDocument()
-      })
-      await user.type(screen.getByLabelText(/current password/i), 'oldpassword')
-      await user.type(screen.getByLabelText(/new password/i), 'short') // Too short
-      await user.type(screen.getByLabelText(/confirm new password/i), 'short')
-      await user.click(
-        screen.getByRole('button', { name: /settings\.change/i }),
-      )
-      await waitFor(() => {
-        expect(
-          screen.getByText(/settings\.passwordTooShort/i),
-        ).toBeInTheDocument()
-      })
-    })
-
-    xit('shows loading state while changing password', async () => {
-      const user = userEvent.setup()
-      mockAuthContext.updatePassword!.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100)),
-      )
-      renderWithProviders(<SecurityPage />)
-      await waitFor(() => {
-        expect(screen.getByText('settings.security')).toBeInTheDocument()
-      })
-      await user.type(screen.getByLabelText(/current password/i), 'oldpassword')
-      await user.type(screen.getByLabelText(/new password/i), 'newpassword123')
-      await user.type(
-        screen.getByLabelText(/confirm new password/i),
-        'newpassword123',
-      )
-      await user.click(
-        screen.getByRole('button', { name: /settings\.change/i }),
-      )
-      expect(screen.getByText('settings.updating')).toBeInTheDocument()
     })
 
     it('opens delete account confirmation dialog', async () => {
