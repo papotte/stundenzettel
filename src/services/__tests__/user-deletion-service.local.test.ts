@@ -1,4 +1,8 @@
-import { deleteUserAccount, deleteUserAccountWithEmail, deleteUserAccountWithGoogle } from '../user-deletion-service.local'
+import {
+  deleteUserAccount,
+  deleteUserAccountWithEmail,
+  deleteUserAccountWithGoogle,
+} from '../user-deletion-service.local'
 
 describe('User Deletion Service - Local Implementation', () => {
   const mockUserId = 'test-user-123'
@@ -8,20 +12,27 @@ describe('User Deletion Service - Local Implementation', () => {
   beforeEach(() => {
     // Clear localStorage before each test
     localStorage.clear()
-    
+
     // Setup some test data
-    localStorage.setItem('mockUser', JSON.stringify({
-      uid: mockUserId,
-      email: mockEmail,
-      displayName: 'Test User'
-    }))
-    localStorage.setItem(`userSettings_${mockUserId}`, JSON.stringify({
-      defaultWorkHours: 8,
-      language: 'en'
-    }))
-    localStorage.setItem(`timeEntries_${mockUserId}`, JSON.stringify([
-      { id: '1', location: 'Office', startTime: new Date() }
-    ]))
+    localStorage.setItem(
+      'mockUser',
+      JSON.stringify({
+        uid: mockUserId,
+        email: mockEmail,
+        displayName: 'Test User',
+      }),
+    )
+    localStorage.setItem(
+      `userSettings_${mockUserId}`,
+      JSON.stringify({
+        defaultWorkHours: 8,
+        language: 'en',
+      }),
+    )
+    localStorage.setItem(
+      `timeEntries_${mockUserId}`,
+      JSON.stringify([{ id: '1', location: 'Office', startTime: new Date() }]),
+    )
     localStorage.setItem(`someOtherUserData_${mockUserId}`, 'test data')
   })
 
@@ -35,7 +46,9 @@ describe('User Deletion Service - Local Implementation', () => {
       expect(localStorage.getItem('mockUser')).not.toBeNull()
       expect(localStorage.getItem(`userSettings_${mockUserId}`)).not.toBeNull()
       expect(localStorage.getItem(`timeEntries_${mockUserId}`)).not.toBeNull()
-      expect(localStorage.getItem(`someOtherUserData_${mockUserId}`)).not.toBeNull()
+      expect(
+        localStorage.getItem(`someOtherUserData_${mockUserId}`),
+      ).not.toBeNull()
 
       await deleteUserAccount(mockUserId, mockPassword)
 
@@ -48,9 +61,12 @@ describe('User Deletion Service - Local Implementation', () => {
 
     it('should delete only data related to the specific user', async () => {
       const otherUserId = 'other-user-456'
-      localStorage.setItem(`userSettings_${otherUserId}`, JSON.stringify({
-        defaultWorkHours: 7
-      }))
+      localStorage.setItem(
+        `userSettings_${otherUserId}`,
+        JSON.stringify({
+          defaultWorkHours: 7,
+        }),
+      )
       localStorage.setItem('globalSetting', 'should remain')
 
       await deleteUserAccount(mockUserId, mockPassword)
@@ -58,7 +74,7 @@ describe('User Deletion Service - Local Implementation', () => {
       // Other user's data should remain
       expect(localStorage.getItem(`userSettings_${otherUserId}`)).not.toBeNull()
       expect(localStorage.getItem('globalSetting')).not.toBeNull()
-      
+
       // Current user's data should be gone
       expect(localStorage.getItem(`userSettings_${mockUserId}`)).toBeNull()
     })
@@ -69,7 +85,7 @@ describe('User Deletion Service - Local Implementation', () => {
       await deleteUserAccount(mockUserId, mockPassword)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        `Mock user account deleted for user ${mockUserId}`
+        `Mock user account deleted for user ${mockUserId}`,
       )
 
       consoleSpy.mockRestore()
@@ -92,20 +108,26 @@ describe('User Deletion Service - Local Implementation', () => {
       const invalidEmails = ['invalid', 'test@', '@domain.com', 'test.domain']
 
       for (const email of invalidEmails) {
-        await expect(deleteUserAccountWithEmail(mockUserId, email)).rejects.toThrow(
-          'Invalid email format'
-        )
+        await expect(
+          deleteUserAccountWithEmail(mockUserId, email),
+        ).rejects.toThrow('Invalid email format')
       }
     })
 
     it('should accept valid email formats', async () => {
-      const validEmails = ['test@example.com', 'user.name@domain.co.uk', 'test+tag@gmail.com']
+      const validEmails = [
+        'test@example.com',
+        'user.name@domain.co.uk',
+        'test+tag@gmail.com',
+      ]
 
       for (const email of validEmails) {
         // Reset localStorage for each test
         localStorage.setItem('mockUser', JSON.stringify({ uid: mockUserId }))
-        
-        await expect(deleteUserAccountWithEmail(mockUserId, email)).resolves.not.toThrow()
+
+        await expect(
+          deleteUserAccountWithEmail(mockUserId, email),
+        ).resolves.not.toThrow()
       }
     })
   })
@@ -128,7 +150,7 @@ describe('User Deletion Service - Local Implementation', () => {
       await deleteUserAccountWithGoogle(mockUserId)
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        `Mock Google re-authentication successful for user ${mockUserId}`
+        `Mock Google re-authentication successful for user ${mockUserId}`,
       )
 
       consoleSpy.mockRestore()
@@ -138,37 +160,37 @@ describe('User Deletion Service - Local Implementation', () => {
   describe('Error handling', () => {
     it('should throw error for empty userId in password deletion', async () => {
       await expect(deleteUserAccount('', mockPassword)).rejects.toThrow(
-        'User not authenticated'
+        'User not authenticated',
       )
     })
 
     it('should throw error for empty password', async () => {
       await expect(deleteUserAccount(mockUserId, '')).rejects.toThrow(
-        'Password is required for account deletion'
+        'Password is required for account deletion',
       )
     })
 
     it('should throw error for short password', async () => {
       await expect(deleteUserAccount(mockUserId, '12345')).rejects.toThrow(
-        'Invalid password'
+        'Invalid password',
       )
     })
 
     it('should throw error for empty userId in email deletion', async () => {
       await expect(deleteUserAccountWithEmail('', mockEmail)).rejects.toThrow(
-        'User not authenticated'
+        'User not authenticated',
       )
     })
 
     it('should throw error for empty email', async () => {
       await expect(deleteUserAccountWithEmail(mockUserId, '')).rejects.toThrow(
-        'Email is required for account deletion'
+        'Email is required for account deletion',
       )
     })
 
     it('should throw error for empty userId in Google deletion', async () => {
       await expect(deleteUserAccountWithGoogle('')).rejects.toThrow(
-        'User not authenticated'
+        'User not authenticated',
       )
     })
   })
@@ -179,14 +201,16 @@ describe('User Deletion Service - Local Implementation', () => {
         'password123',
         'verylongpassword',
         'Pass@123',
-        '123456'
+        '123456',
       ]
 
       for (const password of validPasswords) {
         // Reset localStorage for each test
         localStorage.setItem('mockUser', JSON.stringify({ uid: mockUserId }))
-        
-        await expect(deleteUserAccount(mockUserId, password)).resolves.not.toThrow()
+
+        await expect(
+          deleteUserAccount(mockUserId, password),
+        ).resolves.not.toThrow()
       }
     })
 

@@ -1,7 +1,7 @@
 import {
-  deleteUser,
   EmailAuthProvider,
   GoogleAuthProvider,
+  deleteUser,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
 } from 'firebase/auth'
@@ -131,7 +131,7 @@ const deleteAllUserData = async (userId: string): Promise<void> => {
 
   // Delete any other user subcollections that might exist in the future
   // This ensures GDPR compliance by removing all user data
-  
+
   // Commit all deletions in a single batch
   await batch.commit()
 

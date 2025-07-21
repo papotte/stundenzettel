@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react'
 
-import { AlertTriangle, ArrowLeft, Eye, EyeOff, Loader2, Shield, Trash2 } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Loader2,
+  Shield,
+  Trash2,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -30,7 +38,11 @@ import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
-import { deleteUserAccount, deleteUserAccountWithEmail, deleteUserAccountWithGoogle } from '@/services/user-deletion-service'
+import {
+  deleteUserAccount,
+  deleteUserAccountWithEmail,
+  deleteUserAccountWithGoogle,
+} from '@/services/user-deletion-service'
 
 export default function SecurityPage() {
   const { user, loading: authLoading } = useAuth()
@@ -43,7 +55,9 @@ export default function SecurityPage() {
   const [email, setEmail] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [authMethod, setAuthMethod] = useState<'password' | 'google' | 'email' | null>(null)
+  const [authMethod, setAuthMethod] = useState<
+    'password' | 'google' | 'email' | null
+  >(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -60,9 +74,10 @@ export default function SecurityPage() {
 
   const detectAuthMethod = () => {
     // In mock mode, default to password authentication for testing
-    const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' || 
-                     process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
-    
+    const useMocks =
+      process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
+      process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+
     if (useMocks) {
       setAuthMethod('password')
       return
@@ -72,12 +87,12 @@ export default function SecurityPage() {
     const firebaseUser = auth.currentUser
     if (firebaseUser && firebaseUser.providerData) {
       const hasGoogleProvider = firebaseUser.providerData.some(
-        provider => provider.providerId === 'google.com'
+        (provider) => provider.providerId === 'google.com',
       )
       const hasPasswordProvider = firebaseUser.providerData.some(
-        provider => provider.providerId === 'password'
+        (provider) => provider.providerId === 'password',
       )
-      
+
       if (hasPasswordProvider) {
         setAuthMethod('password')
       } else if (hasGoogleProvider) {
@@ -142,17 +157,23 @@ export default function SecurityPage() {
     } catch (error) {
       console.error('Account deletion failed:', error)
       let errorMessage = t('settings.deleteAccountError')
-      
+
       if (error instanceof Error) {
-        if (error.message.includes('password') || error.message.includes('credential')) {
+        if (
+          error.message.includes('password') ||
+          error.message.includes('credential')
+        ) {
           errorMessage = t('settings.deleteAccountInvalidPassword')
         } else if (error.message.includes('email')) {
           errorMessage = t('settings.deleteAccountInvalidEmail')
-        } else if (error.message.includes('cancelled') || error.message.includes('popup')) {
+        } else if (
+          error.message.includes('cancelled') ||
+          error.message.includes('popup')
+        ) {
           errorMessage = t('settings.deleteAccountCancelled')
         }
       }
-      
+
       toast({
         title: t('settings.deleteAccountError'),
         description: errorMessage,
@@ -252,7 +273,10 @@ export default function SecurityPage() {
                     {t('settings.deleteAccountDescription')}
                   </p>
                 </div>
-                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="sm">
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -278,7 +302,9 @@ export default function SecurityPage() {
                             <Input
                               id="password"
                               type={showPassword ? 'text' : 'password'}
-                              placeholder={t('settings.deleteAccountPasswordPlaceholder')}
+                              placeholder={t(
+                                'settings.deleteAccountPasswordPlaceholder',
+                              )}
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               disabled={isDeleting}
@@ -305,7 +331,7 @@ export default function SecurityPage() {
                           </div>
                         </div>
                       )}
-                      
+
                       {authMethod === 'google' && (
                         <div className="space-y-2">
                           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -315,7 +341,7 @@ export default function SecurityPage() {
                           </div>
                         </div>
                       )}
-                      
+
                       {authMethod === 'email' && (
                         <div className="space-y-2">
                           <Label htmlFor="confirm-email">
@@ -324,7 +350,9 @@ export default function SecurityPage() {
                           <Input
                             id="confirm-email"
                             type="email"
-                            placeholder={t('settings.deleteAccountEmailPlaceholder')}
+                            placeholder={t(
+                              'settings.deleteAccountEmailPlaceholder',
+                            )}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={isDeleting}

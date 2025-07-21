@@ -17,15 +17,26 @@ jest.mock('../user-deletion-service', () => {
 
   if (mockEnv === 'test') {
     return {
-      deleteUserAccount: jest.requireActual('../user-deletion-service.local').deleteUserAccount,
-      deleteUserAccountWithEmail: jest.requireActual('../user-deletion-service.local').deleteUserAccountWithEmail,
-      deleteUserAccountWithGoogle: jest.requireActual('../user-deletion-service.local').deleteUserAccountWithGoogle,
+      deleteUserAccount: jest.requireActual('../user-deletion-service.local')
+        .deleteUserAccount,
+      deleteUserAccountWithEmail: jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccountWithEmail,
+      deleteUserAccountWithGoogle: jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccountWithGoogle,
     }
   } else {
     return {
-      deleteUserAccount: jest.requireActual('../user-deletion-service.firestore').deleteUserAccount,
-      deleteUserAccountWithEmail: jest.requireActual('../user-deletion-service.firestore').deleteUserAccountWithEmail,
-      deleteUserAccountWithGoogle: jest.requireActual('../user-deletion-service.firestore').deleteUserAccountWithGoogle,
+      deleteUserAccount: jest.requireActual(
+        '../user-deletion-service.firestore',
+      ).deleteUserAccount,
+      deleteUserAccountWithEmail: jest.requireActual(
+        '../user-deletion-service.firestore',
+      ).deleteUserAccountWithEmail,
+      deleteUserAccountWithGoogle: jest.requireActual(
+        '../user-deletion-service.firestore',
+      ).deleteUserAccountWithGoogle,
     }
   }
 })
@@ -42,8 +53,10 @@ describe('User Deletion Service', () => {
   describe('Parameter validation', () => {
     it('should pass through parameters correctly for password authentication', async () => {
       // Test with actual implementation
-      const deleteUserAccountLocal = jest.requireActual('../user-deletion-service.local').deleteUserAccount
-      
+      const deleteUserAccountLocal = jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccount
+
       // Mock localStorage for this test
       const originalLocalStorage = window.localStorage
       const mockLocalStorage = {
@@ -59,8 +72,10 @@ describe('User Deletion Service', () => {
         writable: true,
       })
 
-      await expect(deleteUserAccountLocal(mockUserId, mockPassword)).resolves.not.toThrow()
-      
+      await expect(
+        deleteUserAccountLocal(mockUserId, mockPassword),
+      ).resolves.not.toThrow()
+
       expect(mockLocalStorage.removeItem).toHaveBeenCalled()
 
       // Restore
@@ -71,8 +86,10 @@ describe('User Deletion Service', () => {
     })
 
     it('should pass through parameters correctly for email authentication', async () => {
-      const deleteUserAccountWithEmailLocal = jest.requireActual('../user-deletion-service.local').deleteUserAccountWithEmail
-      
+      const deleteUserAccountWithEmailLocal = jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccountWithEmail
+
       // Mock localStorage for this test
       const originalLocalStorage = window.localStorage
       const mockLocalStorage = {
@@ -88,8 +105,10 @@ describe('User Deletion Service', () => {
         writable: true,
       })
 
-      await expect(deleteUserAccountWithEmailLocal(mockUserId, mockEmail)).resolves.not.toThrow()
-      
+      await expect(
+        deleteUserAccountWithEmailLocal(mockUserId, mockEmail),
+      ).resolves.not.toThrow()
+
       expect(mockLocalStorage.removeItem).toHaveBeenCalled()
 
       // Restore
@@ -100,8 +119,10 @@ describe('User Deletion Service', () => {
     })
 
     it('should pass through parameters correctly for Google authentication', async () => {
-      const deleteUserAccountWithGoogleLocal = jest.requireActual('../user-deletion-service.local').deleteUserAccountWithGoogle
-      
+      const deleteUserAccountWithGoogleLocal = jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccountWithGoogle
+
       // Mock localStorage for this test
       const originalLocalStorage = window.localStorage
       const mockLocalStorage = {
@@ -117,8 +138,10 @@ describe('User Deletion Service', () => {
         writable: true,
       })
 
-      await expect(deleteUserAccountWithGoogleLocal(mockUserId)).resolves.not.toThrow()
-      
+      await expect(
+        deleteUserAccountWithGoogleLocal(mockUserId),
+      ).resolves.not.toThrow()
+
       expect(mockLocalStorage.removeItem).toHaveBeenCalled()
 
       // Restore
@@ -129,23 +152,39 @@ describe('User Deletion Service', () => {
     })
 
     it('should handle errors from underlying service', async () => {
-      const deleteUserAccountLocal = jest.requireActual('../user-deletion-service.local').deleteUserAccount
+      const deleteUserAccountLocal = jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccount
 
-      await expect(deleteUserAccountLocal('', mockPassword)).rejects.toThrow('User not authenticated')
+      await expect(deleteUserAccountLocal('', mockPassword)).rejects.toThrow(
+        'User not authenticated',
+      )
     })
 
     it('should handle errors for email authentication', async () => {
-      const deleteUserAccountWithEmailLocal = jest.requireActual('../user-deletion-service.local').deleteUserAccountWithEmail
+      const deleteUserAccountWithEmailLocal = jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccountWithEmail
 
-      await expect(deleteUserAccountWithEmailLocal('', mockEmail)).rejects.toThrow('User not authenticated')
-      await expect(deleteUserAccountWithEmailLocal(mockUserId, '')).rejects.toThrow('Email is required for account deletion')
-      await expect(deleteUserAccountWithEmailLocal(mockUserId, 'invalid-email')).rejects.toThrow('Invalid email format')
+      await expect(
+        deleteUserAccountWithEmailLocal('', mockEmail),
+      ).rejects.toThrow('User not authenticated')
+      await expect(
+        deleteUserAccountWithEmailLocal(mockUserId, ''),
+      ).rejects.toThrow('Email is required for account deletion')
+      await expect(
+        deleteUserAccountWithEmailLocal(mockUserId, 'invalid-email'),
+      ).rejects.toThrow('Invalid email format')
     })
 
     it('should handle errors for Google authentication', async () => {
-      const deleteUserAccountWithGoogleLocal = jest.requireActual('../user-deletion-service.local').deleteUserAccountWithGoogle
+      const deleteUserAccountWithGoogleLocal = jest.requireActual(
+        '../user-deletion-service.local',
+      ).deleteUserAccountWithGoogle
 
-      await expect(deleteUserAccountWithGoogleLocal('')).rejects.toThrow('User not authenticated')
+      await expect(deleteUserAccountWithGoogleLocal('')).rejects.toThrow(
+        'User not authenticated',
+      )
     })
   })
 })

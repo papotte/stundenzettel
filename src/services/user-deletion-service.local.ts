@@ -17,7 +17,7 @@ export const deleteUserAccount = async (
 ): Promise<void> => {
   if (!userId) throw new Error('User not authenticated')
   if (!password) throw new Error('Password is required for account deletion')
-  
+
   // Simple password validation for testing
   if (password.length < 6) {
     throw new Error('Invalid password')
@@ -33,10 +33,10 @@ export const deleteUserAccountWithGoogle = async (
   userId: string,
 ): Promise<void> => {
   if (!userId) throw new Error('User not authenticated')
-  
+
   // In mock mode, simulate successful Google re-authentication
   console.info(`Mock Google re-authentication successful for user ${userId}`)
-  
+
   await deleteUserData(userId)
 }
 
@@ -49,13 +49,13 @@ export const deleteUserAccountWithEmail = async (
 ): Promise<void> => {
   if (!userId) throw new Error('User not authenticated')
   if (!email) throw new Error('Email is required for account deletion')
-  
+
   // In mock mode, validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(email)) {
     throw new Error('Invalid email format')
   }
-  
+
   await deleteUserData(userId)
 }
 
@@ -68,7 +68,7 @@ const deleteUserData = async (userId: string): Promise<void> => {
     const settingsKey = `${USER_SETTINGS_KEY_PREFIX}${userId}`
     localStorage.removeItem(settingsKey)
 
-    // Delete time entries from localStorage  
+    // Delete time entries from localStorage
     const timeEntriesKey = `${TIME_ENTRIES_KEY_PREFIX}${userId}`
     localStorage.removeItem(timeEntriesKey)
 
@@ -83,8 +83,8 @@ const deleteUserData = async (userId: string): Promise<void> => {
         keysToRemove.push(key)
       }
     }
-    
-    keysToRemove.forEach(key => localStorage.removeItem(key))
+
+    keysToRemove.forEach((key) => localStorage.removeItem(key))
 
     console.info(`Mock user account deleted for user ${userId}`)
   } catch (error) {

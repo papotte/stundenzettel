@@ -14,7 +14,7 @@ if (useMockService) {
 /**
  * Permanently deletes a user account and all associated data.
  * This operation cannot be undone.
- * 
+ *
  * @param userId - The ID of the user to delete
  * @param password - The user's current password for confirmation
  * @returns Promise that resolves when deletion is complete
@@ -30,7 +30,7 @@ export const deleteUserAccount = (
  * Permanently deletes a user account and all associated data with email confirmation.
  * This operation cannot be undone.
  * Used as fallback for users without passwords (e.g., Google OAuth users).
- * 
+ *
  * @param userId - The ID of the user to delete
  * @param email - The user's email for confirmation
  * @returns Promise that resolves when deletion is complete
@@ -46,12 +46,10 @@ export const deleteUserAccountWithEmail = (
  * Permanently deletes a user account using Google re-authentication.
  * This operation cannot be undone.
  * Used for users who signed in with Google.
- * 
+ *
  * @param userId - The ID of the user to delete
  * @returns Promise that resolves when deletion is complete
  */
-export const deleteUserAccountWithGoogle = (
-  userId: string,
-): Promise<void> => {
+export const deleteUserAccountWithGoogle = (userId: string): Promise<void> => {
   return service.deleteUserAccountWithGoogle(userId)
 }
