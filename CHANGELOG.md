@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/papotte/stundenzettel/compare/v1.5.3...v1.6.0) (2025-07-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @stripe/stripe-js to v7.5.0 ([#77](https://github.com/papotte/stundenzettel/issues/77)) ([b0240f6](https://github.com/papotte/stundenzettel/commit/b0240f62534f720535f78279089f0b4299bf7b0d))
+* missing env vars in e2e test run ([904760f](https://github.com/papotte/stundenzettel/commit/904760fee8899be83d252b2f62bcf818176d84da))
+
+
+### Features
+
+* Add payments with Stripe ([#74](https://github.com/papotte/stundenzettel/issues/74)) ([98021b9](https://github.com/papotte/stundenzettel/commit/98021b9da01119da650e67d2babc6e5da19ffceb))
+
 ## [1.5.3](https://github.com/papotte/stundenzettel/compare/v1.5.2...v1.5.3) (2025-07-19)
 
 
