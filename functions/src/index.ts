@@ -7,9 +7,11 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 import * as dotenv from 'dotenv'
+import type { Request, Response } from 'express'
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import {
+  FirestoreEvent,
   onDocumentCreated,
   onDocumentUpdated,
 } from 'firebase-functions/v2/firestore'
@@ -23,11 +25,6 @@ initializeApp()
 
 const db = getFirestore('timewise')
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil',
-})
-
 interface Payment {
   invoiceId: string
   amount: number
@@ -39,10 +36,15 @@ interface Payment {
 // Stripe webhook handler
 export const stripeWebhook = onRequest(
   {
+    region: 'europe-west1',
     cors: false,
     maxInstances: 10,
+    secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
   },
-  async (req, res) => {
+  async (req: Request, res: Response) => {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-06-30.basil',
+    })
     const sig = req.headers['stripe-signature']
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
@@ -54,7 +56,11 @@ export const stripeWebhook = onRequest(
     let event: Stripe.Event
 
     try {
-      event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret)
+      event = stripe.webhooks.constructEvent(
+        (req as any).rawBody,
+        sig,
+        endpointSecret,
+      )
     } catch (err) {
       console.error('Webhook signature verification failed:', err)
       res.status(400).send('Webhook signature verification failed')
@@ -68,13 +74,17 @@ export const stripeWebhook = onRequest(
         case 'customer.subscription.deleted':
           await handleSubscriptionChange(
             event.data.object as Stripe.Subscription,
+            stripe,
           )
           break
         case 'invoice.payment_succeeded':
-          await handlePaymentSucceeded(event.data.object as Stripe.Invoice)
+          await handlePaymentSucceeded(
+            event.data.object as Stripe.Invoice,
+            stripe,
+          )
           break
         case 'invoice.payment_failed':
-          await handlePaymentFailed(event.data.object as Stripe.Invoice)
+          await handlePaymentFailed(event.data.object as Stripe.Invoice, stripe)
           break
         default:
           console.log(`Unhandled event type: ${event.type}`)
@@ -89,7 +99,10 @@ export const stripeWebhook = onRequest(
 )
 
 // Handle subscription changes
-async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+async function handleSubscriptionChange(
+  subscription: Stripe.Subscription,
+  stripe: Stripe,
+) {
   const customerId = subscription.customer as string
   const customer = await stripe.customers.retrieve(customerId)
 
@@ -169,7 +182,7 @@ async function handleTeamSubscriptionChange(
 }
 
 // Handle successful payments
-async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
+async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
   const customerId = invoice.customer as string
   const customer = await stripe.customers.retrieve(customerId)
 
@@ -218,7 +231,7 @@ async function savePaymentToDb(
 }
 
 // Handle failed payments
-async function handlePaymentFailed(invoice: Stripe.Invoice) {
+async function handlePaymentFailed(invoice: Stripe.Invoice, stripe: Stripe) {
   const customerId = invoice.customer as string
   const customer = await stripe.customers.retrieve(customerId)
 
@@ -242,8 +255,11 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
 // Firestore triggers for team management
 export const onTeamCreated = onDocumentCreated(
-  'teams/{teamId}',
-  async (event) => {
+  {
+    document: 'teams/{teamId}',
+    region: 'europe-west1',
+  },
+  async (event: FirestoreEvent<any>) => {
     const teamData = event.data?.data()
     if (!teamData) return
 
@@ -261,8 +277,11 @@ export const onTeamCreated = onDocumentCreated(
 )
 
 export const onTeamMemberAdded = onDocumentUpdated(
-  'teams/{teamId}/members/{memberId}',
-  async (event) => {
+  {
+    document: 'teams/{teamId}/members/{memberId}',
+    region: 'europe-west1',
+  },
+  async (event: FirestoreEvent<any>) => {
     const beforeData = event.data?.before.data()
     const afterData = event.data?.after.data()
 

@@ -37,14 +37,17 @@ async function sendWebhookEvent(event, webhookSecret) {
   const { signature } = generateWebhookSignature(payload, webhookSecret)
 
   try {
-    const response = await fetch(`${FUNCTIONS_URL}/timewise-tracker-61lqb/us-central1/stripeWebhook`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'stripe-signature': signature,
+    const response = await fetch(
+      `${FUNCTIONS_URL}/timewise-tracker-61lqb/us-central1/stripeWebhook`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': signature,
+        },
+        body: payload,
       },
-      body: payload,
-    })
+    )
 
     const responseText = await response.text()
     console.log(`   Status: ${response.status}`)
@@ -377,15 +380,18 @@ async function runWebhookTests() {
 
   // Check if Firebase Functions are running
   try {
-    const response = await fetch(`${FUNCTIONS_URL}/timewise-tracker-61lqb/us-central1/stripeWebhook`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'stripe-signature': 'test',
+    const response = await fetch(
+      `${FUNCTIONS_URL}/timewise-tracker-61lqb/us-central1/stripeWebhook`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'stripe-signature': 'test',
+        },
+        body: JSON.stringify({ test: 'data' }),
       },
-      body: JSON.stringify({ test: 'data' }),
-    })
-    
+    )
+
     // We expect 400 (bad signature) which means the endpoint is accessible
     if (response.status === 400) {
       console.log('✅ Firebase Functions are running')

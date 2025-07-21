@@ -6,16 +6,8 @@ import LandingPage from '../page'
 describe('StartPage', () => {
   it('renders the Landing page', () => {
     render(<LandingPage />)
-    let found = false
-    try {
-      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
-      found = true
-    } catch {}
-    if (!found) {
-      expect(
-        screen.getByText(/start|welcome|zeit|tracker/i),
-      ).toBeInTheDocument()
-    }
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    expect(screen.getByText(/start|welcome|zeit|tracker/i)).toBeInTheDocument()
   })
 
   it('should render the feature section', () => {

@@ -27,10 +27,28 @@
   },
   "overrides": [
     {
+      "files": ["functions/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "import/no-unresolved": "off"
+      }
+    },
+    {
       "files": ["*.tsx"],
       "rules": {
         "react/prop-types": "off"
       }
     }
+  ],
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "dist/",
+    "coverage/",
+    "public/",
+    "build/",
+    "functions/lib"
   ]
 }

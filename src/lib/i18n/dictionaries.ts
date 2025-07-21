@@ -1,4 +1,3 @@
-// TODO: Clean up unused translation keys
 // After all recent changes, check for any keys that are no longer used in the codebase
 // and remove them to keep the dictionaries clean and maintainable.
 //

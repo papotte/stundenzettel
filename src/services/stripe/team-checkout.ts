@@ -38,7 +38,8 @@ export async function createTeamCheckoutSession({
   }
 
   // Validate that trials are enabled globally
-  const globalTrialEnabled = process.env.NEXT_PUBLIC_STRIPE_TRIAL_ENABLED === 'true'
+  const globalTrialEnabled =
+    process.env.NEXT_PUBLIC_STRIPE_TRIAL_ENABLED === 'true'
   if (trialEnabled && !globalTrialEnabled) {
     console.warn(
       'Trial requested but globally disabled. Proceeding without trial.',
