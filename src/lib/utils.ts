@@ -125,10 +125,11 @@ export function formatAppTime(date: Date) {
 export function formatCurrency(
   value: number,
   currency: string,
-  locale: string = typeof window !== 'undefined' && window.navigator.language
-    ? window.navigator.language
-    : 'en',
+  locale: string = 'en',
 ) {
+  if (locale === 'en' && typeof window !== 'undefined' && window.navigator.language) {
+    locale = window.navigator.language;
+  }
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
