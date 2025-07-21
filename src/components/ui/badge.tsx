@@ -5,7 +5,7 @@ import { type VariantProps, cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'badge inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
     variants: {
       variant: {
@@ -16,6 +16,7 @@ const badgeVariants = cva(
         destructive:
           'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
         outline: 'text-foreground',
+        pro: 'border-transparent bg-green-600 text-white', // pro badge variant
       },
     },
     defaultVariants: {
@@ -34,4 +35,13 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   )
 }
 
-export { Badge, badgeVariants }
+// A ready-to-use Pro badge for subscription features
+function ProBadge(props: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <Badge variant="pro" {...props}>
+      PRO
+    </Badge>
+  )
+}
+
+export { Badge, badgeVariants, ProBadge }

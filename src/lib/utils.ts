@@ -116,6 +116,32 @@ export function formatAppTime(date: Date) {
   return format(date, 'HH:mm')
 }
 
+/**
+ * Formats a number as currency in a locale-aware way using Intl.NumberFormat.
+ * @param value The numeric value (e.g., 12.34)
+ * @param currency The ISO 4217 currency code (e.g., 'EUR', 'USD')
+ * @param locale Optional locale string (defaults to browser or 'en')
+ */
+export function formatCurrency(
+  value: number,
+  currency: string,
+  locale: string = 'en',
+) {
+  if (
+    locale === 'en' &&
+    typeof window !== 'undefined' &&
+    window.navigator.language
+  ) {
+    locale = window.navigator.language
+  }
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
 export function compareEntriesByStartTime(a: TimeEntry, b: TimeEntry) {
   const aIsDuration = typeof a.durationMinutes === 'number'
   const bIsDuration = typeof b.durationMinutes === 'number'
@@ -141,4 +167,14 @@ export function getLocationDisplayName(
     return t(`special_locations.${location}`)
   }
   return location
+}
+
+/**
+ * Returns a unique user identifier, preferring uid but falling back to email for mock users.
+ */
+export function getUserId(
+  user: { uid?: string; email?: string } | null | undefined,
+): string | undefined {
+  if (!user) return undefined
+  return user.uid || user.email
 }

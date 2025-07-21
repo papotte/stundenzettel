@@ -1,5 +1,22 @@
 # TimeWise Tracker
 
+## Table of Contents
+
+- [Features](#features)
+- [Subscription-Guarded Pages & Buttons](#subscription-guarded-pages--buttons)
+- [Tech Stack](#tech-stack)
+- **Getting Started**
+  - [Getting Started](#getting-started)
+  - [Data Model Migration](#data-model-migration)
+- **Development**
+  - [Code Quality (Linting & Formatting)](#code-quality--linting--formatting-)
+  - [End-to-End Testing (Playwright)](#end-to-end-testing--playwright-)
+- **Deployment**
+  - [Deploying to Production (Firebase)](#deploying-to-production--firebase-)
+  - [CI/CD with GitHub Actions](#cicd-with-github-actions)
+- **Other**
+  - [Troubleshooting](#troubleshooting)
+
 A Next.js application for effortless time tracking, designed for Firebase Studio.
 
 ## Features
@@ -11,6 +28,46 @@ A Next.js application for effortless time tracking, designed for Firebase Studio
 - Export timesheets to professionally formatted Excel and PDF files.
 - English and German language support.
 - Test mode for local development without Firebase.
+
+---
+
+## Subscription-Guarded Pages & Buttons
+
+Some features are only available to users with an active (or trialing) subscription. The project provides two main tools for this:
+
+### 1. Guarding Entire Pages or Sections
+
+Use the `SubscriptionGuard` component to wrap any page or section that should only be accessible to subscribed users. If the user is not subscribed, they will see a prompt to subscribe or log in.
+
+**Example:**
+
+```tsx
+import SubscriptionGuard from '@/components/subscription-guard'
+
+export default function ProPage() {
+  return <SubscriptionGuard>{/* Pro-only content here */}</SubscriptionGuard>
+}
+```
+
+You can also provide a custom fallback UI using the `fallback` prop.
+
+### 2. Guarding Individual Buttons (or Actions)
+
+Use the `SubscriptionGuardButton` component anywhere you want a button to be enabled only for subscribed users. If the user is not subscribed, the button will be disabled and a "Pro" badge will appear inside the button.
+
+**Example:**
+
+```tsx
+import { SubscriptionGuardButton } from '@/components/ui/button'
+
+;<SubscriptionGuardButton onClick={handleExport}>
+  <DownloadIcon /> Export
+</SubscriptionGuardButton>
+```
+
+This is ideal for export, download, or other premium actions.
+
+---
 
 ## Tech Stack
 
@@ -156,6 +213,40 @@ It's recommended to run `npm run format` before committing your changes. The CI 
 
 ---
 
+## End-to-End Testing (Playwright)
+
+This project uses [Playwright](https://playwright.dev/) for end-to-end (E2E) testing. These tests launch a real browser and interact with the application just like a user would.
+
+### Running E2E Tests
+
+To run the E2E test suite, use the following command:
+
+```bash
+npm run test:e2e
+```
+
+This will automatically:
+
+1.  Start the development server.
+2.  Run all tests located in the `e2e/` directory.
+3.  Shut down the server once the tests are complete.
+
+The test report will be available in the `playwright-report` directory.
+
+### First-Time Setup & Dependencies
+
+When you run `npm install`, the necessary Playwright **browser binaries** are downloaded automatically.
+
+However, Playwright also requires certain **system-level dependencies** to run those browsers. In some environments (like a fresh Linux install or a container), you may need to install these manually. If your tests fail to launch a browser, run the following command from an interactive terminal to have Playwright attempt to install them for you:
+
+```bash
+npx playwright install --with-deps
+```
+
+This command may ask for administrative privileges (`sudo`) to install packages.
+
+---
+
 ## Deploying to Production (Firebase)
 
 Deploying your application involves two main steps: deploying the app itself with **App Hosting**, and deploying the **Firestore Security Rules**.
@@ -208,40 +299,6 @@ If you need to deploy them manually, you can run the following command from your
 ```bash
 firebase deploy --only firestore:rules
 ```
-
----
-
-## End-to-End Testing (Playwright)
-
-This project uses [Playwright](https://playwright.dev/) for end-to-end (E2E) testing. These tests launch a real browser and interact with the application just like a user would.
-
-### Running E2E Tests
-
-To run the E2E test suite, use the following command:
-
-```bash
-npm run test:e2e
-```
-
-This will automatically:
-
-1.  Start the development server.
-2.  Run all tests located in the `e2e/` directory.
-3.  Shut down the server once the tests are complete.
-
-The test report will be available in the `playwright-report` directory.
-
-### First-Time Setup & Dependencies
-
-When you run `npm install`, the necessary Playwright **browser binaries** are downloaded automatically.
-
-However, Playwright also requires certain **system-level dependencies** to run those browsers. In some environments (like a fresh Linux install or a container), you may need to install these manually. If your tests fail to launch a browser, run the following command from an interactive terminal to have Playwright attempt to install them for you:
-
-```bash
-npx playwright install --with-deps
-```
-
-This command may ask for administrative privileges (`sudo`) to install packages.
 
 ---
 

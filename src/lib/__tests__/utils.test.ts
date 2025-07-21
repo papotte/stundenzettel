@@ -4,10 +4,12 @@ import {
   formatAppDate,
   formatAppNumber,
   formatAppTime,
+  formatCurrency,
   formatDecimalHours,
   formatDuration,
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
+  getUserId,
   timeStringToMinutes,
 } from '../utils'
 
@@ -92,6 +94,28 @@ describe('utils', () => {
     })
   })
 
+  describe('formatCurrency', () => {
+    it('should format EUR in en locale', () => {
+      expect(formatCurrency(1234.56, 'EUR', 'en')).toBe('€1,234.56')
+    })
+    it('should format USD in en locale', () => {
+      expect(formatCurrency(1234.56, 'USD', 'en')).toBe('$1,234.56')
+    })
+    it('should format EUR in de locale', () => {
+      expect(formatCurrency(1234.56, 'EUR', 'de')).toBe('1.234,56 €')
+    })
+    it('should format JPY in en locale (no decimals)', () => {
+      expect(formatCurrency(1234, 'JPY', 'en')).toBe('¥1,234')
+    })
+    it('should handle zero and negative values', () => {
+      expect(formatCurrency(0, 'USD', 'en')).toBe('$0')
+      expect(formatCurrency(-99.99, 'USD', 'en')).toBe('-$99.99')
+    })
+    it('should default to en locale if not provided', () => {
+      expect(formatCurrency(100, 'USD')).toBe('$100')
+    })
+  })
+
   describe('compareEntriesByStartTime', () => {
     const now = new Date('2024-01-10T12:00:00')
     const earlier = new Date('2024-01-09T12:00:00')
@@ -162,6 +186,26 @@ describe('utils', () => {
     it('formats 23:59 correctly', () => {
       const date = new Date('2024-01-10T23:59:00')
       expect(formatAppTime(date)).toBe('23:59')
+    })
+  })
+
+  describe('getUserId', () => {
+    it('returns uid if present', () => {
+      expect(getUserId({ uid: 'abc123', email: 'test@example.com' })).toBe(
+        'abc123',
+      )
+    })
+    it('returns email if uid is missing', () => {
+      expect(getUserId({ email: 'test@example.com' })).toBe('test@example.com')
+    })
+    it('returns undefined if user is null', () => {
+      expect(getUserId(null)).toBeUndefined()
+    })
+    it('returns undefined if user is undefined', () => {
+      expect(getUserId(undefined)).toBeUndefined()
+    })
+    it('returns undefined if neither uid nor email is present', () => {
+      expect(getUserId({})).toBeUndefined()
     })
   })
 })

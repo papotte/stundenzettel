@@ -8,8 +8,8 @@ import React from 'react'
 const LandingIllustration = ({ className = '' }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="800.273"
-    height="513.21"
+    width="auto"
+    height="auto"
     viewBox="0 0 800.273 513.21"
     role="img"
     className={className}

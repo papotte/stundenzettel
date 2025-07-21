@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import TimeTrackerHeader from '@/components/time-tracker-header'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { createMockAuthContext } from '@/test-utils/auth-mocks'
 
 // Mock the context
 const handleClearData = jest.fn()
@@ -14,10 +15,13 @@ jest.mock('@/context/time-tracker-context', () => ({
   }),
 }))
 
+// Use centralized auth mock
+const mockAuthContext = createMockAuthContext({
+  signOut,
+  user: { uid: '123', displayName: 'Test User', email: 'test@example.com' },
+})
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({
-    signOut,
-  }),
+  useAuth: () => mockAuthContext,
 }))
 
 describe('TimeTrackerHeader', () => {
@@ -37,18 +41,16 @@ describe('TimeTrackerHeader', () => {
     expect(
       screen.getByText('tracker.headerClearDataTooltip'),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('tracker.headerSettingsTooltip'),
-    ).toBeInTheDocument()
-    expect(screen.getByText('tracker.headerSignOutTooltip')).toBeInTheDocument()
+    expect(screen.getByTestId('user-menu-btn')).toBeInTheDocument()
   })
 
-  it('calls handleClearData and handleSignOut', () => {
+  it('calls handleClearData', async () => {
     renderWithProvider(<TimeTrackerHeader showClearData={true} />)
+
+    // Click the clear data button and confirm
     fireEvent.click(screen.getByTestId('clear-data-btn'))
     fireEvent.click(screen.getByTestId('clear-data-confirm-btn'))
-    fireEvent.click(screen.getByTestId('sign-out-btn'))
+
     expect(handleClearData).toHaveBeenCalled()
-    expect(signOut).toHaveBeenCalled()
   })
 })

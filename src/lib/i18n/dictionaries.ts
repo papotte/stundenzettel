@@ -1,3 +1,12 @@
+// After all recent changes, check for any keys that are no longer used in the codebase
+// and remove them to keep the dictionaries clean and maintainable.
+//
+// Steps to identify unused keys:
+// 1. Search for all t('key') calls in the codebase
+// 2. Compare with keys defined in dictionaries
+// 3. Remove any keys that are no longer referenced
+// 4. Test the app to ensure no missing key errors
+//
 export const dictionaries = {
   en: {
     appName: 'TimeWise Tracker',
@@ -10,15 +19,11 @@ export const dictionaries = {
       loginAs: 'Log in as {displayName}',
       signInTab: 'Sign In',
       signUpTab: 'Sign Up',
-      signInTitle: 'Sign In',
-      signInDescription: 'Enter your credentials to access your time tracker.',
       emailLabel: 'Email',
       emailPlaceholder: 'm@example.com',
       passwordLabel: 'Password',
       signInButton: 'Sign In',
       signingInButton: 'Signing In...',
-      signUpTitle: 'Sign Up',
-      signUpDescription: 'Create a new account to start tracking your time.',
       signUpButton: 'Sign Up',
       creatingAccountButton: 'Creating Account...',
       continueWith: 'Or continue with',
@@ -52,7 +57,7 @@ export const dictionaries = {
       summaryMonth: 'This Month',
       headerExportLink: 'Preview & Export',
       headerClearDataTooltip: 'Clear all data',
-      headerSettingsTooltip: 'Settings',
+      headerUserMenuTooltip: 'User Menu',
       headerSignOutTooltip: 'Sign Out',
       clearDataAlertTitle: 'Are you absolutely sure?',
       clearDataAlertDescription:
@@ -77,9 +82,6 @@ export const dictionaries = {
       deleteAlertCancel: 'Cancel',
       deleteAlertConfirm: 'Delete',
       pauseLabel: '{minutes}m pause',
-      travelLabel: '{hours}h travel',
-      driverLabel: 'Driver',
-      runningLabel: 'Now',
       drivingLabel: '{hours}h driving',
       passengerLabel: '{hours}h passenger',
     },
@@ -105,13 +107,8 @@ export const dictionaries = {
       pauseSuggestion: 'Suggest: {minutes} min',
       pauseSuggestionTooltip:
         'Activity over {hours}. Recommended pause: {minutes} mins.',
-      travelTimeLabel: 'Travel Time (hours)',
-      travelTimePlaceholder: 'e.g. 1.5',
-      driverLabel: 'Driver',
-      driverDescription: 'Were you the designated driver?',
       driverTimeLabel: 'Driving Time (as Driver)',
       passengerTimeLabel: 'Driving Time (as Passenger)',
-      passengerTimeTotalLabel: 'Time as Passenger',
       totalTimeLabel: 'Total Compensated Time:',
       warning10HoursTitle: 'Warning: Exceeds 10 Hours',
       warning10HoursDescription:
@@ -144,6 +141,7 @@ export const dictionaries = {
         'Please enter a valid duration in minutes. Minimum is 5 minutes.',
       compensatedInfo:
         'Compensated time = Worked time - Pause + Driver time × {driver}% + Passenger time × {passenger}%',
+      smartSuggestionTooltip: 'Smart suggestion based on your previous entries',
     },
     // Toasts
     toasts: {
@@ -175,47 +173,201 @@ export const dictionaries = {
     },
     // Settings Page
     settings: {
-      backButton: 'Back to Tracker',
-      title: 'User Settings',
-      description: 'Manage your personal application settings here.',
-      defaultWorkHoursLabel: 'Default daily work hours',
-      defaultWorkHoursDescription:
-        'Used for Sick Leave, PTO, and Bank Holiday entries.',
-      defaultStartTimeLabel: 'Default start time',
-      defaultEndTimeLabel: 'Default end time',
-      timeUsageDescription: 'Used for new time entries.',
-      defaultIsDriverLabel: 'Default to main driver',
-      defaultIsDriverDescription:
-        'If enabled, new entries will have "main driver" checked by default.',
-      languageLabel: 'Language',
-      languageEnglish: 'English',
-      languageGerman: 'German',
-      languageDescription: 'Choose the display language of the application.',
-      companyDetailsTitle: 'Company Details',
-      companyDetailsDescription:
-        'This information will be displayed on your exported timesheets.',
-      companyNameLabel: 'Company Name',
-      companyEmailLabel: 'Company Email',
-      companyPhone1Label: 'Phone Number 1',
-      companyPhone2Label: 'Phone Number 2',
-      companyFaxLabel: 'Fax Number',
-      saveButton: 'Save Settings',
+      backToTracker: 'Back to Tracker',
+      preferences: 'My Preferences',
+      preferencesDescription: 'Personal settings and display preferences',
+      company: 'Company',
+      companyDescription: 'Company information for exports',
+      security: 'Security',
+      securityDescription: 'Password and account management',
+      manageTeam: 'Manage Team',
+      manageTeamDescription: 'Team memberships and permissions',
+      teamManagementComingSoon: 'Team Management Coming Soon',
+      teamManagementFunctionalityWillBeAvailable:
+        'Team management functionality will be available in a future update.',
+      manageSubscription: 'Manage Subscription',
+      manageSubscriptionDescription: 'Billing and subscription settings',
       errorLoadingTitle: 'Error',
       errorLoadingDescription: 'Could not load your settings.',
       savedTitle: 'Settings Saved',
       savedDescription: 'Your new settings have been applied.',
       errorSavingTitle: 'Error',
       errorSavingDescription: 'Could not save your settings.',
-      displayNameLabel: 'Display Name',
+      displayName: 'Display Name',
+      displayNamePlaceholder: 'e.g. John Doe',
       displayNameDescription:
         'This name will appear on your export preview and Excel file. Leave blank to use your account name.',
-      displayNamePlaceholder: 'e.g. John Doe',
-      driverCompensationPercentLabel: 'Driver time compensation (%)',
+      language: 'Language',
+      languageEnglish: 'English',
+      languageGerman: 'German',
+      languageDescription: 'Choose the display language of the application.',
+      selectLanguage: 'Select language',
+      defaultWorkHours: 'Default daily work hours',
+      defaultWorkHoursDescription:
+        'Used for Sick Leave, PTO, and Bank Holiday entries.',
+      defaultStartTime: 'Default Start Time',
+      defaultStartTimeDescription: 'Default start time for new entries.',
+      defaultEndTime: 'Default End Time',
+      defaultEndTimeDescription: 'Default end time for new entries.',
+      companyName: 'Company Name',
+      companyNamePlaceholder: 'Your Company Name',
+      companyNameDescription: 'Company name for your exports.',
+      companyEmail: 'Company Email',
+      companyEmailPlaceholder: 'contact@company.com',
+      companyEmailDescription: 'Contact email for your company.',
+      companyPhone1: 'Phone Number 1',
+      companyPhone1Placeholder: '+1 234 567 890',
+      companyPhone2: 'Phone Number 2',
+      companyPhone2Placeholder: '+1 234 567 891',
+      companyFax: 'Fax Number',
+      companyFaxPlaceholder: '+1 234 567 892',
+      compensationSettings: 'Compensation Settings',
+      driverCompensationPercent: 'Driver time compensation (%)',
       driverCompensationPercentDescription:
         'Percentage of driving time as driver that is counted as compensated time.',
-      passengerCompensationPercentLabel: 'Passenger time compensation (%)',
+      passengerCompensationPercent: 'Passenger time compensation (%)',
       passengerCompensationPercentDescription:
         'Percentage of driving time as passenger that is counted as compensated time.',
+      // Security Section
+      accountEmail: 'Account Email',
+      password: 'Password',
+      passwordDescription: 'Change your account password',
+      dangerZone: 'Danger Zone',
+      dangerZoneDescription: 'Irreversible and destructive actions',
+      deleteAccount: 'Delete Account',
+      deleteAccountDescription: 'Permanently delete your account and all data',
+      deleteAccountConfirmTitle: 'Are you absolutely sure?',
+      deleteAccountConfirmDescription:
+        'This action cannot be undone. All your data will be permanently deleted.',
+      // Team page
+      noTeam: 'You are not part of any team yet.',
+      noTeamDescription:
+        'You are not part of any team yet. Create your team to start collaborating.',
+      teamMembers: '{count} members',
+      manageAllTeams: 'Manage All Teams',
+      createTeam: 'Create Team',
+      manage: 'Manage',
+      // Subscription page
+      noSubscription: 'No active subscription',
+      noSubscriptionDescription:
+        'Upgrade to a paid plan to unlock all features.',
+      unknownPlan: 'Unknown Plan',
+      unknownPlanDescription: 'Plan details not available',
+      changePlan: 'Change Plan',
+      active: 'Active',
+      trialing: 'Trial',
+      currentPlan: 'Current Plan',
+      nextBilling: 'Next billing date',
+      cancellationDate: 'Valid until',
+      manageBilling: 'Manage Billing',
+      upgrade: 'Upgrade',
+      errorPortalTitle: 'Portal Error',
+      errorPortalDescription:
+        'Failed to open billing portal. Please try again.',
+      // Trial-specific
+      trialStatus: 'Trial Status',
+      trialDaysRemaining: '{days} days remaining',
+      trialEndsToday: 'Trial ends today',
+      trialEndsOn: 'Trial ends on',
+      trialExpiringSoon: 'Trial Expiring Soon',
+      trialExpiringDescription:
+        'Your trial will end soon. Add a payment method to continue your subscription.',
+      addPaymentMethod: 'Add Payment Method',
+      viewPlans: 'View Plans',
+      // Common
+      saving: 'Saving...',
+      save: 'Save',
+      change: 'Change',
+      cancel: 'Cancel',
+    },
+    // Pricing Page
+    pricing: {
+      title: 'Choose Your Plan',
+      subtitle: 'Select the perfect plan for your time tracking needs',
+      loadingPlans: 'Loading plans...',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      save20: 'Save 20%',
+      perUserPerMonth: 'per user per month',
+      month: 'month',
+      year: 'year',
+      mostPopular: 'Most Popular',
+      getStarted: 'Get Started',
+      createTeam: 'Create Team',
+      processing: 'Processing...',
+      faqTitle: 'Frequently Asked Questions',
+      faq1Question: 'Can I cancel anytime?',
+      faq1Answer:
+        "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.",
+      faq2Question: 'What payment methods do you accept?',
+      faq2Answer:
+        'We accept all major credit cards and debit cards through our secure payment processor.',
+      faq3Question: 'Is there a free trial?',
+      faq3Answer:
+        'Yes, we offer a 14-day free trial for all plans. No credit card required to start.',
+      faq4Question: 'Can I change plans later?',
+      faq4Answer:
+        'Absolutely! You can upgrade or downgrade your plan at any time from your account settings.',
+      loginRequiredTitle: 'Login Required',
+      loginRequiredDescription: 'Please log in to subscribe to a plan.',
+      errorTitle: 'Payment Error',
+      errorDescription:
+        'There was an error processing your payment. Please try again.',
+      tryForFree: 'Try for Free',
+      freeTrial: 'Free Trial',
+      noCreditCard: 'No credit card required',
+    },
+    // Subscription Guard
+    subscription: {
+      checking: 'Checking subscription...',
+      loginRequiredTitle: 'Login Required',
+      loginRequiredDescription: 'Please log in to access this feature.',
+      loginButton: 'Log In',
+      requiredTitle: 'Subscription Required',
+      requiredDescription:
+        'You need an active subscription to access this feature.',
+      choosePlanButton: 'Choose a Plan',
+      manageSubscriptionButton: 'Manage Subscription',
+      // Trial-specific
+      trial: 'Trial',
+      trialBannerTitle: "You're currently on a free trial",
+      trialBannerDaysRemaining: '{days} days remaining',
+      trialBannerEndsToday: 'Trial ends today',
+      manageTrial: 'Manage Trial',
+    },
+    // Teams Page
+    teams: {
+      title: 'Team Management',
+      subtitle: 'Manage your teams and team members',
+      createTeam: 'Create Team',
+      noTeamsTitle: 'No Teams Yet',
+      noTeamsDescription:
+        'Create your first team to start collaborating with others.',
+      createFirstTeam: 'Create First Team',
+      yourTeams: 'Your Teams',
+      owner: 'Owner',
+      member: 'Member',
+      subscription: 'Subscription',
+      currentPeriod: 'Current period',
+      licensedUsers: 'Licensed users',
+      manageBilling: 'Manage Billing',
+      upgrade: 'Upgrade',
+      noSubscription: 'No active subscription',
+      getStarted: 'Get Started',
+      members: 'Members',
+      joined: 'Joined',
+      inviteMember: 'Invite Member',
+      manage: 'Manage',
+      errorLoadingTitle: 'Error Loading Teams',
+      errorLoadingDescription: 'Failed to load your teams. Please try again.',
+      errorPortalTitle: 'Portal Error',
+      errorPortalDescription:
+        'Failed to open billing portal. Please try again.',
+      roles: {
+        owner: 'Owner',
+        admin: 'Admin',
+        member: 'Member',
+      },
     },
     // Export Page
     export_page: {
@@ -240,21 +392,14 @@ export const dictionaries = {
       footerTotalPerWeek: 'Total per week:',
       footerTotalHours: 'Total hours:',
       footerTotalAfterConversion: 'Total after conversion:',
-      driverMark: 'D',
-      locationNotFound: 'Location not found',
       headerMileage: 'Mileage/Expenses',
       signatureLine: 'Signature:',
       noDataHint: 'No data available for export in this month.',
-      noDataTitle: 'No data to export',
-      noDataDescription:
-        'There are no entries for the selected month. Please add entries before exporting.',
     },
     // Bottom Navigation
     bottomNav: {
       home: 'Home',
       export: 'Preview & Export',
-      settings: 'Settings',
-      signOut: 'Sign Out',
     },
     topNav: {
       features: 'Features',
@@ -305,26 +450,6 @@ export const dictionaries = {
         headerTitle: 'Simple, Transparent Pricing',
         headerDescription:
           'One plan that includes everything you need. No tiers, no add-ons, no surprises.',
-        planTitle: 'Pro Plan',
-        planDescription:
-          'Everything you need to accurately track time for you and your team, generate reports, and stay organized.',
-        whatsIncluded: 'What’s included',
-        includedFeatures: [
-          'Live Time Tracking',
-          'Manual Time Entries',
-          'Special Entries (Sick, PTO, etc.)',
-          'Location & Travel Tracking',
-          'Excel & PDF Exports',
-          'Multi-language Support (EN/DE)',
-          'Unlimited Entries',
-          'Secure Cloud Storage',
-        ],
-        payPerUser: 'Pay per user, per month',
-        price: '10€',
-        priceCurrency: 'EUR',
-        getAccess: 'Get access',
-        footnote:
-          'Invoices and receipts available for easy company reimbursement.',
       },
       faqTitle: 'Frequently Asked Questions',
       faqs: [
@@ -354,7 +479,6 @@ export const dictionaries = {
         terms: 'Terms of Service',
         privacy: 'Privacy',
         imprint: 'Imprint',
-        cookiePolicy: 'Cookie Policy',
       },
     },
   },
@@ -369,17 +493,11 @@ export const dictionaries = {
       loginAs: 'Als {displayName} anmelden',
       signInTab: 'Anmelden',
       signUpTab: 'Registrieren',
-      signInTitle: 'Anmelden',
-      signInDescription:
-        'Geben Sie Ihre Anmeldedaten ein, um auf Ihre Zeiterfassung zuzugreifen.',
       emailLabel: 'E-Mail',
       emailPlaceholder: 'm@beispiel.com',
       passwordLabel: 'Passwort',
       signInButton: 'Anmelden',
       signingInButton: 'Anmeldung läuft...',
-      signUpTitle: 'Registrieren',
-      signUpDescription:
-        'Erstellen Sie ein neues Konto, um mit der Zeiterfassung zu beginnen.',
       signUpButton: 'Registrieren',
       creatingAccountButton: 'Konto wird erstellt...',
       continueWith: 'Oder weiter mit',
@@ -413,7 +531,7 @@ export const dictionaries = {
       summaryMonth: 'Dieser Monat',
       headerExportLink: 'Vorschau & Export',
       headerClearDataTooltip: 'Alle Daten löschen',
-      headerSettingsTooltip: 'Einstellungen',
+      headerUserMenuTooltip: 'Benutzermenü',
       headerSignOutTooltip: 'Abmelden',
       clearDataAlertTitle: 'Sind Sie absolut sicher?',
       clearDataAlertDescription:
@@ -438,14 +556,6 @@ export const dictionaries = {
       deleteAlertCancel: 'Abbrechen',
       deleteAlertConfirm: 'Löschen',
       pauseLabel: '{minutes}m Pause',
-      pauseDurationLabel: 'Pausendauer (HH:mm)',
-      pauseDurationDescription:
-        'Geben Sie die Gesamtdauer Ihrer Pause im Format HH:mm ein (z.B. {example} für 30 Minuten).',
-      pauseDurationInvalid:
-        'Bitte geben Sie eine gültige Dauer im Format HH:mm ein (z.B. {example}).',
-      travelLabel: '{hours} Std. Fahrt',
-      driverLabel: 'Fahrer',
-      runningLabel: 'Jetzt',
       drivingLabel: '{hours} Std. Fahrer',
       passengerLabel: '{hours} Std. Beifahrer',
     },
@@ -472,13 +582,8 @@ export const dictionaries = {
       pauseSuggestion: 'Vorschlag: {minutes} Min.',
       pauseSuggestionTooltip:
         'Aktivität über {hours}. Empfohlene Pause: {minutes} Min.',
-      travelTimeLabel: 'Fahrtzeit (Stunden)',
-      travelTimePlaceholder: 'z.B. 1,5',
-      driverLabel: 'Fahrer',
-      driverDescription: 'Waren Sie der designierte Fahrer?',
       driverTimeLabel: 'Fahrzeit (als Fahrer)',
       passengerTimeLabel: 'Fahrzeit (als Beifahrer)',
-      passengerTimeTotalLabel: 'Zeit als Beifahrer',
       totalTimeLabel: 'Vergütete Gesamtzeit:',
       warning10HoursTitle: 'Warnung: 10 Stunden überschritten',
       warning10HoursDescription:
@@ -513,6 +618,8 @@ export const dictionaries = {
         'Bitte geben Sie eine gültige Dauer in Minuten ein. Mindestdauer ist 5 Minuten.',
       compensatedInfo:
         'Vergütete Zeit = Arbeitszeit - Pause + Fahrerzeit × {driver}% + Beifahrerzeit × {passenger}%',
+      smartSuggestionTooltip:
+        'Intelligente Vorschläge basierend auf Ihren vorherigen Einträgen',
     },
     // Toasts
     toasts: {
@@ -548,32 +655,21 @@ export const dictionaries = {
     },
     // Settings Page
     settings: {
-      backButton: 'Zurück zur Übersicht',
-      title: 'Benutzereinstellungen',
-      description:
-        'Verwalten Sie hier Ihre persönlichen Anwendungseinstellungen.',
-      defaultWorkHoursLabel: 'Tägliche Standardarbeitszeit',
-      defaultWorkHoursDescription:
-        'Wird für Krankheits-, Urlaubs- und Feiertagseinträge verwendet.',
-      defaultStartTimeLabel: 'Standard-Startzeit',
-      defaultEndTimeLabel: 'Standard-Endzeit',
-      timeUsageDescription: 'Wird für neue Zeiteinträge verwendet.',
-      defaultIsDriverLabel: 'Standardmäßig als Fahrer',
-      defaultIsDriverDescription:
-        'Wenn aktiviert, ist "Fahrer" bei neuen Einträgen standardmäßig ausgewählt.',
-      languageLabel: 'Sprache',
-      languageEnglish: 'Englisch',
-      languageGerman: 'Deutsch',
-      languageDescription: 'Wählen Sie die Anzeigesprache der Anwendung.',
-      companyDetailsTitle: 'Firmendetails',
-      companyDetailsDescription:
-        'Diese Informationen werden auf Ihren exportierten Stundenzetteln angezeigt.',
-      companyNameLabel: 'Firmenname',
-      companyEmailLabel: 'Firmen-E-Mail',
-      companyPhone1Label: 'Telefonnummer 1',
-      companyPhone2Label: 'Telefonnummer 2',
-      companyFaxLabel: 'Faxnummer',
-      saveButton: 'Einstellungen speichern',
+      backToTracker: 'Zurück zur Übersicht',
+      preferences: 'Meine Einstellungen',
+      preferencesDescription:
+        'Persönliche Einstellungen und Anzeigepräferenzen',
+      company: 'Firma',
+      companyDescription: 'Firmeninformationen für Exporte',
+      security: 'Sicherheit',
+      securityDescription: 'Passwort- und Kontoverwaltung',
+      manageTeam: 'Team verwalten',
+      manageTeamDescription: 'Teammitgliedschaften und Berechtigungen',
+      teamManagementComingSoon: 'Team-Verwaltung kommt bald',
+      teamManagementFunctionalityWillBeAvailable:
+        'Die Team-Verwaltungsfunktionalität wird in einem zukünftigen Update verfügbar sein.',
+      manageSubscription: 'Abonnement verwalten',
+      manageSubscriptionDescription: 'Abrechnung und Abonnementeinstellungen',
       errorLoadingTitle: 'Fehler',
       errorLoadingDescription:
         'Ihre Einstellungen konnten nicht geladen werden.',
@@ -582,16 +678,166 @@ export const dictionaries = {
       errorSavingTitle: 'Fehler',
       errorSavingDescription:
         'Ihre Einstellungen konnten nicht gespeichert werden.',
-      displayNameLabel: 'Anzeigename',
+      displayName: 'Anzeigename',
+      displayNamePlaceholder: 'z.B. Max Mustermann',
       displayNameDescription:
         'Dieser Name erscheint in der Export-Vorschau und in der Excel-Datei. Leer lassen, um den Kontonamen zu verwenden.',
-      displayNamePlaceholder: 'z.B. Max Mustermann',
-      driverCompensationPercentLabel: 'Vergütung Fahrerzeit (%)',
+      language: 'Sprache',
+      languageEnglish: 'Englisch',
+      languageGerman: 'Deutsch',
+      languageDescription: 'Wählen Sie die Anzeigesprache der Anwendung.',
+      selectLanguage: 'Sprache auswählen',
+      defaultWorkHours: 'Tägliche Standardarbeitszeit',
+      defaultWorkHoursDescription:
+        'Wird für Krankheits-, Urlaubs- und Feiertagseinträge verwendet.',
+      defaultStartTime: 'Standard-Startzeit',
+      defaultStartTimeDescription: 'Standard-Startzeit für neue Einträge.',
+      defaultEndTime: 'Standard-Endzeit',
+      defaultEndTimeDescription: 'Standard-Endzeit für neue Einträge.',
+      companyName: 'Firmenname',
+      companyNamePlaceholder: 'Ihr Firmenname',
+      companyNameDescription: 'Firmenname für Ihre Exporte.',
+      companyEmail: 'Firmen-E-Mail',
+      companyEmailPlaceholder: 'kontakt@firma.com',
+      companyEmailDescription: 'Kontakt-E-Mail für Ihre Firma.',
+      companyPhone1: 'Telefonnummer 1',
+      companyPhone1Placeholder: '+49 123 456 789',
+      companyPhone2: 'Telefonnummer 2',
+      companyPhone2Placeholder: '+49 123 456 790',
+      companyFax: 'Faxnummer',
+      companyFaxPlaceholder: '+49 123 456 791',
+      compensationSettings: 'Vergütungseinstellungen',
+      driverCompensationPercent: 'Vergütung Fahrerzeit (%)',
       driverCompensationPercentDescription:
         'Prozentsatz der Fahrerzeit, der als vergütete Zeit angerechnet wird.',
-      passengerCompensationPercentLabel: 'Vergütung Beifahrerzeit (%)',
+      passengerCompensationPercent: 'Vergütung Beifahrerzeit (%)',
       passengerCompensationPercentDescription:
         'Prozentsatz der Beifahrerzeit, der als vergütete Zeit angerechnet wird.',
+      // Security Section
+      accountEmail: 'Konto-E-Mail',
+      password: 'Passwort',
+      passwordDescription: 'Ändern Sie Ihr Kontopasswort',
+      dangerZone: 'Gefahrenbereich',
+      dangerZoneDescription: 'Unumkehrbare und zerstörerische Aktionen',
+      deleteAccount: 'Konto löschen',
+      deleteAccountDescription: 'Ihr Konto und alle Daten dauerhaft löschen',
+      deleteAccountConfirmTitle: 'Sind Sie sich absolut sicher?',
+      deleteAccountConfirmDescription:
+        'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
+      // Team page
+      noTeam: 'Sie sind noch nicht Teil eines Teams.',
+      noTeamDescription:
+        'Sie sind noch nicht Teil eines Teams. Erstellen Sie Ihr Team, um mit anderen zusammenzuarbeiten',
+      teamMembers: '{count} Mitglieder',
+      manageAllTeams: 'Alle Teams verwalten',
+      createTeam: 'Team erstellen',
+      manage: 'Verwalten',
+      // Subscription page
+      noSubscription: 'Kein aktives Abonnement',
+      noSubscriptionDescription:
+        'Upgraden Sie zu einem kostenpflichtigen Tarif, um alle Funktionen freizuschalten.',
+      unknownPlan: 'Unbekannter Tarif',
+      unknownPlanDescription: 'Tarifdetails nicht verfügbar',
+      changePlan: 'Tarif ändern',
+      active: 'Aktiv',
+      trialing: 'Testphase',
+      currentPlan: 'Aktueller Tarif',
+      nextBilling: 'Nächster Abrechnungstermin',
+      cancellationDate: 'Gültig bis',
+      manageBilling: 'Abrechnung verwalten',
+      upgrade: 'Upgrade',
+      errorPortalTitle: 'Portal-Fehler',
+      errorPortalDescription:
+        'Das Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.',
+      // Trial-specific
+      trialStatus: 'Test-Status',
+      trialDaysRemaining: '{days} Tage verbleibend',
+      trialEndsToday: 'Testphase endet heute',
+      trialEndsOn: 'Testphase endet am',
+      trialExpiringSoon: 'Testphase läuft bald ab',
+      trialExpiringDescription:
+        'Ihre Testphase endet bald. Fügen Sie eine Zahlungsmethode hinzu, um Ihr Abonnement fortzusetzen.',
+      addPaymentMethod: 'Zahlungsmethode hinzufügen',
+      viewPlans: 'Tarife anzeigen',
+      // Common
+      saving: 'Wird gespeichert...',
+      save: 'Speichern',
+      change: 'Ändern',
+      cancel: 'Abbrechen',
+    },
+    // Teams Page
+    teams: {
+      title: 'Team-Verwaltung',
+      subtitle: 'Verwalten Sie Ihre Teams und Teammitglieder',
+      createTeam: 'Team erstellen',
+      noTeamsTitle: 'Noch keine Teams',
+      noTeamsDescription:
+        'Erstellen Sie Ihr erstes Team, um mit anderen zusammenzuarbeiten.',
+      createFirstTeam: 'Erstes Team erstellen',
+      yourTeams: 'Ihre Teams',
+      owner: 'Besitzer',
+      member: 'Mitglied',
+      subscription: 'Abonnement',
+      currentPeriod: 'Aktueller Zeitraum',
+      licensedUsers: 'Lizenzierte Nutzer',
+      manageBilling: 'Abrechnung verwalten',
+      upgrade: 'Upgrade',
+      noSubscription: 'Kein aktives Abonnement',
+      getStarted: 'Jetzt starten',
+      members: 'Mitglieder',
+      joined: 'Beigetreten',
+      inviteMember: 'Mitglied einladen',
+      manage: 'Verwalten',
+      errorLoadingTitle: 'Fehler beim Laden der Teams',
+      errorLoadingDescription:
+        'Ihre Teams konnten nicht geladen werden. Bitte versuchen Sie es erneut.',
+      errorPortalTitle: 'Portal-Fehler',
+      errorPortalDescription:
+        'Das Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.',
+      roles: {
+        owner: 'Besitzer',
+        admin: 'Administrator',
+        member: 'Mitglied',
+      },
+    },
+    // Pricing Page
+    pricing: {
+      title: 'Wählen Sie Ihren Tarif',
+      subtitle:
+        'Wählen Sie den perfekten Tarif für Ihre Zeiterfassungsbedürfnisse',
+      loadingPlans: 'Tarife werden geladen...',
+      monthly: 'Monatlich',
+      yearly: 'Jährlich',
+      save20: '20% sparen',
+      perUserPerMonth: 'pro Nutzer pro Monat',
+      month: 'Monat',
+      year: 'Jahr',
+      mostPopular: 'Am beliebtesten',
+      getStarted: 'Jetzt starten',
+      createTeam: 'Team erstellen',
+      processing: 'Wird verarbeitet...',
+      faqTitle: 'Häufig gestellte Fragen',
+      faq1Question: 'Kann ich jederzeit kündigen?',
+      faq1Answer:
+        'Ja, Sie können Ihr Abonnement jederzeit kündigen. Sie haben weiterhin Zugang bis zum Ende Ihres Abrechnungszeitraums.',
+      faq2Question: 'Welche Zahlungsmethoden akzeptieren Sie?',
+      faq2Answer:
+        'Wir akzeptieren alle gängigen Kredit- und Debitkarten über unseren sicheren Zahlungsabwickler.',
+      faq3Question: 'Gibt es eine kostenlose Testphase?',
+      faq3Answer:
+        'Ja, wir bieten eine 14-tägige kostenlose Testphase für alle Tarife. Keine Kreditkarte erforderlich.',
+      faq4Question: 'Kann ich später den Tarif wechseln?',
+      faq4Answer:
+        'Absolut! Sie können Ihren Tarif jederzeit in Ihren Kontoeinstellungen upgraden oder downgraden.',
+      loginRequiredTitle: 'Anmeldung erforderlich',
+      loginRequiredDescription:
+        'Bitte melden Sie sich an, um einen Tarif zu abonnieren.',
+      errorTitle: 'Zahlungsfehler',
+      errorDescription:
+        'Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.',
+      tryForFree: 'Kostenlos testen',
+      freeTrial: 'Kostenlose Testphase',
+      noCreditCard: 'Keine Kreditkarte erforderlich',
     },
     // Export Page
     export_page: {
@@ -615,22 +861,15 @@ export const dictionaries = {
       headerTo: 'bis',
       footerTotalPerWeek: 'Gesamt pro Woche:',
       footerTotalHours: 'Stunden insgesamt:',
-      footerTotalAfterConversion: 'Gesamtstd. nach Umr.:',
-      driverMark: 'F',
-      locationNotFound: 'Ort nicht gefunden',
+      footerTotalAfterConversion: 'Gesamt nach Umrechnung:',
       headerMileage: 'km eig. PKW/Verpfl.',
       signatureLine: 'Unterschrift:',
       noDataHint: 'Keine Daten für den Export in diesem Monat verfügbar.',
-      noDataTitle: 'Keine Daten zum Exportieren',
-      noDataDescription:
-        'Für den ausgewählten Monat sind keine Einträge vorhanden. Bitte fügen Sie Einträge hinzu, bevor Sie exportieren.',
     },
     // Bottom Navigation
     bottomNav: {
       home: 'Übersicht',
       export: 'Vorschau & Export',
-      settings: 'Einstellungen',
-      signOut: 'Abmelden',
     },
     topNav: {
       features: 'Funktionen',
@@ -681,26 +920,6 @@ export const dictionaries = {
         headerTitle: 'Einfache, transparente Preise',
         headerDescription:
           'Ein Tarif, der alles enthält, was Sie brauchen. Keine Stufen, keine Zusatzpakete, keine Überraschungen.',
-        planTitle: 'Pro-Tarif',
-        planDescription:
-          'Alles, was Sie für eine präzise Zeiterfassung, Berichte und Organisation für sich und Ihr Team benötigen.',
-        whatsIncluded: 'Das ist enthalten',
-        includedFeatures: [
-          'Live-Zeiterfassung',
-          'Manuelle Zeiteinträge',
-          'Spezielle Einträge (Krank, Urlaub, etc.)',
-          'Standort- & Reisezeiterfassung',
-          'Excel- & PDF-Exporte',
-          'Mehrsprachigkeit (DE/EN)',
-          'Unbegrenzte Einträge',
-          'Sichere Cloud-Speicherung',
-        ],
-        payPerUser: 'Preis pro Nutzer und Monat',
-        price: '10€',
-        priceCurrency: 'EUR',
-        getAccess: 'Zugang erhalten',
-        footnote:
-          'Rechnungen und Quittungen für eine einfache Firmenabrechnung verfügbar.',
       },
       faqTitle: 'Häufig gestellte Fragen',
       faqs: [
@@ -731,8 +950,26 @@ export const dictionaries = {
         terms: 'Nutzungsbedingungen',
         privacy: 'Datenschutz',
         imprint: 'Impressum',
-        cookiePolicy: 'Cookie-Richtlinie',
       },
+    },
+    // Subscription Guard
+    subscription: {
+      checking: 'Abonnement wird überprüft...',
+      loginRequiredTitle: 'Anmeldung erforderlich',
+      loginRequiredDescription:
+        'Bitte melden Sie sich an, um auf diese Funktion zuzugreifen.',
+      loginButton: 'Anmelden',
+      requiredTitle: 'Abonnement erforderlich',
+      requiredDescription:
+        'Sie benötigen ein aktives Abonnement, um auf diese Funktion zuzugreifen.',
+      choosePlanButton: 'Tarif wählen',
+      manageSubscriptionButton: 'Abonnement verwalten',
+      // Trial-specific
+      trial: 'Testphase',
+      trialBannerTitle: 'Sie befinden sich in einer kostenlosen Testphase',
+      trialBannerDaysRemaining: '{days} Tage verbleibend',
+      trialBannerEndsToday: 'Testphase endet heute',
+      manageTrial: 'Testphase verwalten',
     },
   },
 }

@@ -3,6 +3,8 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { createMockAuthContext } from '@/test-utils/auth-mocks'
+
 import LoginPage from '../page'
 
 // --- MOCKS ---
@@ -11,6 +13,7 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 // This mock is crucial. It prevents the real firebase.ts from running and
@@ -40,10 +43,12 @@ jest.mock('firebase/auth', () => ({
 }))
 
 const mockLoginAsMockUser = jest.fn()
+// Use centralized auth mock
+const mockAuthContext = createMockAuthContext({
+  loginAsMockUser: mockLoginAsMockUser,
+})
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({
-    loginAsMockUser: mockLoginAsMockUser,
-  }),
+  useAuth: () => mockAuthContext,
 }))
 
 const mockToast = jest.fn()
@@ -198,12 +203,14 @@ describe('LoginPage', () => {
 
       await user.click(screen.getByTestId('login-as-Max Mustermann'))
 
-      expect(mockLoginAsMockUser).toHaveBeenCalledWith({
-        uid: 'mock-user-2',
-        email: 'user2@example.com',
-        displayName: 'Max Mustermann',
+      await waitFor(() => {
+        expect(mockLoginAsMockUser).toHaveBeenCalledWith({
+          uid: 'mock-user-2',
+          displayName: 'Max Mustermann',
+          email: 'user2@example.com',
+        })
+        expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
-      expect(mockPush).toHaveBeenCalledWith('/tracker')
     })
   })
 })

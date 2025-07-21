@@ -4,6 +4,9 @@ import { Slot } from '@radix-ui/react-slot'
 
 import { type VariantProps, cva } from 'class-variance-authority'
 
+import { ProBadge } from '@/components/ui/badge'
+import { useAuth } from '@/hooks/use-auth'
+import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
@@ -54,5 +57,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   },
 )
 Button.displayName = 'Button'
+
+// Button that is only enabled for subscribed users, shows ProBadge if not
+export function SubscriptionGuardButton({ children, ...props }: ButtonProps) {
+  const { user } = useAuth()
+  const { hasValidSubscription, loading } = useSubscriptionStatus(user)
+
+  // While loading, disable button
+  const disabled =
+    loading ||
+    hasValidSubscription === null ||
+    !hasValidSubscription ||
+    props.disabled
+
+  return (
+    <Button {...props} disabled={disabled}>
+      {children}
+      {!hasValidSubscription && <ProBadge className="ml-2" />}
+    </Button>
+  )
+}
 
 export { Button, buttonVariants }

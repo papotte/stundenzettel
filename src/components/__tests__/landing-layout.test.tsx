@@ -41,7 +41,7 @@ describe('LandingLayout', () => {
       screen.getAllByTestId('language-switcher').length,
     ).toBeGreaterThanOrEqual(1)
     // Login button
-    expect(screen.getByTestId('login-link')).toBeInTheDocument()
+    expect(screen.getByTestId('login-link')).toBeVisible()
     // Footer
     expect(screen.getByTestId('footer')).toBeInTheDocument()
     // Main content

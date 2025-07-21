@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react'
 
 import ExportPage from '@/app/(app)/export/page'
 import { TimeTrackerProviderProps } from '@/context/time-tracker-context'
-import { useAuth } from '@/hooks/use-auth'
+import { authScenarios } from '@/test-utils/auth-mocks'
 
 // Mocks
 const mockReplace = jest.fn()
@@ -34,8 +34,11 @@ jest.mock('@/context/time-tracker-context', () => ({
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: jest.fn() }),
 }))
+
+// Use centralized auth mock
+const mockAuthContext = authScenarios.unauthenticated()
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: jest.fn(),
+  useAuth: () => mockAuthContext,
 }))
 
 describe('ExportPage', () => {
@@ -44,28 +47,19 @@ describe('ExportPage', () => {
   })
 
   it('redirects to login if not authenticated', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({
-      user: null,
-      loading: false,
-    })
+    Object.assign(mockAuthContext, authScenarios.unauthenticated())
     render(<ExportPage />)
-    expect(mockReplace).toHaveBeenCalledWith('/login')
+    expect(mockReplace).toHaveBeenCalledWith('/login?returnUrl=/export')
   })
 
   it('renders nothing if loading', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({
-      user: null,
-      loading: true,
-    })
+    Object.assign(mockAuthContext, authScenarios.loading())
     const { container } = render(<ExportPage />)
     expect(container).toBeEmptyDOMElement()
   })
 
   it('renders ExportPreview and back button if authenticated', () => {
-    ;(useAuth as jest.Mock).mockReturnValue({
-      user: { uid: '123' },
-      loading: false,
-    })
+    Object.assign(mockAuthContext, authScenarios.authenticated({ uid: '123' }))
     render(<ExportPage />)
     expect(screen.getByTestId('export-preview')).toBeInTheDocument()
     expect(screen.getByTestId('time-tracker-provider')).toBeInTheDocument()

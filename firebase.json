@@ -4,6 +4,15 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "emulators": {
+    "functions": {
+      "port": 9001
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
+  },
   "apphosting": [
     {
       "backendId": "stundenzettel-react",
@@ -16,6 +25,19 @@
         "functions"
       ],
       "alwaysDeployFromSource": true
+    }
+  ],
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
     }
   ]
 }
