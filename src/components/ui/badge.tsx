@@ -16,6 +16,7 @@ const badgeVariants = cva(
         destructive:
           'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
         outline: 'text-foreground',
+        pro: 'border-transparent bg-green-600 text-white', // pro badge variant
       },
     },
     defaultVariants: {
@@ -34,4 +35,13 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   )
 }
 
-export { Badge, badgeVariants }
+// A ready-to-use Pro badge for subscription features
+function ProBadge(props: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <Badge variant="pro" {...props}>
+      PRO
+    </Badge>
+  )
+}
+
+export { Badge, badgeVariants, ProBadge }
