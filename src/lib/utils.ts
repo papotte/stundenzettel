@@ -127,8 +127,12 @@ export function formatCurrency(
   currency: string,
   locale: string = 'en',
 ) {
-  if (locale === 'en' && typeof window !== 'undefined' && window.navigator.language) {
-    locale = window.navigator.language;
+  if (
+    locale === 'en' &&
+    typeof window !== 'undefined' &&
+    window.navigator.language
+  ) {
+    locale = window.navigator.language
   }
   return new Intl.NumberFormat(locale, {
     style: 'currency',

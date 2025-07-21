@@ -13,10 +13,9 @@ jest.mock('stripe', () => {
 
 setupStripeEnv()
 
-
 describe('getStripeProducts', () => {
   // Get the mocked instance for test assertions
-  const mockStripeInstance = getMockStripeInstance();
+  const mockStripeInstance = getMockStripeInstance()
   beforeEach(() => {
     jest.clearAllMocks()
   })
