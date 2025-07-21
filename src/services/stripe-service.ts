@@ -1,4 +1,5 @@
 import type { PricingPlan } from '@/lib/types'
+import { formatCurrency } from '@/lib/utils'
 
 interface StripeProduct {
   id: string
@@ -170,9 +171,9 @@ export class StripeService {
       const firstTier = tiers[0]
       const lastTier = tiers[tiers.length - 1]
 
-      let displayText = `Starting at ${firstTier.price}${firstTier.currency}`
+      let displayText = `Starting at ${formatCurrency(firstTier.price, firstTier.currency)}`
       if (firstTier.price !== lastTier.price) {
-        displayText += `, up to ${lastTier.price}${lastTier.currency}`
+        displayText += `, up to ${formatCurrency(lastTier.price, lastTier.currency)}`
       }
 
       return {
@@ -196,9 +197,9 @@ export class StripeService {
     const firstPrice = tiers[0]
     const lastPrice = tiers[tiers.length - 1]
 
-    let displayText = `Starting at ${firstPrice.price}${firstPrice.currency}`
+    let displayText = `Starting at ${formatCurrency(firstPrice.price, firstPrice.currency)}`
     if (firstPrice.price !== lastPrice.price) {
-      displayText += `, up to ${lastPrice.price}${lastPrice.currency}`
+      displayText += `, up to ${formatCurrency(lastPrice.price, lastPrice.currency)}`
     }
 
     return {

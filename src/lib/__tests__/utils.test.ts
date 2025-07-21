@@ -4,6 +4,7 @@ import {
   formatAppDate,
   formatAppNumber,
   formatAppTime,
+  formatCurrency,
   formatDecimalHours,
   formatDuration,
   formatHoursAndMinutes,
@@ -89,6 +90,28 @@ describe('utils', () => {
     })
     it('should format number with custom options', () => {
       expect(formatAppNumber(0.5, 'en', { style: 'percent' })).toBe('50%')
+    })
+  })
+
+  describe('formatCurrency', () => {
+    it('should format EUR in en locale', () => {
+      expect(formatCurrency(1234.56, 'EUR', 'en')).toBe('€1,234.56')
+    })
+    it('should format USD in en locale', () => {
+      expect(formatCurrency(1234.56, 'USD', 'en')).toBe('$1,234.56')
+    })
+    it('should format EUR in de locale', () => {
+      expect(formatCurrency(1234.56, 'EUR', 'de')).toBe('1.234,56 €')
+    })
+    it('should format JPY in en locale (no decimals)', () => {
+      expect(formatCurrency(1234, 'JPY', 'en')).toBe('¥1,234')
+    })
+    it('should handle zero and negative values', () => {
+      expect(formatCurrency(0, 'USD', 'en')).toBe('$0')
+      expect(formatCurrency(-99.99, 'USD', 'en')).toBe('-$99.99')
+    })
+    it('should default to en locale if not provided', () => {
+      expect(formatCurrency(100, 'USD')).toBe('$100')
     })
   })
 

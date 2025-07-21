@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/card'
 import { useTranslation } from '@/context/i18n-context'
 import type { PricingPlan } from '@/lib/types'
+import { formatCurrency } from '@/lib/utils'
 
 interface PricingCardProps {
   plan: PricingPlan
@@ -31,7 +32,7 @@ export default function PricingCard({
   onSubscribe,
   onTeamSubscribe,
 }: PricingCardProps) {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const renderFeatureIcon = (feature: string) => {
     if (feature.includes('support')) return <Star className="h-4 w-4" />
@@ -68,9 +69,12 @@ export default function PricingCard({
             <div className="text-center">
               <div className="text-sm text-gray-600 mb-1">Starting at</div>
               <div className="text-3xl font-bold text-gray-900">
-                €
-                {Math.min(
-                  ...plan.tieredPricing.tiers.map((tier) => tier.price),
+                {formatCurrency(
+                  Math.min(
+                    ...plan.tieredPricing.tiers.map((tier) => tier.price),
+                  ),
+                  plan.tieredPricing.tiers[0].currency,
+                  language,
                 )}
               </div>
               <div className="text-sm text-gray-600 mt-1">
@@ -83,7 +87,7 @@ export default function PricingCard({
           ) : (
             <>
               <span className="text-4xl font-bold text-gray-900">
-                €{plan.price}
+                {formatCurrency(plan.price, plan.currency, language)}
               </span>
               <span className="text-gray-600 ml-1">
                 /

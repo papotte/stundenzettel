@@ -1,5 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { useSubscriptionStatus, __clearSubscriptionCacheForTests } from '../use-subscription-status'
+
+import { subscriptionService } from '@/services/subscription-service'
+
+import {
+  __clearSubscriptionCacheForTests,
+  useSubscriptionStatus,
+} from '../use-subscription-status'
 
 // Mock the subscription service
 jest.mock('@/services/subscription-service', () => ({
@@ -7,7 +13,6 @@ jest.mock('@/services/subscription-service', () => ({
     getUserSubscription: jest.fn(),
   },
 }))
-import { subscriptionService } from '@/services/subscription-service'
 
 describe('useSubscriptionStatus', () => {
   const testUser = { uid: 'user123' }
@@ -37,17 +42,23 @@ describe('useSubscriptionStatus', () => {
   })
 
   it('calls getUserSubscription and returns true for active subscription', async () => {
-    (subscriptionService.getUserSubscription as jest.Mock).mockResolvedValueOnce(validSub)
+    ;(
+      subscriptionService.getUserSubscription as jest.Mock
+    ).mockResolvedValueOnce(validSub)
     const { result } = renderHook(() => useSubscriptionStatus(testUser))
     expect(result.current.loading).toBe(true)
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.hasValidSubscription).toBe(true)
     expect(result.current.subscription).toEqual(validSub)
-    expect(subscriptionService.getUserSubscription).toHaveBeenCalledWith('user123')
+    expect(subscriptionService.getUserSubscription).toHaveBeenCalledWith(
+      'user123',
+    )
   })
 
   it('returns true for trialing subscription', async () => {
-    (subscriptionService.getUserSubscription as jest.Mock).mockResolvedValueOnce(trialSub)
+    ;(
+      subscriptionService.getUserSubscription as jest.Mock
+    ).mockResolvedValueOnce(trialSub)
     const { result } = renderHook(() => useSubscriptionStatus(testUser))
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.hasValidSubscription).toBe(true)
@@ -55,7 +66,9 @@ describe('useSubscriptionStatus', () => {
   })
 
   it('returns false for invalid subscription', async () => {
-    (subscriptionService.getUserSubscription as jest.Mock).mockResolvedValueOnce(invalidSub)
+    ;(
+      subscriptionService.getUserSubscription as jest.Mock
+    ).mockResolvedValueOnce(invalidSub)
     const { result } = renderHook(() => useSubscriptionStatus(testUser))
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.hasValidSubscription).toBe(false)
@@ -63,10 +76,12 @@ describe('useSubscriptionStatus', () => {
   })
 
   it('returns cached value for the same user and does not call API again', async () => {
-    (subscriptionService.getUserSubscription as jest.Mock).mockResolvedValueOnce(validSub)
+    ;(
+      subscriptionService.getUserSubscription as jest.Mock
+    ).mockResolvedValueOnce(validSub)
     const { result, rerender } = renderHook(
       ({ user }) => useSubscriptionStatus(user),
-      { initialProps: { user: testUser } }
+      { initialProps: { user: testUser } },
     )
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.hasValidSubscription).toBe(true)
@@ -78,7 +93,9 @@ describe('useSubscriptionStatus', () => {
   })
 
   it('handles API errors gracefully', async () => {
-    (subscriptionService.getUserSubscription as jest.Mock).mockRejectedValueOnce(new Error('API error'))
+    ;(
+      subscriptionService.getUserSubscription as jest.Mock
+    ).mockRejectedValueOnce(new Error('API error'))
     const { result } = renderHook(() => useSubscriptionStatus(testUser))
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.hasValidSubscription).toBe(false)
