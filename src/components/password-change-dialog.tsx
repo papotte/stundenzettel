@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
@@ -161,32 +162,17 @@ export default function PasswordChangeDialog({
                 <FormItem>
                   <FormLabel>{t('settings.currentPasswordLabel')}</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        {...field}
-                        type={showCurrentPassword ? 'text' : 'password'}
-                        placeholder={t('settings.currentPasswordPlaceholder')}
-                        disabled={isUpdating}
-                        data-testid="current-password-input"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() =>
-                          setShowCurrentPassword(!showCurrentPassword)
-                        }
-                        disabled={isUpdating}
-                        data-testid="toggle-current-password"
-                      >
-                        {showCurrentPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                    <PasswordInput
+                      field={field}
+                      placeholder={t('settings.currentPasswordPlaceholder')}
+                      disabled={isUpdating}
+                      showPassword={showCurrentPassword}
+                      onToggleVisibility={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                      data-testid="current-password-input"
+                      toggleTestId="toggle-current-password"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -200,30 +186,15 @@ export default function PasswordChangeDialog({
                 <FormItem>
                   <FormLabel>{t('settings.newPasswordLabel')}</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        {...field}
-                        type={showNewPassword ? 'text' : 'password'}
-                        placeholder={t('settings.newPasswordPlaceholder')}
-                        disabled={isUpdating}
-                        data-testid="new-password-input"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        disabled={isUpdating}
-                        data-testid="toggle-new-password"
-                      >
-                        {showNewPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                    <PasswordInput
+                      field={field}
+                      placeholder={t('settings.newPasswordPlaceholder')}
+                      disabled={isUpdating}
+                      showPassword={showNewPassword}
+                      onToggleVisibility={() => setShowNewPassword(!showNewPassword)}
+                      data-testid="new-password-input"
+                      toggleTestId="toggle-new-password"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -237,32 +208,17 @@ export default function PasswordChangeDialog({
                 <FormItem>
                   <FormLabel>{t('settings.confirmPasswordLabel')}</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        {...field}
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder={t('settings.confirmPasswordPlaceholder')}
-                        disabled={isUpdating}
-                        data-testid="confirm-password-input"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        disabled={isUpdating}
-                        data-testid="toggle-confirm-password"
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
+                    <PasswordInput
+                      field={field}
+                      placeholder={t('settings.confirmPasswordPlaceholder')}
+                      disabled={isUpdating}
+                      showPassword={showConfirmPassword}
+                      onToggleVisibility={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      data-testid="confirm-password-input"
+                      toggleTestId="toggle-confirm-password"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
