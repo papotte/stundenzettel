@@ -25,7 +25,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
@@ -125,9 +124,11 @@ export default function PasswordChangeDialog({
           error.message.includes('auth/invalid-credential')
         ) {
           errorMessage = t('settings.passwordUpdateInvalidCurrent')
-        } 
+        }
         // Check for password validation errors (new password doesn't meet requirements)
-        else if (error.message.includes('PASSWORD_DOES_NOT_MEET_REQUIREMENTS')) {
+        else if (
+          error.message.includes('PASSWORD_DOES_NOT_MEET_REQUIREMENTS')
+        ) {
           errorMessage = t('settings.passwordUpdateError')
         }
         // Check for minimum length errors
@@ -205,7 +206,9 @@ export default function PasswordChangeDialog({
                       placeholder={t('settings.newPasswordPlaceholder')}
                       disabled={isUpdating}
                       showPassword={showNewPassword}
-                      onToggleVisibility={() => setShowNewPassword(!showNewPassword)}
+                      onToggleVisibility={() =>
+                        setShowNewPassword(!showNewPassword)
+                      }
                       data-testid="new-password-input"
                       toggleTestId="toggle-new-password"
                     />

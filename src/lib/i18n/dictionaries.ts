@@ -243,7 +243,8 @@ export const dictionaries = {
       newPasswordPlaceholder: 'Enter your new password',
       confirmPasswordLabel: 'Confirm New Password',
       confirmPasswordPlaceholder: 'Confirm your new password',
-      passwordRequirements: 'Password must be 8-4096 characters with uppercase, lowercase, numeric, and special characters',
+      passwordRequirements:
+        'Password must be at least 8 long characters with uppercase, lowercase, numeric, and special characters',
       passwordsDoNotMatch: 'New passwords do not match',
       currentPasswordRequired: 'Current password is required',
       newPasswordRequired: 'New password is required',
@@ -770,7 +771,8 @@ export const dictionaries = {
       newPasswordPlaceholder: 'Geben Sie Ihr neues Passwort ein',
       confirmPasswordLabel: 'Neues Passwort bestätigen',
       confirmPasswordPlaceholder: 'Bestätigen Sie Ihr neues Passwort',
-      passwordRequirements: 'Passwort muss 8-4096 Zeichen mit Groß-, Klein-, Zahlen- und Sonderzeichen haben',
+      passwordRequirements:
+        'Passwort muss mindestens 8 Zeichen lang sein und Groß-, Kleinbuchstaben, Zahlen sowie Sonderzeichen enthalten',
       passwordsDoNotMatch: 'Neue Passwörter stimmen nicht überein',
       currentPasswordRequired: 'Aktuelles Passwort ist erforderlich',
       newPasswordRequired: 'Neues Passwort ist erforderlich',

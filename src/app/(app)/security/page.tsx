@@ -81,6 +81,7 @@ export default function SecurityPage() {
       detectAuthMethod()
       checkPasswordAuth()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   const checkPasswordAuth = async () => {
