@@ -1,8 +1,3 @@
-import {
-  hasPasswordAuthentication,
-  updateUserPassword,
-} from '../password-update-service'
-
 // Mock the Firebase implementation
 jest.mock('../password-update-service.firestore', () => ({
   updateUserPassword: jest.fn(),
@@ -15,38 +10,39 @@ jest.mock('../password-update-service.local', () => ({
   hasPasswordAuthentication: jest.fn(),
 }))
 
-// Import the mocked modules after mocking
-import * as mockFirestoreService from '../password-update-service.firestore'
-import * as mockLocalService from '../password-update-service.local'
-
-// Type the mock functions
-const mockFirestoreUpdatePassword = mockFirestoreService.updateUserPassword as jest.MockedFunction<
-  typeof mockFirestoreService.updateUserPassword
->
-const mockFirestoreHasPassword = mockFirestoreService.hasPasswordAuthentication as jest.MockedFunction<
-  typeof mockFirestoreService.hasPasswordAuthentication
->
-const mockLocalUpdatePassword = mockLocalService.updateUserPassword as jest.MockedFunction<
-  typeof mockLocalService.updateUserPassword
->
-const mockLocalHasPassword = mockLocalService.hasPasswordAuthentication as jest.MockedFunction<
-  typeof mockLocalService.hasPasswordAuthentication
->
-
 describe('Password Update Service', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    // Reset mock implementations
-    mockFirestoreUpdatePassword.mockReset()
-    mockFirestoreHasPassword.mockReset()
-    mockLocalUpdatePassword.mockReset()
-    mockLocalHasPassword.mockReset()
   })
 
   describe('when using local service (test environment)', () => {
-    beforeEach(() => {
-      // Set environment to test mode
+    let updateUserPassword: typeof import('../password-update-service').updateUserPassword
+    let hasPasswordAuthentication: typeof import('../password-update-service').hasPasswordAuthentication
+    let mockLocalUpdatePassword: jest.Mock
+    let mockLocalHasPassword: jest.Mock
+    let mockFirestoreUpdatePassword: jest.Mock
+    let mockFirestoreHasPassword: jest.Mock
+
+    beforeEach(async () => {
+      jest.resetModules()
       process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
+      // Use dynamic import after setting env
+      const passwordUpdateService = await import('../password-update-service')
+      updateUserPassword = passwordUpdateService.updateUserPassword
+      hasPasswordAuthentication =
+        passwordUpdateService.hasPasswordAuthentication
+      const mockLocalService = await import('../password-update-service.local')
+      const mockFirestoreService = await import(
+        '../password-update-service.firestore'
+      )
+      mockLocalUpdatePassword = mockLocalService.updateUserPassword as jest.Mock
+      mockLocalHasPassword =
+        mockLocalService.hasPasswordAuthentication as jest.Mock
+      mockFirestoreUpdatePassword =
+        mockFirestoreService.updateUserPassword as jest.Mock
+      mockFirestoreHasPassword =
+        mockFirestoreService.hasPasswordAuthentication as jest.Mock
+      jest.clearAllMocks()
     })
 
     afterEach(() => {
@@ -71,20 +67,40 @@ describe('Password Update Service', () => {
 
       const result = await hasPasswordAuthentication('user-id')
 
-      expect(mockLocalHasPassword).toHaveBeenCalledWith(
-        'user-id',
-      )
+      expect(mockLocalHasPassword).toHaveBeenCalledWith('user-id')
       expect(result).toBe(true)
-      expect(
-        mockFirestoreHasPassword,
-      ).not.toHaveBeenCalled()
+      expect(mockFirestoreHasPassword).not.toHaveBeenCalled()
     })
   })
 
   describe('when using firestore service (production environment)', () => {
-    beforeEach(() => {
-      // Remove test environment
+    let updateUserPassword: typeof import('../password-update-service').updateUserPassword
+    let hasPasswordAuthentication: typeof import('../password-update-service').hasPasswordAuthentication
+    let mockLocalUpdatePassword: jest.Mock
+    let mockLocalHasPassword: jest.Mock
+    let mockFirestoreUpdatePassword: jest.Mock
+    let mockFirestoreHasPassword: jest.Mock
+
+    beforeEach(async () => {
+      jest.resetModules()
       delete process.env.NEXT_PUBLIC_ENVIRONMENT
+      // Use dynamic import after setting env
+      const passwordUpdateService = await import('../password-update-service')
+      updateUserPassword = passwordUpdateService.updateUserPassword
+      hasPasswordAuthentication =
+        passwordUpdateService.hasPasswordAuthentication
+      const mockLocalService = await import('../password-update-service.local')
+      const mockFirestoreService = await import(
+        '../password-update-service.firestore'
+      )
+      mockLocalUpdatePassword = mockLocalService.updateUserPassword as jest.Mock
+      mockLocalHasPassword =
+        mockLocalService.hasPasswordAuthentication as jest.Mock
+      mockFirestoreUpdatePassword =
+        mockFirestoreService.updateUserPassword as jest.Mock
+      mockFirestoreHasPassword =
+        mockFirestoreService.hasPasswordAuthentication as jest.Mock
+      jest.clearAllMocks()
     })
 
     it('should call firestore service for updateUserPassword', async () => {
@@ -105,9 +121,7 @@ describe('Password Update Service', () => {
 
       const result = await hasPasswordAuthentication('user-id')
 
-      expect(
-        mockFirestoreHasPassword,
-      ).toHaveBeenCalledWith('user-id')
+      expect(mockFirestoreHasPassword).toHaveBeenCalledWith('user-id')
       expect(result).toBe(true)
       expect(mockLocalHasPassword).not.toHaveBeenCalled()
     })

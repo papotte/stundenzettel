@@ -4,6 +4,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { updateUserPassword } from '@/services/password-update-service'
+import {
+  clearMockUsers,
+  setMockUserAuth,
+} from '@/services/password-update-service.local'
 import { authScenarios } from '@/test-utils/auth-mocks'
 
 import PasswordChangeDialog from '../password-change-dialog'
@@ -31,14 +35,9 @@ jest.mock('@/hooks/use-toast', () => ({
   }),
 }))
 
-// Mock translation
-jest.mock('@/context/i18n-context', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}))
-
 describe('PasswordChangeDialog', () => {
+  const validPassword = 'New_password123'
+
   beforeEach(() => {
     jest.clearAllMocks()
     mockAuthContext.user = {
@@ -46,6 +45,11 @@ describe('PasswordChangeDialog', () => {
       email: 'test@example.com',
       displayName: 'Test User',
     }
+    setMockUserAuth('test-user-id', 'test@example.com', true)
+  })
+
+  afterEach(() => {
+    clearMockUsers()
   })
 
   const renderDialog = () => {
@@ -192,11 +196,8 @@ describe('PasswordChangeDialog', () => {
 
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
-    await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(
-      screen.getByTestId('confirm-password-input'),
-      'newpassword123',
-    )
+    await user.type(screen.getByTestId('new-password-input'), validPassword)
+    await user.type(screen.getByTestId('confirm-password-input'), validPassword)
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -205,7 +206,7 @@ describe('PasswordChangeDialog', () => {
       expect(mockUpdateUserPassword).toHaveBeenCalledWith(
         'test-user-id',
         'currentpass',
-        'newpassword123',
+        validPassword,
       )
     })
 
@@ -231,11 +232,8 @@ describe('PasswordChangeDialog', () => {
 
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'wrongpass')
-    await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(
-      screen.getByTestId('confirm-password-input'),
-      'newpassword123',
-    )
+    await user.type(screen.getByTestId('new-password-input'), validPassword)
+    await user.type(screen.getByTestId('confirm-password-input'), validPassword)
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -265,11 +263,8 @@ describe('PasswordChangeDialog', () => {
 
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
-    await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(
-      screen.getByTestId('confirm-password-input'),
-      'newpassword123',
-    )
+    await user.type(screen.getByTestId('new-password-input'), validPassword)
+    await user.type(screen.getByTestId('confirm-password-input'), validPassword)
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -341,11 +336,8 @@ describe('PasswordChangeDialog', () => {
 
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
-    await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(
-      screen.getByTestId('confirm-password-input'),
-      'newpassword123',
-    )
+    await user.type(screen.getByTestId('new-password-input'), validPassword)
+    await user.type(screen.getByTestId('confirm-password-input'), validPassword)
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
