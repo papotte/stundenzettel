@@ -1,7 +1,9 @@
 import * as firestoreService from './password-update-service.firestore'
 import * as localService from './password-update-service.local'
 
-const useMockService = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test'
+const useMockService =
+  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
+  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
 
 const service = useMockService ? localService : firestoreService
 

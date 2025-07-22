@@ -154,12 +154,7 @@ describe('SecurityPage', () => {
       expect(screen.getByText('test@example.com')).toBeInTheDocument()
 
       // The email change button should be enabled
-      const changeButtons = screen.getAllByText('settings.change')
-      const emailChangeButton = changeButtons.find(
-        (button) =>
-          button.closest('.border')?.querySelector('h3')?.textContent ===
-          'settings.accountEmail',
-      )
+      const emailChangeButton = screen.getByTestId('change-email-trigger')
       expect(emailChangeButton).toBeInTheDocument()
       expect(emailChangeButton?.closest('button')).not.toBeDisabled()
     })
@@ -177,12 +172,7 @@ describe('SecurityPage', () => {
       expect(screen.getByText('test@example.com')).toBeInTheDocument()
 
       // The email change button should be disabled
-      const changeButtons = screen.getAllByText('settings.change')
-      const emailChangeButton = changeButtons.find(
-        (button) =>
-          button.closest('.border')?.querySelector('h3')?.textContent ===
-          'settings.accountEmail',
-      )
+      const emailChangeButton = screen.getByTestId('change-email-trigger')
       expect(emailChangeButton).toBeInTheDocument()
       expect(emailChangeButton?.closest('button')).toBeDisabled()
     })

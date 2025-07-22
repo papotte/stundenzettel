@@ -262,7 +262,11 @@ export default function SecurityPage() {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
                 {!checkingPasswordAuth && hasPasswordAuth ? (
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="change-email-trigger"
+                  >
                     {t('settings.change')}
                   </Button>
                 ) : (
@@ -270,7 +274,12 @@ export default function SecurityPage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div>
-                          <Button variant="outline" size="sm" disabled>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled
+                            data-testid="change-email-trigger"
+                          >
                             {t('settings.change')}
                           </Button>
                         </div>
