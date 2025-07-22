@@ -20,9 +20,11 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamMembersList } from '@/components/team/team-members-list'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
+import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { teamService } from '@/services/team-service'
 import type { Team, TeamMember, TeamInvitation, Subscription } from '@/lib/types'
 
 export default function TeamPage() {
@@ -80,6 +82,10 @@ export default function TeamPage() {
             const { invitations: teamInvitations } = await invitationsResponse.json()
             setInvitations(teamInvitations)
           }
+
+          // Load team subscription
+          const subscriptionData = await teamService.getTeamSubscription(userTeam.id)
+          setSubscription(subscriptionData)
         }
       }
     } catch (error) {
@@ -110,6 +116,10 @@ export default function TeamPage() {
 
   const handleInvitationSent = (invitation: TeamInvitation) => {
     setInvitations(prev => [...prev, invitation])
+  }
+
+  const handleSubscriptionUpdate = (updatedSubscription: Subscription | null) => {
+    setSubscription(updatedSubscription)
   }
 
   if (authLoading || pageLoading) {
@@ -245,31 +255,12 @@ export default function TeamPage() {
               )}
 
               <TabsContent value="subscription">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5" />
-                      Team Subscription
-                    </CardTitle>
-                    <CardDescription>
-                      Manage your team's subscription and seat assignments.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8">
-                      <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">
-                        Subscription Management
-                      </h3>
-                      <p className="text-muted-foreground mb-6">
-                        Team subscription features will be available soon.
-                      </p>
-                      <Button variant="outline" disabled>
-                        Manage Subscription
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TeamSubscriptionCard
+                  team={team}
+                  members={members}
+                  subscription={subscription}
+                  onSubscriptionUpdate={handleSubscriptionUpdate}
+                />
               </TabsContent>
             </Tabs>
           </div>
