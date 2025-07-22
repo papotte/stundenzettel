@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { PasswordInput } from '@/components/inputs/password-input'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -25,7 +26,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { PasswordInput } from '@/components/inputs/password-input'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'

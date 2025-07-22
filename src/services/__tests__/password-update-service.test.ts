@@ -2,6 +2,8 @@ import {
   hasPasswordAuthentication,
   updateUserPassword,
 } from '../password-update-service'
+import * as mockFirestoreService from '../password-update-service.firestore'
+import * as mockLocalService from '../password-update-service.local'
 
 // Mock the Firebase implementation
 jest.mock('../password-update-service.firestore', () => ({
@@ -14,9 +16,6 @@ jest.mock('../password-update-service.local', () => ({
   updateUserPassword: jest.fn(),
   hasPasswordAuthentication: jest.fn(),
 }))
-
-import * as mockFirestoreService from '../password-update-service.firestore'
-import * as mockLocalService from '../password-update-service.local'
 
 describe('Password Update Service', () => {
   beforeEach(() => {
