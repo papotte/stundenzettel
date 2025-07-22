@@ -59,6 +59,7 @@ jobs:
         shell: bash
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/google-application-credentials.json
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: firebase deploy --non-interactive -m "Deploying from Github Actions ${{ github.event.release.tag_name }}"
 
       - name: Remove credentials file

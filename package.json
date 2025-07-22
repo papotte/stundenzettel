@@ -27,7 +27,7 @@
     "functions:serve": "npm run functions:build && firebase emulators:start --only functions",
     "functions:shell": "npm run functions:build && firebase functions:shell",
     "functions:start": "npm run functions:shell",
-    "functions:deploy": "firebase deploy --only functions",
+    "functions:deploy": "firebase deploy --only functions --debug",
     "functions:logs": "firebase functions:log"
   },
   "dependencies": {
@@ -63,6 +63,7 @@
     "dotenv": "^17.0.0",
     "exceljs": "^4.4.0",
     "firebase": "^12.0.0",
+    "firebase-functions": "^6.0.1",
     "lucide-react": "^0.525.0",
     "next": "15.4.2",
     "patch-package": "^8.0.0",
@@ -73,8 +74,7 @@
     "stripe": "^18.3.0",
     "tailwind-merge": "3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.25.76",
-    "firebase-functions": "^6.0.1"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.3",
@@ -94,6 +94,7 @@
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
+    "eslint": "^8.56.0",
     "eslint-config-next": "^15.3.4",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-import": "^2.32.0",
@@ -101,8 +102,8 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "firebase-admin": "^13.4.0",
-    "firebase-tools": "^14.9.0",
-    "eslint": "^8.56.0",
+    "firebase-functions-test": "^3.1.0",
+    "firebase-tools": "^14.11.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8",
@@ -111,8 +112,7 @@
     "semantic-release": "^24.0.0",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5",
-    "firebase-functions-test": "^3.1.0"
+    "typescript": "^5"
   },
   "engines": {
     "node": "22"
