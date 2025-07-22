@@ -14,6 +14,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+import PasswordChangeDialog from '@/components/password-change-dialog'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -34,10 +35,17 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
+import { hasPasswordAuthentication } from '@/services/password-update-service'
 import {
   deleteUserAccount,
   deleteUserAccountWithEmail,
@@ -58,6 +66,8 @@ export default function SecurityPage() {
   const [authMethod, setAuthMethod] = useState<
     'password' | 'google' | 'email' | null
   >(null)
+  const [hasPasswordAuth, setHasPasswordAuth] = useState<boolean>(false)
+  const [checkingPasswordAuth, setCheckingPasswordAuth] = useState(true)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -69,8 +79,25 @@ export default function SecurityPage() {
     if (user) {
       setPageLoading(false)
       detectAuthMethod()
+      checkPasswordAuth()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  const checkPasswordAuth = async () => {
+    if (!user) return
+
+    try {
+      setCheckingPasswordAuth(true)
+      const hasAuth = await hasPasswordAuthentication(user.uid)
+      setHasPasswordAuth(hasAuth)
+    } catch (error) {
+      console.error('Error checking password authentication:', error)
+      setHasPasswordAuth(false)
+    } finally {
+      setCheckingPasswordAuth(false)
+    }
+  }
 
   const detectAuthMethod = () => {
     // In mock mode, default to password authentication for testing
@@ -234,22 +261,57 @@ export default function SecurityPage() {
                   <h3 className="font-medium">{t('settings.accountEmail')}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
-                <Button variant="outline" size="sm">
-                  {t('settings.change')}
-                </Button>
+                {!checkingPasswordAuth && hasPasswordAuth ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="change-email-trigger"
+                  >
+                    {t('settings.change')}
+                  </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled
+                            data-testid="change-email-trigger"
+                          >
+                            {t('settings.change')}
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('settings.emailChangeDisabledTooltip')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
 
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h3 className="font-medium">{t('settings.password')}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.passwordDescription')}
-                  </p>
+              {/* Password change section - only show for email users */}
+              {!checkingPasswordAuth && hasPasswordAuth && (
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h3 className="font-medium">{t('settings.password')}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.passwordDescription')}
+                    </p>
+                  </div>
+                  <PasswordChangeDialog>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="change-password-trigger"
+                    >
+                      {t('settings.change')}
+                    </Button>
+                  </PasswordChangeDialog>
                 </div>
-                <Button variant="outline" size="sm">
-                  {t('settings.change')}
-                </Button>
-              </div>
+              )}
             </CardContent>
           </Card>
 
