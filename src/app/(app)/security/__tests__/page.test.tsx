@@ -4,8 +4,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
-import { deleteUserAccount } from '@/services/user-deletion-service'
 import { hasPasswordAuthentication } from '@/services/password-update-service'
+import { deleteUserAccount } from '@/services/user-deletion-service'
 import { authScenarios } from '@/test-utils/auth-mocks'
 
 import SecurityPage from '../page'
@@ -24,9 +24,10 @@ const mockDeleteUserAccount = deleteUserAccount as jest.MockedFunction<
   typeof deleteUserAccount
 >
 
-const mockHasPasswordAuthentication = hasPasswordAuthentication as jest.MockedFunction<
-  typeof hasPasswordAuthentication
->
+const mockHasPasswordAuthentication =
+  hasPasswordAuthentication as jest.MockedFunction<
+    typeof hasPasswordAuthentication
+  >
 
 // Use centralized auth mock with password update and account deletion functions
 const mockAuthContext = authScenarios.withPasswordUpdate()
@@ -97,59 +98,67 @@ describe('SecurityPage', () => {
     it('shows change password section for users with password authentication', async () => {
       mockHasPasswordAuthentication.mockResolvedValue(true)
       renderWithProviders(<SecurityPage />)
-      
+
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()
       })
-      
+
       await waitFor(() => {
         expect(screen.getByText('settings.password')).toBeInTheDocument()
       })
-      
-      expect(screen.getByText('settings.passwordDescription')).toBeInTheDocument()
+
+      expect(
+        screen.getByText('settings.passwordDescription'),
+      ).toBeInTheDocument()
       expect(screen.getByTestId('change-password-trigger')).toBeInTheDocument()
     })
 
     it('hides change password section for users without password authentication', async () => {
       mockHasPasswordAuthentication.mockResolvedValue(false)
       renderWithProviders(<SecurityPage />)
-      
+
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()
       })
-      
+
       // Wait a bit to ensure async operations complete
       await waitFor(() => {
         expect(screen.queryByText('settings.password')).not.toBeInTheDocument()
       })
-      
-      expect(screen.queryByTestId('change-password-trigger')).not.toBeInTheDocument()
+
+      expect(
+        screen.queryByTestId('change-password-trigger'),
+      ).not.toBeInTheDocument()
     })
 
     it('calls hasPasswordAuthentication on mount', async () => {
       renderWithProviders(<SecurityPage />)
-      
+
       await waitFor(() => {
-        expect(mockHasPasswordAuthentication).toHaveBeenCalledWith('test-user-id')
+        expect(mockHasPasswordAuthentication).toHaveBeenCalledWith(
+          'test-user-id',
+        )
       })
     })
 
     it('shows enabled email change button for users with password authentication', async () => {
       mockHasPasswordAuthentication.mockResolvedValue(true)
       renderWithProviders(<SecurityPage />)
-      
+
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()
       })
-      
+
       // Find the account email section
       expect(screen.getByText('settings.accountEmail')).toBeInTheDocument()
       expect(screen.getByText('test@example.com')).toBeInTheDocument()
-      
+
       // The email change button should be enabled
       const changeButtons = screen.getAllByText('settings.change')
-      const emailChangeButton = changeButtons.find(button => 
-        button.closest('.border')?.querySelector('h3')?.textContent === 'settings.accountEmail'
+      const emailChangeButton = changeButtons.find(
+        (button) =>
+          button.closest('.border')?.querySelector('h3')?.textContent ===
+          'settings.accountEmail',
       )
       expect(emailChangeButton).toBeInTheDocument()
       expect(emailChangeButton?.closest('button')).not.toBeDisabled()
@@ -158,19 +167,21 @@ describe('SecurityPage', () => {
     it('shows disabled email change button with tooltip for users without password authentication', async () => {
       mockHasPasswordAuthentication.mockResolvedValue(false)
       renderWithProviders(<SecurityPage />)
-      
+
       await waitFor(() => {
         expect(screen.getByText('settings.security')).toBeInTheDocument()
       })
-      
+
       // Find the account email section
       expect(screen.getByText('settings.accountEmail')).toBeInTheDocument()
       expect(screen.getByText('test@example.com')).toBeInTheDocument()
-      
+
       // The email change button should be disabled
       const changeButtons = screen.getAllByText('settings.change')
-      const emailChangeButton = changeButtons.find(button => 
-        button.closest('.border')?.querySelector('h3')?.textContent === 'settings.accountEmail'
+      const emailChangeButton = changeButtons.find(
+        (button) =>
+          button.closest('.border')?.querySelector('h3')?.textContent ===
+          'settings.accountEmail',
       )
       expect(emailChangeButton).toBeInTheDocument()
       expect(emailChangeButton?.closest('button')).toBeDisabled()

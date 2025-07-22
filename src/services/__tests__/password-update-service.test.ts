@@ -1,4 +1,7 @@
-import { updateUserPassword, hasPasswordAuthentication } from '../password-update-service'
+import {
+  hasPasswordAuthentication,
+  updateUserPassword,
+} from '../password-update-service'
 
 // Mock the Firebase implementation
 jest.mock('../password-update-service.firestore', () => ({
@@ -6,7 +9,7 @@ jest.mock('../password-update-service.firestore', () => ({
   hasPasswordAuthentication: jest.fn(),
 }))
 
-// Mock the local implementation  
+// Mock the local implementation
 jest.mock('../password-update-service.local', () => ({
   updateUserPassword: jest.fn(),
   hasPasswordAuthentication: jest.fn(),
@@ -52,7 +55,9 @@ describe('Password Update Service', () => {
         'user-id',
       )
       expect(result).toBe(true)
-      expect(mockFirestoreService.hasPasswordAuthentication).not.toHaveBeenCalled()
+      expect(
+        mockFirestoreService.hasPasswordAuthentication,
+      ).not.toHaveBeenCalled()
     })
   })
 
@@ -80,9 +85,9 @@ describe('Password Update Service', () => {
 
       const result = await hasPasswordAuthentication('user-id')
 
-      expect(mockFirestoreService.hasPasswordAuthentication).toHaveBeenCalledWith(
-        'user-id',
-      )
+      expect(
+        mockFirestoreService.hasPasswordAuthentication,
+      ).toHaveBeenCalledWith('user-id')
       expect(result).toBe(true)
       expect(mockLocalService.hasPasswordAuthentication).not.toHaveBeenCalled()
     })

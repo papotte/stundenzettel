@@ -3,9 +3,10 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import PasswordChangeDialog from '../password-change-dialog'
-import { authScenarios } from '@/test-utils/auth-mocks'
 import { updateUserPassword } from '@/services/password-update-service'
+import { authScenarios } from '@/test-utils/auth-mocks'
+
+import PasswordChangeDialog from '../password-change-dialog'
 
 // Mock the password update service
 jest.mock('@/services/password-update-service', () => ({
@@ -68,9 +69,13 @@ describe('PasswordChangeDialog', () => {
     await user.click(trigger)
 
     await waitFor(() => {
-      expect(screen.getByText('settings.changePasswordTitle')).toBeInTheDocument()
+      expect(
+        screen.getByText('settings.changePasswordTitle'),
+      ).toBeInTheDocument()
     })
-    expect(screen.getByText('settings.changePasswordDescription')).toBeInTheDocument()
+    expect(
+      screen.getByText('settings.changePasswordDescription'),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('current-password-input')).toBeInTheDocument()
     expect(screen.getByTestId('new-password-input')).toBeInTheDocument()
     expect(screen.getByTestId('confirm-password-input')).toBeInTheDocument()
@@ -91,7 +96,9 @@ describe('PasswordChangeDialog', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Current password is required')).toBeInTheDocument()
+      expect(
+        screen.getByText('Current password is required'),
+      ).toBeInTheDocument()
     })
   })
 
@@ -115,7 +122,9 @@ describe('PasswordChangeDialog', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Password must be at least 8 characters long')).toBeInTheDocument()
+      expect(
+        screen.getByText('Password must be at least 8 characters long'),
+      ).toBeInTheDocument()
     })
   })
 
@@ -133,7 +142,10 @@ describe('PasswordChangeDialog', () => {
     // Fill in passwords that don't match
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
     await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(screen.getByTestId('confirm-password-input'), 'different123')
+    await user.type(
+      screen.getByTestId('confirm-password-input'),
+      'different123',
+    )
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -181,7 +193,10 @@ describe('PasswordChangeDialog', () => {
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
     await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(screen.getByTestId('confirm-password-input'), 'newpassword123')
+    await user.type(
+      screen.getByTestId('confirm-password-input'),
+      'newpassword123',
+    )
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -217,7 +232,10 @@ describe('PasswordChangeDialog', () => {
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'wrongpass')
     await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(screen.getByTestId('confirm-password-input'), 'newpassword123')
+    await user.type(
+      screen.getByTestId('confirm-password-input'),
+      'newpassword123',
+    )
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -248,7 +266,10 @@ describe('PasswordChangeDialog', () => {
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
     await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(screen.getByTestId('confirm-password-input'), 'newpassword123')
+    await user.type(
+      screen.getByTestId('confirm-password-input'),
+      'newpassword123',
+    )
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)
@@ -266,14 +287,18 @@ describe('PasswordChangeDialog', () => {
     await user.click(trigger)
 
     await waitFor(() => {
-      expect(screen.getByText('settings.changePasswordTitle')).toBeInTheDocument()
+      expect(
+        screen.getByText('settings.changePasswordTitle'),
+      ).toBeInTheDocument()
     })
 
     const cancelButton = screen.getByTestId('cancel-button')
     await user.click(cancelButton)
 
     await waitFor(() => {
-      expect(screen.queryByText('settings.changePasswordTitle')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('settings.changePasswordTitle'),
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -317,7 +342,10 @@ describe('PasswordChangeDialog', () => {
     // Fill in valid password data
     await user.type(screen.getByTestId('current-password-input'), 'currentpass')
     await user.type(screen.getByTestId('new-password-input'), 'newpassword123')
-    await user.type(screen.getByTestId('confirm-password-input'), 'newpassword123')
+    await user.type(
+      screen.getByTestId('confirm-password-input'),
+      'newpassword123',
+    )
 
     const submitButton = screen.getByTestId('change-password-button')
     await user.click(submitButton)

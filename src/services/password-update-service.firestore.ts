@@ -51,9 +51,7 @@ export const hasPasswordAuthentication = async (
   }
 
   // Check if user has password provider
-  const hasPasswordProvider = user.providerData.some(
+  return user.providerData.some(
     (provider) => provider.providerId === 'password',
   )
-
-  return hasPasswordProvider
 }

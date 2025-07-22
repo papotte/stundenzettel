@@ -1,8 +1,8 @@
 import {
   clearMockUsers,
+  hasPasswordAuthentication,
   setMockUserAuth,
   updateUserPassword,
-  hasPasswordAuthentication,
 } from '../password-update-service.local'
 
 describe('Password Update Service (Local)', () => {
@@ -47,7 +47,11 @@ describe('Password Update Service (Local)', () => {
 
     it('should throw error for user not found', async () => {
       await expect(
-        updateUserPassword('nonexistent-user', 'currentpassword', 'newpassword123'),
+        updateUserPassword(
+          'nonexistent-user',
+          'currentpassword',
+          'newpassword123',
+        ),
       ).rejects.toThrow('User not found')
     })
 

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -28,13 +29,15 @@ import { Input } from '@/components/ui/input'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { updateUserPassword } from '@/services/password-update-service'
 import { sendPasswordChangeNotification } from '@/services/email-notification-service'
+import { updateUserPassword } from '@/services/password-update-service'
 
 const passwordChangeSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z.string().min(8, 'Password must be at least 8 characters long'),
+    newPassword: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long'),
     confirmPassword: z.string().min(1, 'Please confirm your new password'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -88,7 +91,10 @@ export default function PasswordChangeDialog({
         await sendPasswordChangeNotification(user.email, user.displayName)
       } catch (emailError) {
         // Don't fail the entire operation if email sending fails
-        console.error('Failed to send password change notification:', emailError)
+        console.error(
+          'Failed to send password change notification:',
+          emailError,
+        )
       }
 
       toast({

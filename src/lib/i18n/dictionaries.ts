@@ -230,7 +230,8 @@ export const dictionaries = {
         'Percentage of driving time as passenger that is counted as compensated time.',
       // Security Section
       accountEmail: 'Account Email',
-      emailChangeDisabledTooltip: 'This account was linked with a provider. You cannot change your email.',
+      emailChangeDisabledTooltip:
+        'This account was linked with a provider. You cannot change your email.',
       password: 'Password',
       passwordDescription: 'Change your account password',
       changePassword: 'Change Password',
@@ -755,12 +756,14 @@ export const dictionaries = {
         'Prozentsatz der Beifahrerzeit, der als vergütete Zeit angerechnet wird.',
       // Security Section
       accountEmail: 'Konto-E-Mail',
-      emailChangeDisabledTooltip: 'Dieses Konto wurde mit einem Anbieter verknüpft. Sie können Ihre E-Mail nicht ändern.',
+      emailChangeDisabledTooltip:
+        'Dieses Konto wurde mit einem Anbieter verknüpft. Sie können Ihre E-Mail nicht ändern.',
       password: 'Passwort',
       passwordDescription: 'Ändern Sie Ihr Kontopasswort',
       changePassword: 'Passwort ändern',
       changePasswordTitle: 'Passwort ändern',
-      changePasswordDescription: 'Aktualisieren Sie Ihr Kontopasswort für mehr Sicherheit',
+      changePasswordDescription:
+        'Aktualisieren Sie Ihr Kontopasswort für mehr Sicherheit',
       currentPasswordLabel: 'Aktuelles Passwort',
       currentPasswordPlaceholder: 'Geben Sie Ihr aktuelles Passwort ein',
       newPasswordLabel: 'Neues Passwort',

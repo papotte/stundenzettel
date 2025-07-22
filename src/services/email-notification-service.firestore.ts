@@ -27,7 +27,7 @@ export const sendPasswordChangeNotification = async (
 
   // For now, we'll just log the action
   // In production, you would implement actual email sending here
-  
+
   // Simulate async operation
   await new Promise((resolve) => setTimeout(resolve, 100))
 }

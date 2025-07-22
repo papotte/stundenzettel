@@ -14,6 +14,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+import PasswordChangeDialog from '@/components/password-change-dialog'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -40,7 +41,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import PasswordChangeDialog from '@/components/password-change-dialog'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
@@ -292,7 +292,11 @@ export default function SecurityPage() {
                     </p>
                   </div>
                   <PasswordChangeDialog>
-                    <Button variant="outline" size="sm" data-testid="change-password-trigger">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="change-password-trigger"
+                    >
                       {t('settings.change')}
                     </Button>
                   </PasswordChangeDialog>
