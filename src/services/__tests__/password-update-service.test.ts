@@ -2,8 +2,6 @@ import {
   hasPasswordAuthentication,
   updateUserPassword,
 } from '../password-update-service'
-import * as mockFirestoreService from '../password-update-service.firestore'
-import * as mockLocalService from '../password-update-service.local'
 
 // Mock the Firebase implementation
 jest.mock('../password-update-service.firestore', () => ({
@@ -17,9 +15,32 @@ jest.mock('../password-update-service.local', () => ({
   hasPasswordAuthentication: jest.fn(),
 }))
 
+// Import the mocked modules after mocking
+import * as mockFirestoreService from '../password-update-service.firestore'
+import * as mockLocalService from '../password-update-service.local'
+
+// Type the mock functions
+const mockFirestoreUpdatePassword = mockFirestoreService.updateUserPassword as jest.MockedFunction<
+  typeof mockFirestoreService.updateUserPassword
+>
+const mockFirestoreHasPassword = mockFirestoreService.hasPasswordAuthentication as jest.MockedFunction<
+  typeof mockFirestoreService.hasPasswordAuthentication
+>
+const mockLocalUpdatePassword = mockLocalService.updateUserPassword as jest.MockedFunction<
+  typeof mockLocalService.updateUserPassword
+>
+const mockLocalHasPassword = mockLocalService.hasPasswordAuthentication as jest.MockedFunction<
+  typeof mockLocalService.hasPasswordAuthentication
+>
+
 describe('Password Update Service', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    // Reset mock implementations
+    mockFirestoreUpdatePassword.mockReset()
+    mockFirestoreHasPassword.mockReset()
+    mockLocalUpdatePassword.mockReset()
+    mockLocalHasPassword.mockReset()
   })
 
   describe('when using local service (test environment)', () => {
@@ -33,29 +54,29 @@ describe('Password Update Service', () => {
     })
 
     it('should call local service for updateUserPassword', async () => {
-      mockLocalService.updateUserPassword.mockResolvedValue(undefined)
+      mockLocalUpdatePassword.mockResolvedValue(undefined)
 
       await updateUserPassword('user-id', 'current', 'new')
 
-      expect(mockLocalService.updateUserPassword).toHaveBeenCalledWith(
+      expect(mockLocalUpdatePassword).toHaveBeenCalledWith(
         'user-id',
         'current',
         'new',
       )
-      expect(mockFirestoreService.updateUserPassword).not.toHaveBeenCalled()
+      expect(mockFirestoreUpdatePassword).not.toHaveBeenCalled()
     })
 
     it('should call local service for hasPasswordAuthentication', async () => {
-      mockLocalService.hasPasswordAuthentication.mockResolvedValue(true)
+      mockLocalHasPassword.mockResolvedValue(true)
 
       const result = await hasPasswordAuthentication('user-id')
 
-      expect(mockLocalService.hasPasswordAuthentication).toHaveBeenCalledWith(
+      expect(mockLocalHasPassword).toHaveBeenCalledWith(
         'user-id',
       )
       expect(result).toBe(true)
       expect(
-        mockFirestoreService.hasPasswordAuthentication,
+        mockFirestoreHasPassword,
       ).not.toHaveBeenCalled()
     })
   })
@@ -67,33 +88,33 @@ describe('Password Update Service', () => {
     })
 
     it('should call firestore service for updateUserPassword', async () => {
-      mockFirestoreService.updateUserPassword.mockResolvedValue(undefined)
+      mockFirestoreUpdatePassword.mockResolvedValue(undefined)
 
       await updateUserPassword('user-id', 'current', 'new')
 
-      expect(mockFirestoreService.updateUserPassword).toHaveBeenCalledWith(
+      expect(mockFirestoreUpdatePassword).toHaveBeenCalledWith(
         'user-id',
         'current',
         'new',
       )
-      expect(mockLocalService.updateUserPassword).not.toHaveBeenCalled()
+      expect(mockLocalUpdatePassword).not.toHaveBeenCalled()
     })
 
     it('should call firestore service for hasPasswordAuthentication', async () => {
-      mockFirestoreService.hasPasswordAuthentication.mockResolvedValue(true)
+      mockFirestoreHasPassword.mockResolvedValue(true)
 
       const result = await hasPasswordAuthentication('user-id')
 
       expect(
-        mockFirestoreService.hasPasswordAuthentication,
+        mockFirestoreHasPassword,
       ).toHaveBeenCalledWith('user-id')
       expect(result).toBe(true)
-      expect(mockLocalService.hasPasswordAuthentication).not.toHaveBeenCalled()
+      expect(mockLocalHasPassword).not.toHaveBeenCalled()
     })
 
     it('should propagate errors from firestore service', async () => {
       const error = new Error('Firebase error')
-      mockFirestoreService.updateUserPassword.mockRejectedValue(error)
+      mockFirestoreUpdatePassword.mockRejectedValue(error)
 
       await expect(
         updateUserPassword('user-id', 'current', 'new'),

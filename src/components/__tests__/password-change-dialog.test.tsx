@@ -353,7 +353,7 @@ describe('PasswordChangeDialog', () => {
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
         title: 'settings.error',
-        description: 'User not authenticated',
+        description: 'settings.userNotAuthenticated',
         variant: 'destructive',
       })
     })
