@@ -243,7 +243,7 @@ export const dictionaries = {
       newPasswordPlaceholder: 'Enter your new password',
       confirmPasswordLabel: 'Confirm New Password',
       confirmPasswordPlaceholder: 'Confirm your new password',
-      passwordRequirements: 'Password must be at least 8 characters long',
+      passwordRequirements: 'Password must be 8-4096 characters with uppercase, lowercase, numeric, and special characters',
       passwordsDoNotMatch: 'New passwords do not match',
       currentPasswordRequired: 'Current password is required',
       newPasswordRequired: 'New password is required',
@@ -253,6 +253,8 @@ export const dictionaries = {
       passwordUpdatedDescription: 'Your password has been successfully changed',
       passwordUpdateError: 'Failed to update password',
       passwordUpdateInvalidCurrent: 'Current password is incorrect',
+      error: 'Error',
+      userNotAuthenticated: 'User not authenticated',
       updating: 'Updating...',
       cancel: 'Cancel',
       change: 'Change',
@@ -318,8 +320,6 @@ export const dictionaries = {
       // Common
       saving: 'Saving...',
       save: 'Save',
-      change: 'Change',
-      cancel: 'Cancel',
     },
     // Pricing Page
     pricing: {
@@ -770,7 +770,7 @@ export const dictionaries = {
       newPasswordPlaceholder: 'Geben Sie Ihr neues Passwort ein',
       confirmPasswordLabel: 'Neues Passwort bestätigen',
       confirmPasswordPlaceholder: 'Bestätigen Sie Ihr neues Passwort',
-      passwordRequirements: 'Passwort muss mindestens 8 Zeichen lang sein',
+      passwordRequirements: 'Passwort muss 8-4096 Zeichen mit Groß-, Klein-, Zahlen- und Sonderzeichen haben',
       passwordsDoNotMatch: 'Neue Passwörter stimmen nicht überein',
       currentPasswordRequired: 'Aktuelles Passwort ist erforderlich',
       newPasswordRequired: 'Neues Passwort ist erforderlich',
@@ -780,6 +780,8 @@ export const dictionaries = {
       passwordUpdatedDescription: 'Ihr Passwort wurde erfolgreich geändert',
       passwordUpdateError: 'Fehler beim Aktualisieren des Passworts',
       passwordUpdateInvalidCurrent: 'Aktuelles Passwort ist falsch',
+      error: 'Fehler',
+      userNotAuthenticated: 'Benutzer nicht authentifiziert',
       updating: 'Aktualisiere...',
       cancel: 'Abbrechen',
       change: 'Ändern',
@@ -848,8 +850,6 @@ export const dictionaries = {
       // Common
       saving: 'Wird gespeichert...',
       save: 'Speichern',
-      change: 'Ändern',
-      cancel: 'Abbrechen',
     },
     // Teams Page
     teams: {

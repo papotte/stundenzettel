@@ -38,7 +38,12 @@ const passwordChangeSchema = z
     currentPassword: z.string().min(1, 'Current password is required'),
     newPassword: z
       .string()
-      .min(8, 'Password must be at least 8 characters long'),
+      .min(8, 'Password must be at least 8 characters long')
+      .max(4096, 'Password must be at most 4096 characters long')
+      .regex(/[A-Z]/, 'Password must contain an uppercase character')
+      .regex(/[a-z]/, 'Password must contain a lowercase character')
+      .regex(/[0-9]/, 'Password must contain a numeric character')
+      .regex(/[^A-Za-z0-9]/, 'Password must contain a special character'),
     confirmPassword: z.string().min(1, 'Please confirm your new password'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -77,7 +82,7 @@ export default function PasswordChangeDialog({
     if (!user) {
       toast({
         title: t('settings.error'),
-        description: 'User not authenticated',
+        description: t('settings.userNotAuthenticated'),
         variant: 'destructive',
       })
       return
@@ -111,13 +116,22 @@ export default function PasswordChangeDialog({
       let errorMessage = t('settings.passwordUpdateError')
 
       if (error instanceof Error) {
+        // Check for authentication/credential errors (wrong current password)
         if (
-          error.message.includes('password') ||
           error.message.includes('credential') ||
-          error.message.includes('Invalid password')
+          error.message.includes('Invalid password') ||
+          error.message.includes('wrong-password') ||
+          error.message.includes('auth/wrong-password') ||
+          error.message.includes('auth/invalid-credential')
         ) {
           errorMessage = t('settings.passwordUpdateInvalidCurrent')
-        } else if (error.message.includes('8 characters')) {
+        } 
+        // Check for password validation errors (new password doesn't meet requirements)
+        else if (error.message.includes('PASSWORD_DOES_NOT_MEET_REQUIREMENTS')) {
+          errorMessage = t('settings.passwordUpdateError')
+        }
+        // Check for minimum length errors
+        else if (error.message.includes('8 characters')) {
           errorMessage = t('settings.passwordTooShort')
         }
       }
