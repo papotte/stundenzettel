@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/papotte/stundenzettel/compare/v1.7.1...v1.8.0) (2025-07-22)
+
+
+### Features
+
+* implement secure password change feature for email users ([#82](https://github.com/papotte/stundenzettel/issues/82)) ([70bffd1](https://github.com/papotte/stundenzettel/commit/70bffd1d5c2a19dacd3cf15b680612a17c83be1d))
+
 ## [1.7.1](https://github.com/papotte/stundenzettel/compare/v1.7.0...v1.7.1) (2025-07-22)
 
 
