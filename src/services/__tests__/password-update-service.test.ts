@@ -15,8 +15,8 @@ jest.mock('../password-update-service.local', () => ({
   hasPasswordAuthentication: jest.fn(),
 }))
 
-const mockFirestoreService = require('../password-update-service.firestore')
-const mockLocalService = require('../password-update-service.local')
+import * as mockFirestoreService from '../password-update-service.firestore'
+import * as mockLocalService from '../password-update-service.local'
 
 describe('Password Update Service', () => {
   beforeEach(() => {

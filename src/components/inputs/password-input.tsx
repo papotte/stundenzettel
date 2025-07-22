@@ -3,13 +3,13 @@
 import React from 'react'
 
 import { Eye, EyeOff } from 'lucide-react'
-import { ControllerRenderProps } from 'react-hook-form'
+import { ControllerRenderProps, FieldValues, Path } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-interface PasswordInputProps {
-  field: ControllerRenderProps<any, any>
+interface PasswordInputProps<T extends FieldValues> {
+  field: ControllerRenderProps<T, Path<T>>
   placeholder?: string
   disabled?: boolean
   showPassword: boolean
@@ -18,7 +18,7 @@ interface PasswordInputProps {
   toggleTestId?: string
 }
 
-export function PasswordInput({
+export function PasswordInput<T extends FieldValues>({
   field,
   placeholder,
   disabled = false,
@@ -26,7 +26,7 @@ export function PasswordInput({
   onToggleVisibility,
   'data-testid': dataTestId,
   toggleTestId,
-}: PasswordInputProps) {
+}: PasswordInputProps<T>) {
   return (
     <div className="relative">
       <Input
