@@ -134,6 +134,48 @@ describe('SecurityPage', () => {
       })
     })
 
+    it('shows enabled email change button for users with password authentication', async () => {
+      mockHasPasswordAuthentication.mockResolvedValue(true)
+      renderWithProviders(<SecurityPage />)
+      
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      
+      // Find the account email section
+      expect(screen.getByText('settings.accountEmail')).toBeInTheDocument()
+      expect(screen.getByText('test@example.com')).toBeInTheDocument()
+      
+      // The email change button should be enabled
+      const changeButtons = screen.getAllByText('settings.change')
+      const emailChangeButton = changeButtons.find(button => 
+        button.closest('.border')?.querySelector('h3')?.textContent === 'settings.accountEmail'
+      )
+      expect(emailChangeButton).toBeInTheDocument()
+      expect(emailChangeButton?.closest('button')).not.toBeDisabled()
+    })
+
+    it('shows disabled email change button with tooltip for users without password authentication', async () => {
+      mockHasPasswordAuthentication.mockResolvedValue(false)
+      renderWithProviders(<SecurityPage />)
+      
+      await waitFor(() => {
+        expect(screen.getByText('settings.security')).toBeInTheDocument()
+      })
+      
+      // Find the account email section
+      expect(screen.getByText('settings.accountEmail')).toBeInTheDocument()
+      expect(screen.getByText('test@example.com')).toBeInTheDocument()
+      
+      // The email change button should be disabled
+      const changeButtons = screen.getAllByText('settings.change')
+      const emailChangeButton = changeButtons.find(button => 
+        button.closest('.border')?.querySelector('h3')?.textContent === 'settings.accountEmail'
+      )
+      expect(emailChangeButton).toBeInTheDocument()
+      expect(emailChangeButton?.closest('button')).toBeDisabled()
+    })
+
     it('shows delete account section', async () => {
       renderWithProviders(<SecurityPage />)
       await waitFor(() => {

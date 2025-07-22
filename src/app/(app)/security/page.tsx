@@ -34,6 +34,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import PasswordChangeDialog from '@/components/password-change-dialog'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
@@ -254,9 +260,26 @@ export default function SecurityPage() {
                   <h3 className="font-medium">{t('settings.accountEmail')}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
-                <Button variant="outline" size="sm">
-                  {t('settings.change')}
-                </Button>
+                {!checkingPasswordAuth && hasPasswordAuth ? (
+                  <Button variant="outline" size="sm">
+                    {t('settings.change')}
+                  </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Button variant="outline" size="sm" disabled>
+                            {t('settings.change')}
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('settings.emailChangeDisabledTooltip')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
 
               {/* Password change section - only show for email users */}
