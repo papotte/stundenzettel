@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/papotte/stundenzettel/compare/v1.7.0...v1.7.1) (2025-07-22)
+
+
+### Bug Fixes
+
+* use firebase token for deployment ([f3b7ccb](https://github.com/papotte/stundenzettel/commit/f3b7ccba73a2e691d0b901347cad7b6ea7d838d2))
+
 # [1.7.0](https://github.com/papotte/stundenzettel/compare/v1.6.0...v1.7.0) (2025-07-21)
 
 
