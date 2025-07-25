@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+
 import { UserPlus } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -89,7 +90,7 @@ export function InviteMemberDialog({
       }
 
       const { invitationId } = await response.json()
-      
+
       // Create invitation object for callback
       const invitation: TeamInvitation = {
         id: invitationId,
@@ -101,11 +102,11 @@ export function InviteMemberDialog({
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         status: 'pending',
       }
-      
+
       onInvitationSent(invitation)
       setOpen(false)
       form.reset()
-      
+
       toast({
         title: 'Invitation sent',
         description: `Invitation sent to ${values.email}`,
@@ -113,7 +114,8 @@ export function InviteMemberDialog({
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to send invitation',
+        description:
+          error instanceof Error ? error.message : 'Failed to send invitation',
         variant: 'destructive',
       })
     } finally {
@@ -133,7 +135,8 @@ export function InviteMemberDialog({
         <DialogHeader>
           <DialogTitle>Invite Team Member</DialogTitle>
           <DialogDescription>
-            Send an invitation to add a new member to your team. They will receive an email with instructions to join.
+            Send an invitation to add a new member to your team. They will
+            receive an email with instructions to join.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -161,7 +164,10 @@ export function InviteMemberDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a role" />

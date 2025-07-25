@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from 'react'
 
-import { ArrowLeft, Users, Settings, CreditCard } from 'lucide-react'
+import { ArrowLeft, CreditCard, Settings, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+import { CreateTeamDialog } from '@/components/team/create-team-dialog'
+import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
+import { TeamInvitationsList } from '@/components/team/team-invitations-list'
+import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -16,29 +21,31 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CreateTeamDialog } from '@/components/team/create-team-dialog'
-import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
-import { TeamMembersList } from '@/components/team/team-members-list'
-import { TeamInvitationsList } from '@/components/team/team-invitations-list'
-import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import type {
+  Subscription,
+  Team,
+  TeamInvitation,
+  TeamMember,
+} from '@/lib/types'
 import { teamService } from '@/services/team-service'
-import type { Team, TeamMember, TeamInvitation, Subscription } from '@/lib/types'
 
 export default function TeamPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { t } = useTranslation()
   const { toast } = useToast()
-  
+
   const [pageLoading, setPageLoading] = useState(true)
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
   const [invitations, setInvitations] = useState<TeamInvitation[]>([])
   const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [currentUserRole, setCurrentUserRole] = useState<'owner' | 'admin' | 'member'>('member')
+  const [currentUserRole, setCurrentUserRole] = useState<
+    'owner' | 'admin' | 'member'
+  >('member')
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -62,29 +69,38 @@ export default function TeamPage() {
         const { team: userTeam } = await teamResponse.json()
         if (userTeam) {
           setTeam(userTeam)
-          
+
           // Load team members
-          const membersResponse = await fetch(`/api/teams/${userTeam.id}/members`)
+          const membersResponse = await fetch(
+            `/api/teams/${userTeam.id}/members`,
+          )
           if (membersResponse.ok) {
             const { members: teamMembers } = await membersResponse.json()
             setMembers(teamMembers)
-            
+
             // Find current user's role
-            const currentMember = teamMembers.find((m: TeamMember) => m.email === user.email)
+            const currentMember = teamMembers.find(
+              (m: TeamMember) => m.email === user.email,
+            )
             if (currentMember) {
               setCurrentUserRole(currentMember.role)
             }
           }
-          
+
           // Load team invitations (if admin/owner)
-          const invitationsResponse = await fetch(`/api/teams/${userTeam.id}/invitations`)
+          const invitationsResponse = await fetch(
+            `/api/teams/${userTeam.id}/invitations`,
+          )
           if (invitationsResponse.ok) {
-            const { invitations: teamInvitations } = await invitationsResponse.json()
+            const { invitations: teamInvitations } =
+              await invitationsResponse.json()
             setInvitations(teamInvitations)
           }
 
           // Load team subscription
-          const subscriptionData = await teamService.getTeamSubscription(userTeam.id)
+          const subscriptionData = await teamService.getTeamSubscription(
+            userTeam.id,
+          )
           setSubscription(subscriptionData)
         }
       }
@@ -115,10 +131,12 @@ export default function TeamPage() {
   }
 
   const handleInvitationSent = (invitation: TeamInvitation) => {
-    setInvitations(prev => [...prev, invitation])
+    setInvitations((prev) => [...prev, invitation])
   }
 
-  const handleSubscriptionUpdate = (updatedSubscription: Subscription | null) => {
+  const handleSubscriptionUpdate = (
+    updatedSubscription: Subscription | null,
+  ) => {
     setSubscription(updatedSubscription)
   }
 
@@ -162,13 +180,15 @@ export default function TeamPage() {
             <CardContent>
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  No Team Yet
-                </h3>
+                <h3 className="text-lg font-medium mb-2">No Team Yet</h3>
                 <p className="text-muted-foreground mb-6">
-                  Create a team to invite members and manage subscriptions together.
+                  Create a team to invite members and manage subscriptions
+                  together.
                 </p>
-                <CreateTeamDialog userId={user.uid} onTeamCreated={handleTeamCreated} />
+                <CreateTeamDialog
+                  userId={user.uid}
+                  onTeamCreated={handleTeamCreated}
+                />
               </div>
             </CardContent>
           </Card>
@@ -187,7 +207,8 @@ export default function TeamPage() {
                       {team.description || 'No description provided'}
                     </CardDescription>
                   </div>
-                  {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+                  {(currentUserRole === 'owner' ||
+                    currentUserRole === 'admin') && (
                     <div className="flex gap-2">
                       <InviteMemberDialog
                         teamId={team.id}
@@ -206,8 +227,11 @@ export default function TeamPage() {
 
             <Tabs defaultValue="members" className="space-y-4">
               <TabsList>
-                <TabsTrigger value="members">Members ({members.length})</TabsTrigger>
-                {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+                <TabsTrigger value="members">
+                  Members ({members.length})
+                </TabsTrigger>
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
                   <TabsTrigger value="invitations">
                     Invitations ({invitations.length})
                   </TabsTrigger>

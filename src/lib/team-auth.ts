@@ -1,5 +1,5 @@
-import { teamService } from '@/services/team-service'
 import type { TeamMember } from '@/lib/types'
+import { teamService } from '@/services/team-service'
 
 export interface TeamAuthResult {
   authorized: boolean
@@ -10,51 +10,55 @@ export interface TeamAuthResult {
 export async function verifyTeamAccess(
   teamId: string,
   userId: string,
-  requiredRole?: 'owner' | 'admin'
+  requiredRole?: 'owner' | 'admin',
 ): Promise<TeamAuthResult> {
   try {
     // Get team members to check if user is a member and their role
     const members = await teamService.getTeamMembers(teamId)
-    const userMember = members.find((member: TeamMember) => 
-      member.email === userId || member.id === userId
+    const userMember = members.find(
+      (member: TeamMember) => member.email === userId || member.id === userId,
     )
 
     if (!userMember) {
       return {
         authorized: false,
-        error: 'User is not a member of this team'
+        error: 'User is not a member of this team',
       }
     }
 
     // Check if user has required role
     if (requiredRole) {
-      const hasRequiredRole = 
-        userMember.role === 'owner' || 
-        (requiredRole === 'admin' && (userMember.role === 'admin' || userMember.role === 'owner'))
+      const hasRequiredRole =
+        userMember.role === 'owner' ||
+        (requiredRole === 'admin' &&
+          (userMember.role === 'admin' || userMember.role === 'owner'))
 
       if (!hasRequiredRole) {
         return {
           authorized: false,
           userRole: userMember.role,
-          error: `Insufficient permissions. Required: ${requiredRole}, Current: ${userMember.role}`
+          error: `Insufficient permissions. Required: ${requiredRole}, Current: ${userMember.role}`,
         }
       }
     }
 
     return {
       authorized: true,
-      userRole: userMember.role
+      userRole: userMember.role,
     }
   } catch (error) {
     console.error('Error verifying team access:', error)
     return {
       authorized: false,
-      error: 'Failed to verify team access'
+      error: 'Failed to verify team access',
     }
   }
 }
 
-export async function verifyTeamOwnership(teamId: string, userId: string): Promise<boolean> {
+export async function verifyTeamOwnership(
+  teamId: string,
+  userId: string,
+): Promise<boolean> {
   try {
     const team = await teamService.getTeam(teamId)
     return team?.ownerId === userId
