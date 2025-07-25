@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   ArrowLeft,
@@ -65,19 +65,7 @@ export default function TeamPage() {
     'owner' | 'admin' | 'member'
   >('member')
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?returnUrl=/team')
-    }
-  }, [user, authLoading, router])
-
-  useEffect(() => {
-    if (user) {
-      loadTeamData()
-    }
-  }, [user])
-
-  const loadTeamData = async () => {
+  const loadTeamData = useCallback(async () => {
     if (!user) return
 
     try {
@@ -120,7 +108,19 @@ export default function TeamPage() {
     } finally {
       setPageLoading(false)
     }
-  }
+  }, [user, toast])
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/login?returnUrl=/team')
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (user) {
+      loadTeamData()
+    }
+  }, [user, loadTeamData])
 
   const handleTeamCreated = (newTeam: Team) => {
     setTeam(newTeam)
@@ -323,7 +323,6 @@ export default function TeamPage() {
                     <TeamMembersList
                       teamId={team.id}
                       members={members}
-                      currentUserId={user.uid}
                       currentUserRole={currentUserRole}
                       onMembersChange={handleMembersChange}
                     />

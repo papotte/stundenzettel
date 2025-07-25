@@ -31,7 +31,6 @@ import {
 interface TeamMembersListProps {
   teamId: string
   members: TeamMember[]
-  currentUserId: string
   currentUserRole: 'owner' | 'admin' | 'member'
   onMembersChange: (members: TeamMember[]) => void
 }
@@ -39,7 +38,6 @@ interface TeamMembersListProps {
 export function TeamMembersList({
   teamId,
   members,
-  currentUserId,
   currentUserRole,
   onMembersChange,
 }: TeamMembersListProps) {
