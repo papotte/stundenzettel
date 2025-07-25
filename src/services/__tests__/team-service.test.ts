@@ -20,7 +20,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 
-import { TeamService } from '../team-service'
+import * as teamService from '../team-service'
 
 // Mock Firebase
 jest.mock('@/lib/firebase', () => ({
@@ -62,19 +62,8 @@ const createMockTimestamp = (date: Date) => ({
 })
 
 describe('TeamService', () => {
-  let teamService: TeamService
-
   beforeEach(() => {
     jest.clearAllMocks()
-    teamService = TeamService.getInstance()
-  })
-
-  describe('getInstance', () => {
-    it('returns singleton instance', () => {
-      const instance1 = TeamService.getInstance()
-      const instance2 = TeamService.getInstance()
-      expect(instance1).toBe(instance2)
-    })
   })
 
   describe('createTeam', () => {

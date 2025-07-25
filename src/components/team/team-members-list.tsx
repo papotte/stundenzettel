@@ -22,6 +22,11 @@ import {
 } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamMember } from '@/lib/types'
+import {
+  updateTeamMemberRole,
+  removeTeamMember,
+  getTeamMembers,
+} from '@/services/team-service'
 
 interface TeamMembersListProps {
   teamId: string
@@ -50,20 +55,8 @@ export function TeamMembersList({
   ) => {
     setLoadingMemberId(memberId)
     try {
-      const response = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ role: newRole }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to update member role')
-      }
-
-      const { members: updatedMembers } = await response.json()
+      await updateTeamMemberRole(teamId, memberId, newRole)
+      const updatedMembers = await getTeamMembers(teamId)
       onMembersChange(updatedMembers)
 
       toast({
@@ -85,16 +78,8 @@ export function TeamMembersList({
   const handleRemoveMember = async (memberId: string) => {
     setLoadingMemberId(memberId)
     try {
-      const response = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to remove member')
-      }
-
-      const { members: updatedMembers } = await response.json()
+      await removeTeamMember(teamId, memberId)
+      const updatedMembers = await getTeamMembers(teamId)
       onMembersChange(updatedMembers)
 
       toast({

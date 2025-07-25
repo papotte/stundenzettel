@@ -30,6 +30,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
+import { createTeam, getTeam } from '@/services/team-service'
 
 const teamFormSchema = z.object({
   name: z.string().min(1, 'Team name is required'),
@@ -62,32 +63,23 @@ export function CreateTeamDialog({
   const onSubmit = async (values: TeamFormValues) => {
     setIsCreating(true)
     try {
-      const response = await fetch('/api/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: values.name,
-          description: values.description,
-          ownerId: userId,
-        }),
-      })
+      const teamId = await createTeam(
+        values.name,
+        values.description || '',
+        userId,
+      )
+      const team = await getTeam(teamId)
+      
+      if (team) {
+        onTeamCreated(team)
+        setOpen(false)
+        form.reset()
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create team')
+        toast({
+          title: 'Team created',
+          description: `Successfully created team "${team.name}"`,
+        })
       }
-
-      const { team } = await response.json()
-      onTeamCreated(team)
-      setOpen(false)
-      form.reset()
-
-      toast({
-        title: 'Team created',
-        description: `Successfully created team "${team.name}"`,
-      })
     } catch (error) {
       toast({
         title: 'Error',

@@ -21,6 +21,10 @@ import {
 } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
+import {
+  declineTeamInvitation,
+  createTeamInvitation,
+} from '@/services/team-service'
 
 interface TeamInvitationsListProps {
   invitations: TeamInvitation[]
@@ -39,14 +43,7 @@ export function TeamInvitationsList({
   const handleCancelInvitation = async (invitationId: string) => {
     setLoadingInvitationId(invitationId)
     try {
-      const response = await fetch(`/api/invitations/${invitationId}/decline`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to cancel invitation')
-      }
+      await declineTeamInvitation(invitationId)
 
       // Remove the invitation from the list
       const updatedInvitations = invitations.filter(
@@ -76,41 +73,24 @@ export function TeamInvitationsList({
     setLoadingInvitationId(invitation.id)
     try {
       // Cancel the old invitation first
-      await fetch(`/api/invitations/${invitation.id}/decline`, {
-        method: 'POST',
-      })
+      await declineTeamInvitation(invitation.id)
 
       // Create a new invitation
-      const response = await fetch(
-        `/api/teams/${invitation.teamId}/invitations`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: invitation.email,
-            role: invitation.role,
-            invitedBy: invitation.invitedBy,
-          }),
-        },
+      const newInvitationId = await createTeamInvitation(
+        invitation.teamId,
+        invitation.email,
+        invitation.role,
+        invitation.invitedBy,
       )
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to resend invitation')
-      }
-
-      const { invitationId } = await response.json()
 
       // Update the invitation in the list
       const updatedInvitations = invitations.map((inv) =>
         inv.id === invitation.id
           ? {
               ...inv,
-              id: invitationId,
+              id: newInvitationId,
               invitedAt: new Date(),
-              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
             }
           : inv,
       )
