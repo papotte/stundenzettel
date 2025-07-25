@@ -235,12 +235,19 @@ export async function acceptTeamInvitation(
   batch.update(invitationRef, { status: 'accepted' })
 
   // Add user to team
-  await addTeamMember(teamId, userId, invitationData.role, invitationData.invitedBy)
+  await addTeamMember(
+    teamId,
+    userId,
+    invitationData.role,
+    invitationData.invitedBy,
+  )
 
   await batch.commit()
 }
 
-export async function declineTeamInvitation(invitationId: string): Promise<void> {
+export async function declineTeamInvitation(
+  invitationId: string,
+): Promise<void> {
   const docRef = doc(db, 'team-invitations', invitationId)
   await updateDoc(docRef, { status: 'expired' })
 }
@@ -250,12 +257,12 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
   // Find teams where user is a member by checking if member document exists
   const teamsQuery = query(collection(db, 'teams'))
   const querySnapshot = await getDocs(teamsQuery)
-  
+
   // Check each team to see if user is a member
   for (const teamDoc of querySnapshot.docs) {
     const teamId = teamDoc.id
     const memberDoc = await getDoc(doc(db, 'teams', teamId, 'members', userId))
-    
+
     if (memberDoc.exists()) {
       const data = teamDoc.data()
       return {
@@ -268,7 +275,7 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
       }
     }
   }
-  
+
   return null
 }
 

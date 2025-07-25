@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { ArrowLeft, CreditCard, Settings, Users } from 'lucide-react'
+import { ArrowLeft, Settings, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -31,10 +31,10 @@ import type {
   TeamMember,
 } from '@/lib/types'
 import {
-  getUserTeam,
-  getTeamMembers,
   getTeamInvitations,
+  getTeamMembers,
   getTeamSubscription,
+  getUserTeam,
 } from '@/services/team-service'
 
 export default function TeamPage() {

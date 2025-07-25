@@ -69,7 +69,7 @@ export function CreateTeamDialog({
         userId,
       )
       const team = await getTeam(teamId)
-      
+
       if (team) {
         onTeamCreated(team)
         setOpen(false)

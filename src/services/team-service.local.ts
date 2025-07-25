@@ -1,9 +1,4 @@
-import type {
-  Subscription,
-  Team,
-  TeamInvitation,
-  TeamMember,
-} from '@/lib/types'
+import type { Subscription, Team, TeamInvitation, TeamMember } from '@/lib/types'
 
 // Mock data store
 const mockTeams: Record<string, Team> = {}
@@ -22,7 +17,7 @@ export async function createTeam(
   ownerId: string,
 ): Promise<string> {
   const teamId = `team-${nextTeamId++}`
-  const team: Team = {
+  mockTeams[teamId] = {
     id: teamId,
     name,
     description,
@@ -30,8 +25,6 @@ export async function createTeam(
     createdAt: new Date(),
     updatedAt: new Date(),
   }
-
-  mockTeams[teamId] = team
   mockMembers[teamId] = []
 
   // Add owner as first member
@@ -176,7 +169,9 @@ export async function acceptTeamInvitation(
   await addTeamMember(teamId, userId, invitation.role, invitation.invitedBy)
 }
 
-export async function declineTeamInvitation(invitationId: string): Promise<void> {
+export async function declineTeamInvitation(
+  invitationId: string,
+): Promise<void> {
   // Find invitation across all teams
   for (const invitations of Object.values(mockInvitations)) {
     const invitation = invitations.find((inv) => inv.id === invitationId)

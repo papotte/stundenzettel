@@ -23,9 +23,9 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import type { TeamMember } from '@/lib/types'
 import {
-  updateTeamMemberRole,
-  removeTeamMember,
   getTeamMembers,
+  removeTeamMember,
+  updateTeamMemberRole,
 } from '@/services/team-service'
 
 interface TeamMembersListProps {
@@ -118,13 +118,9 @@ export function TeamMembersList({
   const canEditMember = (member: TeamMember) => {
     // Owners can edit everyone except themselves if they're the only owner
     if (currentUserRole === 'owner') {
-      if (
-        member.role === 'owner' &&
-        members.filter((m) => m.role === 'owner').length === 1
-      ) {
-        return false // Can't edit the last owner
-      }
-      return true
+      return !(member.role === 'owner' &&
+        members.filter((m) => m.role === 'owner').length === 1);
+
     }
 
     // Admins can edit members but not owners or other admins

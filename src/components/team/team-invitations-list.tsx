@@ -22,8 +22,8 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 import {
-  declineTeamInvitation,
   createTeamInvitation,
+  declineTeamInvitation,
 } from '@/services/team-service'
 
 interface TeamInvitationsListProps {
