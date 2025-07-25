@@ -108,7 +108,7 @@ export default function TeamPage() {
     } finally {
       setPageLoading(false)
     }
-  }, [user, toast])
+  }, [user, toast, t])
 
   useEffect(() => {
     if (!authLoading && !user) {

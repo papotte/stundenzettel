@@ -39,7 +39,14 @@ const defaultProps = {
   team: mockTeam,
   currentUserRole: 'owner' as const,
   onTeamUpdated: jest.fn(),
-  children: <button>Settings</button>,
+}
+
+const renderTeamSettingsDialog = (props = {}) => {
+  return render(
+    <TeamSettingsDialog {...defaultProps} {...props}>
+      <button>Settings</button>
+    </TeamSettingsDialog>,
+  )
 }
 
 describe('TeamSettingsDialog', () => {
@@ -51,7 +58,7 @@ describe('TeamSettingsDialog', () => {
 
   describe('Dialog Trigger', () => {
     it('renders children as trigger', () => {
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       expect(
         screen.getByRole('button', { name: /settings/i }),
@@ -60,7 +67,7 @@ describe('TeamSettingsDialog', () => {
 
     it('opens dialog when trigger is clicked', async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -73,7 +80,7 @@ describe('TeamSettingsDialog', () => {
   describe('Dialog Content', () => {
     beforeEach(async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -112,7 +119,7 @@ describe('TeamSettingsDialog', () => {
   describe('Form Submission', () => {
     beforeEach(async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -171,7 +178,7 @@ describe('TeamSettingsDialog', () => {
   describe('Team Update Flow', () => {
     beforeEach(async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -227,7 +234,7 @@ describe('TeamSettingsDialog', () => {
   describe('Error Handling', () => {
     beforeEach(async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -282,7 +289,7 @@ describe('TeamSettingsDialog', () => {
   describe('Loading States', () => {
     beforeEach(async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -327,7 +334,7 @@ describe('TeamSettingsDialog', () => {
   describe('Dialog Actions', () => {
     beforeEach(async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -373,7 +380,7 @@ describe('TeamSettingsDialog', () => {
   describe('Form Reset', () => {
     it('resets form to original values when dialog is reopened', async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       // Open dialog
       const settingsButton = screen.getByRole('button', { name: /settings/i })
@@ -406,7 +413,7 @@ describe('TeamSettingsDialog', () => {
   describe('Team Data Display', () => {
     it('displays current team data correctly', async () => {
       const user = userEvent.setup()
-      render(<TeamSettingsDialog {...defaultProps} />)
+      renderTeamSettingsDialog()
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
@@ -420,9 +427,7 @@ describe('TeamSettingsDialog', () => {
     it('handles team without description', async () => {
       const teamWithoutDescription = { ...mockTeam, description: undefined }
       const user = userEvent.setup()
-      render(
-        <TeamSettingsDialog {...defaultProps} team={teamWithoutDescription} />,
-      )
+      renderTeamSettingsDialog({ team: teamWithoutDescription })
 
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)

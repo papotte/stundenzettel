@@ -396,10 +396,10 @@ describe('TeamService', () => {
     it('delegates all operations to the underlying service', async () => {
       // Test that the service acts as a proper facade
       mockLocalService.createTeam.mockResolvedValue('team-123')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockLocalService.getTeam.mockResolvedValue({
         id: 'team-123',
         name: 'Test Team',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       mockLocalService.updateTeam.mockResolvedValue(undefined)
       mockLocalService.deleteTeam.mockResolvedValue(undefined)
