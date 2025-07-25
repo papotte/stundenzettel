@@ -320,7 +320,7 @@ describe('TeamSubscriptionCard', () => {
   describe('Loading States', () => {
     it('shows loading state during API calls', async () => {
       const user = userEvent.setup()
-      let resolveFetch: (value: any) => void
+      let resolveFetch: (value: unknown) => void
       const fetchPromise = new Promise((resolve) => {
         resolveFetch = resolve
       })
