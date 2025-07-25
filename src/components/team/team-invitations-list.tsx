@@ -22,6 +22,7 @@ import {
 import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
+import { formatAppDate } from '@/lib/utils'
 import {
   createTeamInvitation,
   declineTeamInvitation,
@@ -40,7 +41,7 @@ export function TeamInvitationsList({
     null,
   )
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const handleCancelInvitation = async (invitationId: string) => {
     setLoadingInvitationId(invitationId)
@@ -170,7 +171,11 @@ export function TeamInvitationsList({
                   </div>
                 </TableCell>
                 <TableCell className={expired ? 'text-red-600' : ''}>
-                  {new Date(invitation.expiresAt).toLocaleDateString()}
+                  {formatAppDate(
+                    new Date(invitation.expiresAt),
+                    language,
+                    false,
+                  )}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

@@ -23,6 +23,7 @@ import {
 import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamMember } from '@/lib/types'
+import { formatAppDate } from '@/lib/utils'
 import {
   getTeamMembers,
   removeTeamMember,
@@ -44,7 +45,7 @@ export function TeamMembersList({
 }: TeamMembersListProps) {
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const canManageMembers =
     currentUserRole === 'owner' || currentUserRole === 'admin'
@@ -161,7 +162,7 @@ export function TeamMembersList({
                 </div>
               </TableCell>
               <TableCell>
-                {new Date(member.joinedAt).toLocaleDateString()}
+                {formatAppDate(member.joinedAt, language, false)}
               </TableCell>
               <TableCell>
                 {canManageMembers && canEditMember(member) && (
@@ -171,6 +172,7 @@ export function TeamMembersList({
                         variant="ghost"
                         className="h-8 w-8 p-0"
                         disabled={loadingMemberId === member.id}
+                        aria-label={t('teams.memberOptions')}
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>

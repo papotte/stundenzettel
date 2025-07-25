@@ -17,6 +17,7 @@ import { Progress } from '@/components/ui/progress'
 import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
+import { formatAppDate } from '@/lib/utils'
 
 interface TeamSubscriptionCardProps {
   team: Team
@@ -33,7 +34,7 @@ export function TeamSubscriptionCard({
 }: TeamSubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -219,16 +220,22 @@ export function TeamSubscriptionCard({
           <p className="font-medium">{t('teams.currentPeriod')}</p>
           <p className="text-sm text-muted-foreground">
             {t('teams.startedOn', {
-              date: new Date(
-                subscription.currentPeriodStart,
-              ).toLocaleDateString(),
+              date: formatAppDate(
+                new Date(subscription.currentPeriodStart),
+                language,
+                false,
+              ),
             })}
             {subscription.cancelAt && (
               <span className="text-red-600">
                 {' '}
                 •{' '}
                 {t('teams.cancelsOn', {
-                  date: new Date(subscription.cancelAt).toLocaleDateString(),
+                  date: formatAppDate(
+                    new Date(subscription.cancelAt),
+                    language,
+                    false,
+                  ),
                 })}
               </span>
             )}

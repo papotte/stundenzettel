@@ -39,14 +39,10 @@ import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 import { createTeamInvitation } from '@/services/team-service'
 
-const inviteFormSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  role: z.enum(['admin', 'member'], {
-    required_error: 'Please select a role',
-  }),
-})
-
-type InviteFormValues = z.infer<typeof inviteFormSchema>
+type InviteFormValues = {
+  email: string
+  role: 'admin' | 'member'
+}
 
 interface InviteMemberDialogProps {
   teamId: string

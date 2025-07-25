@@ -90,9 +90,13 @@ export function formatMinutesToTimeInput(
  * Formats a date in a consistent, locale-aware way for the app (e.g., July 2nd, 2025).
  * Defaults to 'en' if no locale is provided or recognized.
  */
-export function formatAppDate(date: Date, locale: string = 'en') {
+export function formatAppDate(
+  date: Date,
+  locale: string = 'en',
+  includeDay: boolean = true,
+) {
   const localeObj = locale === 'de' ? de : enUS
-  return format(date, 'PPPP', { locale: localeObj })
+  return format(date, includeDay ? 'PPPP' : 'PPP', { locale: localeObj })
 }
 
 /**

@@ -33,12 +33,10 @@ import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 import { createTeam, getTeam } from '@/services/team-service'
 
-const teamFormSchema = z.object({
-  name: z.string().min(1, 'Team name is required'),
-  description: z.string().optional(),
-})
-
-type TeamFormValues = z.infer<typeof teamFormSchema>
+type TeamFormValues = {
+  name: string
+  description?: string
+}
 
 interface CreateTeamDialogProps {
   userId: string
@@ -105,7 +103,7 @@ export function CreateTeamDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} data-testid="create-team-dialog">
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />

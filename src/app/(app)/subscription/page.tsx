@@ -35,7 +35,7 @@ export default function SubscriptionPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const {
     subscription,
     loading: subLoading,
@@ -188,7 +188,7 @@ export default function SubscriptionPage() {
                         </p>
                         <p className="text-xs text-blue-600 dark:text-blue-400">
                           {t('settings.trialEndsOn')}:{' '}
-                          {formatAppDate(trialEndDate)}
+                          {formatAppDate(trialEndDate, language)}
                         </p>
                       </div>
                     </div>
@@ -220,7 +220,7 @@ export default function SubscriptionPage() {
                         {t('settings.cancellationDate')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {formatAppDate(subscription.cancelAt)}
+                        {formatAppDate(subscription.cancelAt, language)}
                       </p>
                     </div>
                   </div>
