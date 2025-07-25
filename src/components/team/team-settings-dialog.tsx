@@ -49,7 +49,7 @@ export function TeamSettingsDialog({
         title: 'Team ID copied',
         description: 'Team ID has been copied to clipboard',
       })
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to copy Team ID to clipboard',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AlertCircle, Check, CreditCard, Plus, Users } from 'lucide-react'
 
@@ -85,7 +85,7 @@ export function TeamSubscriptionCard({
         // Redirect to pricing page for new subscription
         window.location.href = '/pricing'
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to open subscription management',
@@ -121,7 +121,7 @@ export function TeamSubscriptionCard({
       } else {
         throw new Error('Failed to create checkout session')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to upgrade subscription',
@@ -205,7 +205,7 @@ export function TeamSubscriptionCard({
           <Progress value={seatUsagePercentage} className="h-2" />
           {seatUsagePercentage > 90 && (
             <p className="text-sm text-amber-600">
-              Warning: You're approaching your seat limit
+              Warning: You&apos;re approaching your seat limit
             </p>
           )}
         </div>

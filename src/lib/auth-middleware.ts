@@ -1,4 +1,4 @@
-import { getApp, getApps, initializeApp } from 'firebase-admin/app'
+import { getApps, initializeApp } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'
 import { NextRequest } from 'next/server'
 
