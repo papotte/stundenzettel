@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/papotte/stundenzettel/compare/v1.8.1...v1.8.2) (2025-07-25)
+
+
+### Bug Fixes
+
+* **deps:** update dependency next to v15.4.4 ([#88](https://github.com/papotte/stundenzettel/issues/88)) ([80f5764](https://github.com/papotte/stundenzettel/commit/80f5764d6918b4a907cf34c00f3e910bb47787c0))
+
 ## [1.8.1](https://github.com/papotte/stundenzettel/compare/v1.8.0...v1.8.1) (2025-07-23)
 
 
