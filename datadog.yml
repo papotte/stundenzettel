@@ -1,0 +1,53 @@
+# Datadog Agent Configuration
+# This file configures the Datadog agent for monitoring your Next.js application
+
+api_key: ${DD_API_KEY}
+site: ${DD_SITE:-datadoghq.com}
+
+# Logs configuration
+logs_config:
+  enabled: true
+  logs_dd_url: ${DD_LOGS_CONFIG_LOGS_DD_URL}
+
+# APM configuration for distributed tracing
+apm_config:
+  enabled: true
+  apm_non_local_traffic: true
+
+# Process monitoring
+process_config:
+  enabled: true
+  process_collection:
+    enabled: true
+
+# Network performance monitoring
+network_config:
+  enabled: true
+
+# Security monitoring
+runtime_security_config:
+  enabled: true
+
+# Custom metrics and checks
+additional_checksd: /etc/datadog-agent/checks.d
+
+# Tags for better organization
+tags:
+  - "env:${DD_ENV:-development}"
+  - "service:stundenzettel"
+  - "version:${APP_VERSION:-latest}"
+
+# Log level
+log_level: info
+
+# Hostname
+hostname: ${DD_HOSTNAME}
+
+# Proxy configuration (if needed)
+# proxy:
+#   https: http://proxy.company.com:3128
+#   http: http://proxy.company.com:3128
+
+# Additional configuration for containerized environments
+use_dogstatsd: true
+dogstatsd_metrics_stats_enable: true 

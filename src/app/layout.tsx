@@ -4,6 +4,7 @@ import { Lora, PT_Sans } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { I18nProvider } from '@/context/i18n-context'
+import { DatadogProvider } from '@/components/datadog-provider'
 
 import './globals.css'
 
@@ -51,12 +52,14 @@ export default function RootLayout({
       <body
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
-        <AuthProvider>
-          <I18nProvider>
-            {children}
-            <Toaster />
-          </I18nProvider>
-        </AuthProvider>
+        <DatadogProvider>
+          <AuthProvider>
+            <I18nProvider>
+              {children}
+              <Toaster />
+            </I18nProvider>
+          </AuthProvider>
+        </DatadogProvider>
       </body>
     </html>
   )

@@ -1,0 +1,41 @@
+services:
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:7
+    container_name: datadog-agent
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    volumes:
+      - /var/run/datadog:/var/run/datadog
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./datadog.yml:/etc/datadog-agent/datadog.yml:ro
+    ports:
+      - "18126:8126"  # APM
+      - "18125:8125/udp"  # DogStatsD
+    networks:
+      - datadog-network
+
+  # Optional: Datadog Cluster Agent for Kubernetes
+  # datadog-cluster-agent:
+  #   image: gcr.io/datadoghq/cluster-agent:latest
+  #   container_name: datadog-cluster-agent
+  #   restart: unless-stopped
+  #   environment:
+  #     - DD_API_KEY=${DD_API_KEY}
+  #     - DD_SITE=${DD_SITE:-datadoghq.com}
+  #     - DD_CLUSTER_AGENT_ENABLED=true
+  #     - DD_CLUSTER_AGENT_KUBERNETES_SERVICE_NAME=datadog-cluster-agent
+  #     - DD_COLLECT_KUBERNETES_EVENTS=true
+  #     - DD_LEADER_ELECTION=true
+  #     - DD_LEADER_LEASE_DURATION=15s
+  #   ports:
+  #     - "5005:5005"
+  #   networks:
+  #     - datadog-network
+
+networks:
+  datadog-network:
+    driver: bridge 

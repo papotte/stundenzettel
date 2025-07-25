@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
+import { browserMetrics } from '@/lib/datadog-browser'
 
 interface UserMenuProps {
   variant?: 'default' | 'ghost'
@@ -47,6 +48,7 @@ export default function UserMenu({
   const { signOut, user } = useAuth()
 
   const handleSignOut = async () => {
+    browserMetrics.trackAction('logout_click', { userId: user?.uid, email: user?.email })
     await signOut()
     // The auth context and page guard will handle redirection
   }
@@ -58,6 +60,7 @@ export default function UserMenu({
         variant={variant}
         size={size}
         className={`w-auto px-2 ${className}`}
+        onClick={() => browserMetrics.trackAction('login_click')}
       >
         <Link href="/login" data-testid="login-link">
           {t('topNav.login')}

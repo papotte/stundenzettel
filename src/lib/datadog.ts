@@ -1,0 +1,2 @@
+// Datadog server-side metrics are not supported on Firebase Hosting.
+// This file is intentionally left blank or can be used for future server-side integrations if you migrate to a supported environment. 
