@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 import {
@@ -39,6 +40,7 @@ export function TeamInvitationsList({
     null,
   )
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const handleCancelInvitation = async (invitationId: string) => {
     setLoadingInvitationId(invitationId)
@@ -52,16 +54,16 @@ export function TeamInvitationsList({
       onInvitationsChange(updatedInvitations)
 
       toast({
-        title: 'Invitation cancelled',
-        description: 'The invitation has been cancelled',
+        title: t('teams.invitationCancelled'),
+        description: t('teams.invitationCancelledDescription'),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to cancel invitation',
+            : t('teams.failedToCancelInvitation'),
         variant: 'destructive',
       })
     } finally {
@@ -97,16 +99,18 @@ export function TeamInvitationsList({
       onInvitationsChange(updatedInvitations)
 
       toast({
-        title: 'Invitation resent',
-        description: `New invitation sent to ${invitation.email}`,
+        title: t('teams.invitationResent'),
+        description: t('teams.invitationResentDescription', {
+          email: invitation.email,
+        }),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to resend invitation',
+            : t('teams.failedToResendInvitation'),
         variant: 'destructive',
       })
     } finally {
@@ -115,7 +119,7 @@ export function TeamInvitationsList({
   }
 
   const getRoleLabel = (role: TeamInvitation['role']) => {
-    return role.charAt(0).toUpperCase() + role.slice(1)
+    return t(`teams.roles.${role}`)
   }
 
   const isExpired = (expiresAt: Date) => {
@@ -125,7 +129,7 @@ export function TeamInvitationsList({
   if (invitations.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground">
-        No pending invitations
+        {t('teams.noPendingInvitations')}
       </div>
     )
   }
@@ -135,10 +139,10 @@ export function TeamInvitationsList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Expires</TableHead>
+            <TableHead>{t('teams.emailAddress')}</TableHead>
+            <TableHead>{t('teams.role')}</TableHead>
+            <TableHead>{t('teams.status')}</TableHead>
+            <TableHead>{t('teams.expires')}</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -161,7 +165,7 @@ export function TeamInvitationsList({
                     <span
                       className={expired ? 'text-red-600' : 'text-amber-600'}
                     >
-                      {expired ? 'Expired' : 'Pending'}
+                      {expired ? t('teams.expired') : t('teams.pending')}
                     </span>
                   </div>
                 </TableCell>
@@ -184,14 +188,14 @@ export function TeamInvitationsList({
                         onClick={() => handleResendInvitation(invitation)}
                       >
                         <Mail className="mr-2 h-4 w-4" />
-                        Resend Invitation
+                        {t('teams.resendInvitation')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-600"
                         onClick={() => handleCancelInvitation(invitation.id)}
                       >
                         <X className="mr-2 h-4 w-4" />
-                        Cancel Invitation
+                        {t('teams.cancelInvitation')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

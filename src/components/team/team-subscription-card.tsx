@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
 
@@ -32,6 +33,7 @@ export function TeamSubscriptionCard({
 }: TeamSubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,8 +89,8 @@ export function TeamSubscriptionCard({
       }
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to open subscription management',
+        title: t('teams.error'),
+        description: t('teams.failedToOpenSubscriptionManagement'),
         variant: 'destructive',
       })
     } finally {
@@ -123,8 +125,8 @@ export function TeamSubscriptionCard({
       }
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to upgrade subscription',
+        title: t('teams.error'),
+        description: t('teams.failedToUpgradeSubscription'),
         variant: 'destructive',
       })
     } finally {
@@ -138,22 +140,24 @@ export function TeamSubscriptionCard({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Team Subscription
+            {t('teams.teamSubscription')}
           </CardTitle>
           <CardDescription>
-            Subscribe to unlock team features and seat management
+            {t('teams.teamSubscriptionDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center py-6">
             <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Active Subscription</h3>
+            <h3 className="text-lg font-medium mb-2">
+              {t('teams.noActiveSubscription')}
+            </h3>
             <p className="text-muted-foreground mb-6">
-              Subscribe to unlock team collaboration features
+              {t('teams.noActiveSubscriptionDescription')}
             </p>
             <Button onClick={handleUpgradeSubscription} disabled={isLoading}>
               <Plus className="mr-2 h-4 w-4" />
-              {isLoading ? 'Loading...' : 'Subscribe Now'}
+              {isLoading ? t('teams.loading') : t('teams.subscribeNow')}
             </Button>
           </div>
         </CardContent>
@@ -170,19 +174,19 @@ export function TeamSubscriptionCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CreditCard className="h-5 w-5" />
-          Team Subscription
+          {t('teams.teamSubscription')}
         </CardTitle>
         <CardDescription>
-          Manage your team subscription and seat assignments
+          {t('teams.teamSubscriptionManageDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Subscription Status */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium">Subscription Status</p>
+            <p className="font-medium">{t('teams.subscriptionStatus')}</p>
             <p className="text-sm text-muted-foreground">
-              {subscription.planName || 'Team Plan'}
+              {subscription.planName || t('teams.teamPlan')}
             </p>
           </div>
           <Badge className={getStatusColor(subscription.status)}>
@@ -196,31 +200,36 @@ export function TeamSubscriptionCard({
           <div className="flex items-center justify-between">
             <p className="font-medium flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Seat Usage
+              {t('teams.seatUsage')}
             </p>
             <span className="text-sm text-muted-foreground">
-              {seatsUsed} of {totalSeats} seats used
+              {t('teams.seatsUsed', { used: seatsUsed, total: totalSeats })}
             </span>
           </div>
           <Progress value={seatUsagePercentage} className="h-2" />
           {seatUsagePercentage > 90 && (
             <p className="text-sm text-amber-600">
-              Warning: You&apos;re approaching your seat limit
+              {t('teams.seatLimitWarning')}
             </p>
           )}
         </div>
 
         {/* Current Period */}
         <div>
-          <p className="font-medium">Current Period</p>
+          <p className="font-medium">{t('teams.currentPeriod')}</p>
           <p className="text-sm text-muted-foreground">
-            Started{' '}
-            {new Date(subscription.currentPeriodStart).toLocaleDateString()}
+            {t('teams.startedOn', {
+              date: new Date(
+                subscription.currentPeriodStart,
+              ).toLocaleDateString(),
+            })}
             {subscription.cancelAt && (
               <span className="text-red-600">
                 {' '}
-                • Cancels on{' '}
-                {new Date(subscription.cancelAt).toLocaleDateString()}
+                •{' '}
+                {t('teams.cancelsOn', {
+                  date: new Date(subscription.cancelAt).toLocaleDateString(),
+                })}
               </span>
             )}
           </p>
@@ -235,7 +244,7 @@ export function TeamSubscriptionCard({
             className="flex-1"
           >
             <CreditCard className="mr-2 h-4 w-4" />
-            {isLoading ? 'Loading...' : 'Manage Billing'}
+            {isLoading ? t('teams.loading') : t('teams.manageBilling')}
           </Button>
           {seatsUsed >= totalSeats && (
             <Button
@@ -244,7 +253,7 @@ export function TeamSubscriptionCard({
               className="flex-1"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Seats
+              {t('teams.addSeats')}
             </Button>
           )}
         </div>

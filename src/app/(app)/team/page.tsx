@@ -101,8 +101,8 @@ export default function TeamPage() {
     } catch (error) {
       console.error('Error loading team data:', error)
       toast({
-        title: 'Error',
-        description: 'Failed to load team data',
+        title: t('teams.error'),
+        description: t('teams.failedToLoadTeamData'),
         variant: 'destructive',
       })
     } finally {
@@ -196,19 +196,18 @@ export default function TeamPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Team Management
+                  {t('teams.title')}
                 </CardTitle>
-                <CardDescription>
-                  Create and manage your team to collaborate with others.
-                </CardDescription>
+                <CardDescription>{t('teams.subtitle')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No Team Yet</h3>
+                  <h3 className="text-lg font-medium mb-2">
+                    {t('teams.noTeamYet')}
+                  </h3>
                   <p className="text-muted-foreground mb-6">
-                    Create a team to invite members and manage subscriptions
-                    together.
+                    {t('teams.noTeamDescription')}
                   </p>
                   <CreateTeamDialog
                     userId={user.uid}
@@ -225,11 +224,10 @@ export default function TeamPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Mail className="h-5 w-5" />
-                    Pending Invitations
+                    {t('teams.pendingInvitations')}
                   </CardTitle>
                   <CardDescription>
-                    You have been invited to join teams. Accept or decline these
-                    invitations.
+                    {t('teams.pendingInvitationsDescription')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -256,7 +254,7 @@ export default function TeamPage() {
                       {team.name}
                     </CardTitle>
                     <CardDescription>
-                      {team.description || 'No description provided'}
+                      {team.description || t('teams.noDescriptionProvided')}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -275,7 +273,7 @@ export default function TeamPage() {
                     >
                       <Button variant="outline" size="sm">
                         <Settings className="mr-2 h-4 w-4" />
-                        Settings
+                        {t('teams.settings')}
                       </Button>
                     </TeamSettingsDialog>
                   </div>
@@ -290,7 +288,7 @@ export default function TeamPage() {
                   className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
                 >
                   <Users className="h-4 w-4" />
-                  Members ({members.length})
+                  {t('teams.teamMembers')} ({members.length})
                 </TabsTrigger>
                 {(currentUserRole === 'owner' ||
                   currentUserRole === 'admin') && (
@@ -299,7 +297,7 @@ export default function TeamPage() {
                     className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
                   >
                     <UserPlus className="h-4 w-4" />
-                    Invitations ({invitations.length})
+                    {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
                 <TabsTrigger
@@ -307,16 +305,16 @@ export default function TeamPage() {
                   className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
                 >
                   <CreditCard className="h-4 w-4" />
-                  Subscription
+                  {t('teams.subscription')}
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="members">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Team Members</CardTitle>
+                    <CardTitle>{t('teams.teamMembers')}</CardTitle>
                     <CardDescription>
-                      Manage your team members and their roles.
+                      {t('teams.teamMembersDescription')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -334,9 +332,9 @@ export default function TeamPage() {
                 <TabsContent value="invitations">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Pending Invitations</CardTitle>
+                      <CardTitle>{t('teams.pendingInvitationsTab')}</CardTitle>
                       <CardDescription>
-                        Manage pending team invitations.
+                        {t('teams.pendingInvitationsTabDescription')}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>

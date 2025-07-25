@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 import { updateTeam } from '@/services/team-service'
@@ -39,6 +40,7 @@ export function TeamSettingsDialog({
   const [name, setName] = useState(team.name)
   const [description, setDescription] = useState(team.description || '')
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const canEdit = currentUserRole === 'owner' || currentUserRole === 'admin'
 
@@ -46,13 +48,13 @@ export function TeamSettingsDialog({
     try {
       await navigator.clipboard.writeText(team.id)
       toast({
-        title: 'Team ID copied',
-        description: 'Team ID has been copied to clipboard',
+        title: t('teams.teamIdCopied'),
+        description: t('teams.teamIdCopiedDescription'),
       })
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to copy Team ID to clipboard',
+        title: t('teams.error'),
+        description: t('teams.teamIdCopyError'),
         variant: 'destructive',
       })
     }
@@ -78,18 +80,18 @@ export function TeamSettingsDialog({
       onTeamUpdated?.(updatedTeam)
 
       toast({
-        title: 'Team updated',
-        description: 'Team settings have been saved successfully.',
+        title: t('teams.teamUpdated'),
+        description: t('teams.teamUpdatedDescription'),
       })
 
       setOpen(false)
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to update team settings',
+            : t('teams.failedToUpdateTeamSettings'),
         variant: 'destructive',
       })
     } finally {
@@ -109,40 +111,40 @@ export function TeamSettingsDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Team Settings</DialogTitle>
+          <DialogTitle>{t('teams.settings')}</DialogTitle>
           <DialogDescription>
             {canEdit
-              ? 'Update your team information and settings.'
-              : 'View your team information and settings.'}
+              ? t('teams.settingsDescription')
+              : t('teams.settingsViewDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="team-name">Team Name</Label>
+            <Label htmlFor="team-name">{t('teams.teamName')}</Label>
             <Input
               id="team-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={!canEdit}
-              placeholder="Enter team name"
+              placeholder={t('teams.teamNamePlaceholder')}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="team-description">Description</Label>
+            <Label htmlFor="team-description">{t('teams.description')}</Label>
             <Textarea
               id="team-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={!canEdit}
-              placeholder="Enter team description"
+              placeholder={t('teams.descriptionPlaceholder')}
               rows={3}
             />
           </div>
 
           <div className="grid gap-2">
-            <Label>Team ID</Label>
+            <Label>{t('teams.teamId')}</Label>
             <div className="relative">
               <Input
                 value={team.id}
@@ -155,25 +157,24 @@ export function TeamSettingsDialog({
                 size="icon"
                 onClick={handleCopyTeamId}
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                title="Copy Team ID"
+                title={t('teams.teamId')}
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Please provide this ID when contacting support for team-related
-              issues.
+              {t('teams.teamIdDescription')}
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>
-            Cancel
+            {t('teams.cancel')}
           </Button>
           {canEdit && (
             <Button onClick={handleSave} disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? t('teams.saving') : t('teams.saveChanges')}
             </Button>
           )}
         </DialogFooter>

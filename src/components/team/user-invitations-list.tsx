@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 import type { TeamInvitation } from '@/lib/types'
@@ -40,6 +41,7 @@ export function UserInvitationsList({
     null,
   )
   const { toast } = useToast()
+  const { t } = useTranslation()
   const { refreshInvitations } = useUserInvitations()
 
   const handleAcceptInvitation = async (invitation: TeamInvitation) => {
@@ -60,16 +62,16 @@ export function UserInvitationsList({
       onInvitationAccepted?.()
 
       toast({
-        title: 'Invitation accepted',
-        description: 'You have successfully joined the team!',
+        title: t('teams.invitationAccepted'),
+        description: t('teams.invitationAcceptedDescription'),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to accept invitation',
+            : t('teams.failedToAcceptInvitation'),
         variant: 'destructive',
       })
     } finally {
@@ -92,16 +94,16 @@ export function UserInvitationsList({
       await refreshInvitations()
 
       toast({
-        title: 'Invitation declined',
-        description: 'The invitation has been declined',
+        title: t('teams.invitationDeclined'),
+        description: t('teams.invitationDeclinedDescription'),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Failed to decline invitation',
+            : t('teams.failedToDeclineInvitation'),
         variant: 'destructive',
       })
     } finally {
@@ -110,7 +112,7 @@ export function UserInvitationsList({
   }
 
   const getRoleLabel = (role: TeamInvitation['role']) => {
-    return role.charAt(0).toUpperCase() + role.slice(1)
+    return t(`teams.roles.${role}`)
   }
 
   const isExpired = (expiresAt: Date) => {
@@ -120,7 +122,7 @@ export function UserInvitationsList({
   if (invitations.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground">
-        No pending invitations
+        {t('teams.noPendingInvitations')}
       </div>
     )
   }
@@ -130,11 +132,11 @@ export function UserInvitationsList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Team</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Expires</TableHead>
-            <TableHead className="w-[120px]">Actions</TableHead>
+            <TableHead>{t('teams.team')}</TableHead>
+            <TableHead>{t('teams.role')}</TableHead>
+            <TableHead>{t('teams.status')}</TableHead>
+            <TableHead>{t('teams.expires')}</TableHead>
+            <TableHead className="w-[120px]">{t('teams.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -156,7 +158,7 @@ export function UserInvitationsList({
                     <span
                       className={expired ? 'text-red-600' : 'text-amber-600'}
                     >
-                      {expired ? 'Expired' : 'Pending'}
+                      {expired ? t('teams.expired') : t('teams.pending')}
                     </span>
                   </div>
                 </TableCell>
@@ -173,7 +175,7 @@ export function UserInvitationsList({
                         className="h-8"
                       >
                         <Check className="mr-1 h-3 w-3" />
-                        Accept
+                        {t('teams.accept')}
                       </Button>
                       <Button
                         size="sm"
@@ -183,13 +185,13 @@ export function UserInvitationsList({
                         className="h-8"
                       >
                         <X className="mr-1 h-3 w-3" />
-                        Decline
+                        {t('teams.decline')}
                       </Button>
                     </div>
                   )}
                   {expired && (
                     <span className="text-sm text-muted-foreground">
-                      Expired
+                      {t('teams.expired')}
                     </span>
                   )}
                 </TableCell>

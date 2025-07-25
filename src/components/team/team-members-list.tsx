@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamMember } from '@/lib/types'
 import {
@@ -43,6 +44,7 @@ export function TeamMembersList({
 }: TeamMembersListProps) {
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const canManageMembers =
     currentUserRole === 'owner' || currentUserRole === 'admin'
@@ -58,14 +60,16 @@ export function TeamMembersList({
       onMembersChange(updatedMembers)
 
       toast({
-        title: 'Role updated',
-        description: `Member role updated to ${newRole}`,
+        title: t('teams.roleUpdated'),
+        description: t('teams.roleUpdatedDescription', { role: newRole }),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
-          error instanceof Error ? error.message : 'Failed to update role',
+          error instanceof Error
+            ? error.message
+            : t('teams.failedToUpdateRole'),
         variant: 'destructive',
       })
     } finally {
@@ -81,14 +85,16 @@ export function TeamMembersList({
       onMembersChange(updatedMembers)
 
       toast({
-        title: 'Member removed',
-        description: 'Member has been removed from the team',
+        title: t('teams.memberRemoved'),
+        description: t('teams.memberRemovedDescription'),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
-          error instanceof Error ? error.message : 'Failed to remove member',
+          error instanceof Error
+            ? error.message
+            : t('teams.failedToRemoveMember'),
         variant: 'destructive',
       })
     } finally {
@@ -110,7 +116,7 @@ export function TeamMembersList({
   }
 
   const getRoleLabel = (role: TeamMember['role']) => {
-    return role.charAt(0).toUpperCase() + role.slice(1)
+    return t(`teams.roles.${role}`)
   }
 
   const canEditMember = (member: TeamMember) => {
@@ -136,9 +142,9 @@ export function TeamMembersList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Member</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Joined</TableHead>
+            <TableHead>{t('teams.member')}</TableHead>
+            <TableHead>{t('teams.role')}</TableHead>
+            <TableHead>{t('teams.joined')}</TableHead>
             <TableHead className="w-[70px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -180,7 +186,7 @@ export function TeamMembersList({
                                 }
                               >
                                 <Shield className="mr-2 h-4 w-4" />
-                                Make Admin
+                                {t('teams.makeAdmin')}
                               </DropdownMenuItem>
                             )}
                             {member.role === 'admin' && (
@@ -190,7 +196,7 @@ export function TeamMembersList({
                                 }
                               >
                                 <User className="mr-2 h-4 w-4" />
-                                Make Member
+                                {t('teams.makeMember')}
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuSeparator />
@@ -201,7 +207,7 @@ export function TeamMembersList({
                         onClick={() => handleRemoveMember(member.id)}
                       >
                         <UserX className="mr-2 h-4 w-4" />
-                        Remove Member
+                        {t('teams.removeMember')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
