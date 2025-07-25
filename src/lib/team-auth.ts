@@ -1,5 +1,5 @@
 import type { TeamMember } from '@/lib/types'
-import { getTeamMembers, getTeam } from '@/services/team-service'
+import { getTeam, getTeamMembers } from '@/services/team-service'
 
 export interface TeamAuthResult {
   authorized: boolean
