@@ -145,6 +145,12 @@ export default function TeamPage() {
     setUserInvitations(updatedInvitations)
     // Refresh the global invitations state for the user menu
     await refreshInvitations()
+
+    // If invitations were reduced (one was accepted), reload team data
+    // This handles the case where user accepts an invitation and joins a team
+    if (updatedInvitations.length < userInvitations.length) {
+      await loadTeamData()
+    }
   }
 
   const handleSubscriptionUpdate = (
@@ -225,6 +231,7 @@ export default function TeamPage() {
                   <UserInvitationsList
                     invitations={userInvitations}
                     onInvitationsChange={handleUserInvitationsChange}
+                    onInvitationAccepted={loadTeamData}
                     currentUserEmail={user.email || ''}
                     currentUserId={user.uid}
                   />

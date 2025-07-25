@@ -24,6 +24,7 @@ import {
 interface UserInvitationsListProps {
   invitations: TeamInvitation[]
   onInvitationsChange: (invitations: TeamInvitation[]) => void
+  onInvitationAccepted?: () => void
   currentUserEmail: string
   currentUserId: string
 }
@@ -31,6 +32,7 @@ interface UserInvitationsListProps {
 export function UserInvitationsList({
   invitations,
   onInvitationsChange,
+  onInvitationAccepted,
   currentUserEmail,
   currentUserId,
 }: UserInvitationsListProps) {
@@ -53,6 +55,9 @@ export function UserInvitationsList({
 
       // Refresh global invitations state
       await refreshInvitations()
+
+      // Notify parent component that invitation was accepted
+      onInvitationAccepted?.()
 
       toast({
         title: 'Invitation accepted',
