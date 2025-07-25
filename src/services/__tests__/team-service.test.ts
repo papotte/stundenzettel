@@ -1,411 +1,388 @@
-import {
-  type CollectionReference,
-  type DocumentReference,
-  type DocumentSnapshot,
-  type Query,
-  type QueryFieldFilterConstraint,
-  type QueryOrderByConstraint,
-  type QuerySnapshot,
-  type WriteBatch,
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  onSnapshot,
-  orderBy,
-  query,
-  updateDoc,
-  where,
-  writeBatch,
-} from 'firebase/firestore'
-
 import * as teamService from '../team-service'
+import * as localService from '../team-service.local'
+import * as firestoreService from '../team-service.firestore'
 
-// Mock Firebase
-jest.mock('@/lib/firebase', () => ({
-  db: {},
-}))
+// Mock the underlying services
+jest.mock('../team-service.local')
+jest.mock('../team-service.firestore')
 
-jest.mock('firebase/firestore', () => ({
-  addDoc: jest.fn(),
-  collection: jest.fn(),
-  doc: jest.fn(),
-  getDoc: jest.fn(),
-  getDocs: jest.fn(),
-  onSnapshot: jest.fn(),
-  orderBy: jest.fn(),
-  query: jest.fn(),
-  serverTimestamp: jest.fn(() => new Date()),
-  updateDoc: jest.fn(),
-  where: jest.fn(),
-  writeBatch: jest.fn(),
-}))
-
-const mockAddDoc = addDoc as jest.MockedFunction<typeof addDoc>
-const mockCollection = collection as jest.MockedFunction<typeof collection>
-const mockDoc = doc as jest.MockedFunction<typeof doc>
-const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
-const mockGetDocs = getDocs as jest.MockedFunction<typeof getDocs>
-const mockOnSnapshot = onSnapshot as jest.MockedFunction<typeof onSnapshot>
-const mockOrderBy = orderBy as jest.MockedFunction<typeof orderBy>
-const mockQuery = query as jest.MockedFunction<typeof query>
-const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
-const mockWhere = where as jest.MockedFunction<typeof where>
-const mockWriteBatch = writeBatch as jest.MockedFunction<typeof writeBatch>
-
-// Helper function to create mock Firestore timestamp
-const createMockTimestamp = (date: Date) => ({
-  toDate: () => date,
-  seconds: Math.floor(date.getTime() / 1000),
-  nanoseconds: (date.getTime() % 1000) * 1000000,
-})
+const mockLocalService = localService as jest.Mocked<typeof localService>
+const mockFirestoreService = firestoreService as jest.Mocked<typeof firestoreService>
 
 describe('TeamService', () => {
+  const originalEnv = process.env.NEXT_PUBLIC_ENVIRONMENT
+
   beforeEach(() => {
     jest.clearAllMocks()
+    // Reset environment
+    process.env.NEXT_PUBLIC_ENVIRONMENT = originalEnv
   })
 
-  describe('createTeam', () => {
-    it('creates team successfully', async () => {
-      const mockDocRef = { id: 'team123' } as DocumentReference
-      mockAddDoc.mockResolvedValue(mockDocRef)
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockDoc.mockReturnValue({} as DocumentReference)
+  afterAll(() => {
+    process.env.NEXT_PUBLIC_ENVIRONMENT = originalEnv
+  })
 
-      // Mock the user document that addTeamMember will try to access
-      mockGetDoc.mockResolvedValue({
-        exists: () => true,
-        data: () => ({ email: 'test@example.com' }),
-      } as unknown as DocumentSnapshot)
+  describe('Service Selection Logic', () => {
+    it('uses local service in test environment', async () => {
+      // Mock local service response
+      mockLocalService.createTeam.mockResolvedValue('team-123')
+      mockLocalService.getTeam.mockResolvedValue({
+        id: 'team-123',
+        name: 'Test Team',
+        description: 'Test Description',
+        ownerId: 'user-123',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+      })
 
+      // Test that local service is called (since we're in test environment)
       const result = await teamService.createTeam(
         'Test Team',
         'Test Description',
-        'user123',
+        'user-123',
         'test@example.com',
       )
 
-      expect(result).toBe('team-1')
-      // Note: In test environment, the local service is used which doesn't call Firestore functions
+      expect(mockLocalService.createTeam).toHaveBeenCalledWith(
+        'Test Team',
+        'Test Description',
+        'user-123',
+        'test@example.com',
+      )
+      expect(mockFirestoreService.createTeam).not.toHaveBeenCalled()
+      expect(result).toBe('team-123')
     })
-  })
 
-  describe('getTeam', () => {
-    it('returns team when exists', async () => {
-      const mockTeamData = {
+    it('delegates all operations to the selected service', async () => {
+      // Test that all operations delegate to the underlying service
+      mockLocalService.getTeam.mockResolvedValue({
+        id: 'team-123',
         name: 'Test Team',
         description: 'Test Description',
-        ownerId: 'user123',
-        createdAt: createMockTimestamp(new Date('2024-01-01')),
-        updatedAt: createMockTimestamp(new Date('2024-01-01')),
-      }
+        ownerId: 'user-123',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+      })
 
-      const mockDocSnap = {
-        exists: () => true,
-        id: 'team123',
-        data: () => mockTeamData,
-      }
+      const result = await teamService.getTeam('team-123')
 
-      mockDoc.mockReturnValue({} as DocumentReference)
-      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
-
-      const result = await teamService.getTeam('team123')
-
+      expect(mockLocalService.getTeam).toHaveBeenCalledWith('team-123')
       expect(result).toEqual({
-        id: 'team-1',
+        id: 'team-123',
         name: 'Test Team',
         description: 'Test Description',
-        ownerId: 'user123',
+        ownerId: 'user-123',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
       })
     })
-
-    it('returns null when team does not exist', async () => {
-      const mockDocSnap = {
-        exists: () => false,
-      }
-
-      mockDoc.mockReturnValue({} as DocumentReference)
-      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
-
-      const result = await teamService.getTeam('team123')
-
-      expect(result).toBeNull()
-    })
   })
 
-  describe('updateTeam', () => {
-    it('updates team successfully', async () => {
-      mockDoc.mockReturnValue({} as DocumentReference)
-      mockUpdateDoc.mockResolvedValue(undefined)
-
-      await teamService.updateTeam('team123', {
-        name: 'Updated Team',
-        description: 'Updated Description',
-      })
-
-      expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
-        name: 'Updated Team',
-        description: 'Updated Description',
-        updatedAt: expect.any(Date),
-      })
+  describe('Team CRUD Operations', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
     })
-  })
 
-  describe('deleteTeam', () => {
-    it('deletes team and related data', async () => {
-      const mockBatch = {
-        delete: jest.fn(),
-        commit: jest.fn(),
-      }
-      const mockQuerySnapshot = {
-        docs: [{ ref: { id: 'member1' } }, { ref: { id: 'member2' } }],
-      }
+    it('createTeam delegates to underlying service', async () => {
+      mockLocalService.createTeam.mockResolvedValue('team-123')
 
-      mockWriteBatch.mockReturnValue(mockBatch as unknown as WriteBatch)
-      mockDoc.mockReturnValue({} as DocumentReference)
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockQuery.mockReturnValue({} as Query)
-      mockGetDocs.mockResolvedValue(
-        mockQuerySnapshot as unknown as QuerySnapshot,
-      )
-
-      await teamService.deleteTeam('team123')
-
-      const EXPECTED_DELETION_COUNT = 6 // team + 2 members + 2 users + subscription
-      expect(mockBatch.delete).toHaveBeenCalledTimes(EXPECTED_DELETION_COUNT)
-      expect(mockBatch.commit).toHaveBeenCalled()
-    })
-  })
-
-  describe('addTeamMember', () => {
-    it('adds team member successfully', async () => {
-      const mockUserData = {
-        email: 'test@example.com',
-      }
-
-      mockDoc.mockReturnValue({} as DocumentReference)
-      mockGetDoc.mockResolvedValue({
-        exists: () => true,
-        data: () => mockUserData,
-      } as unknown as DocumentSnapshot)
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockAddDoc.mockResolvedValue({} as DocumentReference)
-
-      await teamService.addTeamMember(
-        'team123',
-        'user123',
-        'member',
-        'owner123',
-      )
-
-      expect(mockAddDoc).toHaveBeenCalledWith(expect.any(Object), {
-        email: 'test@example.com',
-        role: 'member',
-        joinedAt: expect.any(Date),
-        invitedBy: 'owner123',
-      })
-    })
-  })
-
-  describe('getTeamMembers', () => {
-    it('returns team members', async () => {
-      const mockMembersData = [
-        {
-          id: 'member1',
-          data: () => ({
-            email: 'member1@example.com',
-            role: 'member',
-            joinedAt: createMockTimestamp(new Date('2024-01-01')),
-            invitedBy: 'owner123',
-          }),
-        },
-        {
-          id: 'member2',
-          data: () => ({
-            email: 'member2@example.com',
-            role: 'admin',
-            joinedAt: createMockTimestamp(new Date('2024-01-02')),
-            invitedBy: 'owner123',
-          }),
-        },
-      ]
-
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
-      mockQuery.mockReturnValue({} as Query)
-      mockGetDocs.mockResolvedValue({
-        docs: mockMembersData,
-      } as unknown as QuerySnapshot)
-
-      const result = await teamService.getTeamMembers('team123')
-
-      expect(result).toEqual([
-        {
-          id: 'member1',
-          email: 'member1@example.com',
-          role: 'member',
-          joinedAt: new Date('2024-01-01'),
-          invitedBy: 'owner123',
-        },
-        {
-          id: 'member2',
-          email: 'member2@example.com',
-          role: 'admin',
-          joinedAt: new Date('2024-01-02'),
-          invitedBy: 'owner123',
-        },
-      ])
-    })
-  })
-
-  describe('updateTeamMemberRole', () => {
-    it('updates team member role', async () => {
-      mockDoc.mockReturnValue({} as DocumentReference)
-      mockUpdateDoc.mockResolvedValue(undefined)
-
-      await teamService.updateTeamMemberRole('team123', 'member123', 'admin')
-
-      expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
-        role: 'admin',
-      })
-    })
-  })
-
-  describe('removeTeamMember', () => {
-    it('removes team member', async () => {
-      const mockBatch = {
-        delete: jest.fn(),
-        commit: jest.fn(),
-      }
-
-      mockWriteBatch.mockReturnValue(mockBatch as unknown as WriteBatch)
-      mockDoc.mockReturnValue({} as DocumentReference)
-
-      await teamService.removeTeamMember('team123', 'member123')
-
-      expect(mockBatch.delete).toHaveBeenCalledTimes(2) // member + user
-      expect(mockBatch.commit).toHaveBeenCalled()
-    })
-  })
-
-  describe('createTeamInvitation', () => {
-    it('creates team invitation', async () => {
-      const mockDocRef = { id: 'invitation123' } as DocumentReference
-      mockAddDoc.mockResolvedValue(mockDocRef)
-      mockCollection.mockReturnValue({} as CollectionReference)
-
-      const result = await teamService.createTeamInvitation(
-        'team123',
+      const result = await teamService.createTeam(
+        'Test Team',
+        'Test Description',
+        'user-123',
         'test@example.com',
-        'member',
-        'owner123',
       )
 
-      expect(result).toBe('invitation123')
-      expect(mockAddDoc).toHaveBeenCalledWith(expect.any(Object), {
-        teamId: 'team123',
-        email: 'test@example.com',
-        role: 'member',
-        invitedBy: 'owner123',
-        invitedAt: expect.any(Date),
-        expiresAt: expect.any(Date),
-        status: 'pending',
-      })
+      expect(mockLocalService.createTeam).toHaveBeenCalledWith(
+        'Test Team',
+        'Test Description',
+        'user-123',
+        'test@example.com',
+      )
+      expect(result).toBe('team-123')
     })
-  })
 
-  describe('getUserTeam', () => {
-    it('returns user team when exists', async () => {
-      const mockTeamData = {
+    it('getTeam delegates to underlying service', async () => {
+      const mockTeam = {
+        id: 'team-123',
         name: 'Test Team',
         description: 'Test Description',
-        ownerId: 'user123',
-        createdAt: createMockTimestamp(new Date('2024-01-01')),
-        updatedAt: createMockTimestamp(new Date('2024-01-01')),
-      }
-
-      const mockQuerySnapshot = {
-        empty: false,
-        docs: [
-          {
-            id: 'team123',
-            data: () => mockTeamData,
-          },
-        ],
-      }
-
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockWhere.mockReturnValue({} as QueryFieldFilterConstraint)
-      mockQuery.mockReturnValue({} as Query)
-      mockGetDocs.mockResolvedValue(
-        mockQuerySnapshot as unknown as QuerySnapshot,
-      )
-
-      const result = await teamService.getUserTeam('user123')
-
-      expect(result).toEqual({
-        id: 'team123',
-        name: 'Test Team',
-        description: 'Test Description',
-        ownerId: 'user123',
+        ownerId: 'user-123',
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
+      }
+      mockLocalService.getTeam.mockResolvedValue(mockTeam)
+
+      const result = await teamService.getTeam('team-123')
+
+      expect(mockLocalService.getTeam).toHaveBeenCalledWith('team-123')
+      expect(result).toBe(mockTeam)
+    })
+
+    it('updateTeam delegates to underlying service', async () => {
+      mockLocalService.updateTeam.mockResolvedValue(undefined)
+
+      await teamService.updateTeam('team-123', {
+        name: 'Updated Team',
+        description: 'Updated Description',
+      })
+
+      expect(mockLocalService.updateTeam).toHaveBeenCalledWith('team-123', {
+        name: 'Updated Team',
+        description: 'Updated Description',
       })
     })
 
-    it('returns null when user has no team', async () => {
-      const mockQuerySnapshot = {
-        empty: true,
-        docs: [],
+    it('deleteTeam delegates to underlying service', async () => {
+      mockLocalService.deleteTeam.mockResolvedValue(undefined)
+
+      await teamService.deleteTeam('team-123')
+
+      expect(mockLocalService.deleteTeam).toHaveBeenCalledWith('team-123')
+    })
+  })
+
+  describe('Team Member Operations', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
+    })
+
+    it('addTeamMember delegates to underlying service', async () => {
+      mockLocalService.addTeamMember.mockResolvedValue(undefined)
+
+      await teamService.addTeamMember('team-123', 'user-123', 'member', 'owner-123')
+
+      expect(mockLocalService.addTeamMember).toHaveBeenCalledWith(
+        'team-123',
+        'user-123',
+        'member',
+        'owner-123',
+      )
+    })
+
+    it('getTeamMembers delegates to underlying service', async () => {
+      const mockMembers = [
+        {
+          id: 'member-1',
+          email: 'member1@example.com',
+          role: 'member' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'owner-123',
+        },
+      ]
+      mockLocalService.getTeamMembers.mockResolvedValue(mockMembers)
+
+      const result = await teamService.getTeamMembers('team-123')
+
+      expect(mockLocalService.getTeamMembers).toHaveBeenCalledWith('team-123')
+      expect(result).toBe(mockMembers)
+    })
+
+    it('updateTeamMemberRole delegates to underlying service', async () => {
+      mockLocalService.updateTeamMemberRole.mockResolvedValue(undefined)
+
+      await teamService.updateTeamMemberRole('team-123', 'member-123', 'admin')
+
+      expect(mockLocalService.updateTeamMemberRole).toHaveBeenCalledWith(
+        'team-123',
+        'member-123',
+        'admin',
+      )
+    })
+
+    it('removeTeamMember delegates to underlying service', async () => {
+      mockLocalService.removeTeamMember.mockResolvedValue(undefined)
+
+      await teamService.removeTeamMember('team-123', 'member-123')
+
+      expect(mockLocalService.removeTeamMember).toHaveBeenCalledWith('team-123', 'member-123')
+    })
+  })
+
+  describe('Team Invitations', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
+    })
+
+    it('createTeamInvitation delegates to underlying service', async () => {
+      mockLocalService.createTeamInvitation.mockResolvedValue('invitation-123')
+
+      const result = await teamService.createTeamInvitation(
+        'team-123',
+        'test@example.com',
+        'member',
+        'owner-123',
+      )
+
+      expect(mockLocalService.createTeamInvitation).toHaveBeenCalledWith(
+        'team-123',
+        'test@example.com',
+        'member',
+        'owner-123',
+      )
+      expect(result).toBe('invitation-123')
+    })
+
+    it('getTeamInvitations delegates to underlying service', async () => {
+      const mockInvitations = [
+        {
+          id: 'invitation-1',
+          teamId: 'team-123',
+          email: 'test@example.com',
+          role: 'member' as const,
+          invitedBy: 'owner-123',
+          invitedAt: new Date('2024-01-01'),
+          expiresAt: new Date('2024-01-08'),
+          status: 'pending' as const,
+        },
+      ]
+      mockLocalService.getTeamInvitations.mockResolvedValue(mockInvitations)
+
+      const result = await teamService.getTeamInvitations('team-123')
+
+      expect(mockLocalService.getTeamInvitations).toHaveBeenCalledWith('team-123')
+      expect(result).toBe(mockInvitations)
+    })
+
+    it('getUserInvitations delegates to underlying service', async () => {
+      const mockInvitations = [
+        {
+          id: 'invitation-1',
+          teamId: 'team-123',
+          email: 'test@example.com',
+          role: 'member' as const,
+          invitedBy: 'owner-123',
+          invitedAt: new Date('2024-01-01'),
+          expiresAt: new Date('2024-01-08'),
+          status: 'pending' as const,
+        },
+      ]
+      mockLocalService.getUserInvitations.mockResolvedValue(mockInvitations)
+
+      const result = await teamService.getUserInvitations('test@example.com')
+
+      expect(mockLocalService.getUserInvitations).toHaveBeenCalledWith('test@example.com')
+      expect(result).toBe(mockInvitations)
+    })
+
+    it('acceptTeamInvitation delegates to underlying service', async () => {
+      mockLocalService.acceptTeamInvitation.mockResolvedValue(undefined)
+
+      await teamService.acceptTeamInvitation('invitation-123', 'user-123', 'test@example.com')
+
+      expect(mockLocalService.acceptTeamInvitation).toHaveBeenCalledWith(
+        'invitation-123',
+        'user-123',
+        'test@example.com',
+      )
+    })
+
+    it('declineTeamInvitation delegates to underlying service', async () => {
+      mockLocalService.declineTeamInvitation.mockResolvedValue(undefined)
+
+      await teamService.declineTeamInvitation('invitation-123')
+
+      expect(mockLocalService.declineTeamInvitation).toHaveBeenCalledWith('invitation-123')
+    })
+  })
+
+  describe('User Team Management', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
+    })
+
+    it('getUserTeam delegates to underlying service', async () => {
+      const mockTeam = {
+        id: 'team-123',
+        name: 'Test Team',
+        description: 'Test Description',
+        ownerId: 'user-123',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
       }
+      mockLocalService.getUserTeam.mockResolvedValue(mockTeam)
 
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockWhere.mockReturnValue({} as QueryFieldFilterConstraint)
-      mockQuery.mockReturnValue({} as Query)
-      mockGetDocs.mockResolvedValue(
-        mockQuerySnapshot as unknown as QuerySnapshot,
-      )
+      const result = await teamService.getUserTeam('user-123')
 
-      const result = await teamService.getUserTeam('user123')
-
-      expect(result).toBeNull()
+      expect(mockLocalService.getUserTeam).toHaveBeenCalledWith('user-123')
+      expect(result).toBe(mockTeam)
     })
   })
 
-  describe('onTeamMembersChange', () => {
-    it('sets up real-time listener for team members', () => {
-      const mockUnsubscribe = jest.fn()
-      mockOnSnapshot.mockReturnValue(mockUnsubscribe)
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
-      mockQuery.mockReturnValue({} as Query)
+  describe('Team Subscription', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
+    })
 
-      const callback = jest.fn()
-      const unsubscribe = teamService.onTeamMembersChange('team123', callback)
+    it('getTeamSubscription delegates to underlying service', async () => {
+      const mockSubscription = {
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'active' as const,
+        currentPeriodStart: new Date('2024-01-01'),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        quantity: 5,
+        updatedAt: new Date('2024-01-01'),
+        planName: 'Team Plan',
+        planDescription: 'Team subscription',
+      }
+      mockLocalService.getTeamSubscription.mockResolvedValue(mockSubscription)
 
-      expect(mockOnSnapshot).toHaveBeenCalled()
-      expect(unsubscribe).toBe(mockUnsubscribe)
+      const result = await teamService.getTeamSubscription('team-123')
+
+      expect(mockLocalService.getTeamSubscription).toHaveBeenCalledWith('team-123')
+      expect(result).toBe(mockSubscription)
     })
   })
 
-  describe('onTeamSubscriptionChange', () => {
-    it('sets up real-time listener for team subscription', () => {
+  describe('Real-time Listeners', () => {
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
+    })
+
+    it('onTeamMembersChange delegates to underlying service', () => {
       const mockUnsubscribe = jest.fn()
-      mockOnSnapshot.mockReturnValue(mockUnsubscribe)
-      mockCollection.mockReturnValue({} as CollectionReference)
-      mockDoc.mockReturnValue({} as DocumentReference)
-
+      mockLocalService.onTeamMembersChange.mockReturnValue(mockUnsubscribe)
       const callback = jest.fn()
-      const unsubscribe = teamService.onTeamSubscriptionChange(
-        'team123',
-        callback,
-      )
 
-      expect(mockOnSnapshot).toHaveBeenCalled()
-      expect(unsubscribe).toBe(mockUnsubscribe)
+      const result = teamService.onTeamMembersChange('team-123', callback)
+
+      expect(mockLocalService.onTeamMembersChange).toHaveBeenCalledWith('team-123', callback)
+      expect(result).toBe(mockUnsubscribe)
+    })
+
+    it('onTeamSubscriptionChange delegates to underlying service', () => {
+      const mockUnsubscribe = jest.fn()
+      mockLocalService.onTeamSubscriptionChange.mockReturnValue(mockUnsubscribe)
+      const callback = jest.fn()
+
+      const result = teamService.onTeamSubscriptionChange('team-123', callback)
+
+      expect(mockLocalService.onTeamSubscriptionChange).toHaveBeenCalledWith('team-123', callback)
+      expect(result).toBe(mockUnsubscribe)
+    })
+  })
+
+  describe('Service Architecture', () => {
+    it('delegates all operations to the underlying service', async () => {
+      // Test that the service acts as a proper facade
+      mockLocalService.createTeam.mockResolvedValue('team-123')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockLocalService.getTeam.mockResolvedValue({ id: 'team-123', name: 'Test Team' } as any)
+      mockLocalService.updateTeam.mockResolvedValue(undefined)
+      mockLocalService.deleteTeam.mockResolvedValue(undefined)
+
+      // Test all CRUD operations delegate correctly
+      await teamService.createTeam('Test Team', 'Description', 'user-123', 'test@example.com')
+      await teamService.getTeam('team-123')
+      await teamService.updateTeam('team-123', { name: 'Updated Team' })
+      await teamService.deleteTeam('team-123')
+
+      expect(mockLocalService.createTeam).toHaveBeenCalledWith('Test Team', 'Description', 'user-123', 'test@example.com')
+      expect(mockLocalService.getTeam).toHaveBeenCalledWith('team-123')
+      expect(mockLocalService.updateTeam).toHaveBeenCalledWith('team-123', { name: 'Updated Team' })
+      expect(mockLocalService.deleteTeam).toHaveBeenCalledWith('team-123')
     })
   })
 })
