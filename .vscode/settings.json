@@ -4,5 +4,6 @@
   "jest.testExplorer.testRegex": "((/__tests__/.*|(\\.|/)(test))\\.[jt]sx?)$",
   "playwright.reuseBrowser": false,
   "playwright.showTrace": false,
-  "testing.automaticallyOpenPeekView": "never"
+  "testing.automaticallyOpenPeekView": "never",
+  "jest.runMode": "on-demand"
 }
