@@ -199,13 +199,16 @@ export async function createTeamInvitation(
     expiresAt: Timestamp.fromDate(expiresAt),
     status: 'pending',
   }
-  console.log('Invitation data:', invitationData)
-
-  const docRef = await addDoc(
-    collection(db, 'team-invitations'),
-    invitationData,
-  )
-  return docRef.id
+  try {
+    const docRef = await addDoc(
+      collection(db, 'team-invitations'),
+      invitationData,
+    )
+    return docRef.id
+  } catch (error) {
+    console.error('Error creating invitation:', error)
+    throw error
+  }
 }
 
 export async function getTeamInvitations(
