@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import { Copy } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -39,6 +41,22 @@ export function TeamSettingsDialog({
   const { toast } = useToast()
 
   const canEdit = currentUserRole === 'owner' || currentUserRole === 'admin'
+
+  const handleCopyTeamId = async () => {
+    try {
+      await navigator.clipboard.writeText(team.id)
+      toast({
+        title: 'Team ID copied',
+        description: 'Team ID has been copied to clipboard',
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy Team ID to clipboard',
+        variant: 'destructive',
+      })
+    }
+  }
 
   const handleSave = async () => {
     if (!canEdit) return
@@ -125,9 +143,26 @@ export function TeamSettingsDialog({
 
           <div className="grid gap-2">
             <Label>Team ID</Label>
-            <Input value={team.id} disabled className="font-mono text-sm" />
+            <div className="relative">
+              <Input
+                value={team.id}
+                disabled
+                className="font-mono text-sm pr-10"
+              />
+              <Button
+                type="button"
+                variant="link"
+                size="icon"
+                onClick={handleCopyTeamId}
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                title="Copy Team ID"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
-              Please provide this ID when contacting support for team-related issues.
+              Please provide this ID when contacting support for team-related
+              issues.
             </p>
           </div>
         </div>
@@ -145,4 +180,4 @@ export function TeamSettingsDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}
