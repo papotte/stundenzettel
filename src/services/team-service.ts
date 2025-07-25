@@ -25,8 +25,9 @@ export const createTeam = (
   name: string,
   description: string,
   ownerId: string,
+  ownerEmail: string,
 ): Promise<string> => {
-  return service.createTeam(name, description, ownerId)
+  return service.createTeam(name, description, ownerId, ownerEmail)
 }
 
 export const getTeam = (teamId: string): Promise<Team | null> => {
@@ -89,11 +90,18 @@ export const getTeamInvitations = (
   return service.getTeamInvitations(teamId)
 }
 
+export const getUserInvitations = (
+  userEmail: string,
+): Promise<TeamInvitation[]> => {
+  return service.getUserInvitations(userEmail)
+}
+
 export const acceptTeamInvitation = (
   invitationId: string,
   userId: string,
+  userEmail: string,
 ): Promise<void> => {
-  return service.acceptTeamInvitation(invitationId, userId)
+  return service.acceptTeamInvitation(invitationId, userId, userEmail)
 }
 
 export const declineTeamInvitation = (invitationId: string): Promise<void> => {

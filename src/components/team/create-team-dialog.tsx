@@ -41,11 +41,13 @@ type TeamFormValues = z.infer<typeof teamFormSchema>
 
 interface CreateTeamDialogProps {
   userId: string
+  userEmail: string
   onTeamCreated: (team: Team) => void
 }
 
 export function CreateTeamDialog({
   userId,
+  userEmail,
   onTeamCreated,
 }: CreateTeamDialogProps) {
   const [open, setOpen] = useState(false)
@@ -67,6 +69,7 @@ export function CreateTeamDialog({
         values.name,
         values.description || '',
         userId,
+        userEmail,
       )
       const team = await getTeam(teamId)
 

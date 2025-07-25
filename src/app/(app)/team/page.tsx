@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react'
 
-import { ArrowLeft, Settings, Users } from 'lucide-react'
+import {
+  ArrowLeft,
+  CreditCard,
+  Mail,
+  Settings,
+  UserPlus,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -11,6 +18,7 @@ import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
+import { UserInvitationsList } from '@/components/team/user-invitations-list'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -24,6 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { useUserInvitations } from '@/hooks/use-user-invitations'
 import type {
   Subscription,
   Team,
@@ -34,6 +43,7 @@ import {
   getTeamInvitations,
   getTeamMembers,
   getTeamSubscription,
+  getUserInvitations,
   getUserTeam,
 } from '@/services/team-service'
 
@@ -42,11 +52,13 @@ export default function TeamPage() {
   const router = useRouter()
   const { t } = useTranslation()
   const { toast } = useToast()
+  const { refreshInvitations } = useUserInvitations()
 
   const [pageLoading, setPageLoading] = useState(true)
   const [team, setTeam] = useState<Team | null>(null)
   const [members, setMembers] = useState<TeamMember[]>([])
   const [invitations, setInvitations] = useState<TeamInvitation[]>([])
+  const [userInvitations, setUserInvitations] = useState<TeamInvitation[]>([])
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [currentUserRole, setCurrentUserRole] = useState<
     'owner' | 'admin' | 'member'
@@ -79,7 +91,7 @@ export default function TeamPage() {
 
         // Find current user's role
         const currentMember = teamMembers.find(
-          (m: TeamMember) => m.email === user.email,
+          (m: TeamMember) => m.id === user.uid,
         )
         if (currentMember) {
           setCurrentUserRole(currentMember.role)
@@ -92,6 +104,10 @@ export default function TeamPage() {
         // Load team subscription
         const subscriptionData = await getTeamSubscription(userTeam.id)
         setSubscription(subscriptionData)
+      } else {
+        // User doesn't have a team, load their pending invitations
+        const pendingInvitations = await getUserInvitations(user.email || '')
+        setUserInvitations(pendingInvitations)
       }
     } catch (error) {
       console.error('Error loading team data:', error)
@@ -121,6 +137,14 @@ export default function TeamPage() {
 
   const handleInvitationSent = (invitation: TeamInvitation) => {
     setInvitations((prev) => [...prev, invitation])
+  }
+
+  const handleUserInvitationsChange = async (
+    updatedInvitations: TeamInvitation[],
+  ) => {
+    setUserInvitations(updatedInvitations)
+    // Refresh the global invitations state for the user menu
+    await refreshInvitations()
   }
 
   const handleSubscriptionUpdate = (
@@ -155,32 +179,59 @@ export default function TeamPage() {
         </Button>
 
         {!team ? (
-          // No team - show create team option
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Team Management
-              </CardTitle>
-              <CardDescription>
-                Create and manage your team to collaborate with others.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Team Yet</h3>
-                <p className="text-muted-foreground mb-6">
-                  Create a team to invite members and manage subscriptions
-                  together.
-                </p>
-                <CreateTeamDialog
-                  userId={user.uid}
-                  onTeamCreated={handleTeamCreated}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          // No team - show create team option and pending invitations
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Team Management
+                </CardTitle>
+                <CardDescription>
+                  Create and manage your team to collaborate with others.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Team Yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Create a team to invite members and manage subscriptions
+                    together.
+                  </p>
+                  <CreateTeamDialog
+                    userId={user.uid}
+                    userEmail={user.email || ''}
+                    onTeamCreated={handleTeamCreated}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Show pending invitations if any */}
+            {userInvitations.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5" />
+                    Pending Invitations
+                  </CardTitle>
+                  <CardDescription>
+                    You have been invited to join teams. Accept or decline these
+                    invitations.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <UserInvitationsList
+                    invitations={userInvitations}
+                    onInvitationsChange={handleUserInvitationsChange}
+                    currentUserEmail={user.email || ''}
+                    currentUserId={user.uid}
+                  />
+                </CardContent>
+              </Card>
+            )}
+          </div>
         ) : (
           // Has team - show team management interface
           <div className="space-y-6">
@@ -214,18 +265,32 @@ export default function TeamPage() {
               </CardHeader>
             </Card>
 
-            <Tabs defaultValue="members" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="members">
+            <Tabs defaultValue="members" className="space-y-6">
+              <TabsList className="flex w-full flex-start bg-transparent p-0">
+                <TabsTrigger
+                  value="members"
+                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
                   Members ({members.length})
                 </TabsTrigger>
                 {(currentUserRole === 'owner' ||
                   currentUserRole === 'admin') && (
-                  <TabsTrigger value="invitations">
+                  <TabsTrigger
+                    value="invitations"
+                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
                     Invitations ({invitations.length})
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="subscription">Subscription</TabsTrigger>
+                <TabsTrigger
+                  value="subscription"
+                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Subscription
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="members">

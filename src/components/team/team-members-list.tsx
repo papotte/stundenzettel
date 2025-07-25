@@ -118,9 +118,10 @@ export function TeamMembersList({
   const canEditMember = (member: TeamMember) => {
     // Owners can edit everyone except themselves if they're the only owner
     if (currentUserRole === 'owner') {
-      return !(member.role === 'owner' &&
-        members.filter((m) => m.role === 'owner').length === 1);
-
+      return !(
+        member.role === 'owner' &&
+        members.filter((m) => m.role === 'owner').length === 1
+      )
     }
 
     // Admins can edit members but not owners or other admins
