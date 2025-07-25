@@ -1,6 +1,6 @@
-import { NextRequest } from 'next/server'
-import { getAuth } from 'firebase-admin/auth'
 import { getApp, getApps, initializeApp } from 'firebase-admin/app'
+import { getAuth } from 'firebase-admin/auth'
+import { NextRequest } from 'next/server'
 
 // Initialize Firebase Admin if not already initialized
 if (!getApps().length) {
@@ -14,7 +14,9 @@ export interface AuthenticatedUser {
   email: string | null
 }
 
-export async function verifyAuthToken(request: NextRequest): Promise<AuthenticatedUser | null> {
+export async function verifyAuthToken(
+  request: NextRequest,
+): Promise<AuthenticatedUser | null> {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -38,11 +40,8 @@ export async function verifyAuthToken(request: NextRequest): Promise<Authenticat
 }
 
 export function createUnauthorizedResponse() {
-  return new Response(
-    JSON.stringify({ error: 'Unauthorized' }),
-    { 
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    }
-  )
+  return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    status: 401,
+    headers: { 'Content-Type': 'application/json' },
+  })
 }

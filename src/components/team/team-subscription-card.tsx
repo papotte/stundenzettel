@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-import { CreditCard, Users, Check, AlertCircle, Plus } from 'lucide-react'
+import { AlertCircle, Check, CreditCard, Plus, Users } from 'lucide-react'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -12,10 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
-import type { Team, TeamMember, Subscription } from '@/lib/types'
+import type { Subscription, Team, TeamMember } from '@/lib/types'
 
 interface TeamSubscriptionCardProps {
   team: Team
@@ -214,10 +214,13 @@ export function TeamSubscriptionCard({
         <div>
           <p className="font-medium">Current Period</p>
           <p className="text-sm text-muted-foreground">
-            Started {new Date(subscription.currentPeriodStart).toLocaleDateString()}
+            Started{' '}
+            {new Date(subscription.currentPeriodStart).toLocaleDateString()}
             {subscription.cancelAt && (
               <span className="text-red-600">
-                {' '}• Cancels on {new Date(subscription.cancelAt).toLocaleDateString()}
+                {' '}
+                • Cancels on{' '}
+                {new Date(subscription.cancelAt).toLocaleDateString()}
               </span>
             )}
           </p>

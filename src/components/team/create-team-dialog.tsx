@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+
 import { Plus } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -42,7 +43,10 @@ interface CreateTeamDialogProps {
   onTeamCreated: (team: Team) => void
 }
 
-export function CreateTeamDialog({ userId, onTeamCreated }: CreateTeamDialogProps) {
+export function CreateTeamDialog({
+  userId,
+  onTeamCreated,
+}: CreateTeamDialogProps) {
   const [open, setOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
@@ -79,7 +83,7 @@ export function CreateTeamDialog({ userId, onTeamCreated }: CreateTeamDialogProp
       onTeamCreated(team)
       setOpen(false)
       form.reset()
-      
+
       toast({
         title: 'Team created',
         description: `Successfully created team "${team.name}"`,
@@ -87,7 +91,8 @@ export function CreateTeamDialog({ userId, onTeamCreated }: CreateTeamDialogProp
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create team',
+        description:
+          error instanceof Error ? error.message : 'Failed to create team',
         variant: 'destructive',
       })
     } finally {
@@ -107,7 +112,8 @@ export function CreateTeamDialog({ userId, onTeamCreated }: CreateTeamDialogProp
         <DialogHeader>
           <DialogTitle>Create Team</DialogTitle>
           <DialogDescription>
-            Create a new team to collaborate with others. You can invite members and manage subscriptions.
+            Create a new team to collaborate with others. You can invite members
+            and manage subscriptions.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

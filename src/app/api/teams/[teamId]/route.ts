@@ -7,19 +7,13 @@ interface RouteParams {
 }
 
 // GET /api/teams/[teamId] - Get specific team
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId } = params
 
     const team = await teamService.getTeam(teamId)
     if (!team) {
-      return NextResponse.json(
-        { error: 'Team not found' },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: 'Team not found' }, { status: 404 })
     }
 
     return NextResponse.json({ team })
@@ -35,10 +29,7 @@ export async function GET(
 }
 
 // PUT /api/teams/[teamId] - Update team
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId } = params
     const { name, description } = await request.json()
@@ -66,10 +57,7 @@ export async function PUT(
 }
 
 // DELETE /api/teams/[teamId] - Delete team
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId } = params
 

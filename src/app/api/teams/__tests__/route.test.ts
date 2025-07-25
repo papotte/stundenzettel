@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+
 import { GET, POST } from '../route'
 
 // Mock the team service
@@ -30,7 +31,9 @@ describe('/api/teams', () => {
 
       mockTeamService.getUserTeam.mockResolvedValue(mockTeam)
 
-      const request = new NextRequest('http://localhost/api/teams?userId=user123')
+      const request = new NextRequest(
+        'http://localhost/api/teams?userId=user123',
+      )
       const response = await GET(request)
       const data = await response.json()
 
@@ -51,7 +54,9 @@ describe('/api/teams', () => {
     it('should handle service errors', async () => {
       mockTeamService.getUserTeam.mockRejectedValue(new Error('Service error'))
 
-      const request = new NextRequest('http://localhost/api/teams?userId=user123')
+      const request = new NextRequest(
+        'http://localhost/api/teams?userId=user123',
+      )
       const response = await GET(request)
       const data = await response.json()
 
@@ -91,7 +96,7 @@ describe('/api/teams', () => {
       expect(mockTeamService.createTeam).toHaveBeenCalledWith(
         'Test Team',
         'Test Description',
-        'user123'
+        'user123',
       )
     })
 

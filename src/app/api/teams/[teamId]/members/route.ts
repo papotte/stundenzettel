@@ -7,10 +7,7 @@ interface RouteParams {
 }
 
 // GET /api/teams/[teamId]/members - Get team members
-export async function GET(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId } = params
 
@@ -28,10 +25,7 @@ export async function GET(
 }
 
 // POST /api/teams/[teamId]/members - Add team member
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId } = params
     const { userId, role, invitedBy } = await request.json()

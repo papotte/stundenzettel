@@ -7,10 +7,7 @@ interface RouteParams {
 }
 
 // POST /api/invitations/[invitationId]/accept - Accept team invitation
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { invitationId } = params
     const { userId } = await request.json()

@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const teamId = await teamService.createTeam(name, description || '', ownerId)
+    const teamId = await teamService.createTeam(
+      name,
+      description || '',
+      ownerId,
+    )
     const team = await teamService.getTeam(teamId)
 
     return NextResponse.json({ team }, { status: 201 })

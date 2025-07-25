@@ -7,10 +7,7 @@ interface RouteParams {
 }
 
 // POST /api/invitations/[invitationId]/decline - Decline team invitation
-export async function POST(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { invitationId } = params
 

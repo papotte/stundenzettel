@@ -7,10 +7,7 @@ interface RouteParams {
 }
 
 // PUT /api/teams/[teamId]/members/[memberId] - Update team member role
-export async function PUT(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId, memberId } = params
     const { role } = await request.json()
@@ -45,10 +42,7 @@ export async function PUT(
 }
 
 // DELETE /api/teams/[teamId]/members/[memberId] - Remove team member
-export async function DELETE(
-  request: NextRequest,
-  { params }: RouteParams,
-) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { teamId, memberId } = params
 

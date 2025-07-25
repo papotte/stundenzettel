@@ -41,9 +41,13 @@ export function TeamMembersList({
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const canManageMembers = currentUserRole === 'owner' || currentUserRole === 'admin'
+  const canManageMembers =
+    currentUserRole === 'owner' || currentUserRole === 'admin'
 
-  const handleUpdateRole = async (memberId: string, newRole: TeamMember['role']) => {
+  const handleUpdateRole = async (
+    memberId: string,
+    newRole: TeamMember['role'],
+  ) => {
     setLoadingMemberId(memberId)
     try {
       const response = await fetch(`/api/teams/${teamId}/members/${memberId}`, {
@@ -61,7 +65,7 @@ export function TeamMembersList({
 
       const { members: updatedMembers } = await response.json()
       onMembersChange(updatedMembers)
-      
+
       toast({
         title: 'Role updated',
         description: `Member role updated to ${newRole}`,
@@ -69,7 +73,8 @@ export function TeamMembersList({
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update role',
+        description:
+          error instanceof Error ? error.message : 'Failed to update role',
         variant: 'destructive',
       })
     } finally {
@@ -91,7 +96,7 @@ export function TeamMembersList({
 
       const { members: updatedMembers } = await response.json()
       onMembersChange(updatedMembers)
-      
+
       toast({
         title: 'Member removed',
         description: 'Member has been removed from the team',
@@ -99,7 +104,8 @@ export function TeamMembersList({
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to remove member',
+        description:
+          error instanceof Error ? error.message : 'Failed to remove member',
         variant: 'destructive',
       })
     } finally {
@@ -127,17 +133,20 @@ export function TeamMembersList({
   const canEditMember = (member: TeamMember) => {
     // Owners can edit everyone except themselves if they're the only owner
     if (currentUserRole === 'owner') {
-      if (member.role === 'owner' && members.filter(m => m.role === 'owner').length === 1) {
+      if (
+        member.role === 'owner' &&
+        members.filter((m) => m.role === 'owner').length === 1
+      ) {
         return false // Can't edit the last owner
       }
       return true
     }
-    
+
     // Admins can edit members but not owners or other admins
     if (currentUserRole === 'admin') {
       return member.role === 'member'
     }
-    
+
     // Members can't edit anyone
     return false
   }
@@ -181,27 +190,32 @@ export function TeamMembersList({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {currentUserRole === 'owner' && member.role !== 'owner' && (
-                        <>
-                          {member.role === 'member' && (
-                            <DropdownMenuItem
-                              onClick={() => handleUpdateRole(member.id, 'admin')}
-                            >
-                              <Shield className="mr-2 h-4 w-4" />
-                              Make Admin
-                            </DropdownMenuItem>
-                          )}
-                          {member.role === 'admin' && (
-                            <DropdownMenuItem
-                              onClick={() => handleUpdateRole(member.id, 'member')}
-                            >
-                              <User className="mr-2 h-4 w-4" />
-                              Make Member
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                        </>
-                      )}
+                      {currentUserRole === 'owner' &&
+                        member.role !== 'owner' && (
+                          <>
+                            {member.role === 'member' && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUpdateRole(member.id, 'admin')
+                                }
+                              >
+                                <Shield className="mr-2 h-4 w-4" />
+                                Make Admin
+                              </DropdownMenuItem>
+                            )}
+                            {member.role === 'admin' && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleUpdateRole(member.id, 'member')
+                                }
+                              >
+                                <User className="mr-2 h-4 w-4" />
+                                Make Member
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
                       <DropdownMenuItem
                         className="text-red-600"
                         onClick={() => handleRemoveMember(member.id)}

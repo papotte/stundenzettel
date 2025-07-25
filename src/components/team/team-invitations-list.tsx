@@ -31,7 +31,9 @@ export function TeamInvitationsList({
   invitations,
   onInvitationsChange,
 }: TeamInvitationsListProps) {
-  const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(null)
+  const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(
+    null,
+  )
   const { toast } = useToast()
 
   const handleCancelInvitation = async (invitationId: string) => {
@@ -47,9 +49,11 @@ export function TeamInvitationsList({
       }
 
       // Remove the invitation from the list
-      const updatedInvitations = invitations.filter(inv => inv.id !== invitationId)
+      const updatedInvitations = invitations.filter(
+        (inv) => inv.id !== invitationId,
+      )
       onInvitationsChange(updatedInvitations)
-      
+
       toast({
         title: 'Invitation cancelled',
         description: 'The invitation has been cancelled',
@@ -57,7 +61,10 @@ export function TeamInvitationsList({
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to cancel invitation',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to cancel invitation',
         variant: 'destructive',
       })
     } finally {
@@ -74,17 +81,20 @@ export function TeamInvitationsList({
       })
 
       // Create a new invitation
-      const response = await fetch(`/api/teams/${invitation.teamId}/invitations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `/api/teams/${invitation.teamId}/invitations`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: invitation.email,
+            role: invitation.role,
+            invitedBy: invitation.invitedBy,
+          }),
         },
-        body: JSON.stringify({
-          email: invitation.email,
-          role: invitation.role,
-          invitedBy: invitation.invitedBy,
-        }),
-      })
+      )
 
       if (!response.ok) {
         const error = await response.json()
@@ -92,9 +102,9 @@ export function TeamInvitationsList({
       }
 
       const { invitationId } = await response.json()
-      
+
       // Update the invitation in the list
-      const updatedInvitations = invitations.map(inv => 
+      const updatedInvitations = invitations.map((inv) =>
         inv.id === invitation.id
           ? {
               ...inv,
@@ -102,10 +112,10 @@ export function TeamInvitationsList({
               invitedAt: new Date(),
               expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             }
-          : inv
+          : inv,
       )
       onInvitationsChange(updatedInvitations)
-      
+
       toast({
         title: 'Invitation resent',
         description: `New invitation sent to ${invitation.email}`,
@@ -113,7 +123,10 @@ export function TeamInvitationsList({
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to resend invitation',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to resend invitation',
         variant: 'destructive',
       })
     } finally {
@@ -152,7 +165,7 @@ export function TeamInvitationsList({
         <TableBody>
           {invitations.map((invitation) => {
             const expired = isExpired(invitation.expiresAt)
-            
+
             return (
               <TableRow key={invitation.id}>
                 <TableCell>
@@ -165,7 +178,9 @@ export function TeamInvitationsList({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-amber-500" />
-                    <span className={expired ? 'text-red-600' : 'text-amber-600'}>
+                    <span
+                      className={expired ? 'text-red-600' : 'text-amber-600'}
+                    >
                       {expired ? 'Expired' : 'Pending'}
                     </span>
                   </div>
