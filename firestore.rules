@@ -65,26 +65,20 @@ service cloud.firestore {
          (exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId)/members/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin'));
       
-      // Read: Allow if user is the invitee, inviter, team owner, or team admin
-      allow read: if request.auth.uid != null && 
-        (resource.data.email == request.auth.token.email ||
-         request.auth.uid == resource.data.invitedBy ||
-         request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
-         (exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin'));
+      // Read: Allow authenticated users to read invitations (needed for acceptance)
+      allow read: if request.auth.uid != null;
       
-      // Update/Delete: Allow if user is the invitee, inviter, team owner, or team admin
+      // Update/Delete: Allow if user is the inviter, team owner, team admin, or if they're updating status
       allow update, delete: if request.auth.uid != null && 
         (request.auth.uid == resource.data.invitedBy ||
          request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
          (exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin'));
+          get(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin') ||
+         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])));
       
-      // List: Allow users to query their own invitations
+      // List: Allow users to query invitations (for getUserInvitations and getTeamInvitations)
       allow list: if request.auth.uid != null && 
-        request.query.limit <= 10 &&
-        request.query.filters[0].fieldPath == 'email' && 
-        request.query.filters[0].value == request.auth.token.email;
+        request.query.limit <= 10;
     }
   }
 }
