@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 import { createTeam, getTeam } from '@/services/team-service'
@@ -53,9 +54,15 @@ export function CreateTeamDialog({
   const [open, setOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const form = useForm<TeamFormValues>({
-    resolver: zodResolver(teamFormSchema),
+    resolver: zodResolver(
+      z.object({
+        name: z.string().min(1, t('teams.teamNameRequired')),
+        description: z.string().optional(),
+      }),
+    ),
     defaultValues: {
       name: '',
       description: '',
@@ -79,15 +86,17 @@ export function CreateTeamDialog({
         form.reset()
 
         toast({
-          title: 'Team created',
-          description: `Successfully created team "${team.name}"`,
+          title: t('teams.teamCreated'),
+          description: t('teams.teamCreatedDescription', { name: team.name }),
         })
       }
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
-          error instanceof Error ? error.message : 'Failed to create team',
+          error instanceof Error
+            ? error.message
+            : t('teams.failedToCreateTeam'),
         variant: 'destructive',
       })
     } finally {
@@ -100,16 +109,13 @@ export function CreateTeamDialog({
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Create Team
+          {t('teams.createTeam')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Team</DialogTitle>
-          <DialogDescription>
-            Create a new team to collaborate with others. You can invite members
-            and manage subscriptions.
-          </DialogDescription>
+          <DialogTitle>{t('teams.createTeam')}</DialogTitle>
+          <DialogDescription>{t('teams.subtitle')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -118,9 +124,12 @@ export function CreateTeamDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Team Name</FormLabel>
+                  <FormLabel>{t('teams.teamName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter team name" {...field} />
+                    <Input
+                      placeholder={t('teams.teamNamePlaceholder')}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,10 +140,10 @@ export function CreateTeamDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>{t('teams.description')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Brief description of your team"
+                      placeholder={t('teams.descriptionPlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -148,10 +157,10 @@ export function CreateTeamDialog({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t('teams.cancel')}
               </Button>
               <Button type="submit" disabled={isCreating}>
-                {isCreating ? 'Creating...' : 'Create Team'}
+                {isCreating ? t('teams.creating') : t('teams.createTeam')}
               </Button>
             </DialogFooter>
           </form>

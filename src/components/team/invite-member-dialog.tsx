@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 import { createTeamInvitation } from '@/services/team-service'
@@ -61,9 +62,17 @@ export function InviteMemberDialog({
   const [open, setOpen] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const { toast } = useToast()
+  const { t } = useTranslation()
 
   const form = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteFormSchema),
+    resolver: zodResolver(
+      z.object({
+        email: z.string().email(t('teams.pleaseEnterValidEmail')),
+        role: z.enum(['admin', 'member'], {
+          required_error: t('teams.pleaseSelectRole'),
+        }),
+      }),
+    ),
     defaultValues: {
       email: '',
       role: 'member',
@@ -97,14 +106,18 @@ export function InviteMemberDialog({
       form.reset()
 
       toast({
-        title: 'Invitation sent',
-        description: `Invitation sent to ${values.email}`,
+        title: t('teams.invitationSent'),
+        description: t('teams.invitationSentDescription', {
+          email: values.email,
+        }),
       })
     } catch (error) {
       toast({
-        title: 'Error',
+        title: t('teams.error'),
         description:
-          error instanceof Error ? error.message : 'Failed to send invitation',
+          error instanceof Error
+            ? error.message
+            : t('teams.failedToSendInvitation'),
         variant: 'destructive',
       })
     } finally {
@@ -117,15 +130,14 @@ export function InviteMemberDialog({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <UserPlus className="mr-2 h-4 w-4" />
-          Invite Member
+          {t('teams.inviteMember')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Invite Team Member</DialogTitle>
+          <DialogTitle>{t('teams.inviteMemberTitle')}</DialogTitle>
           <DialogDescription>
-            Send an invitation to add a new member to your team. They will
-            receive an email with instructions to join.
+            {t('teams.inviteMemberDescription')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -135,11 +147,11 @@ export function InviteMemberDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>{t('teams.emailAddress')}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="member@example.com"
+                      placeholder={t('teams.emailPlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -152,19 +164,21 @@ export function InviteMemberDialog({
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>{t('teams.role')}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue placeholder={t('teams.rolePlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="member">
+                        {t('teams.member')}
+                      </SelectItem>
+                      <SelectItem value="admin">{t('teams.admin')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -177,10 +191,10 @@ export function InviteMemberDialog({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t('teams.cancel')}
               </Button>
               <Button type="submit" disabled={isSending}>
-                {isSending ? 'Sending...' : 'Send Invitation'}
+                {isSending ? t('teams.sending') : t('teams.sendInvitation')}
               </Button>
             </DialogFooter>
           </form>

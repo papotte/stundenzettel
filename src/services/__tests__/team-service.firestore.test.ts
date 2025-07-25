@@ -1,25 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  addDoc,
-  collection,
   type CollectionReference,
-  doc,
   type DocumentReference,
   type DocumentSnapshot,
+  type Query,
+  type QueryFieldFilterConstraint,
+  type QueryOrderByConstraint,
+  type QuerySnapshot,
+  type WriteBatch,
+  addDoc,
+  collection,
+  doc,
   getDoc,
   getDocs,
   onSnapshot,
   orderBy,
-  type Query,
   query,
-  type QueryFieldFilterConstraint,
-  type QueryOrderByConstraint,
-  type QuerySnapshot,
   serverTimestamp,
   setDoc,
   updateDoc,
   where,
-  type WriteBatch,
   writeBatch,
 } from 'firebase/firestore'
 
@@ -61,7 +61,9 @@ const mockGetDocs = getDocs as jest.MockedFunction<typeof getDocs>
 const mockOnSnapshot = onSnapshot as jest.MockedFunction<typeof onSnapshot>
 const mockOrderBy = orderBy as jest.MockedFunction<typeof orderBy>
 const mockQuery = query as jest.MockedFunction<typeof query>
-const mockServerTimestamp = serverTimestamp as jest.MockedFunction<typeof serverTimestamp>
+const mockServerTimestamp = serverTimestamp as jest.MockedFunction<
+  typeof serverTimestamp
+>
 const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
 const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
 const mockWhere = where as jest.MockedFunction<typeof where>
@@ -268,7 +270,9 @@ describe('TeamService Firestore', () => {
       mockDoc.mockReturnValue({} as DocumentReference)
       mockCollection.mockReturnValue({} as CollectionReference)
       mockQuery.mockReturnValue({} as Query)
-      mockGetDocs.mockResolvedValue(mockEmptySnapshot as unknown as QuerySnapshot)
+      mockGetDocs.mockResolvedValue(
+        mockEmptySnapshot as unknown as QuerySnapshot,
+      )
 
       await firestoreService.deleteTeam('team123')
 
@@ -292,15 +296,12 @@ describe('TeamService Firestore', () => {
       )
 
       expect(mockSetDoc).toHaveBeenCalledTimes(2)
-      expect(mockSetDoc).toHaveBeenCalledWith(
-        expect.any(Object),
-        {
-          email: 'test@example.com',
-          role: 'member',
-          joinedAt: expect.any(Date),
-          invitedBy: 'owner123',
-        },
-      )
+      expect(mockSetDoc).toHaveBeenCalledWith(expect.any(Object), {
+        email: 'test@example.com',
+        role: 'member',
+        joinedAt: expect.any(Date),
+        invitedBy: 'owner123',
+      })
     })
 
     it('adds team member without email', async () => {
@@ -314,15 +315,12 @@ describe('TeamService Firestore', () => {
         'owner123',
       )
 
-      expect(mockSetDoc).toHaveBeenCalledWith(
-        expect.any(Object),
-        {
-          email: '',
-          role: 'member',
-          joinedAt: expect.any(Date),
-          invitedBy: 'owner123',
-        },
-      )
+      expect(mockSetDoc).toHaveBeenCalledWith(expect.any(Object), {
+        email: '',
+        role: 'member',
+        joinedAt: expect.any(Date),
+        invitedBy: 'owner123',
+      })
     })
   })
 
@@ -396,7 +394,11 @@ describe('TeamService Firestore', () => {
       mockDoc.mockReturnValue({} as DocumentReference)
       mockUpdateDoc.mockResolvedValue(undefined)
 
-      await firestoreService.updateTeamMemberRole('team123', 'member123', 'admin')
+      await firestoreService.updateTeamMemberRole(
+        'team123',
+        'member123',
+        'admin',
+      )
 
       expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
         role: 'admin',
@@ -552,7 +554,8 @@ describe('TeamService Firestore', () => {
         docs: mockInvitationsData,
       } as unknown as QuerySnapshot)
 
-      const result = await firestoreService.getUserInvitations('test@example.com')
+      const result =
+        await firestoreService.getUserInvitations('test@example.com')
 
       expect(result).toEqual([
         {
@@ -591,7 +594,9 @@ describe('TeamService Firestore', () => {
       }
 
       mockDoc.mockReturnValue({} as DocumentReference)
-      mockGetDoc.mockResolvedValue(mockInvitationSnap as unknown as DocumentSnapshot)
+      mockGetDoc.mockResolvedValue(
+        mockInvitationSnap as unknown as DocumentSnapshot,
+      )
       mockWriteBatch.mockReturnValue(mockBatch as unknown as WriteBatch)
       mockSetDoc.mockResolvedValue(undefined)
 
@@ -618,7 +623,9 @@ describe('TeamService Firestore', () => {
       }
 
       mockDoc.mockReturnValue({} as DocumentReference)
-      mockGetDoc.mockResolvedValue(mockInvitationSnap as unknown as DocumentSnapshot)
+      mockGetDoc.mockResolvedValue(
+        mockInvitationSnap as unknown as DocumentSnapshot,
+      )
 
       await expect(
         firestoreService.acceptTeamInvitation(
@@ -698,11 +705,15 @@ describe('TeamService Firestore', () => {
       }
 
       mockDoc.mockReturnValue({} as DocumentReference)
-      mockGetDoc.mockResolvedValue(mockUserTeamSnap as unknown as DocumentSnapshot)
+      mockGetDoc.mockResolvedValue(
+        mockUserTeamSnap as unknown as DocumentSnapshot,
+      )
       mockCollection.mockReturnValue({} as CollectionReference)
       mockWhere.mockReturnValue({} as QueryFieldFilterConstraint)
       mockQuery.mockReturnValue({} as Query)
-      mockGetDocs.mockResolvedValue(mockQuerySnapshot as unknown as QuerySnapshot)
+      mockGetDocs.mockResolvedValue(
+        mockQuerySnapshot as unknown as QuerySnapshot,
+      )
 
       const result = await firestoreService.getUserTeam('user123')
 
@@ -782,7 +793,10 @@ describe('TeamService Firestore', () => {
       mockQuery.mockReturnValue({} as Query)
 
       const callback = jest.fn()
-      const unsubscribe = firestoreService.onTeamMembersChange('team123', callback)
+      const unsubscribe = firestoreService.onTeamMembersChange(
+        'team123',
+        callback,
+      )
 
       expect(mockOnSnapshot).toHaveBeenCalled()
       expect(unsubscribe).toBe(mockUnsubscribe)
@@ -836,7 +850,10 @@ describe('TeamService Firestore', () => {
       mockDoc.mockReturnValue({} as DocumentReference)
 
       const callback = jest.fn()
-      const unsubscribe = firestoreService.onTeamSubscriptionChange('team123', callback)
+      const unsubscribe = firestoreService.onTeamSubscriptionChange(
+        'team123',
+        callback,
+      )
 
       expect(mockOnSnapshot).toHaveBeenCalled()
       expect(unsubscribe).toBe(mockUnsubscribe)
@@ -906,4 +923,4 @@ describe('TeamService Firestore', () => {
       })
     })
   })
-}) 
+})

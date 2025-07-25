@@ -1,13 +1,15 @@
 import * as teamService from '../team-service'
-import * as localService from '../team-service.local'
 import * as firestoreService from '../team-service.firestore'
+import * as localService from '../team-service.local'
 
 // Mock the underlying services
 jest.mock('../team-service.local')
 jest.mock('../team-service.firestore')
 
 const mockLocalService = localService as jest.Mocked<typeof localService>
-const mockFirestoreService = firestoreService as jest.Mocked<typeof firestoreService>
+const mockFirestoreService = firestoreService as jest.Mocked<
+  typeof firestoreService
+>
 
 describe('TeamService', () => {
   const originalEnv = process.env.NEXT_PUBLIC_ENVIRONMENT
@@ -150,7 +152,12 @@ describe('TeamService', () => {
     it('addTeamMember delegates to underlying service', async () => {
       mockLocalService.addTeamMember.mockResolvedValue(undefined)
 
-      await teamService.addTeamMember('team-123', 'user-123', 'member', 'owner-123')
+      await teamService.addTeamMember(
+        'team-123',
+        'user-123',
+        'member',
+        'owner-123',
+      )
 
       expect(mockLocalService.addTeamMember).toHaveBeenCalledWith(
         'team-123',
@@ -195,7 +202,10 @@ describe('TeamService', () => {
 
       await teamService.removeTeamMember('team-123', 'member-123')
 
-      expect(mockLocalService.removeTeamMember).toHaveBeenCalledWith('team-123', 'member-123')
+      expect(mockLocalService.removeTeamMember).toHaveBeenCalledWith(
+        'team-123',
+        'member-123',
+      )
     })
   })
 
@@ -240,7 +250,9 @@ describe('TeamService', () => {
 
       const result = await teamService.getTeamInvitations('team-123')
 
-      expect(mockLocalService.getTeamInvitations).toHaveBeenCalledWith('team-123')
+      expect(mockLocalService.getTeamInvitations).toHaveBeenCalledWith(
+        'team-123',
+      )
       expect(result).toBe(mockInvitations)
     })
 
@@ -261,14 +273,20 @@ describe('TeamService', () => {
 
       const result = await teamService.getUserInvitations('test@example.com')
 
-      expect(mockLocalService.getUserInvitations).toHaveBeenCalledWith('test@example.com')
+      expect(mockLocalService.getUserInvitations).toHaveBeenCalledWith(
+        'test@example.com',
+      )
       expect(result).toBe(mockInvitations)
     })
 
     it('acceptTeamInvitation delegates to underlying service', async () => {
       mockLocalService.acceptTeamInvitation.mockResolvedValue(undefined)
 
-      await teamService.acceptTeamInvitation('invitation-123', 'user-123', 'test@example.com')
+      await teamService.acceptTeamInvitation(
+        'invitation-123',
+        'user-123',
+        'test@example.com',
+      )
 
       expect(mockLocalService.acceptTeamInvitation).toHaveBeenCalledWith(
         'invitation-123',
@@ -282,7 +300,9 @@ describe('TeamService', () => {
 
       await teamService.declineTeamInvitation('invitation-123')
 
-      expect(mockLocalService.declineTeamInvitation).toHaveBeenCalledWith('invitation-123')
+      expect(mockLocalService.declineTeamInvitation).toHaveBeenCalledWith(
+        'invitation-123',
+      )
     })
   })
 
@@ -331,7 +351,9 @@ describe('TeamService', () => {
 
       const result = await teamService.getTeamSubscription('team-123')
 
-      expect(mockLocalService.getTeamSubscription).toHaveBeenCalledWith('team-123')
+      expect(mockLocalService.getTeamSubscription).toHaveBeenCalledWith(
+        'team-123',
+      )
       expect(result).toBe(mockSubscription)
     })
   })
@@ -348,7 +370,10 @@ describe('TeamService', () => {
 
       const result = teamService.onTeamMembersChange('team-123', callback)
 
-      expect(mockLocalService.onTeamMembersChange).toHaveBeenCalledWith('team-123', callback)
+      expect(mockLocalService.onTeamMembersChange).toHaveBeenCalledWith(
+        'team-123',
+        callback,
+      )
       expect(result).toBe(mockUnsubscribe)
     })
 
@@ -359,7 +384,10 @@ describe('TeamService', () => {
 
       const result = teamService.onTeamSubscriptionChange('team-123', callback)
 
-      expect(mockLocalService.onTeamSubscriptionChange).toHaveBeenCalledWith('team-123', callback)
+      expect(mockLocalService.onTeamSubscriptionChange).toHaveBeenCalledWith(
+        'team-123',
+        callback,
+      )
       expect(result).toBe(mockUnsubscribe)
     })
   })
@@ -369,19 +397,34 @@ describe('TeamService', () => {
       // Test that the service acts as a proper facade
       mockLocalService.createTeam.mockResolvedValue('team-123')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      mockLocalService.getTeam.mockResolvedValue({ id: 'team-123', name: 'Test Team' } as any)
+      mockLocalService.getTeam.mockResolvedValue({
+        id: 'team-123',
+        name: 'Test Team',
+      } as any)
       mockLocalService.updateTeam.mockResolvedValue(undefined)
       mockLocalService.deleteTeam.mockResolvedValue(undefined)
 
       // Test all CRUD operations delegate correctly
-      await teamService.createTeam('Test Team', 'Description', 'user-123', 'test@example.com')
+      await teamService.createTeam(
+        'Test Team',
+        'Description',
+        'user-123',
+        'test@example.com',
+      )
       await teamService.getTeam('team-123')
       await teamService.updateTeam('team-123', { name: 'Updated Team' })
       await teamService.deleteTeam('team-123')
 
-      expect(mockLocalService.createTeam).toHaveBeenCalledWith('Test Team', 'Description', 'user-123', 'test@example.com')
+      expect(mockLocalService.createTeam).toHaveBeenCalledWith(
+        'Test Team',
+        'Description',
+        'user-123',
+        'test@example.com',
+      )
       expect(mockLocalService.getTeam).toHaveBeenCalledWith('team-123')
-      expect(mockLocalService.updateTeam).toHaveBeenCalledWith('team-123', { name: 'Updated Team' })
+      expect(mockLocalService.updateTeam).toHaveBeenCalledWith('team-123', {
+        name: 'Updated Team',
+      })
       expect(mockLocalService.deleteTeam).toHaveBeenCalledWith('team-123')
     })
   })
