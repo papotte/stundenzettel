@@ -1,5 +1,17 @@
+import React from 'react'
+
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+import { useRouter } from 'next/navigation'
+
 import { AuthProvider } from '@/context/auth-context'
-import type { Subscription, Team, TeamInvitation, TeamMember } from '@/lib/types'
+import type {
+  Subscription,
+  Team,
+  TeamInvitation,
+  TeamMember,
+} from '@/lib/types'
 // Import mocked services
 import {
   getTeamInvitations,
@@ -9,12 +21,6 @@ import {
   getUserTeam,
 } from '@/services/team-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
-
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-
-import { useRouter } from 'next/navigation'
-import React from 'react'
 
 import TeamPage from '../page'
 
