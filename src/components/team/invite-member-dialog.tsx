@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
+import { createTeamInvitation } from '@/services/team-service'
 
 const inviteFormSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -72,24 +73,12 @@ export function InviteMemberDialog({
   const onSubmit = async (values: InviteFormValues) => {
     setIsSending(true)
     try {
-      const response = await fetch(`/api/teams/${teamId}/invitations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: values.email,
-          role: values.role,
-          invitedBy,
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to send invitation')
-      }
-
-      const { invitationId } = await response.json()
+      const invitationId = await createTeamInvitation(
+        teamId,
+        values.email,
+        values.role,
+        invitedBy,
+      )
 
       // Create invitation object for callback
       const invitation: TeamInvitation = {

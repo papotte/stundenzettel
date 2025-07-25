@@ -30,7 +30,12 @@ import type {
   TeamInvitation,
   TeamMember,
 } from '@/lib/types'
-import { teamService } from '@/services/team-service'
+import {
+  getUserTeam,
+  getTeamMembers,
+  getTeamInvitations,
+  getTeamSubscription,
+} from '@/services/team-service'
 
 export default function TeamPage() {
   const { user, loading: authLoading } = useAuth()
@@ -64,45 +69,29 @@ export default function TeamPage() {
 
     try {
       // Load user's team
-      const teamResponse = await fetch(`/api/teams?userId=${user.uid}`)
-      if (teamResponse.ok) {
-        const { team: userTeam } = await teamResponse.json()
-        if (userTeam) {
-          setTeam(userTeam)
+      const userTeam = await getUserTeam(user.uid)
+      if (userTeam) {
+        setTeam(userTeam)
 
-          // Load team members
-          const membersResponse = await fetch(
-            `/api/teams/${userTeam.id}/members`,
-          )
-          if (membersResponse.ok) {
-            const { members: teamMembers } = await membersResponse.json()
-            setMembers(teamMembers)
+        // Load team members
+        const teamMembers = await getTeamMembers(userTeam.id)
+        setMembers(teamMembers)
 
-            // Find current user's role
-            const currentMember = teamMembers.find(
-              (m: TeamMember) => m.email === user.email,
-            )
-            if (currentMember) {
-              setCurrentUserRole(currentMember.role)
-            }
-          }
-
-          // Load team invitations (if admin/owner)
-          const invitationsResponse = await fetch(
-            `/api/teams/${userTeam.id}/invitations`,
-          )
-          if (invitationsResponse.ok) {
-            const { invitations: teamInvitations } =
-              await invitationsResponse.json()
-            setInvitations(teamInvitations)
-          }
-
-          // Load team subscription
-          const subscriptionData = await teamService.getTeamSubscription(
-            userTeam.id,
-          )
-          setSubscription(subscriptionData)
+        // Find current user's role
+        const currentMember = teamMembers.find(
+          (m: TeamMember) => m.email === user.email,
+        )
+        if (currentMember) {
+          setCurrentUserRole(currentMember.role)
         }
+
+        // Load team invitations (if admin/owner)
+        const teamInvitations = await getTeamInvitations(userTeam.id)
+        setInvitations(teamInvitations)
+
+        // Load team subscription
+        const subscriptionData = await getTeamSubscription(userTeam.id)
+        setSubscription(subscriptionData)
       }
     } catch (error) {
       console.error('Error loading team data:', error)

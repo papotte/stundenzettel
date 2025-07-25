@@ -1,5 +1,5 @@
 import type { TeamMember } from '@/lib/types'
-import { teamService } from '@/services/team-service'
+import { getTeamMembers, getTeam } from '@/services/team-service'
 
 export interface TeamAuthResult {
   authorized: boolean
@@ -14,7 +14,7 @@ export async function verifyTeamAccess(
 ): Promise<TeamAuthResult> {
   try {
     // Get team members to check if user is a member and their role
-    const members = await teamService.getTeamMembers(teamId)
+    const members = await getTeamMembers(teamId)
     const userMember = members.find(
       (member: TeamMember) => member.email === userId || member.id === userId,
     )
@@ -60,7 +60,7 @@ export async function verifyTeamOwnership(
   userId: string,
 ): Promise<boolean> {
   try {
-    const team = await teamService.getTeam(teamId)
+    const team = await getTeam(teamId)
     return team?.ownerId === userId
   } catch (error) {
     console.error('Error verifying team ownership:', error)
