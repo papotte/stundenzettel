@@ -17,6 +17,7 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { UserInvitationsList } from '@/components/team/user-invitations-list'
 import { Button } from '@/components/ui/button'
@@ -159,6 +160,10 @@ export default function TeamPage() {
     setSubscription(updatedSubscription)
   }
 
+  const handleTeamUpdated = (updatedTeam: Team) => {
+    setTeam(updatedTeam)
+  }
+
   if (authLoading || pageLoading) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
@@ -254,20 +259,26 @@ export default function TeamPage() {
                       {team.description || 'No description provided'}
                     </CardDescription>
                   </div>
-                  {(currentUserRole === 'owner' ||
-                    currentUserRole === 'admin') && (
-                    <div className="flex gap-2">
+                  <div className="flex gap-2">
+                    {(currentUserRole === 'owner' ||
+                      currentUserRole === 'admin') && (
                       <InviteMemberDialog
                         teamId={team.id}
                         invitedBy={user.uid}
                         onInvitationSent={handleInvitationSent}
                       />
+                    )}
+                    <TeamSettingsDialog
+                      team={team}
+                      currentUserRole={currentUserRole}
+                      onTeamUpdated={handleTeamUpdated}
+                    >
                       <Button variant="outline" size="sm">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </Button>
-                    </div>
-                  )}
+                    </TeamSettingsDialog>
+                  </div>
                 </div>
               </CardHeader>
             </Card>
