@@ -1,4 +1,5 @@
 import {
+  Timestamp,
   type Unsubscribe,
   addDoc,
   collection,
@@ -28,6 +29,7 @@ export async function createTeam(
   name: string,
   description: string,
   ownerId: string,
+  ownerEmail: string,
 ): Promise<string> {
   const teamData = {
     name,
@@ -40,7 +42,14 @@ export async function createTeam(
   const docRef = await addDoc(collection(db, 'teams'), teamData)
 
   // Add owner as first member
-  await addTeamMember(docRef.id, ownerId, 'owner', ownerId)
+  await addTeamMember(docRef.id, ownerId, 'owner', ownerId, ownerEmail)
+
+  // Create user-team mapping for owner
+  await setDoc(doc(db, 'user-teams', ownerId), {
+    teamId: docRef.id,
+    role: 'owner',
+    joinedAt: serverTimestamp(),
+  })
 
   return docRef.id
 }
@@ -107,13 +116,10 @@ export async function addTeamMember(
   userId: string,
   role: TeamMember['role'],
   invitedBy: string,
+  userEmail?: string,
 ): Promise<void> {
-  // Get user details from auth/users collection
-  const userDoc = await getDoc(doc(db, 'users', userId))
-  const userData = userDoc.data()
-
   const memberData = {
-    email: userData?.email || '',
+    email: userEmail || '',
     role,
     joinedAt: serverTimestamp(),
     invitedBy,
@@ -121,6 +127,13 @@ export async function addTeamMember(
 
   // Use userId as document ID for proper Firestore rules
   await setDoc(doc(db, 'teams', teamId, 'members', userId), memberData)
+
+  // Create user-team mapping for efficient lookups
+  await setDoc(doc(db, 'user-teams', userId), {
+    teamId,
+    role,
+    joinedAt: serverTimestamp(),
+  })
 }
 
 export async function getTeamMembers(teamId: string): Promise<TeamMember[]> {
@@ -161,6 +174,9 @@ export async function removeTeamMember(
   // Remove from users collection if it exists
   batch.delete(doc(db, 'teams', teamId, 'users', memberId))
 
+  // Remove user-team mapping
+  batch.delete(doc(db, 'user-teams', memberId))
+
   await batch.commit()
 }
 
@@ -180,9 +196,10 @@ export async function createTeamInvitation(
     role,
     invitedBy,
     invitedAt: serverTimestamp(),
-    expiresAt,
+    expiresAt: Timestamp.fromDate(expiresAt),
     status: 'pending',
   }
+  console.log('Invitation data:', invitationData)
 
   const docRef = await addDoc(
     collection(db, 'team-invitations'),
@@ -215,9 +232,34 @@ export async function getTeamInvitations(
   }))
 }
 
+export async function getUserInvitations(
+  userEmail: string,
+): Promise<TeamInvitation[]> {
+  const querySnapshot = await getDocs(
+    query(
+      collection(db, 'team-invitations'),
+      where('email', '==', userEmail),
+      where('status', '==', 'pending'),
+      orderBy('invitedAt', 'desc'),
+    ),
+  )
+
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    teamId: doc.data().teamId,
+    email: doc.data().email,
+    role: doc.data().role,
+    invitedBy: doc.data().invitedBy,
+    invitedAt: doc.data().invitedAt?.toDate() || new Date(),
+    expiresAt: doc.data().expiresAt?.toDate() || new Date(),
+    status: doc.data().status,
+  }))
+}
+
 export async function acceptTeamInvitation(
   invitationId: string,
   userId: string,
+  userEmail: string,
 ): Promise<void> {
   const invitationRef = doc(db, 'team-invitations', invitationId)
   const invitationSnap = await getDoc(invitationRef)
@@ -240,7 +282,15 @@ export async function acceptTeamInvitation(
     userId,
     invitationData.role,
     invitationData.invitedBy,
+    userEmail,
   )
+
+  // Create user-team mapping
+  batch.set(doc(db, 'user-teams', userId), {
+    teamId,
+    role: invitationData.role,
+    joinedAt: serverTimestamp(),
+  })
 
   await batch.commit()
 }
@@ -254,16 +304,40 @@ export async function declineTeamInvitation(
 
 // User's team (single)
 export async function getUserTeam(userId: string): Promise<Team | null> {
-  // Find teams where user is a member by checking if member document exists
-  const teamsQuery = query(collection(db, 'teams'))
-  const querySnapshot = await getDocs(teamsQuery)
+  try {
+    // First, check if user has a team mapping (most efficient)
+    const userTeamDoc = await getDoc(doc(db, 'user-teams', userId))
 
-  // Check each team to see if user is a member
-  for (const teamDoc of querySnapshot.docs) {
-    const teamId = teamDoc.id
-    const memberDoc = await getDoc(doc(db, 'teams', teamId, 'members', userId))
+    if (userTeamDoc.exists()) {
+      const userTeamData = userTeamDoc.data()
+      const teamId = userTeamData.teamId
 
-    if (memberDoc.exists()) {
+      // Get the team details
+      const teamDoc = await getDoc(doc(db, 'teams', teamId))
+
+      if (teamDoc.exists()) {
+        const data = teamDoc.data()
+        return {
+          id: teamDoc.id,
+          name: data.name,
+          description: data.description,
+          ownerId: data.ownerId,
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        }
+      }
+    }
+
+    // Fallback: Check if user is owner of any team (for backward compatibility)
+    const teamsQuery = query(
+      collection(db, 'teams'),
+      where('ownerId', '==', userId),
+    )
+
+    const teamsSnapshot = await getDocs(teamsQuery)
+
+    if (!teamsSnapshot.empty) {
+      const teamDoc = teamsSnapshot.docs[0] // User should only have one team as owner
       const data = teamDoc.data()
       return {
         id: teamDoc.id,
@@ -274,15 +348,12 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
         updatedAt: data.updatedAt?.toDate() || new Date(),
       }
     }
+  } catch (e) {
+    console.error('Error fetching user team:', e)
+    return null
   }
 
   return null
-}
-
-// Helper function to get user email from user document
-async function getUserEmail(userId: string): Promise<string> {
-  const userDoc = await getDoc(doc(db, 'users', userId))
-  return userDoc.data()?.email || ''
 }
 
 // Team subscription

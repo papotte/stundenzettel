@@ -1,4 +1,9 @@
-import type { Subscription, Team, TeamInvitation, TeamMember } from '@/lib/types'
+import type {
+  Subscription,
+  Team,
+  TeamInvitation,
+  TeamMember,
+} from '@/lib/types'
 
 // Mock data store
 const mockTeams: Record<string, Team> = {}
@@ -15,6 +20,7 @@ export async function createTeam(
   name: string,
   description: string,
   ownerId: string,
+  ownerEmail: string,
 ): Promise<string> {
   const teamId = `team-${nextTeamId++}`
   mockTeams[teamId] = {
@@ -28,7 +34,7 @@ export async function createTeam(
   mockMembers[teamId] = []
 
   // Add owner as first member
-  await addTeamMember(teamId, ownerId, 'owner', ownerId)
+  await addTeamMember(teamId, ownerId, 'owner', ownerId, ownerEmail)
 
   return teamId
 }
@@ -63,6 +69,7 @@ export async function addTeamMember(
   userId: string,
   role: TeamMember['role'],
   invitedBy: string,
+  userEmail?: string,
 ): Promise<void> {
   if (!mockMembers[teamId]) {
     mockMembers[teamId] = []
@@ -70,7 +77,7 @@ export async function addTeamMember(
 
   const member: TeamMember = {
     id: `member-${nextMemberId++}`,
-    email: `user-${userId}@example.com`,
+    email: userEmail || `user-${userId}@example.com`,
     role,
     joinedAt: new Date(),
     invitedBy,
@@ -142,9 +149,27 @@ export async function getTeamInvitations(
   )
 }
 
+export async function getUserInvitations(
+  userEmail: string,
+): Promise<TeamInvitation[]> {
+  const userInvitations: TeamInvitation[] = []
+
+  for (const invitations of Object.values(mockInvitations)) {
+    const userInv = invitations.filter(
+      (inv) => inv.email === userEmail && inv.status === 'pending',
+    )
+    userInvitations.push(...userInv)
+  }
+
+  return userInvitations.sort(
+    (a, b) => b.invitedAt.getTime() - a.invitedAt.getTime(),
+  )
+}
+
 export async function acceptTeamInvitation(
   invitationId: string,
   userId: string,
+  userEmail: string,
 ): Promise<void> {
   // Find invitation across all teams
   let invitation: TeamInvitation | null = null
@@ -166,7 +191,13 @@ export async function acceptTeamInvitation(
   invitation.status = 'accepted'
 
   // Add user to team
-  await addTeamMember(teamId, userId, invitation.role, invitation.invitedBy)
+  await addTeamMember(
+    teamId,
+    userId,
+    invitation.role,
+    invitation.invitedBy,
+    userEmail,
+  )
 }
 
 export async function declineTeamInvitation(
