@@ -25,10 +25,16 @@ import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 import TeamPage from '../page'
 
 // Mock Next.js router
+const mockSearchParams = new URLSearchParams()
+const mockPathname = '/team'
+
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(),
-  useSearchParams: jest.fn(),
-  usePathName: jest.fn(),
+  useRouter: jest.fn(() => ({
+    replace: jest.fn(),
+    push: jest.fn(),
+  })),
+  useSearchParams: jest.fn(() => mockSearchParams),
+  usePathname: jest.fn(() => mockPathname),
 }))
 
 // Mock team service

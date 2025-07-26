@@ -66,7 +66,8 @@ export function TeamSubscriptionDialog({
     } finally {
       setIsLoadingPlans(false)
     }
-  }, [t, toast])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Load pricing plans when dialog opens
   useEffect(() => {

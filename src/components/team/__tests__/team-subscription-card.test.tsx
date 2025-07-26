@@ -5,8 +5,14 @@ import userEvent from '@testing-library/user-event'
 
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
+import { getPricingPlans } from '@/services/payment-service'
 
 import { TeamSubscriptionCard } from '../team-subscription-card'
+
+// Mock the payment service
+jest.mock('@/services/payment-service', () => ({
+  getPricingPlans: jest.fn(),
+}))
 
 // Mock the toast hook
 jest.mock('@/hooks/use-toast', () => ({
@@ -74,6 +80,18 @@ describe('TeamSubscriptionCard', () => {
       ok: true,
       json: () => Promise.resolve({ url: 'https://example.com/portal' }),
     })
+    ;(getPricingPlans as jest.Mock).mockResolvedValue([
+      {
+        id: 'team-monthly',
+        name: 'Team Monthly',
+        price: 19.99,
+        currency: 'EUR',
+        interval: 'month',
+        features: ['Team Feature 1', 'Team Feature 2'],
+        stripePriceId: 'price_team_monthly',
+        maxUsers: 10,
+      },
+    ])
   })
 
   describe('Rendering', () => {
@@ -214,24 +232,9 @@ describe('TeamSubscriptionCard', () => {
       const upgradeButton = screen.getByText('teams.addSeats')
       await user.click(upgradeButton)
 
+      // Should open the team subscription dialog
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
-          '/api/create-team-checkout-session',
-          expect.objectContaining({
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: 'user-1',
-              teamId: 'team-1',
-              priceId: 'price_team_monthly',
-              quantity: 5,
-              successUrl: 'http://localhost/team?success=true',
-              cancelUrl: 'http://localhost/team?canceled=true',
-            }),
-          }),
-        )
+        expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
       })
     })
   })
@@ -295,24 +298,9 @@ describe('TeamSubscriptionCard', () => {
       const subscribeButton = screen.getByText('teams.subscribeNow')
       await user.click(subscribeButton)
 
+      // Should open the team subscription dialog
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
-          '/api/create-team-checkout-session',
-          expect.objectContaining({
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: 'user-1',
-              teamId: 'team-1',
-              priceId: 'price_team_monthly',
-              quantity: 2,
-              successUrl: 'http://localhost/team?success=true',
-              cancelUrl: 'http://localhost/team?canceled=true',
-            }),
-          }),
-        )
+        expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
       })
     })
   })

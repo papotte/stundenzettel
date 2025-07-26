@@ -31,6 +31,7 @@ describe('createTeamCheckoutSession', () => {
     })
     const result = await createTeamCheckoutSession({
       userId: 'u',
+      userEmail: 'u@example.com',
       teamId: 't',
       priceId: 'p',
       quantity: 2,
@@ -39,7 +40,7 @@ describe('createTeamCheckoutSession', () => {
     })
     expect(result).toEqual({ sessionId: 'sess_1', url: 'url' })
     expect(mockStripeInstance.customers.list).toHaveBeenCalledWith({
-      email: 'u',
+      email: 'u@example.com',
       limit: 1,
     })
     expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalled()
@@ -54,6 +55,7 @@ describe('createTeamCheckoutSession', () => {
     })
     const result = await createTeamCheckoutSession({
       userId: 'u2',
+      userEmail: 'u2@example.com',
       teamId: 't2',
       priceId: 'p2',
       quantity: 3,
@@ -62,7 +64,7 @@ describe('createTeamCheckoutSession', () => {
     })
     expect(result).toEqual({ sessionId: 'sess_2', url: 'url2' })
     expect(mockStripeInstance.customers.create).toHaveBeenCalledWith({
-      email: 'u2',
+      email: 'u2@example.com',
       metadata: { userId: 'u2' },
     })
   })
@@ -71,6 +73,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: '',
+        userEmail: 'test@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 1,
@@ -83,6 +86,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: '',
         priceId: 'p',
         quantity: 1,
@@ -95,6 +99,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: '',
         quantity: 1,
@@ -107,6 +112,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,6 +127,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 1,
@@ -149,6 +156,7 @@ describe('createTeamCheckoutSession', () => {
 
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -162,6 +170,7 @@ describe('createTeamCheckoutSession', () => {
     it('does not query price when trial is disabled', async () => {
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -180,6 +189,7 @@ describe('createTeamCheckoutSession', () => {
 
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -201,6 +211,7 @@ describe('createTeamCheckoutSession', () => {
     it('creates session without trial metadata when trial is disabled', async () => {
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,

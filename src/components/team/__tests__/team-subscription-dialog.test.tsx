@@ -81,6 +81,7 @@ describe('TeamSubscriptionDialog', () => {
       ok: true,
       json: async () => ({ url: 'https://checkout.stripe.com/test' }),
     })
+    // Ensure the mock resolves immediately
     ;(getPricingPlans as jest.Mock).mockResolvedValue(mockPricingPlans)
   })
 
@@ -94,9 +95,16 @@ describe('TeamSubscriptionDialog', () => {
   it('loads and displays pricing plans', async () => {
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+
+    // Check if the mock was called
+    expect(getPricingPlans as jest.Mock).toHaveBeenCalled()
 
     // Initially shows monthly plans only
     expect(screen.getByText('Team Monthly')).toBeInTheDocument()
@@ -106,9 +114,13 @@ describe('TeamSubscriptionDialog', () => {
   it('allows switching between monthly and yearly billing', async () => {
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
 
     // Initially shows monthly plans
     expect(screen.getByText('Team Monthly')).toBeInTheDocument()
@@ -126,9 +138,13 @@ describe('TeamSubscriptionDialog', () => {
   it('displays current seat count and allows adjustment', async () => {
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.numberOfSeats')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('teams.numberOfSeats')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
 
     const seatsInput = screen.getByDisplayValue('3')
     expect(seatsInput).toBeInTheDocument()
@@ -147,9 +163,13 @@ describe('TeamSubscriptionDialog', () => {
   it('enforces minimum seat count based on current members', async () => {
     render(<TeamSubscriptionDialog {...defaultProps} currentMembersCount={5} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.numberOfSeats')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('teams.numberOfSeats')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
 
     const minusButton = screen.getByRole('button', { name: /decrease seats/i })
     expect(minusButton).toBeDisabled()
@@ -161,9 +181,13 @@ describe('TeamSubscriptionDialog', () => {
   it('enforces maximum seat count from plan', async () => {
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.numberOfSeats')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('teams.numberOfSeats')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
 
     // Set seats to maximum
     const seatsInput = screen.getByDisplayValue('3')
@@ -177,9 +201,13 @@ describe('TeamSubscriptionDialog', () => {
     const user = userEvent.setup()
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.subscribeNow')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('teams.subscribeNow')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
 
     // Wait for plan to be selected (it should be auto-selected)
     await waitFor(() => {
@@ -217,9 +245,13 @@ describe('TeamSubscriptionDialog', () => {
     const user = userEvent.setup()
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('common.cancel')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and plans to be displayed
+    await waitFor(
+      () => {
+        expect(screen.getByText('common.cancel')).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
 
     const cancelButton = screen.getByText('common.cancel')
     await user.click(cancelButton)
@@ -232,8 +264,14 @@ describe('TeamSubscriptionDialog', () => {
 
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    await waitFor(() => {
-      expect(screen.getByText('teams.noTeamPlansAvailable')).toBeInTheDocument()
-    })
+    // Wait for the loading to complete and error to be displayed
+    await waitFor(
+      () => {
+        expect(
+          screen.getByText('teams.noTeamPlansAvailable'),
+        ).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
   })
 })

@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan, Team } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
 import { getPricingPlans, paymentService } from '@/services/payment-service'
-import { getUserTeam } from '@/services/team-service'
 
 interface PricingSectionProps {
   variant?: 'landing' | 'standalone'
@@ -39,8 +38,7 @@ export default function PricingSection({
     open: boolean
     plan: PricingPlan | null
   }>({ open: false, plan: null })
-  const [team, setTeam] = useState<Team | null>(null)
-  const [, setIsLoadingTeam] = useState(false)
+  const [team] = useState<Team | null>(null)
 
   useEffect(() => {
     const loadPricingPlans = async () => {
@@ -121,21 +119,6 @@ export default function PricingSection({
       setLoading(null)
     }
   }
-
-  const loadTeamData = async () => {
-    if (!user) return
-
-    setIsLoadingTeam(true)
-    try {
-      const userTeam = await getUserTeam(user.uid)
-      setTeam(userTeam)
-    } catch (error) {
-      console.error('Error loading team data:', error)
-    } finally {
-      setIsLoadingTeam(false)
-    }
-  }
-
   const handleTeamSubscribe = async (plan: PricingPlan) => {
     if (!user) {
       // Redirect to login with return URL to pricing page
@@ -146,13 +129,8 @@ export default function PricingSection({
       return
     }
 
-    // Load team data if not already loaded
-    if (!team) {
-      await loadTeamData()
-    }
-
-    // Open team subscription dialog
-    setTeamSubscriptionDialog({ open: true, plan: null })
+    // Redirect to team page for team plans
+    window.location.href = '/team?tab=subscription'
   }
 
   const containerClasses =
