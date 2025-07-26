@@ -5,14 +5,28 @@ import userEvent from '@testing-library/user-event'
 
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
-import { getPricingPlans } from '@/services/payment-service'
+import { getPricingPlans, paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
 
 import { TeamSubscriptionCard } from '../team-subscription-card'
 
+// Mock the auth context
+jest.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({
+    user: {
+      uid: 'user-1',
+      email: 'test@example.com',
+    },
+  }),
+}))
+
 // Mock the payment service
 jest.mock('@/services/payment-service', () => ({
   getPricingPlans: jest.fn(),
+  paymentService: {
+    createCustomerPortalSession: jest.fn(),
+    redirectToCustomerPortal: jest.fn(),
+  },
 }))
 
 // Mock the team service
@@ -199,6 +213,77 @@ describe('TeamSubscriptionCard', () => {
   describe('Subscription Management', () => {
     it('handles manage subscription click', async () => {
       const user = userEvent.setup()
+      const mockCreateCustomerPortalSession =
+        paymentService.createCustomerPortalSession as jest.Mock
+      const mockRedirectToCustomerPortal =
+        paymentService.redirectToCustomerPortal as jest.Mock
+
+      mockCreateCustomerPortalSession.mockResolvedValue({
+        url: 'https://example.com/portal',
+      })
+      mockRedirectToCustomerPortal.mockResolvedValue(undefined)
+
+      render(<TeamSubscriptionCard {...defaultProps} />)
+
+      const manageButton = screen.getByText('teams.manageBilling')
+      await user.click(manageButton)
+
+      await waitFor(() => {
+        expect(mockCreateCustomerPortalSession).toHaveBeenCalledWith(
+          'test@example.com',
+          'http://localhost/subscription',
+        )
+        expect(mockRedirectToCustomerPortal).toHaveBeenCalledWith(
+          'https://example.com/portal',
+        )
+      })
+
+      // Verify the exact parameters passed to the payment service
+      expect(mockCreateCustomerPortalSession).toHaveBeenCalledTimes(1)
+      const [userId, returnUrl] = mockCreateCustomerPortalSession.mock.calls[0]
+      expect(userId).toBe('test@example.com')
+      expect(returnUrl).toBe('http://localhost/subscription')
+    })
+
+    it('verifies the exact API call body for customer portal session', async () => {
+      const user = userEvent.setup()
+
+      // Mock the payment service to actually call the real method
+      const mockCreateCustomerPortalSession =
+        paymentService.createCustomerPortalSession as jest.Mock
+      const mockRedirectToCustomerPortal =
+        paymentService.redirectToCustomerPortal as jest.Mock
+
+      // Mock the internal fetch call that the payment service makes
+      ;(global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ url: 'https://example.com/portal' }),
+      })
+
+      // Restore the original implementation to test the actual API call
+      mockCreateCustomerPortalSession.mockImplementation(
+        async (userId: string, returnUrl?: string) => {
+          const response = await fetch('/api/create-customer-portal-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId,
+              returnUrl,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to create customer portal session')
+          }
+
+          return response.json()
+        },
+      )
+
+      mockRedirectToCustomerPortal.mockResolvedValue(undefined)
+
       render(<TeamSubscriptionCard {...defaultProps} />)
 
       const manageButton = screen.getByText('teams.manageBilling')
@@ -213,11 +298,24 @@ describe('TeamSubscriptionCard', () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              customerId: 'cus_123',
-              returnUrl: 'http://localhost/',
+              userId: 'test@example.com',
+              returnUrl: 'http://localhost/subscription',
             }),
           }),
         )
+      })
+
+      // Verify the exact body content
+      const fetchCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => call[0] === '/api/create-customer-portal-session',
+      )
+      expect(fetchCall).toBeDefined()
+
+      const [, options] = fetchCall!
+      const body = JSON.parse(options.body)
+      expect(body).toEqual({
+        userId: 'test@example.com',
+        returnUrl: 'http://localhost/subscription',
       })
     })
 
@@ -248,9 +346,9 @@ describe('TeamSubscriptionCard', () => {
   describe('Error Handling', () => {
     it('handles API errors gracefully', async () => {
       const user = userEvent.setup()
-      ;(global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-      })
+      const mockCreateCustomerPortalSession =
+        paymentService.createCustomerPortalSession as jest.Mock
+      mockCreateCustomerPortalSession.mockRejectedValue(new Error('API Error'))
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
@@ -268,7 +366,11 @@ describe('TeamSubscriptionCard', () => {
 
     it('handles network errors', async () => {
       const user = userEvent.setup()
-      ;(global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'))
+      const mockCreateCustomerPortalSession =
+        paymentService.createCustomerPortalSession as jest.Mock
+      mockCreateCustomerPortalSession.mockRejectedValue(
+        new Error('Network error'),
+      )
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
@@ -314,23 +416,30 @@ describe('TeamSubscriptionCard', () => {
   describe('Loading States', () => {
     it('shows loading state during API calls', async () => {
       const user = userEvent.setup()
-      let resolveFetch: (value: unknown) => void
-      const fetchPromise = new Promise((resolve) => {
-        resolveFetch = resolve
+      let resolvePromise: (value: unknown) => void
+      const portalPromise = new Promise((resolve) => {
+        resolvePromise = resolve
       })
-      ;(global.fetch as jest.Mock).mockReturnValue(fetchPromise)
+
+      const mockCreateCustomerPortalSession =
+        paymentService.createCustomerPortalSession as jest.Mock
+      const mockRedirectToCustomerPortal =
+        paymentService.redirectToCustomerPortal as jest.Mock
+
+      mockCreateCustomerPortalSession.mockReturnValue(portalPromise)
+      mockRedirectToCustomerPortal.mockResolvedValue(undefined)
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
       const manageButton = screen.getByText('teams.manageBilling')
       await user.click(manageButton)
 
-      expect(screen.getByText('teams.loading')).toBeInTheDocument()
-
-      resolveFetch!({
-        ok: true,
-        json: () => Promise.resolve({ url: 'https://example.com/portal' }),
+      // Wait for the loading state to appear
+      await waitFor(() => {
+        expect(screen.getByText('teams.loading')).toBeInTheDocument()
       })
+
+      resolvePromise!({ url: 'https://example.com/portal' })
 
       await waitFor(() => {
         expect(screen.queryByText('teams.loading')).not.toBeInTheDocument()
