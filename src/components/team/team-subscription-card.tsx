@@ -2,7 +2,14 @@
 
 import { useState } from 'react'
 
-import { AlertCircle, Check, CreditCard, Plus, Users } from 'lucide-react'
+import {
+  AlertCircle,
+  Check,
+  CreditCard,
+  Plus,
+  RefreshCw,
+  Users,
+} from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,9 +22,12 @@ import {
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useTranslation } from '@/context/i18n-context'
+import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
 import { formatAppDate } from '@/lib/utils'
+import { paymentService } from '@/services/payment-service'
+import { getTeamSubscription } from '@/services/team-service'
 
 import { TeamSubscriptionDialog } from './team-subscription-dialog'
 
@@ -35,8 +45,10 @@ export function TeamSubscriptionCard({
   onSubscriptionUpdate,
 }: TeamSubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const { toast } = useToast()
   const { t, language } = useTranslation()
+  const { user } = useAuth()
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -63,29 +75,38 @@ export function TeamSubscriptionCard({
     }
   }
 
+  const handleRefreshSubscription = async () => {
+    setIsRefreshing(true)
+    try {
+      const updatedSubscription = await getTeamSubscription(team.id)
+      onSubscriptionUpdate(updatedSubscription)
+      toast({
+        title: t('teams.subscription'),
+        description: t('teams.subscriptionRefreshed'),
+        variant: 'default',
+      })
+    } catch (error) {
+      console.error('Error refreshing subscription:', error)
+      toast({
+        title: t('teams.error'),
+        description: t('teams.failedToRefreshSubscription'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
   const handleManageSubscription = async () => {
     setIsLoading(true)
     try {
       // Redirect to customer portal or pricing page
-      if (subscription?.stripeCustomerId) {
-        // Create customer portal session
-        const response = await fetch('/api/create-customer-portal-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            customerId: subscription.stripeCustomerId,
-            returnUrl: window.location.href,
-          }),
-        })
-
-        if (response.ok) {
-          const { url } = await response.json()
-          window.location.href = url
-        } else {
-          throw new Error('Failed to create portal session')
-        }
+      if (user && subscription) {
+        const { url } = await paymentService.createCustomerPortalSession(
+          user.email,
+          `${window.location.origin}/subscription`,
+        )
+        await paymentService.redirectToCustomerPortal(url)
       } else {
         // Redirect to pricing page for new subscription
         window.location.href = '/pricing'
@@ -112,13 +133,27 @@ export function TeamSubscriptionCard({
       <>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              {t('teams.teamSubscription')}
-            </CardTitle>
-            <CardDescription>
-              {t('teams.teamSubscriptionDescription')}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  {t('teams.teamSubscription')}
+                </CardTitle>
+                <CardDescription>
+                  {t('teams.teamSubscriptionDescription')}
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshSubscription}
+                disabled={isRefreshing}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center py-6">
@@ -160,13 +195,27 @@ export function TeamSubscriptionCard({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            {t('teams.teamSubscription')}
-          </CardTitle>
-          <CardDescription>
-            {t('teams.teamSubscriptionManageDescription')}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                {t('teams.teamSubscription')}
+              </CardTitle>
+              <CardDescription>
+                {t('teams.teamSubscriptionManageDescription')}
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshSubscription}
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+              />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Subscription Status */}

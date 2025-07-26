@@ -39,7 +39,9 @@ export const stripeWebhook = onRequest(
     region: 'europe-west1',
     cors: false,
     maxInstances: 10,
-    secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
+    ...(process.env.NODE_ENV === 'production' && {
+      secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
+    }),
   },
   async (req: Request, res: Response) => {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -157,13 +159,14 @@ async function handleTeamSubscriptionChange(
   subscription: Stripe.Subscription,
   teamId: string,
 ) {
+  const currentPeriodStartTs = subscription.start_date || subscription.created
+  const currentPeriodStart = new Date(currentPeriodStartTs * 1000)
+
   const subscriptionData = {
     stripeSubscriptionId: subscription.id,
     stripeCustomerId: subscription.customer as string,
     status: subscription.status,
-    currentPeriodStart: new Date(
-      (subscription as any).current_period_start * 1000,
-    ),
+    currentPeriodStart: currentPeriodStart,
     cancelAt: subscription.cancel_at
       ? new Date(subscription.cancel_at * 1000)
       : null,

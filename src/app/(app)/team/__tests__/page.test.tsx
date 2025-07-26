@@ -44,6 +44,7 @@ jest.mock('@/services/team-service', () => ({
   getTeamInvitations: jest.fn(),
   getUserInvitations: jest.fn(),
   getTeamSubscription: jest.fn(),
+  onTeamSubscriptionChange: jest.fn(() => jest.fn()), // Return unsubscribe function
 }))
 
 // Mock hooks
