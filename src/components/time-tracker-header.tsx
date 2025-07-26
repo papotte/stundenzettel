@@ -80,9 +80,7 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>
-                  {t('tracker.clearDataAlertCancel')}
-                </AlertDialogCancel>
+                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleClearData}
                   className="bg-destructive hover:bg-destructive/90"

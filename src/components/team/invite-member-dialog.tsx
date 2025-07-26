@@ -187,7 +187,7 @@ export function InviteMemberDialog({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t('teams.cancel')}
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isSending}>
                 {isSending ? t('teams.sending') : t('teams.sendInvitation')}

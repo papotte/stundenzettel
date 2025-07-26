@@ -9,6 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export interface CreateTeamCheckoutSessionParams {
   userId: string
+  userEmail?: string
   teamId: string
   priceId: string
   quantity: number
@@ -21,6 +22,7 @@ export interface CreateTeamCheckoutSessionParams {
 
 export async function createTeamCheckoutSession({
   userId,
+  userEmail,
   teamId,
   priceId,
   quantity,
@@ -50,7 +52,7 @@ export async function createTeamCheckoutSession({
   // Create or retrieve customer
   let customer: Stripe.Customer
   const existingCustomers = await stripe.customers.list({
-    email: userId, // Using userId as email for now
+    email: userEmail,
     limit: 1,
   })
 
@@ -58,7 +60,7 @@ export async function createTeamCheckoutSession({
     customer = existingCustomers.data[0]
   } else {
     customer = await stripe.customers.create({
-      email: userId,
+      email: userEmail,
       metadata: { userId },
     })
   }
@@ -89,6 +91,13 @@ export async function createTeamCheckoutSession({
     )
   }
 
+  console.log(
+    userEmail,
+    'Creating team checkout session for user:',
+    userId,
+    'and team:',
+    teamId,
+  )
   // Prepare checkout session parameters
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     customer: customer.id,
@@ -99,8 +108,9 @@ export async function createTeamCheckoutSession({
       },
     ],
     mode: 'subscription',
+    allow_promotion_codes: true,
     success_url: successUrl || `${origin}/team?success=true`,
-    cancel_url: cancelUrl || `${origin}/pricing?canceled=true`,
+    cancel_url: cancelUrl || `${origin}/team?cancelled=true`,
     metadata: {
       userId,
       teamId,

@@ -10,6 +10,14 @@
 export const dictionaries = {
   en: {
     appName: 'TimeWise Tracker',
+    // Common
+    common: {
+      cancel: 'Cancel',
+      save: 'Save',
+      delete: 'Delete',
+      edit: 'Edit',
+      loading: 'Loading...',
+    },
     // Login Page
     login: {
       testMode: 'TimeWise Tracker (Test Mode)',
@@ -62,7 +70,6 @@ export const dictionaries = {
       clearDataAlertTitle: 'Are you absolutely sure?',
       clearDataAlertDescription:
         'This action cannot be undone. This will permanently delete all your time tracking data from the database.',
-      clearDataAlertCancel: 'Cancel',
       clearDataAlertConfirm: 'Yes, delete everything',
     },
     // Special Locations
@@ -79,7 +86,6 @@ export const dictionaries = {
       deleteAlertTitle: 'Are you sure?',
       deleteAlertDescription:
         'This action cannot be undone. This will permanently delete the time entry for "{location}".',
-      deleteAlertCancel: 'Cancel',
       deleteAlertConfirm: 'Delete',
       pauseLabel: '{minutes}m pause',
       drivingLabel: '{hours}h driving',
@@ -113,7 +119,6 @@ export const dictionaries = {
       warning10HoursTitle: 'Warning: Exceeds 10 Hours',
       warning10HoursDescription:
         'The work duration exceeds the legal maximum of 10 hours per day.',
-      cancelButton: 'Cancel',
       saveButton: 'Save Entry',
       cancelConfirmTitle: 'Discard changes?',
       cancelConfirmDescription:
@@ -253,7 +258,6 @@ export const dictionaries = {
       error: 'Error',
       userNotAuthenticated: 'User not authenticated',
       updating: 'Updating...',
-      cancel: 'Cancel',
       change: 'Change',
       dangerZone: 'Danger Zone',
       dangerZoneDescription: 'Irreversible and destructive actions',
@@ -354,6 +358,8 @@ export const dictionaries = {
       tryForFree: 'Try for Free',
       freeTrial: 'Free Trial',
       noCreditCard: 'No credit card required',
+      successToast: 'Subscription successful!',
+      cancelledToast: 'Subscription creation cancelled.',
     },
     // Subscription Guard
     subscription: {
@@ -414,7 +420,6 @@ export const dictionaries = {
       rolePlaceholder: 'Select a role',
       member: 'Member',
       admin: 'Admin',
-      cancel: 'Cancel',
       sendInvitation: 'Send Invitation',
       sending: 'Sending...',
       invitationSent: 'Invitation sent',
@@ -479,6 +484,22 @@ export const dictionaries = {
       failedToOpenSubscriptionManagement:
         'Failed to open subscription management',
       failedToUpgradeSubscription: 'Failed to upgrade subscription',
+      failedToLoadPricingPlans: 'Failed to load pricing plans',
+      createTeamSubscription: 'Create Team Subscription',
+      selectSeatsDescription: 'Choose how many seats you need for your team',
+      selectPlanAndSeatsDescription:
+        'Select a plan and configure seats for your team',
+      loadingPricingPlans: 'Loading available plans...',
+      selectPlan: 'Select Plan',
+      forSeats: 'for {count} seats',
+      noTeamPlansAvailable: 'No team plans available at the moment',
+      trialIncluded: '{days}-day free trial included',
+      pricePerSeat: 'Price per seat',
+      numberOfSeats: 'Number of seats',
+      currentMembers: '{count} current members',
+      maxSeats: 'Maximum {max} seats',
+      seatsSelected: '{count} seats selected',
+      totalPerPeriod: 'Total per period',
       teamNameRequired: 'Team name is required',
       emailRequired: 'Email is required',
       emailInvalid: 'Please enter a valid email address',
@@ -614,6 +635,14 @@ export const dictionaries = {
   },
   de: {
     appName: 'TimeWise Tracker',
+    // Common
+    common: {
+      cancel: 'Abbrechen',
+      save: 'Speichern',
+      delete: 'Löschen',
+      edit: 'Bearbeiten',
+      loading: 'Wird geladen...',
+    },
     // Login Page
     login: {
       testMode: 'TimeWise Tracker (Testmodus)',
@@ -666,7 +695,6 @@ export const dictionaries = {
       clearDataAlertTitle: 'Sind Sie absolut sicher?',
       clearDataAlertDescription:
         'Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle Ihre Zeiterfassungsdaten endgültig aus der Datenbank gelöscht.',
-      clearDataAlertCancel: 'Abbrechen',
       clearDataAlertConfirm: 'Ja, alles löschen',
     },
     // Special Locations
@@ -683,7 +711,6 @@ export const dictionaries = {
       deleteAlertTitle: 'Sind Sie sicher?',
       deleteAlertDescription:
         'Diese Aktion kann nicht rückgängig gemacht werden. Der Zeiteintrag für "{location}" wird dauerhaft gelöscht.',
-      deleteAlertCancel: 'Abbrechen',
       deleteAlertConfirm: 'Löschen',
       pauseLabel: '{minutes}m Pause',
       drivingLabel: '{hours} Std. Fahrer',
@@ -704,11 +731,11 @@ export const dictionaries = {
       endTimeLabel: 'Endzeit',
       optionalDetailsTitle: 'Optionale Angaben',
       pauseLabel: 'Pause',
-      pauseDurationLabel: 'Pause Duration (HH:mm)',
+      pauseDurationLabel: 'Pausen-Dauer (HH:mm)',
       pauseDurationDescription:
-        'Enter the total duration of your pause in HH:mm format (e.g. {example} for 30 minutes).',
+        'Geben Sie die Gesamtdauer Ihrer Pause im HH:mm-Format ein (z.B. {example} für 30 Minuten).',
       pauseDurationInvalid:
-        'Please enter a valid duration in HH:mm format (e.g. {example}).',
+        'Bitte geben Sie eine gültige Dauer im HH:mm-Format ein (z.B. {example}).',
       pauseSuggestion: 'Vorschlag: {minutes} Min.',
       pauseSuggestionTooltip:
         'Aktivität über {hours}. Empfohlene Pause: {minutes} Min.',
@@ -718,7 +745,6 @@ export const dictionaries = {
       warning10HoursTitle: 'Warnung: 10 Stunden überschritten',
       warning10HoursDescription:
         'Die Arbeitsdauer überschreitet das gesetzliche Maximum von 10 Stunden pro Tag.',
-      cancelButton: 'Abbrechen',
       saveButton: 'Eintrag speichern',
       cancelConfirmTitle: 'Änderungen verwerfen?',
       cancelConfirmDescription:
@@ -869,7 +895,6 @@ export const dictionaries = {
       error: 'Fehler',
       userNotAuthenticated: 'Benutzer nicht authentifiziert',
       updating: 'Aktualisiere...',
-      cancel: 'Abbrechen',
       change: 'Ändern',
       dangerZone: 'Gefahrenbereich',
       dangerZoneDescription: 'Unumkehrbare und zerstörerische Aktionen',
@@ -984,7 +1009,6 @@ export const dictionaries = {
       rolePlaceholder: 'Rolle auswählen',
       member: 'Mitglied',
       admin: 'Administrator',
-      cancel: 'Abbrechen',
       sendInvitation: 'Einladung senden',
       sending: 'Wird gesendet...',
       invitationSent: 'Einladung gesendet',
@@ -1025,6 +1049,7 @@ export const dictionaries = {
       noActiveSubscription: 'Kein aktives Abonnement',
       noActiveSubscriptionDescription:
         'Abonnieren Sie, um Team-Zusammenarbeitsfunktionen freizuschalten',
+
       subscribeNow: 'Jetzt abonnieren',
       loading: 'Wird geladen...',
       subscriptionStatus: 'Abonnement-Status',
@@ -1053,6 +1078,23 @@ export const dictionaries = {
         'Abonnement-Verwaltung konnte nicht geöffnet werden',
       failedToUpgradeSubscription:
         'Abonnement konnte nicht aktualisiert werden',
+      failedToLoadPricingPlans: 'Preispläne konnten nicht geladen werden',
+      createTeamSubscription: 'Team-Abonnement erstellen',
+      selectSeatsDescription:
+        'Wählen Sie aus, wie viele Sitzungen Sie für Ihr Team benötigen',
+      selectPlanAndSeatsDescription:
+        'Wählen Sie einen Tarif und konfigurieren Sie Sitzungen für Ihr Team',
+      loadingPricingPlans: 'Verfügbare Tarife werden geladen...',
+      selectPlan: 'Tarif auswählen',
+      forSeats: 'für {count} Sitzungen',
+      noTeamPlansAvailable: 'Derzeit sind keine Team-Tarife verfügbar',
+      trialIncluded: '{days}-tägige kostenlose Testphase inbegriffen',
+      pricePerSeat: 'Preis pro Sitzung',
+      numberOfSeats: 'Anzahl der Sitzungen',
+      currentMembers: '{count} aktuelle Mitglieder',
+      maxSeats: 'Maximal {max} Sitzungen',
+      seatsSelected: '{count} Sitzungen ausgewählt',
+      totalPerPeriod: 'Gesamt pro Zeitraum',
       teamNameRequired: 'Team-Name ist erforderlich',
       emailRequired: 'E-Mail ist erforderlich',
       emailInvalid: 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
@@ -1111,6 +1153,8 @@ export const dictionaries = {
       tryForFree: 'Kostenlos testen',
       freeTrial: 'Kostenlose Testphase',
       noCreditCard: 'Keine Kreditkarte erforderlich',
+      successToast: 'Abonnement erfolgreich!',
+      cancelledToast: 'Abonnement-Erstellung abgebrochen.',
     },
     // Export Page
     export_page: {

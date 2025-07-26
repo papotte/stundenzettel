@@ -11,7 +11,7 @@ import {
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
@@ -64,6 +64,47 @@ export default function TeamPage() {
   const [currentUserRole, setCurrentUserRole] = useState<
     'owner' | 'admin' | 'member'
   >('member')
+
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
+  // Use state for tab, but initialize to 'members' and update in useEffect
+  const [selectedTab, setSelectedTab] = useState('members')
+
+  // On mount or when searchParams changes, check for ?success, ?cancelled, or ?tab=subscription
+  useEffect(() => {
+    const success = searchParams.get('success') === 'true'
+    const cancelled = searchParams.get('cancelled') === 'true'
+    const tab = searchParams.get('tab')
+    if (success || cancelled || tab === 'subscription') {
+      setSelectedTab('subscription')
+    }
+    if (success) {
+      toast({
+        title: t('teams.subscription'),
+        description: t('pricing.successToast'),
+        variant: 'default',
+      })
+      // Remove success/cancelled, add tab=subscription
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', 'subscription')
+      setTimeout(() => {
+        router.replace(`${pathname}?${params.toString()}`)
+      }, 1500)
+    } else if (cancelled) {
+      toast({
+        title: t('teams.subscription'),
+        description: t('pricing.cancelledToast'),
+        variant: 'destructive',
+      })
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('tab', 'subscription')
+      setTimeout(() => {
+        router.replace(`${pathname}?${params.toString()}`)
+      }, 1500)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, pathname, toast, t, router])
 
   const loadTeamData = useCallback(async () => {
     if (!user) return
@@ -281,7 +322,11 @@ export default function TeamPage() {
               </CardHeader>
             </Card>
 
-            <Tabs defaultValue="members" className="space-y-6">
+            <Tabs
+              value={selectedTab}
+              onValueChange={setSelectedTab}
+              className="space-y-6"
+            >
               <TabsList className="flex w-full flex-start bg-transparent p-0">
                 <TabsTrigger
                   value="members"

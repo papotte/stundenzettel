@@ -101,7 +101,7 @@ describe('TeamSettingsDialog', () => {
 
     it('renders cancel and save buttons', () => {
       expect(
-        screen.getByRole('button', { name: 'teams.cancel' }),
+        screen.getByRole('button', { name: 'common.cancel' }),
       ).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: 'teams.saveChanges' }),
@@ -342,7 +342,7 @@ describe('TeamSettingsDialog', () => {
 
     it('closes dialog when cancel button is clicked', async () => {
       const user = userEvent.setup()
-      const cancelButton = screen.getByRole('button', { name: 'teams.cancel' })
+      const cancelButton = screen.getByRole('button', { name: 'common.cancel' })
 
       await user.click(cancelButton)
 
@@ -362,7 +362,7 @@ describe('TeamSettingsDialog', () => {
       await user.type(descriptionInput, 'Modified description')
 
       // Close dialog
-      const cancelButton = screen.getByRole('button', { name: 'teams.cancel' })
+      const cancelButton = screen.getByRole('button', { name: 'common.cancel' })
       await user.click(cancelButton)
 
       // Reopen dialog
@@ -396,7 +396,7 @@ describe('TeamSettingsDialog', () => {
       await user.type(descriptionInput, 'Modified description')
 
       // Close dialog
-      const cancelButton = screen.getByRole('button', { name: 'teams.cancel' })
+      const cancelButton = screen.getByRole('button', { name: 'common.cancel' })
       await user.click(cancelButton)
 
       // Reopen dialog
