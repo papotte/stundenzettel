@@ -92,7 +92,7 @@ describe('InviteMemberDialog', () => {
 
     it('renders cancel and invite buttons', () => {
       expect(
-        screen.getByRole('button', { name: /teams.cancel/i }),
+        screen.getByRole('button', { name: /common.cancel/i }),
       ).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: /teams.sendInvitation/i }),
@@ -387,7 +387,9 @@ describe('InviteMemberDialog', () => {
 
     it('closes dialog when cancel button is clicked', async () => {
       const user = userEvent.setup()
-      const cancelButton = screen.getByRole('button', { name: /teams.cancel/i })
+      const cancelButton = screen.getByRole('button', {
+        name: /common.cancel/i,
+      })
 
       await user.click(cancelButton)
 

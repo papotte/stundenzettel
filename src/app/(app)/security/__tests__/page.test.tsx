@@ -391,7 +391,7 @@ describe('SecurityPage', () => {
         ).toBeInTheDocument()
       })
       const cancelButton = screen.getByRole('button', {
-        name: /settings\.cancel/i,
+        name: /common\.cancel/i,
       })
       await user.click(cancelButton)
       await waitFor(() => {

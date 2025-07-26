@@ -155,7 +155,7 @@ export function CreateTeamDialog({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                {t('teams.cancel')}
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isCreating}>
                 {isCreating ? t('teams.creating') : t('teams.createTeam')}

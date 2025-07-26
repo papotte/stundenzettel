@@ -27,6 +27,8 @@ import TeamPage from '../page'
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+  useSearchParams: jest.fn(),
+  usePathName: jest.fn(),
 }))
 
 // Mock team service

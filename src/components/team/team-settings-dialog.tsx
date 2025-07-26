@@ -170,7 +170,7 @@ export function TeamSettingsDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>
-            {t('teams.cancel')}
+            {t('common.cancel')}
           </Button>
           {canEdit && (
             <Button onClick={handleSave} disabled={loading}>

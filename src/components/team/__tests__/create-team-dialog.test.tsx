@@ -106,7 +106,7 @@ describe('CreateTeamDialog', () => {
 
     it('renders cancel and create buttons', () => {
       expect(
-        screen.getByRole('button', { name: /teams.cancel/i }),
+        screen.getByRole('button', { name: /common.cancel/i }),
       ).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: /teams.createTeam/i }),
@@ -407,7 +407,9 @@ describe('CreateTeamDialog', () => {
 
     it('closes dialog when cancel button is clicked', async () => {
       const user = userEvent.setup()
-      const cancelButton = screen.getByRole('button', { name: /teams.cancel/i })
+      const cancelButton = screen.getByRole('button', {
+        name: /common.cancel/i,
+      })
 
       await user.click(cancelButton)
 
