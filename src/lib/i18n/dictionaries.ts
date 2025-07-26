@@ -17,6 +17,7 @@ export const dictionaries = {
       delete: 'Delete',
       edit: 'Edit',
       loading: 'Loading...',
+      close: 'Close',
     },
     // Login Page
     login: {
@@ -521,6 +522,30 @@ export const dictionaries = {
         admin: 'Admin',
         member: 'Member',
       },
+      seatAssignment: 'Seat Assignment',
+      assignSeat: 'Assign Seat',
+      unassignSeat: 'Unassign Seat',
+      seatAssigned: 'Seat assigned successfully',
+      seatUnassigned: 'Seat unassigned successfully',
+      seatAssignmentFailed: 'Failed to assign seat',
+      seatUnassignmentFailed: 'Failed to unassign seat',
+      assignedSeats: 'Assigned Seats',
+      availableSeats: 'Available Seats',
+      seatAssignedBy: 'Assigned by {user} on {date}',
+      noSeatAssigned: 'No seat assigned',
+      seatAssignmentDescription:
+        'Manage seat assignments for your team members',
+      seatLimitReached:
+        'Seat limit reached. Please upgrade your subscription to assign more seats.',
+      seatStatus: 'Seat Status',
+      assignedDate: 'Assigned Date',
+      seatAssignedDescription:
+        'The seat has been successfully assigned to this member',
+      seatUnassignedDescription:
+        'The seat has been successfully unassigned from this member',
+      totalSeats: 'Total Seats',
+      cannotUnassignOwnerSeat: 'Cannot unassign seat from team owner',
+      ownerSeatRequired: 'Owner seat required',
     },
     // Export Page
     export_page: {
@@ -644,6 +669,7 @@ export const dictionaries = {
       delete: 'Löschen',
       edit: 'Bearbeiten',
       loading: 'Wird geladen...',
+      close: 'Schließen',
     },
     // Login Page
     login: {
@@ -1119,6 +1145,31 @@ export const dictionaries = {
         admin: 'Administrator',
         member: 'Mitglied',
       },
+      seatAssignment: 'Sitzungszuweisung',
+      assignSeat: 'Sitzung zuweisen',
+      unassignSeat: 'Sitzung entfernen',
+      seatAssigned: 'Sitzung erfolgreich zugewiesen',
+      seatUnassigned: 'Sitzung erfolgreich entfernt',
+      seatAssignmentFailed: 'Sitzung konnte nicht zugewiesen werden',
+      seatUnassignmentFailed: 'Sitzung konnte nicht entfernt werden',
+      assignedSeats: 'Zugewiesene Sitzungen',
+      availableSeats: 'Verfügbare Sitzungen',
+      seatAssignedBy: 'Zugewiesen von {user} am {date}',
+      noSeatAssigned: 'Keine Sitzung zugewiesen',
+      seatAssignmentDescription:
+        'Verwalten Sie Sitzungszuweisungen für Ihre Teammitglieder',
+      seatLimitReached:
+        'Sitzungslimit erreicht. Bitte upgraden Sie Ihr Abonnement, um weitere Sitzungen zuzuweisen.',
+      seatStatus: 'Sitzungsstatus',
+      assignedDate: 'Zugewiesenes Datum',
+      seatAssignedDescription:
+        'Die Sitzung wurde erfolgreich diesem Mitglied zugewiesen',
+      seatUnassignedDescription:
+        'Die Sitzung wurde erfolgreich von diesem Mitglied entfernt',
+      totalSeats: 'Gesamte Sitzungen',
+      cannotUnassignOwnerSeat:
+        'Sitzung kann nicht vom Team-Besitzer entfernt werden',
+      ownerSeatRequired: 'Besitzer-Sitzung erforderlich',
     },
     // Pricing Page
     pricing: {

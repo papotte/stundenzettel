@@ -74,6 +74,27 @@ export const removeTeamMember = (
   return service.removeTeamMember(teamId, memberId)
 }
 
+// Seat assignment operations
+export const assignSeat = (
+  teamId: string,
+  memberId: string,
+  assignedBy: string,
+): Promise<void> => {
+  return service.assignSeat(teamId, memberId, assignedBy)
+}
+
+export const unassignSeat = (
+  teamId: string,
+  memberId: string,
+  unassignedBy: string,
+): Promise<void> => {
+  return service.unassignSeat(teamId, memberId, unassignedBy)
+}
+
+export const getAssignedSeats = (teamId: string): Promise<TeamMember[]> => {
+  return service.getAssignedSeats(teamId)
+}
+
 // Team invitations
 export const createTeamInvitation = (
   teamId: string,

@@ -83,6 +83,15 @@ export async function addTeamMember(
     invitedBy,
   }
 
+  // Automatically assign seat to owners
+  if (role === 'owner') {
+    member.seatAssignment = {
+      assignedAt: new Date(),
+      assignedBy: invitedBy,
+      isActive: true,
+    }
+  }
+
   mockMembers[teamId].push(member)
 }
 
@@ -109,6 +118,44 @@ export async function removeTeamMember(
   if (mockMembers[teamId]) {
     mockMembers[teamId] = mockMembers[teamId].filter((m) => m.id !== memberId)
   }
+}
+
+// Seat assignment operations
+export async function assignSeat(
+  teamId: string,
+  memberId: string,
+  assignedBy: string,
+): Promise<void> {
+  const members = mockMembers[teamId] || []
+  const member = members.find((m) => m.id === memberId)
+  if (member) {
+    member.seatAssignment = {
+      assignedAt: new Date(),
+      assignedBy,
+      isActive: true,
+    }
+  }
+}
+
+export async function unassignSeat(
+  teamId: string,
+  memberId: string,
+  unassignedBy: string,
+): Promise<void> {
+  const members = mockMembers[teamId] || []
+  const member = members.find((m) => m.id === memberId)
+  if (member) {
+    member.seatAssignment = {
+      assignedAt: new Date(),
+      assignedBy: unassignedBy,
+      isActive: false,
+    }
+  }
+}
+
+export async function getAssignedSeats(teamId: string): Promise<TeamMember[]> {
+  const members = mockMembers[teamId] || []
+  return members.filter((member) => member.seatAssignment?.isActive === true)
 }
 
 // Team invitations

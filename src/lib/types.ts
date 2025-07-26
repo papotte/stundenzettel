@@ -104,6 +104,11 @@ export interface TeamMember {
   role: 'owner' | 'admin' | 'member'
   joinedAt: Date
   invitedBy: string
+  seatAssignment?: {
+    assignedAt: Date
+    assignedBy: string
+    isActive: boolean
+  }
 }
 
 export interface TeamInvitation {

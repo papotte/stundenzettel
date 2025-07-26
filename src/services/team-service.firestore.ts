@@ -24,6 +24,19 @@ import type {
   TeamMember,
 } from '@/lib/types'
 
+// Utility type for Firestore document data based on TeamMember
+type TeamMemberFirestoreData = Omit<
+  TeamMember,
+  'id' | 'joinedAt' | 'seatAssignment'
+> & {
+  joinedAt: ReturnType<typeof serverTimestamp>
+  seatAssignment?: {
+    assignedAt: ReturnType<typeof serverTimestamp>
+    assignedBy: string
+    isActive: boolean
+  }
+}
+
 // Team CRUD operations
 export async function createTeam(
   name: string,
@@ -118,11 +131,20 @@ export async function addTeamMember(
   invitedBy: string,
   userEmail?: string,
 ): Promise<void> {
-  const memberData = {
+  const memberData: TeamMemberFirestoreData = {
     email: userEmail || '',
     role,
     joinedAt: serverTimestamp(),
     invitedBy,
+  }
+
+  // Automatically assign seat to owners
+  if (role === 'owner') {
+    memberData.seatAssignment = {
+      assignedAt: serverTimestamp(),
+      assignedBy: invitedBy,
+      isActive: true,
+    }
   }
 
   // Use userId as document ID for proper Firestore rules
@@ -150,6 +172,14 @@ export async function getTeamMembers(teamId: string): Promise<TeamMember[]> {
     role: doc.data().role,
     joinedAt: doc.data().joinedAt?.toDate() || new Date(),
     invitedBy: doc.data().invitedBy,
+    seatAssignment: doc.data().seatAssignment
+      ? {
+          assignedAt:
+            doc.data().seatAssignment.assignedAt?.toDate() || new Date(),
+          assignedBy: doc.data().seatAssignment.assignedBy,
+          isActive: doc.data().seatAssignment.isActive,
+        }
+      : undefined,
   }))
 }
 
@@ -178,6 +208,63 @@ export async function removeTeamMember(
   batch.delete(doc(db, 'user-teams', memberId))
 
   await batch.commit()
+}
+
+// Seat assignment operations
+export async function assignSeat(
+  teamId: string,
+  memberId: string,
+  assignedBy: string,
+): Promise<void> {
+  const docRef = doc(db, 'teams', teamId, 'members', memberId)
+  await updateDoc(docRef, {
+    seatAssignment: {
+      assignedAt: serverTimestamp(),
+      assignedBy,
+      isActive: true,
+    },
+  })
+}
+
+export async function unassignSeat(
+  teamId: string,
+  memberId: string,
+  unassignedBy: string,
+): Promise<void> {
+  const docRef = doc(db, 'teams', teamId, 'members', memberId)
+  await updateDoc(docRef, {
+    seatAssignment: {
+      assignedAt: serverTimestamp(),
+      assignedBy: unassignedBy,
+      isActive: false,
+    },
+  })
+}
+
+export async function getAssignedSeats(teamId: string): Promise<TeamMember[]> {
+  const querySnapshot = await getDocs(
+    query(
+      collection(db, 'teams', teamId, 'members'),
+      where('seatAssignment.isActive', '==', true),
+      orderBy('seatAssignment.assignedAt', 'desc'),
+    ),
+  )
+
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    email: doc.data().email,
+    role: doc.data().role,
+    joinedAt: doc.data().joinedAt?.toDate() || new Date(),
+    invitedBy: doc.data().invitedBy,
+    seatAssignment: doc.data().seatAssignment
+      ? {
+          assignedAt:
+            doc.data().seatAssignment.assignedAt?.toDate() || new Date(),
+          assignedBy: doc.data().seatAssignment.assignedBy,
+          isActive: doc.data().seatAssignment.isActive,
+        }
+      : undefined,
+  }))
 }
 
 // Team invitations

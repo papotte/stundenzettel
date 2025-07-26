@@ -386,6 +386,8 @@ export default function TeamPage() {
                       teamId={team.id}
                       members={members}
                       currentUserRole={currentUserRole}
+                      subscription={subscription}
+                      currentUserId={user.uid}
                       onMembersChange={handleMembersChange}
                     />
                   </CardContent>
