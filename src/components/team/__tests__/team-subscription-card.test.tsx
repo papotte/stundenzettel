@@ -6,12 +6,18 @@ import userEvent from '@testing-library/user-event'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
 import { getPricingPlans } from '@/services/payment-service'
+import { getTeamSubscription } from '@/services/team-service'
 
 import { TeamSubscriptionCard } from '../team-subscription-card'
 
 // Mock the payment service
 jest.mock('@/services/payment-service', () => ({
   getPricingPlans: jest.fn(),
+}))
+
+// Mock the team service
+jest.mock('@/services/team-service', () => ({
+  getTeamSubscription: jest.fn(),
 }))
 
 // Mock the toast hook
@@ -328,6 +334,83 @@ describe('TeamSubscriptionCard', () => {
 
       await waitFor(() => {
         expect(screen.queryByText('teams.loading')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Refresh Functionality', () => {
+    it('shows refresh button and handles refresh click', async () => {
+      const user = userEvent.setup()
+      const mockGetTeamSubscription = getTeamSubscription as jest.Mock
+      mockGetTeamSubscription.mockResolvedValue(mockSubscription)
+
+      render(<TeamSubscriptionCard {...defaultProps} />)
+
+      // Should show refresh button
+      const refreshButton = screen.getByRole('button', { name: '' }) // Refresh button with icon only
+      expect(refreshButton).toBeInTheDocument()
+
+      // Click refresh button
+      await user.click(refreshButton)
+
+      // Should call getTeamSubscription
+      expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeam.id)
+
+      // Should call onSubscriptionUpdate with the result
+      await waitFor(() => {
+        expect(defaultProps.onSubscriptionUpdate).toHaveBeenCalledWith(
+          mockSubscription,
+        )
+      })
+
+      // Should show success toast
+      expect(mockToast.toast).toHaveBeenCalledWith({
+        title: 'teams.subscription',
+        description: 'teams.subscriptionRefreshed',
+        variant: 'default',
+      })
+    })
+
+    it('handles refresh error gracefully', async () => {
+      const user = userEvent.setup()
+      const mockGetTeamSubscription = getTeamSubscription as jest.Mock
+      mockGetTeamSubscription.mockRejectedValue(new Error('Refresh failed'))
+
+      render(<TeamSubscriptionCard {...defaultProps} />)
+
+      const refreshButton = screen.getByRole('button', { name: '' })
+      await user.click(refreshButton)
+
+      // Should show error toast
+      await waitFor(() => {
+        expect(mockToast.toast).toHaveBeenCalledWith({
+          title: 'teams.error',
+          description: 'teams.failedToRefreshSubscription',
+          variant: 'destructive',
+        })
+      })
+    })
+
+    it('shows refresh button for no subscription state', async () => {
+      const user = userEvent.setup()
+      const mockGetTeamSubscription = getTeamSubscription as jest.Mock
+      mockGetTeamSubscription.mockResolvedValue(null)
+
+      render(<TeamSubscriptionCard {...defaultProps} subscription={null} />)
+
+      // Should show refresh button even when no subscription
+      const refreshButton = screen.getByRole('button', { name: '' })
+      expect(refreshButton).toBeInTheDocument()
+
+      // Click refresh button
+      await user.click(refreshButton)
+
+      // Should call getTeamSubscription
+      expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeam.id)
+
+      // Should call onSubscriptionUpdate with null
+      await waitFor(() => {
+        expect(defaultProps.onSubscriptionUpdate).toHaveBeenCalledWith(null)
       })
     })
   })

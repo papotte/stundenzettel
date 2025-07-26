@@ -23,7 +23,12 @@ describe('createTeamCheckoutSession', () => {
 
   it('creates session for existing customer', async () => {
     mockStripeInstance.customers.list.mockResolvedValue({
-      data: [{ id: 'cus_1' }],
+      data: [
+        {
+          id: 'cus_1',
+          metadata: { firebase_uid: 'u', team_id: 't' }, // Customer already has team metadata
+        },
+      ],
     })
     mockStripeInstance.checkout.sessions.create.mockResolvedValue({
       id: 'sess_1',
@@ -46,6 +51,39 @@ describe('createTeamCheckoutSession', () => {
     expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalled()
   })
 
+  it('updates existing customer metadata for team subscription', async () => {
+    mockStripeInstance.customers.list.mockResolvedValue({
+      data: [
+        {
+          id: 'cus_1',
+          metadata: {}, // Customer exists but has no team metadata
+        },
+      ],
+    })
+    mockStripeInstance.customers.update.mockResolvedValue({ id: 'cus_1' })
+    mockStripeInstance.checkout.sessions.create.mockResolvedValue({
+      id: 'sess_1',
+      url: 'url',
+    })
+
+    await createTeamCheckoutSession({
+      userId: 'u',
+      userEmail: 'u@example.com',
+      teamId: 't',
+      priceId: 'p',
+      quantity: 2,
+      origin: 'http://localhost',
+      trialEnabled: false,
+    })
+
+    expect(mockStripeInstance.customers.update).toHaveBeenCalledWith('cus_1', {
+      metadata: {
+        firebase_uid: 'u',
+        team_id: 't',
+      },
+    })
+  })
+
   it('creates session for new customer', async () => {
     mockStripeInstance.customers.list.mockResolvedValue({ data: [] })
     mockStripeInstance.customers.create.mockResolvedValue({ id: 'cus_2' })
@@ -65,7 +103,10 @@ describe('createTeamCheckoutSession', () => {
     expect(result).toEqual({ sessionId: 'sess_2', url: 'url2' })
     expect(mockStripeInstance.customers.create).toHaveBeenCalledWith({
       email: 'u2@example.com',
-      metadata: { userId: 'u2' },
+      metadata: {
+        firebase_uid: 'u2',
+        team_id: 't2',
+      },
     })
   })
 
@@ -140,7 +181,12 @@ describe('createTeamCheckoutSession', () => {
   describe('Trial Optimization', () => {
     beforeEach(() => {
       mockStripeInstance.customers.list.mockResolvedValue({
-        data: [{ id: 'cus_1' }],
+        data: [
+          {
+            id: 'cus_1',
+            metadata: { firebase_uid: 'u', team_id: 't' }, // Customer already has team metadata
+          },
+        ],
       })
       mockStripeInstance.checkout.sessions.create.mockResolvedValue({
         id: 'sess_1',
@@ -200,6 +246,8 @@ describe('createTeamCheckoutSession', () => {
       expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
+            firebase_uid: 'u',
+            team_id: 't',
             trial_enabled: 'true',
             trial_days: '14',
             has_trial_period: 'true',
@@ -222,6 +270,8 @@ describe('createTeamCheckoutSession', () => {
       expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
+            firebase_uid: 'u',
+            team_id: 't',
             trial_enabled: 'false',
             trial_days: '0',
             has_trial_period: 'false',

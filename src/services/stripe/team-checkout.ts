@@ -58,10 +58,22 @@ export async function createTeamCheckoutSession({
 
   if (existingCustomers.data.length > 0) {
     customer = existingCustomers.data[0]
+    // Update metadata if needed for team subscription
+    if (!customer.metadata.firebase_uid || !customer.metadata.team_id) {
+      await stripe.customers.update(customer.id, {
+        metadata: {
+          firebase_uid: userId,
+          team_id: teamId,
+        },
+      })
+    }
   } else {
     customer = await stripe.customers.create({
       email: userEmail,
-      metadata: { userId },
+      metadata: {
+        firebase_uid: userId,
+        team_id: teamId,
+      },
     })
   }
 
@@ -112,8 +124,8 @@ export async function createTeamCheckoutSession({
     success_url: successUrl || `${origin}/team?success=true`,
     cancel_url: cancelUrl || `${origin}/team?cancelled=true`,
     metadata: {
-      userId,
-      teamId,
+      firebase_uid: userId,
+      team_id: teamId,
       trial_enabled: trialEnabled.toString(),
       trial_days: trialDays.toString(),
       has_trial_period: hasTrialPeriod.toString(),

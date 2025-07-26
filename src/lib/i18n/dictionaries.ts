@@ -485,6 +485,8 @@ export const dictionaries = {
         'Failed to open subscription management',
       failedToUpgradeSubscription: 'Failed to upgrade subscription',
       failedToLoadPricingPlans: 'Failed to load pricing plans',
+      failedToRefreshSubscription: 'Failed to refresh subscription data',
+      subscriptionRefreshed: 'Subscription data refreshed successfully',
       createTeamSubscription: 'Create Team Subscription',
       selectSeatsDescription: 'Choose how many seats you need for your team',
       selectPlanAndSeatsDescription:
@@ -1079,6 +1081,9 @@ export const dictionaries = {
       failedToUpgradeSubscription:
         'Abonnement konnte nicht aktualisiert werden',
       failedToLoadPricingPlans: 'Preispläne konnten nicht geladen werden',
+      failedToRefreshSubscription:
+        'Abonnement-Daten konnten nicht aktualisiert werden',
+      subscriptionRefreshed: 'Abonnement-Daten erfolgreich aktualisiert',
       createTeamSubscription: 'Team-Abonnement erstellen',
       selectSeatsDescription:
         'Wählen Sie aus, wie viele Sitzungen Sie für Ihr Team benötigen',

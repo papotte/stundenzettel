@@ -46,6 +46,7 @@ import {
   getTeamSubscription,
   getUserInvitations,
   getUserTeam,
+  onTeamSubscriptionChange,
 } from '@/services/team-service'
 
 export default function TeamPage() {
@@ -150,6 +151,24 @@ export default function TeamPage() {
       setPageLoading(false)
     }
   }, [user, toast, t])
+
+  // Set up real-time subscription listener when team is loaded
+  useEffect(() => {
+    if (!team?.id) return
+
+    // Set up real-time subscription listener
+    const unsubscribe = onTeamSubscriptionChange(
+      team.id,
+      (updatedSubscription) => {
+        setSubscription(updatedSubscription)
+      },
+    )
+
+    // Cleanup subscription on unmount or when team changes
+    return () => {
+      unsubscribe()
+    }
+  }, [team?.id])
 
   useEffect(() => {
     if (!authLoading && !user) {

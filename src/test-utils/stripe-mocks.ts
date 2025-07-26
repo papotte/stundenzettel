@@ -3,6 +3,7 @@ export const mockStripeInstance = {
   customers: {
     list: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
   },
   checkout: {
     sessions: {
