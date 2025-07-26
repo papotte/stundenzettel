@@ -1,7 +1,5 @@
 'use client'
 
-import React from 'react'
-
 import {
   Building2,
   CreditCard,
@@ -14,6 +12,7 @@ import {
 import Link from 'next/link'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -23,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { NotificationBadge } from '@/components/ui/notification-badge'
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
+import { useUserInvitations } from '@/hooks/use-user-invitations'
 
 interface UserMenuProps {
   variant?: 'default' | 'ghost'
@@ -45,6 +46,7 @@ export default function UserMenu({
 }: UserMenuProps) {
   const { t } = useTranslation()
   const { signOut, user } = useAuth()
+  const { hasPendingInvitations, invitations } = useUserInvitations()
 
   const handleSignOut = async () => {
     await signOut()
@@ -83,6 +85,7 @@ export default function UserMenu({
                     <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
+                <NotificationBadge showDot={hasPendingInvitations} />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
@@ -123,7 +126,15 @@ export default function UserMenu({
           <DropdownMenuItem asChild>
             <Link href="/team" data-testid="team">
               <Users className="mr-2 h-4 w-4" />
-              {t('settings.manageTeam')}
+              <span className="flex flex-grow">{t('settings.manageTeam')}</span>
+              {hasPendingInvitations && (
+                <Badge
+                  variant="destructive"
+                  className="ml-2 h-5 min-w-[20px] px-0 text-xs justify-center"
+                >
+                  {invitations.length > 9 ? '9+' : invitations.length}
+                </Badge>
+              )}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

@@ -254,7 +254,7 @@ export default function PasswordChangeDialog({
                 disabled={isUpdating}
                 data-testid="cancel-button"
               >
-                {t('settings.cancel')}
+                {t('common.cancel')}
               </Button>
               <Button
                 type="submit"

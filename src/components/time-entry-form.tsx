@@ -998,7 +998,7 @@ export default function TimeEntryForm({
                       variant="outline"
                       onClick={() => setShowCancelDialog(true)}
                     >
-                      {t('time_entry_form.cancelButton')}
+                      {t('common.cancel')}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>

@@ -5,11 +5,12 @@ import React, { useEffect, useState } from 'react'
 import BillingToggle from '@/components/pricing/billing-toggle'
 import PricingCard from '@/components/pricing/pricing-card'
 import PricingFAQ from '@/components/pricing/pricing-faq'
+import { TeamSubscriptionDialog } from '@/components/team/team-subscription-dialog'
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import type { PricingPlan } from '@/lib/types'
+import type { PricingPlan, Team } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
 import { getPricingPlans, paymentService } from '@/services/payment-service'
 
@@ -33,6 +34,11 @@ export default function PricingSection({
   const [loading, setLoading] = useState<string | null>(null)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
   const [isLoadingPlans, setIsLoadingPlans] = useState(true)
+  const [teamSubscriptionDialog, setTeamSubscriptionDialog] = useState<{
+    open: boolean
+    plan: PricingPlan | null
+  }>({ open: false, plan: null })
+  const [team] = useState<Team | null>(null)
 
   useEffect(() => {
     const loadPricingPlans = async () => {
@@ -113,7 +119,6 @@ export default function PricingSection({
       setLoading(null)
     }
   }
-
   const handleTeamSubscribe = async (plan: PricingPlan) => {
     if (!user) {
       // Redirect to login with return URL to pricing page
@@ -124,8 +129,8 @@ export default function PricingSection({
       return
     }
 
-    // For team plans, redirect to team page for now
-    window.location.href = `/team`
+    // Redirect to team page for team plans
+    window.location.href = '/team?tab=subscription'
   }
 
   const containerClasses =
@@ -186,6 +191,21 @@ export default function PricingSection({
         {/* FAQ Section */}
         {showFAQ && <PricingFAQ />}
       </div>
+
+      {/* Team Subscription Dialog */}
+      {teamSubscriptionDialog.open && team && (
+        <TeamSubscriptionDialog
+          open={teamSubscriptionDialog.open}
+          onOpenChange={(open) =>
+            setTeamSubscriptionDialog({ open, plan: null })
+          }
+          team={team}
+          currentMembersCount={0} // We'll need to get this from team members
+          onSubscriptionCreated={() => {
+            setTeamSubscriptionDialog({ open: false, plan: null })
+          }}
+        />
+      )}
     </div>
   )
 }
