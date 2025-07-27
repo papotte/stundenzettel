@@ -440,7 +440,7 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
     }
   } catch (e) {
     console.error('Error fetching user team:', e)
-    return null
+    return { error: e instanceof Error ? e : new Error('Unknown error occurred') }
   }
 
   return null
