@@ -15,7 +15,7 @@ export const sendPasswordChangeNotification = async (
   }
 
   // Mock successful email sending
-  console.log(
+  console.info(
     `Mock: Password change notification sent to ${userEmail} for user ${userDisplayName || 'Unknown'}`,
   )
 

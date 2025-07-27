@@ -103,13 +103,6 @@ export async function createTeamCheckoutSession({
     )
   }
 
-  console.log(
-    userEmail,
-    'Creating team checkout session for user:',
-    userId,
-    'and team:',
-    teamId,
-  )
   // Prepare checkout session parameters
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     customer: customer.id,

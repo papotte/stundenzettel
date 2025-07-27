@@ -436,7 +436,7 @@ export default function SecurityPage() {
                         onClick={resetDeleteDialog}
                         disabled={isDeleting}
                       >
-                        {t('scommon.cancel')}
+                        {t('common.cancel')}
                       </Button>
                       <Button
                         variant="destructive"
