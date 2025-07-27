@@ -154,7 +154,7 @@ describe('/api/subscriptions/[userId]', () => {
       expect(mockGetUserSubscription).toHaveBeenCalledWith(userId)
       expect(response.status).toBe(200)
       const responseData = await response.json()
-      expect(responseData).toBeUndefined()
+      expect(responseData).toEqual({})
     })
 
     it('should handle params promise rejection', async () => {

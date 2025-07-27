@@ -37,3 +37,38 @@ export const addDurationEntry = async (
   await form.getByRole('button', { name: 'Eintrag speichern' }).click()
   await expect(form).not.toBeVisible()
 }
+
+// Helper function to login with a mock user
+export const loginWithMockUser = async (page: Page) => {
+  await page.goto('/login')
+  await page
+    .getByRole('button', { name: /Log in as/ })
+    .first()
+    .click()
+  await page.waitForURL('/tracker')
+}
+
+// Helper function to navigate to team page and verify it loads
+export const navigateToTeamPage = async (page: Page) => {
+  await page.goto('/team')
+  await page.waitForURL('/team')
+  await expect(page.getByRole('heading', { name: /Team-Verwaltung/ })).toBeVisible()
+}
+
+// Helper function to test authentication redirect
+export const testAuthRedirect = async (page: Page, protectedPath: string) => {
+  await page.goto(protectedPath)
+
+  // Should be redirected to login page with returnUrl parameter
+  await page.waitForURL(/\/login\?returnUrl=/)
+
+  // Verify we're on the login page
+  await expect(
+    page.getByRole('heading', { name: /TimeWise Tracker/ }),
+  ).toBeVisible()
+
+  // Verify the returnUrl parameter points to the protected path
+  const currentUrl = page.url()
+  expect(currentUrl).toContain('returnUrl=')
+  expect(currentUrl).toContain(protectedPath.replace('/', ''))
+}

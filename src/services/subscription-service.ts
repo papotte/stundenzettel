@@ -1,8 +1,11 @@
 import type { Subscription } from '@/lib/types'
+import { getTeamSubscription, getUserTeam } from '@/services/team-service'
 
-// Cache for subscription data
-let cachedSubscription: Subscription | null = null
-let cacheExpiry: number = 0
+// Cache for subscription data - now includes team info in the key
+const subscriptionCache = new Map<
+  string,
+  { subscription: Subscription | null; hasValid: boolean; cacheExpiry: number }
+>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export class SubscriptionService {
@@ -20,33 +23,63 @@ export class SubscriptionService {
   async getUserSubscription(userId: string): Promise<Subscription | null> {
     const now = Date.now()
 
-    if (cachedSubscription && now < cacheExpiry) {
-      return cachedSubscription
+    // Check cache first
+    const cached = subscriptionCache.get(userId)
+    if (cached && now < cached.cacheExpiry) {
+      return cached.subscription
     }
 
     try {
+      // First, try to get individual subscription
       const response = await fetch(`/api/subscriptions/${userId}`)
 
       if (response.ok) {
         const subscription = await response.json()
-        cachedSubscription = subscription
-        cacheExpiry = now + CACHE_DURATION
-        return subscription
+        if (subscription && Object.keys(subscription).length > 0) {
+          const valid =
+            subscription.status === 'active' ||
+            subscription.status === 'trialing'
+          subscriptionCache.set(userId, {
+            subscription,
+            hasValid: valid,
+            cacheExpiry: now + CACHE_DURATION,
+          })
+          return subscription
+        }
       }
 
-      // Log the error response
-      const errorData = await response
-        .json()
-        .catch(() => ({ error: 'Failed to parse error response' }))
-      console.error('Subscription API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData,
-      })
+      // If no individual subscription found, check if user is part of a team with subscription
+      const userTeam = await getUserTeam(userId)
+      if (userTeam) {
+        const teamSubscription = await getTeamSubscription(userTeam.id)
+        if (teamSubscription) {
+          const valid =
+            teamSubscription.status === 'active' ||
+            teamSubscription.status === 'trialing'
+          subscriptionCache.set(userId, {
+            subscription: teamSubscription,
+            hasValid: valid,
+            cacheExpiry: now + CACHE_DURATION,
+          })
+          return teamSubscription
+        }
+      }
 
+      // No subscription found (individual or team)
+      subscriptionCache.set(userId, {
+        subscription: null,
+        hasValid: false,
+        cacheExpiry: now + CACHE_DURATION,
+      })
       return null
     } catch (error) {
       console.error('Error fetching subscription:', error)
+      // Cache the error result to prevent repeated failed requests
+      subscriptionCache.set(userId, {
+        subscription: null,
+        hasValid: false,
+        cacheExpiry: now + CACHE_DURATION,
+      })
       return null
     }
   }
@@ -57,8 +90,7 @@ export class SubscriptionService {
   }
 
   clearCache(): void {
-    cachedSubscription = null
-    cacheExpiry = 0
+    subscriptionCache.clear()
   }
 
   // Helper method to check if subscription is in trial

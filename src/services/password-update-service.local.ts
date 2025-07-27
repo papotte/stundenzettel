@@ -41,7 +41,7 @@ export const updateUserPassword = async (
   }
 
   // Mock successful password update
-  console.log(`Mock: Password updated for user ${userId}`)
+  console.info(`Mock: Password updated for user ${userId}`)
 }
 
 /**

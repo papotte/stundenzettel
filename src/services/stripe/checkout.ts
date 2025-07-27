@@ -100,6 +100,7 @@ export async function createCheckoutSession({
       },
     ],
     mode: 'subscription',
+    allow_promotion_codes: true,
     success_url: successUrl || `${origin}/subscription?success=true`,
     cancel_url: cancelUrl || `${origin}/pricing?canceled=true`,
     metadata: {

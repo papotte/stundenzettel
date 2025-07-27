@@ -5,13 +5,10 @@ import {
   clickPricingPlan,
   clickUpgrade,
   interceptApiCall,
-  loginWithMockUser,
   mockApiResponse,
   mockTrialSubscription,
   navigateToPricing,
   navigateToSubscription,
-  navigateToTeam,
-  testAuthRedirect,
   testNavigationFlow,
   toggleBillingPeriod,
   verifyCheckoutParameters,
@@ -26,6 +23,7 @@ import {
   verifyTrialExpirationWarning,
   waitForLoadingState,
 } from './subscription-helpers'
+import { loginWithMockUser, testAuthRedirect } from './test-helpers'
 
 test.describe('Subscription Workflow (Simplified)', () => {
   test.beforeEach(async ({ page }) => {
@@ -125,32 +123,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
         })
         await waitForLoadingState(page, manageBillingButton)
       }
-    })
-  })
-
-  test.describe('Team Page', () => {
-    test('should redirect unauthenticated users', async ({ page }) => {
-      await testAuthRedirect(page, '/team')
-    })
-
-    test('should display team page for authenticated users', async ({
-      page,
-    }) => {
-      await loginWithMockUser(page)
-      await navigateToTeam(page)
-
-      // Verify back button and team management card
-      await expect(
-        page.getByRole('link', {
-          name: /Zurück zur Übersicht|Back to Tracker/,
-        }),
-      ).toBeVisible()
-      await expect(page.getByText(/Manage Team|Team verwalten/)).toBeVisible()
-      await expect(
-        page.getByText(
-          /Team Management Coming Soon|Team-Verwaltung kommt bald/,
-        ),
-      ).toBeVisible()
     })
   })
 

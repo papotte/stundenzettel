@@ -23,7 +23,12 @@ describe('createTeamCheckoutSession', () => {
 
   it('creates session for existing customer', async () => {
     mockStripeInstance.customers.list.mockResolvedValue({
-      data: [{ id: 'cus_1' }],
+      data: [
+        {
+          id: 'cus_1',
+          metadata: { firebase_uid: 'u', team_id: 't' }, // Customer already has team metadata
+        },
+      ],
     })
     mockStripeInstance.checkout.sessions.create.mockResolvedValue({
       id: 'sess_1',
@@ -31,6 +36,7 @@ describe('createTeamCheckoutSession', () => {
     })
     const result = await createTeamCheckoutSession({
       userId: 'u',
+      userEmail: 'u@example.com',
       teamId: 't',
       priceId: 'p',
       quantity: 2,
@@ -39,10 +45,43 @@ describe('createTeamCheckoutSession', () => {
     })
     expect(result).toEqual({ sessionId: 'sess_1', url: 'url' })
     expect(mockStripeInstance.customers.list).toHaveBeenCalledWith({
-      email: 'u',
+      email: 'u@example.com',
       limit: 1,
     })
     expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalled()
+  })
+
+  it('updates existing customer metadata for team subscription', async () => {
+    mockStripeInstance.customers.list.mockResolvedValue({
+      data: [
+        {
+          id: 'cus_1',
+          metadata: {}, // Customer exists but has no team metadata
+        },
+      ],
+    })
+    mockStripeInstance.customers.update.mockResolvedValue({ id: 'cus_1' })
+    mockStripeInstance.checkout.sessions.create.mockResolvedValue({
+      id: 'sess_1',
+      url: 'url',
+    })
+
+    await createTeamCheckoutSession({
+      userId: 'u',
+      userEmail: 'u@example.com',
+      teamId: 't',
+      priceId: 'p',
+      quantity: 2,
+      origin: 'http://localhost',
+      trialEnabled: false,
+    })
+
+    expect(mockStripeInstance.customers.update).toHaveBeenCalledWith('cus_1', {
+      metadata: {
+        firebase_uid: 'u',
+        team_id: 't',
+      },
+    })
   })
 
   it('creates session for new customer', async () => {
@@ -54,6 +93,7 @@ describe('createTeamCheckoutSession', () => {
     })
     const result = await createTeamCheckoutSession({
       userId: 'u2',
+      userEmail: 'u2@example.com',
       teamId: 't2',
       priceId: 'p2',
       quantity: 3,
@@ -62,8 +102,11 @@ describe('createTeamCheckoutSession', () => {
     })
     expect(result).toEqual({ sessionId: 'sess_2', url: 'url2' })
     expect(mockStripeInstance.customers.create).toHaveBeenCalledWith({
-      email: 'u2',
-      metadata: { userId: 'u2' },
+      email: 'u2@example.com',
+      metadata: {
+        firebase_uid: 'u2',
+        team_id: 't2',
+      },
     })
   })
 
@@ -71,6 +114,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: '',
+        userEmail: 'test@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 1,
@@ -83,6 +127,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: '',
         priceId: 'p',
         quantity: 1,
@@ -95,6 +140,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: '',
         quantity: 1,
@@ -107,6 +153,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,6 +168,7 @@ describe('createTeamCheckoutSession', () => {
     await expect(
       createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 1,
@@ -133,7 +181,12 @@ describe('createTeamCheckoutSession', () => {
   describe('Trial Optimization', () => {
     beforeEach(() => {
       mockStripeInstance.customers.list.mockResolvedValue({
-        data: [{ id: 'cus_1' }],
+        data: [
+          {
+            id: 'cus_1',
+            metadata: { firebase_uid: 'u', team_id: 't' }, // Customer already has team metadata
+          },
+        ],
       })
       mockStripeInstance.checkout.sessions.create.mockResolvedValue({
         id: 'sess_1',
@@ -149,6 +202,7 @@ describe('createTeamCheckoutSession', () => {
 
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -162,6 +216,7 @@ describe('createTeamCheckoutSession', () => {
     it('does not query price when trial is disabled', async () => {
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -180,6 +235,7 @@ describe('createTeamCheckoutSession', () => {
 
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -190,6 +246,8 @@ describe('createTeamCheckoutSession', () => {
       expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
+            firebase_uid: 'u',
+            team_id: 't',
             trial_enabled: 'true',
             trial_days: '14',
             has_trial_period: 'true',
@@ -201,6 +259,7 @@ describe('createTeamCheckoutSession', () => {
     it('creates session without trial metadata when trial is disabled', async () => {
       await createTeamCheckoutSession({
         userId: 'u',
+        userEmail: 'u@example.com',
         teamId: 't',
         priceId: 'p',
         quantity: 2,
@@ -211,6 +270,8 @@ describe('createTeamCheckoutSession', () => {
       expect(mockStripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
+            firebase_uid: 'u',
+            team_id: 't',
             trial_enabled: 'false',
             trial_days: '0',
             has_trial_period: 'false',

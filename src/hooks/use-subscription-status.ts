@@ -10,12 +10,6 @@ interface UseSubscriptionStatusResult {
   subscription: Subscription | null
 }
 
-// Module-level cache for subscription status by userId
-const subscriptionCache = new Map<
-  string,
-  { subscription: Subscription | null; hasValid: boolean }
->()
-
 export function useSubscriptionStatus(
   user?: { uid: string } | null,
 ): UseSubscriptionStatusResult {
@@ -44,15 +38,6 @@ export function useSubscriptionStatus(
     setLoading(true)
     setError(null)
 
-    // Check cache first
-    const cached = subscriptionCache.get(user.uid)
-    if (cached) {
-      setSubscription(cached.subscription)
-      setHasValidSubscription(cached.hasValid)
-      setLoading(false)
-      return
-    }
-
     let mounted = true
     subscriptionService
       .getUserSubscription(user.uid)
@@ -60,7 +45,6 @@ export function useSubscriptionStatus(
         if (!mounted) return
         const valid =
           !!sub && (sub.status === 'active' || sub.status === 'trialing')
-        subscriptionCache.set(user.uid, { subscription: sub, hasValid: valid })
         setSubscription(sub)
         setHasValidSubscription(valid)
       })
@@ -82,5 +66,5 @@ export function useSubscriptionStatus(
 }
 
 export function __clearSubscriptionCacheForTests() {
-  subscriptionCache.clear()
+  subscriptionService.clearCache()
 }

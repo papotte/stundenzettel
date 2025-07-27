@@ -9,6 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export interface CreateTeamCheckoutSessionParams {
   userId: string
+  userEmail?: string
   teamId: string
   priceId: string
   quantity: number
@@ -21,6 +22,7 @@ export interface CreateTeamCheckoutSessionParams {
 
 export async function createTeamCheckoutSession({
   userId,
+  userEmail,
   teamId,
   priceId,
   quantity,
@@ -50,16 +52,28 @@ export async function createTeamCheckoutSession({
   // Create or retrieve customer
   let customer: Stripe.Customer
   const existingCustomers = await stripe.customers.list({
-    email: userId, // Using userId as email for now
+    email: userEmail,
     limit: 1,
   })
 
   if (existingCustomers.data.length > 0) {
     customer = existingCustomers.data[0]
+    // Update metadata if needed for team subscription
+    if (!customer.metadata.firebase_uid || !customer.metadata.team_id) {
+      await stripe.customers.update(customer.id, {
+        metadata: {
+          firebase_uid: userId,
+          team_id: teamId,
+        },
+      })
+    }
   } else {
     customer = await stripe.customers.create({
-      email: userId,
-      metadata: { userId },
+      email: userEmail,
+      metadata: {
+        firebase_uid: userId,
+        team_id: teamId,
+      },
     })
   }
 
@@ -99,11 +113,12 @@ export async function createTeamCheckoutSession({
       },
     ],
     mode: 'subscription',
+    allow_promotion_codes: true,
     success_url: successUrl || `${origin}/team?success=true`,
-    cancel_url: cancelUrl || `${origin}/pricing?canceled=true`,
+    cancel_url: cancelUrl || `${origin}/team?cancelled=true`,
     metadata: {
-      userId,
-      teamId,
+      firebase_uid: userId,
+      team_id: teamId,
       trial_enabled: trialEnabled.toString(),
       trial_days: trialDays.toString(),
       has_trial_period: hasTrialPeriod.toString(),

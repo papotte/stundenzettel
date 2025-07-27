@@ -313,7 +313,7 @@ describe('PricingSection', () => {
       })
       await user.click(teamSubscribeButton)
 
-      expect(mockLocation.href).toBe('/team')
+      expect(mockLocation.href).toBe('/team?tab=subscription')
     })
   })
 
@@ -393,7 +393,7 @@ describe('PricingSection', () => {
       await user.click(teamSubscribeButton)
 
       // Team subscription should redirect immediately, so no loading state
-      expect(mockLocation.href).toBe('/team')
+      expect(mockLocation.href).toBe('/team?tab=subscription')
     })
   })
 

@@ -6,6 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const {
       userId,
+      userEmail,
       teamId,
       priceId,
       quantity,
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
     }
     const result = await createTeamCheckoutSession({
       userId,
+      userEmail,
       teamId,
       priceId,
       quantity,

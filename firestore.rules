@@ -8,18 +8,40 @@ service cloud.firestore {
       allow read, write: if request.auth.uid == userId;
     }
     
+    // User-team mappings - users can only access their own mapping
+    // Exception: team owners and admins can delete user-team mappings when removing members
+    match /user-teams/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      
+      // Allow team owners and admins to delete user-team mappings when removing team members
+      allow delete: if request.auth.uid != null && 
+        (request.auth.uid == userId ||
+         exists(/databases/$(database)/documents/teams/$(resource.data.teamId)) &&
+         (request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
+          exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid))));
+    }
+    
     // Team rules
     match /teams/{teamId} {
       allow read, write: if request.auth.uid != null && 
         (resource == null || 
          request.auth.uid == resource.data.ownerId ||
          exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)));
+      
+      // Allow users to query teams collection to find teams they own
+      // This is needed for the getUserTeam function to work efficiently
+      allow list: if request.auth.uid != null && 
+        request.query.limit <= 10 && // Limit to prevent abuse
+        request.query.filters[0].fieldPath == 'ownerId' &&
+        request.query.filters[0].op == '==' &&
+        request.query.filters[0].value == request.auth.uid;
     }
     
     match /teams/{teamId}/members/{memberId} {
       allow read, write: if request.auth.uid != null && 
         (request.auth.uid == memberId ||
-         request.auth.uid == get(/databases/$(database)/documents/teams/$(teamId)).data.ownerId);
+         request.auth.uid == get(/databases/$(database)/documents/teams/$(teamId)).data.ownerId ||
+         exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)));
     }
     
     match /teams/{teamId}/users/{userId} {
@@ -40,12 +62,31 @@ service cloud.firestore {
          exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)));
     }
     
-    // Team invitations
+    // Team invitations - secure role-based access control
     match /team-invitations/{invitationId} {
-      allow read, write: if request.auth.uid != null && 
-        (resource.data.email == request.auth.token.email ||
-         request.auth.uid == resource.data.invitedBy ||
-         request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId);
+      // Create: Allow only team owners and admins to create invitations
+      allow create: if request.auth.uid != null &&
+        request.auth.uid == request.resource.data.invitedBy &&
+        request.resource.data.teamId != null &&
+        exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId)) &&
+        (request.auth.uid == get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)).data.ownerId ||
+         (exists(/databases/$(database)/documents/teams/$(request.resource.data.teamId)/members/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/teams/$(request.resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin'));
+      
+      // Read: Allow authenticated users to read invitations (needed for acceptance)
+      allow read: if request.auth.uid != null;
+      
+      // Update/Delete: Allow if user is the inviter, team owner, team admin, or if they're updating status
+      allow update, delete: if request.auth.uid != null && 
+        (request.auth.uid == resource.data.invitedBy ||
+         request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
+         (exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin') ||
+         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])));
+      
+      // List: Allow users to query invitations (for getUserInvitations and getTeamInvitations)
+      allow list: if request.auth.uid != null && 
+        request.query.limit <= 10;
     }
   }
 }

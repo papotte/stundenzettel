@@ -129,9 +129,7 @@ export default function TimeEntryCard({
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>
-                      {t('time_entry_card.deleteAlertCancel')}
-                    </AlertDialogCancel>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => onDelete(entry.id)}
                       className="bg-destructive hover:bg-destructive/90"
@@ -240,9 +238,7 @@ export default function TimeEntryCard({
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>
-                    {t('time_entry_card.deleteAlertCancel')}
-                  </AlertDialogCancel>
+                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => onDelete(entry.id)}
                     className="bg-destructive hover:bg-destructive/90"

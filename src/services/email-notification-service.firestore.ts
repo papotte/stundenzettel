@@ -21,7 +21,7 @@ export const sendPasswordChangeNotification = async (
   // 2. Use a service like SendGrid, Mailgun, or Firebase Extensions
   // 3. Send a properly formatted email notification
 
-  console.log(
+  console.info(
     `Password change notification would be sent to ${userEmail} for user ${userDisplayName || 'Unknown'}`,
   )
 
