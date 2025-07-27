@@ -18,7 +18,7 @@ export async function GET(
 
     const subscription = await getUserSubscription(userId)
     if (!subscription) {
-      return NextResponse.json(undefined)
+      return NextResponse.json({})
     }
     // Serialize Date fields to ISO strings
     return NextResponse.json(subscription)

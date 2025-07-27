@@ -11,6 +11,7 @@ import {
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
+    clearCache: jest.fn(),
   },
 }))
 
@@ -19,6 +20,7 @@ describe('useSubscriptionStatus', () => {
   const validSub = { status: 'active' }
   const trialSub = { status: 'trialing' }
   const invalidSub = { status: 'canceled' }
+  const teamSub = { status: 'active', planName: 'Team Plan' }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -73,6 +75,17 @@ describe('useSubscriptionStatus', () => {
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.hasValidSubscription).toBe(false)
     expect(result.current.subscription).toEqual(invalidSub)
+  })
+
+  it('returns true for team subscription when user has no individual subscription', async () => {
+    ;(
+      subscriptionService.getUserSubscription as jest.Mock
+    ).mockResolvedValueOnce(teamSub)
+    const { result } = renderHook(() => useSubscriptionStatus(testUser))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.hasValidSubscription).toBe(true)
+    expect(result.current.subscription).toEqual(teamSub)
+    expect(result.current.subscription?.planName).toBe('Team Plan')
   })
 
   it('returns cached value for the same user and does not call API again', async () => {

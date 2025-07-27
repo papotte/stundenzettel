@@ -17,6 +17,7 @@ jest.mock('@/services/subscription-service', () => ({
     isInTrial: jest.fn(),
     getDaysRemainingInTrial: jest.fn(),
     isTrialExpiringSoon: jest.fn(),
+    clearCache: jest.fn(),
   },
 }))
 
