@@ -9,8 +9,16 @@ service cloud.firestore {
     }
     
     // User-team mappings - users can only access their own mapping
+    // Exception: team owners and admins can delete user-team mappings when removing members
     match /user-teams/{userId} {
       allow read, write: if request.auth.uid == userId;
+      
+      // Allow team owners and admins to delete user-team mappings when removing team members
+      allow delete: if request.auth.uid != null && 
+        (request.auth.uid == userId ||
+         exists(/databases/$(database)/documents/teams/$(resource.data.teamId)) &&
+         (request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
+          exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid))));
     }
     
     // Team rules
