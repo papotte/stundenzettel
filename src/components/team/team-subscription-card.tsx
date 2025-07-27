@@ -29,6 +29,7 @@ import { formatAppDate } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
 
+import { SeatAssignmentDialog } from './seat-assignment-dialog'
 import { TeamSubscriptionDialog } from './team-subscription-dialog'
 
 interface TeamSubscriptionCardProps {
@@ -36,6 +37,7 @@ interface TeamSubscriptionCardProps {
   members: TeamMember[]
   subscription: Subscription | null
   onSubscriptionUpdate: (subscription: Subscription | null) => void
+  onMembersChange?: (members: TeamMember[]) => void
 }
 
 export function TeamSubscriptionCard({
@@ -43,9 +45,12 @@ export function TeamSubscriptionCard({
   members,
   subscription,
   onSubscriptionUpdate,
+  onMembersChange,
 }: TeamSubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [showSeatAssignmentDialog, setShowSeatAssignmentDialog] =
+    useState(false)
   const { toast } = useToast()
   const { t, language } = useTranslation()
   const { user } = useAuth()
@@ -122,11 +127,11 @@ export function TeamSubscriptionCard({
     }
   }
 
-  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false)
-
   const handleUpgradeSubscription = () => {
     setShowSubscriptionDialog(true)
   }
+
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false)
 
   if (!subscription) {
     return (
@@ -239,9 +244,21 @@ export function TeamSubscriptionCard({
                 <Users className="h-4 w-4" />
                 {t('teams.seatUsage')}
               </p>
-              <span className="text-sm text-muted-foreground">
-                {t('teams.seatsUsed', { used: seatsUsed, total: totalSeats })}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {t('teams.seatsUsed', { used: seatsUsed, total: totalSeats })}
+                </span>
+                {onMembersChange && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSeatAssignmentDialog(true)}
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    {t('teams.seatAssignment')}
+                  </Button>
+                )}
+              </div>
             </div>
             <Progress value={seatUsagePercentage} className="h-2" />
             {seatUsagePercentage > 90 && (
@@ -310,6 +327,19 @@ export function TeamSubscriptionCard({
           onSubscriptionUpdate(null) // This will trigger a refresh
         }}
       />
+
+      {/* Seat Assignment Dialog */}
+      {onMembersChange && user && (
+        <SeatAssignmentDialog
+          open={showSeatAssignmentDialog}
+          onOpenChange={setShowSeatAssignmentDialog}
+          teamId={team.id}
+          members={members}
+          subscription={subscription}
+          currentUserId={user.uid}
+          onMembersChange={onMembersChange}
+        />
+      )}
     </>
   )
 }

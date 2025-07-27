@@ -419,6 +419,7 @@ export default function TeamPage() {
                   members={members}
                   subscription={subscription}
                   onSubscriptionUpdate={handleSubscriptionUpdate}
+                  onMembersChange={handleMembersChange}
                 />
               </TabsContent>
             </Tabs>
