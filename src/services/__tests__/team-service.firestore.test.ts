@@ -51,6 +51,15 @@ jest.mock('firebase/firestore', () => ({
   updateDoc: jest.fn(),
   where: jest.fn(),
   writeBatch: jest.fn(),
+  FirestoreError: class FirestoreError extends Error {
+    constructor(
+      public code: string,
+      message: string,
+    ) {
+      super(message)
+      this.name = 'FirestoreError'
+    }
+  },
 }))
 
 const mockAddDoc = addDoc as jest.MockedFunction<typeof addDoc>
@@ -68,6 +77,17 @@ const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
 const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
 const mockWhere = where as jest.MockedFunction<typeof where>
 const mockWriteBatch = writeBatch as jest.MockedFunction<typeof writeBatch>
+
+// Create a mock FirestoreError class
+const FirestoreError = class extends Error {
+  constructor(
+    public code: string,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'FirestoreError'
+  }
+}
 
 // Helper function to create mock Firestore timestamp
 const createMockTimestamp = (date: Date) => ({
@@ -459,7 +479,41 @@ describe('TeamService Firestore', () => {
           'member',
           'owner123',
         ),
-      ).rejects.toThrow('Invitation creation failed')
+      ).rejects.toThrow(
+        'Failed to create team invitation: Invitation creation failed',
+      )
+    })
+
+    it('handles Firebase permission denied errors', async () => {
+      mockAddDoc.mockRejectedValue(
+        new FirestoreError('permission-denied', 'Permission denied'),
+      )
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Failed to create team invitation: Permission denied')
+    })
+
+    it('handles Firebase team not found errors', async () => {
+      mockAddDoc.mockRejectedValue(
+        new FirestoreError('not-found', 'Team not found'),
+      )
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Failed to create team invitation: Team not found')
     })
   })
 
@@ -724,9 +778,31 @@ describe('TeamService Firestore', () => {
       mockDoc.mockReturnValue({} as DocumentReference)
       mockGetDoc.mockRejectedValue(new Error('Firestore error'))
 
-      const result = await firestoreService.getUserTeam('user123')
+      await expect(firestoreService.getUserTeam('user123')).rejects.toThrow(
+        'Failed to fetch team data: Firestore error',
+      )
+    })
 
-      expect(result).toBeNull()
+    it('handles Firebase permission denied errors', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(
+        new FirestoreError('permission-denied', 'Permission denied'),
+      )
+
+      await expect(firestoreService.getUserTeam('user123')).rejects.toThrow(
+        'Failed to fetch team data: Permission denied',
+      )
+    })
+
+    it('handles Firebase team not found errors', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(
+        new FirestoreError('not-found', 'Team not found'),
+      )
+
+      await expect(firestoreService.getUserTeam('user123')).rejects.toThrow(
+        'Failed to fetch team data: Team not found',
+      )
     })
   })
 

@@ -1,4 +1,5 @@
 import {
+  FirestoreError,
   Timestamp,
   type Unsubscribe,
   addDoc,
@@ -35,6 +36,60 @@ type TeamMemberFirestoreData = Omit<
     assignedBy: string
     isActive: boolean
   }
+}
+
+// Firebase error handling utility
+function handleFirebaseError(error: unknown, context: string): never {
+  console.error(`Error in ${context}:`, error)
+
+  // Handle specific Firebase errors
+  if (error instanceof FirestoreError) {
+    const errorMessages: Record<string, string> = {
+      'permission-denied':
+        'You do not have permission to perform this action. Please check your authentication.',
+      'not-found':
+        'The requested resource was not found. It may have been deleted or you may not have access to it.',
+      unavailable:
+        'Service temporarily unavailable. Please try again in a few moments.',
+      'deadline-exceeded':
+        'Request timed out. Please check your connection and try again.',
+      'resource-exhausted': 'Service quota exceeded. Please try again later.',
+      'failed-precondition':
+        'Invalid request. Please verify your authentication and try again.',
+      aborted: 'Request was aborted. Please try again.',
+      'out-of-range': 'Invalid data provided.',
+      unimplemented: 'This functionality is not available in this environment.',
+      internal:
+        'An internal error occurred. Please try again or contact support if the problem persists.',
+      'data-loss': 'Data corruption detected. Please try again.',
+      unauthenticated: 'You must be logged in to perform this action.',
+    }
+
+    const message =
+      errorMessages[error.code] ||
+      `Failed to ${context} (${error.code}). Please try again.`
+    throw new Error(message)
+  }
+
+  // Handle other errors
+  if (error instanceof Error) {
+    if (
+      error.message.includes('network') ||
+      error.message.includes('connection')
+    ) {
+      throw new Error(
+        'Network connection error. Please check your internet connection and try again.',
+      )
+    }
+    if (error.message.includes('timeout')) {
+      throw new Error('Request timed out. Please try again.')
+    }
+    throw new Error(`Failed to ${context}: ${error.message}`)
+  }
+
+  throw new Error(
+    `An unexpected error occurred while ${context}. Please try again.`,
+  )
 }
 
 // Team CRUD operations
@@ -286,15 +341,15 @@ export async function createTeamInvitation(
     expiresAt: Timestamp.fromDate(expiresAt),
     status: 'pending',
   }
+
   try {
     const docRef = await addDoc(
       collection(db, 'team-invitations'),
       invitationData,
     )
     return docRef.id
-  } catch (error) {
-    console.error('Error creating invitation:', error)
-    throw error
+  } catch (error: unknown) {
+    return handleFirebaseError(error, 'create team invitation')
   }
 }
 
@@ -438,12 +493,12 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
         updatedAt: data.updatedAt?.toDate() || new Date(),
       }
     }
-  } catch (e) {
-    console.error('Error fetching user team:', e)
-    return { error: e instanceof Error ? e : new Error('Unknown error occurred') }
-  }
 
-  return null
+    // User has no team - this is a valid state, not an error
+    return null
+  } catch (error: unknown) {
+    return handleFirebaseError(error, 'fetch team data')
+  }
 }
 
 // Team subscription
