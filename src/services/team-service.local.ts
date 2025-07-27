@@ -34,7 +34,7 @@ export async function createTeam(
   mockMembers[teamId] = []
 
   // Add owner as first member
-  await addTeamMember(teamId, ownerId, 'owner', ownerId, ownerEmail)
+  await addTeamMember(teamId, ownerId, 'owner', 'system', ownerEmail)
 
   return teamId
 }
