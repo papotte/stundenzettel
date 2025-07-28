@@ -18,7 +18,7 @@ jest.mock('@/hooks/use-toast', () => ({
 }))
 
 // Mock the translation context
-jest.mock('@/context/i18n-context', () => ({
+jest.mock('@/hooks/use-translation-compat', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {

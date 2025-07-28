@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import CookiePolicyPage from '../page'
 
 let mockLanguage = 'en'
-jest.mock('@/context/i18n-context', () => ({
+jest.mock('@/hooks/use-translation-compat', () => ({
   useTranslation: () => ({ language: mockLanguage }),
 }))
 
