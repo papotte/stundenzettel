@@ -8,6 +8,10 @@ export const navigateToPricing = async (page: Page) => {
       name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
     }),
   ).toBeVisible()
+
+  await expect(page.getByText('Individual Monthly')).toBeVisible({
+    timeout: 5000,
+  })
 }
 
 // Helper function to navigate to subscription page and verify it loads
@@ -15,8 +19,8 @@ export const navigateToSubscription = async (page: Page) => {
   await page.goto('/subscription')
   // Look for the subscription management title within the CardTitle (div with font-headline class)
   await expect(
-    page.locator('div.font-headline').filter({
-      hasText: /Manage Subscription|Abonnement verwalten/,
+    page.getByRole('heading', {
+      name: /Manage Subscription|Abonnement verwalten/,
     }),
   ).toBeVisible()
 }

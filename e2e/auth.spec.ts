@@ -151,7 +151,9 @@ test.describe('Authentication', () => {
 
     // Verify we're on the subscription page
     await expect(
-      page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+      page.getByRole('heading', {
+        name: /Manage Subscription|Abonnement verwalten/,
+      }),
     ).toBeVisible()
   })
 
@@ -184,6 +186,8 @@ test.describe('Authentication', () => {
     await page.waitForURL(/\/team/)
 
     // Verify we're on the team page
-    await expect(page.getByRole('heading', { name: /Team/ })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: /Team-Verwaltung/ }),
+    ).toBeVisible()
   })
 })

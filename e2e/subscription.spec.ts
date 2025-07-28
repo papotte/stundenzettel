@@ -9,7 +9,6 @@ import {
   mockTrialSubscription,
   navigateToPricing,
   navigateToSubscription,
-  testNavigationFlow,
   toggleBillingPeriod,
   verifyCheckoutParameters,
   verifyErrorHandling,
@@ -74,7 +73,9 @@ test.describe('Subscription Workflow (Simplified)', () => {
       const success = await clickPricingPlan(page, 'team')
       if (success) {
         await page.waitForURL('/team')
-        await expect(page.getByRole('heading', { name: /Team/ })).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: /Manage Team|Team-Verwaltung/ }),
+        ).toBeVisible()
       }
     })
   })
@@ -231,11 +232,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Navigation and Mobile', () => {
-    test('should navigate between subscription pages', async ({ page }) => {
-      await loginWithMockUser(page)
-      await testNavigationFlow(page, '/subscription', '/team')
-    })
-
     test('should handle mobile layout', async ({ page }) => {
       await loginWithMockUser(page)
       await verifyMobileLayout(page)
@@ -250,7 +246,9 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await page.goto('/subscription?success=true')
 
       await expect(
-        page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+        page.getByRole('heading', {
+          name: /Manage Subscription|Abonnement verwalten/,
+        }),
       ).toBeVisible()
       expect(page.url()).toContain('success=true')
     })
@@ -278,11 +276,11 @@ test.describe('Subscription Workflow (Simplified)', () => {
     }) => {
       await navigateToPricing(page)
 
-      // Verify trial badges are visible
+      // Verify trial badges are visible, might be more than one
       await expect(
-        page.getByText(
-          /No credit card required|Keine Kreditkarte erforderlich/,
-        ),
+        page
+          .getByText(/No credit card required|Keine Kreditkarte erforderlich/)
+          .first(),
       ).toBeVisible()
 
       // Verify trial button

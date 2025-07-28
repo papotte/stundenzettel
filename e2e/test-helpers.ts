@@ -52,7 +52,9 @@ export const loginWithMockUser = async (page: Page) => {
 export const navigateToTeamPage = async (page: Page) => {
   await page.goto('/team')
   await page.waitForURL('/team')
-  await expect(page.getByRole('heading', { name: /Team-Verwaltung/ })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: /Team-Verwaltung/ }),
+  ).toBeVisible()
 }
 
 // Helper function to test authentication redirect

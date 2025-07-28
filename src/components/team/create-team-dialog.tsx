@@ -103,14 +103,17 @@ export function CreateTeamDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} data-testid="create-team-dialog">
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
           {t('teams.createTeam')}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        data-testid="create-team-dialog"
+      >
         <DialogHeader>
           <DialogTitle>{t('teams.createTeam')}</DialogTitle>
           <DialogDescription>{t('teams.subtitle')}</DialogDescription>

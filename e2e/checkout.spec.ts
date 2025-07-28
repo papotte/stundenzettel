@@ -220,8 +220,10 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Look for team plan button
       const teamPlanButton = page
-        .getByRole('button', { name: /Team|Team plan|Team subscription/ })
+        .getByRole('button', { name: /Create Team|Team erstellen/ })
         .first()
+      // Wait for the button to be visible. Add a timeout of 5 seconds to wait for stripe to load
+      await expect(teamPlanButton).toBeVisible({ timeout: 5000 })
 
       if (await teamPlanButton.isVisible()) {
         // Intercept the team checkout API call
@@ -234,8 +236,10 @@ test.describe('Checkout and Payment Flow', () => {
         await teamPlanButton.click()
 
         // Should redirect to team page
-        await page.waitForURL('/team')
-        await expect(page.getByRole('heading', { name: /Team/ })).toBeVisible()
+        await page.waitForURL('/team?tab=subscription')
+        await expect(
+          page.getByRole('heading', { name: /Manage Team|Team-Verwaltung/ }),
+        ).toBeVisible()
 
         // Verify the request was made
         if (teamCheckoutRequest) {
@@ -262,7 +266,9 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Should show success message or updated subscription state
       await expect(
-        page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+        page.getByRole('heading', {
+          name: /Manage Subscription|Abonnement verwalten/,
+        }),
       ).toBeVisible()
 
       // URL should contain success parameter
@@ -322,7 +328,9 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Should show subscription page content
       await expect(
-        page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+        page.getByRole('heading', {
+          name: /Manage Subscription|Abonnement verwalten/,
+        }),
       ).toBeVisible()
     })
 
@@ -348,7 +356,9 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Should still show the page (with no subscription state)
       await expect(
-        page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+        page.getByRole('heading', {
+          name: /Manage Subscription|Abonnement verwalten/,
+        }),
       ).toBeVisible()
 
       // Should show no subscription message
@@ -378,7 +388,9 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Verify the page loads correctly
       await expect(
-        page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+        page.getByRole('heading', {
+          name: /Manage Subscription|Abonnement verwalten/,
+        }),
       ).toBeVisible()
 
       // This is a basic test - in a real scenario, you'd want to:
@@ -436,7 +448,9 @@ test.describe('Checkout and Payment Flow', () => {
       // Verify the page handles different subscription states
       // This would typically be tested with different mock data
       await expect(
-        page.getByRole('heading', { name: /Subscription|Abonnement/ }),
+        page.getByRole('heading', {
+          name: /Manage Subscription|Abonnement verwalten/,
+        }),
       ).toBeVisible()
 
       // The page should gracefully handle:
