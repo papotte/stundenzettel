@@ -1,4 +1,5 @@
 import withMDX from '@next/mdx'
+import createNextIntlPlugin from 'next-intl/plugin'
 
 import type { NextConfig } from 'next'
 
@@ -6,6 +7,8 @@ const withMdx = withMDX({
   // You can add MDX-specific options here if needed
   extension: /\.mdx?$/,
 })
+
+const withNextIntl = createNextIntlPlugin('./src/i18n.ts')
 
 const nextConfig: NextConfig = {
   transpilePackages: ['lucide-react'],
@@ -27,4 +30,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withMdx(nextConfig)
+export default withNextIntl(withMdx(nextConfig))

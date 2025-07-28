@@ -3,7 +3,7 @@ import { Lora, PT_Sans } from 'next/font/google'
 
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
-import { I18nProvider } from '@/context/i18n-context'
+import { NextIntlProvider } from '@/context/next-intl-provider'
 // Import dev utilities for development mode
 import '@/lib/dev-utils'
 
@@ -54,10 +54,10 @@ export default function RootLayout({
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
         <AuthProvider>
-          <I18nProvider>
+          <NextIntlProvider>
             {children}
             <Toaster />
-          </I18nProvider>
+          </NextIntlProvider>
         </AuthProvider>
       </body>
     </html>

@@ -1,0 +1,18 @@
+{
+  "testMode": "TimeWise Tracker (Test Mode)",
+  "selectMockUser": "Select a Mock User",
+  "mockUserDescription": "Choose a user to log in as for local testing. Data is stored in-memory and will be reset on page reload.",
+  "loginAs": "Log in as {displayName}",
+  "signInTab": "Sign In",
+  "signUpTab": "Sign Up",
+  "emailLabel": "Email",
+  "emailPlaceholder": "m@example.com",
+  "passwordLabel": "Password",
+  "signInButton": "Sign In",
+  "signingInButton": "Signing In...",
+  "signUpButton": "Sign Up",
+  "creatingAccountButton": "Creating Account...",
+  "continueWith": "Or continue with",
+  "signInWithGoogle": "Sign in with Google",
+  "authFailedTitle": "Authentication Failed"
+}

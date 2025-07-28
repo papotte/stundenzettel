@@ -1,4 +1,4 @@
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 
 import {
   Select,
