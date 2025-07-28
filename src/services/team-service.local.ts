@@ -5,15 +5,124 @@ import type {
   TeamMember,
 } from '@/lib/types'
 
-// Mock data store
-const mockTeams: Record<string, Team> = {}
-const mockMembers: Record<string, TeamMember[]> = {}
-const mockInvitations: Record<string, TeamInvitation[]> = {}
-const mockSubscriptions: Record<string, Subscription> = {}
+// Session storage keys
+const STORAGE_KEYS = {
+  TEAMS: 'timewise_local_teams',
+  MEMBERS: 'timewise_local_members',
+  INVITATIONS: 'timewise_local_invitations',
+  SUBSCRIPTIONS: 'timewise_local_subscriptions',
+  COUNTERS: 'timewise_local_counters',
+} as const
 
-let nextTeamId = 1
-let nextMemberId = 1
-let nextInvitationId = 1
+// Helper functions for session storage
+const getFromStorage = <T>(key: string, defaultValue: T): T => {
+  if (typeof window === 'undefined') return defaultValue
+
+  try {
+    const stored = sessionStorage.getItem(key)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Convert date strings back to Date objects
+      if (key === STORAGE_KEYS.TEAMS) {
+        Object.values(parsed as Record<string, Team>).forEach((team) => {
+          if (team.createdAt) team.createdAt = new Date(team.createdAt)
+          if (team.updatedAt) team.updatedAt = new Date(team.updatedAt)
+        })
+      } else if (key === STORAGE_KEYS.MEMBERS) {
+        Object.values(parsed as Record<string, TeamMember[]>).forEach(
+          (members) => {
+            members.forEach((member) => {
+              if (member.joinedAt) member.joinedAt = new Date(member.joinedAt)
+              if (member.seatAssignment?.assignedAt) {
+                member.seatAssignment.assignedAt = new Date(
+                  member.seatAssignment.assignedAt,
+                )
+              }
+            })
+          },
+        )
+      } else if (key === STORAGE_KEYS.INVITATIONS) {
+        Object.values(parsed as Record<string, TeamInvitation[]>).forEach(
+          (invitations) => {
+            invitations.forEach((invitation) => {
+              if (invitation.invitedAt)
+                invitation.invitedAt = new Date(invitation.invitedAt)
+              if (invitation.expiresAt)
+                invitation.expiresAt = new Date(invitation.expiresAt)
+            })
+          },
+        )
+      } else if (key === STORAGE_KEYS.SUBSCRIPTIONS) {
+        Object.values(parsed as Record<string, Subscription>).forEach(
+          (subscription) => {
+            if (subscription.currentPeriodStart)
+              subscription.currentPeriodStart = new Date(
+                subscription.currentPeriodStart,
+              )
+            if (subscription.cancelAt)
+              subscription.cancelAt = new Date(subscription.cancelAt)
+            if (subscription.updatedAt)
+              subscription.updatedAt = new Date(subscription.updatedAt)
+            if (subscription.trialEnd)
+              subscription.trialEnd = new Date(subscription.trialEnd)
+          },
+        )
+      }
+      return parsed
+    }
+  } catch (error) {
+    console.warn(`Failed to parse stored data for ${key}:`, error)
+  }
+  return defaultValue
+}
+
+const saveToStorage = (key: string, data: unknown): void => {
+  if (typeof window === 'undefined') return
+
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data))
+  } catch (error) {
+    console.warn(`Failed to save data to storage for ${key}:`, error)
+  }
+}
+
+// Initialize data from session storage or use defaults
+const mockTeams: Record<string, Team> = getFromStorage(STORAGE_KEYS.TEAMS, {})
+const mockMembers: Record<string, TeamMember[]> = getFromStorage(
+  STORAGE_KEYS.MEMBERS,
+  {},
+)
+const mockInvitations: Record<string, TeamInvitation[]> = getFromStorage(
+  STORAGE_KEYS.INVITATIONS,
+  {},
+)
+const mockSubscriptions: Record<string, Subscription> = getFromStorage(
+  STORAGE_KEYS.SUBSCRIPTIONS,
+  {},
+)
+
+// Initialize counters from storage or use defaults
+const storedCounters = getFromStorage(STORAGE_KEYS.COUNTERS, {
+  nextTeamId: 1,
+  nextMemberId: 1,
+  nextInvitationId: 1,
+})
+let nextTeamId = storedCounters.nextTeamId
+let nextMemberId = storedCounters.nextMemberId
+let nextInvitationId = storedCounters.nextInvitationId
+
+// Helper function to save all data to storage
+const persistData = (): void => {
+  saveToStorage(STORAGE_KEYS.TEAMS, mockTeams)
+  saveToStorage(STORAGE_KEYS.MEMBERS, mockMembers)
+  saveToStorage(STORAGE_KEYS.INVITATIONS, mockInvitations)
+  saveToStorage(STORAGE_KEYS.SUBSCRIPTIONS, mockSubscriptions)
+  saveToStorage(STORAGE_KEYS.COUNTERS, {
+    nextTeamId,
+    nextMemberId,
+    nextInvitationId,
+  })
+}
 
 // Team CRUD operations
 export async function createTeam(
@@ -37,6 +146,7 @@ export async function createTeam(
   const SYSTEM_USER_ID = 'system-user-id' // Replace with actual system user ID if needed
   await addTeamMember(teamId, ownerId, 'owner', SYSTEM_USER_ID, ownerEmail)
 
+  persistData()
   return teamId
 }
 
@@ -54,6 +164,7 @@ export async function updateTeam(
       ...updates,
       updatedAt: new Date(),
     }
+    persistData()
   }
 }
 
@@ -62,6 +173,7 @@ export async function deleteTeam(teamId: string): Promise<void> {
   delete mockMembers[teamId]
   delete mockInvitations[teamId]
   delete mockSubscriptions[teamId]
+  persistData()
 }
 
 // Team member operations
@@ -77,8 +189,8 @@ export async function addTeamMember(
   }
 
   const member: TeamMember = {
-    id: `member-${nextMemberId++}`,
-    email: userEmail || `user-${userId}@example.com`,
+    id: userId || `member-${nextMemberId++}`,
+    email: userEmail || `user${userId}@example.com`,
     role,
     joinedAt: new Date(),
     invitedBy,
@@ -94,6 +206,7 @@ export async function addTeamMember(
   }
 
   mockMembers[teamId].push(member)
+  persistData()
 }
 
 export async function getTeamMembers(teamId: string): Promise<TeamMember[]> {
@@ -109,6 +222,7 @@ export async function updateTeamMemberRole(
   const member = members.find((m) => m.id === memberId)
   if (member) {
     member.role = role
+    persistData()
   }
 }
 
@@ -118,6 +232,7 @@ export async function removeTeamMember(
 ): Promise<void> {
   if (mockMembers[teamId]) {
     mockMembers[teamId] = mockMembers[teamId].filter((m) => m.id !== memberId)
+    persistData()
   }
 }
 
@@ -135,6 +250,7 @@ export async function assignSeat(
       assignedBy,
       isActive: true,
     }
+    persistData()
   }
 }
 
@@ -151,6 +267,7 @@ export async function unassignSeat(
       assignedBy: unassignedBy,
       isActive: false,
     }
+    persistData()
   }
 }
 
@@ -186,6 +303,7 @@ export async function createTeamInvitation(
   }
   mockInvitations[teamId].push(invitation)
 
+  persistData()
   return invitationId
 }
 
@@ -246,6 +364,8 @@ export async function acceptTeamInvitation(
     invitation.invitedBy,
     userEmail,
   )
+
+  persistData()
 }
 
 export async function declineTeamInvitation(
@@ -256,6 +376,7 @@ export async function declineTeamInvitation(
     const invitation = invitations.find((inv) => inv.id === invitationId)
     if (invitation) {
       invitation.status = 'expired'
+      persistData()
       break
     }
   }
@@ -263,12 +384,10 @@ export async function declineTeamInvitation(
 
 // User's team (single)
 export async function getUserTeam(userId: string): Promise<Team | null> {
-  const userEmail = `user-${userId}@example.com`
-
-  // Find team where user is a member
-  for (const [teamId, members] of Object.entries(mockMembers)) {
-    if (members.some((member) => member.email === userEmail)) {
-      return mockTeams[teamId] || null
+  // Find team where user is the owner
+  for (const [, team] of Object.entries(mockTeams)) {
+    if (team.ownerId === userId) {
+      return team
     }
   }
 
@@ -301,4 +420,23 @@ export function onTeamSubscriptionChange(
   // For mock, we just call the callback with current data
   callback(mockSubscriptions[teamId] || null)
   return () => {} // Unsubscribe function
+}
+
+// Utility function to clear all session storage data (useful for testing)
+export function clearSessionStorage(): void {
+  if (typeof window === 'undefined') return
+
+  Object.values(STORAGE_KEYS).forEach((key) => {
+    sessionStorage.removeItem(key)
+  })
+
+  // Reset in-memory data
+  Object.keys(mockTeams).forEach((key) => delete mockTeams[key])
+  Object.keys(mockMembers).forEach((key) => delete mockMembers[key])
+  Object.keys(mockInvitations).forEach((key) => delete mockInvitations[key])
+  Object.keys(mockSubscriptions).forEach((key) => delete mockSubscriptions[key])
+
+  nextTeamId = 1
+  nextMemberId = 1
+  nextInvitationId = 1
 }
