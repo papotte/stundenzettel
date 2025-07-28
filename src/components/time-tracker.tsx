@@ -3,7 +3,7 @@
 import React from 'react'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { TimeTrackerProvider } from '@/context/time-tracker-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'

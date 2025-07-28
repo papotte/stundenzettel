@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import dynamic from 'next/dynamic'
 
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 
 const PrivacyEn = dynamic(() => import('@/../content/legal/privacy.en.mdx'))
 const PrivacyDe = dynamic(() => import('@/../content/legal/privacy.de.mdx'))

@@ -1,4 +1,4 @@
-import { useTranslation } from '@/hooks/use-translation-compat'
+import { useLanguageManager } from '@/hooks/use-language-manager'
 
 import LanguageSelect from './language-select'
 
@@ -7,11 +7,11 @@ export default function LanguageSwitcher({
 }: {
   className?: string
 }) {
-  const { language, setLanguageState } = useTranslation()
+  const { currentLanguage, changeLanguage } = useLanguageManager()
   return (
     <LanguageSelect
-      value={language}
-      onChange={(lang) => setLanguageState(lang as 'en' | 'de')}
+      value={currentLanguage}
+      onChange={(lang) => changeLanguage(lang as 'en' | 'de')}
       className={className}
       data-testid="language-switcher"
     />

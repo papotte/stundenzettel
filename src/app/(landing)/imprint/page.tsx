@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import dynamic from 'next/dynamic'
 
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 
 const ImprintEn = dynamic(() => import('@/../content/legal/imprint.en.mdx'))
 const ImprintDe = dynamic(() => import('@/../content/legal/imprint.de.mdx'))

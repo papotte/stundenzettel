@@ -5,7 +5,7 @@ import React from 'react'
 import { Check } from 'lucide-react'
 import Image from 'next/image'
 
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 
 export default function FeaturesPage() {
   const { t } = useTranslation()
