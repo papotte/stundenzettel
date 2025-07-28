@@ -1,3 +1,15 @@
+# [1.9.0](https://github.com/papotte/stundenzettel/compare/v1.8.2...v1.9.0) (2025-07-28)
+
+
+### Bug Fixes
+
+* **deps:** update react dependencies to v19.1.1 ([#92](https://github.com/papotte/stundenzettel/issues/92)) ([fb5de1f](https://github.com/papotte/stundenzettel/commit/fb5de1fbe38116a77158955210f7cab141c2b786))
+
+
+### Features
+
+* implement team management capabilities ([#83](https://github.com/papotte/stundenzettel/issues/83)) ([3f97205](https://github.com/papotte/stundenzettel/commit/3f972053460895a139a60bd7e3a35849235776b5))
+
 ## [1.8.2](https://github.com/papotte/stundenzettel/compare/v1.8.1...v1.8.2) (2025-07-25)
 
 
