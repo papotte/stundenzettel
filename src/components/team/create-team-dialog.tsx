@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 import { createTeam, getTeam } from '@/services/team-service'

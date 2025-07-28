@@ -21,7 +21,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'

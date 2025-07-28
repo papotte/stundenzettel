@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan } from '@/lib/types'

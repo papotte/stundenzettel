@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, TeamMember } from '@/lib/types'
 import { formatAppDate } from '@/lib/utils'

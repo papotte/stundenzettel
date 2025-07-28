@@ -26,7 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { sendPasswordChangeNotification } from '@/services/email-notification-service'

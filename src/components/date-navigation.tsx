@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 
 import TimeEntryForm from './time-entry-form'

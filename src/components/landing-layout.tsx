@@ -6,7 +6,7 @@ import LanguageSwitcher from '@/components/language-switcher'
 import TimeWiseIcon from '@/components/time-wise-icon'
 import ColorfulBackground from '@/components/ui/colorful-background'
 import UserMenu from '@/components/user-menu'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 
 export default function LandingLayout({
   children,

@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 
 export default function PricingFAQ() {
   const { t } = useTranslation()

@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import LoadingIcon from '@/components/ui/loading-icon'
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { subscriptionService } from '@/services/subscription-service'
