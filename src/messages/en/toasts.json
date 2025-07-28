@@ -1,0 +1,23 @@
+{
+  "locationRequiredTitle": "Location required",
+  "locationRequiredDescription": "Please enter a location to start tracking.",
+  "entryUpdatedTitle": "Entry Updated", 
+  "entryUpdatedDescription": "Changes to \"{location}\" have been saved.",
+  "entryAddedTitle": "Entry Added",
+  "entryAddedDescription": "New entry for \"{location}\" created.",
+  "saveFailedTitle": "Save Failed",
+  "saveFailedDescription": "There was a problem saving your entry.",
+  "entryDeletedTitle": "Entry Deleted",
+  "deleteFailedTitle": "Delete Failed",
+  "deleteFailedDescription": "There was a problem deleting your entry.",
+  "dataClearedTitle": "Data Cleared",
+  "dataClearedDescription": "All your time entries have been removed from the database.",
+  "clearFailedTitle": "Clear Failed",
+  "clearFailedDescription": "There was a problem clearing your data.",
+  "entryExistsTitle": "Entry already exists",
+  "entryExistsDescription": "An entry for \"{location}\" on this day already exists.",
+  "configurationErrorTitle": "Configuration Error",
+  "configurationErrorDescription": "Firebase is not configured correctly. Please check your environment variables.",
+  "databaseErrorTitle": "Database Connection Error",
+  "databaseConnectionError": "Could not connect to the database. Please see the 'Troubleshooting' section in the README.md file."
+}

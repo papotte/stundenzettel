@@ -1,0 +1,10 @@
+{
+  "editLabel": "Bearbeiten",
+  "deleteLabel": "Löschen", 
+  "deleteAlertTitle": "Sind Sie sicher?",
+  "deleteAlertDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Der Zeiteintrag für \"{location}\" wird dauerhaft gelöscht.",
+  "deleteAlertConfirm": "Löschen",
+  "pauseLabel": "{minutes}m Pause",
+  "drivingLabel": "{hours} Std. Fahrer",
+  "passengerLabel": "{hours} Std. Beifahrer"
+}

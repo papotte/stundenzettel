@@ -1,0 +1,10 @@
+{
+  "editLabel": "Edit",
+  "deleteLabel": "Delete",
+  "deleteAlertTitle": "Are you sure?",
+  "deleteAlertDescription": "This action cannot be undone. This will permanently delete the time entry for \"{location}\".",
+  "deleteAlertConfirm": "Delete",
+  "pauseLabel": "{minutes}m pause",
+  "drivingLabel": "{hours}h driving",
+  "passengerLabel": "{hours}h passenger"
+}

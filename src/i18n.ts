@@ -9,6 +9,9 @@ export default getRequestConfig(async ({ locale }) => ({
     login: (await import(`./messages/${locale}/login.json`)).default,
     tracker: (await import(`./messages/${locale}/tracker.json`)).default,
     settings: (await import(`./messages/${locale}/settings.json`)).default,
+    'special-locations': (await import(`./messages/${locale}/special-locations.json`)).default,
+    'time-entry-card': (await import(`./messages/${locale}/time-entry-card.json`)).default,
+    toasts: (await import(`./messages/${locale}/toasts.json`)).default,
     // We'll add more as we migrate them
   },
 }))

@@ -44,6 +44,9 @@ export const NextIntlProvider = ({ children }: { children: ReactNode }) => {
           login: login.default,
           tracker: tracker.default,
           settings: settings.default,
+          'special-locations': specialLocations.default,
+          'time-entry-card': timeEntryCard.default,
+          toasts: toasts.default,
         }
 
         setLocale(selectedLocale)
@@ -51,11 +54,14 @@ export const NextIntlProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Failed to load translation messages:', error)
         // Fallback to English
-        const [common, login, tracker, settings] = await Promise.all([
+        const [common, login, tracker, settings, specialLocations, timeEntryCard, toasts] = await Promise.all([
           import(`@/messages/en/common.json`),
           import(`@/messages/en/login.json`),
           import(`@/messages/en/tracker.json`),
           import(`@/messages/en/settings.json`),
+          import(`@/messages/en/special-locations.json`),
+          import(`@/messages/en/time-entry-card.json`),
+          import(`@/messages/en/toasts.json`),
         ])
 
         const loadedMessages = {
@@ -63,6 +69,9 @@ export const NextIntlProvider = ({ children }: { children: ReactNode }) => {
           login: login.default,
           tracker: tracker.default,
           settings: settings.default,
+          'special-locations': specialLocations.default,
+          'time-entry-card': timeEntryCard.default,
+          toasts: toasts.default,
         }
 
         setLocale('en')

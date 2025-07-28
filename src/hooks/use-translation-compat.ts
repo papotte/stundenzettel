@@ -11,6 +11,9 @@ export function useTranslation() {
   const loginT = useTranslations('login')
   const trackerT = useTranslations('tracker')
   const settingsT = useTranslations('settings')
+  const specialLocationsT = useTranslations('special-locations')
+  const timeEntryCardT = useTranslations('time-entry-card')
+  const toastsT = useTranslations('toasts')
 
   // Map of namespaces to their translation functions
   const translationMap = {
@@ -18,6 +21,9 @@ export function useTranslation() {
     login: loginT,
     tracker: trackerT,
     settings: settingsT,
+    'special_locations': specialLocationsT, // Note: using underscore for backward compatibility
+    'time_entry_card': timeEntryCardT, // Note: using underscore for backward compatibility  
+    toasts: toastsT,
   }
 
   // Compatibility function that mimics the existing t() interface
