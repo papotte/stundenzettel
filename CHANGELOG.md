@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/papotte/stundenzettel/compare/v1.9.0...v1.9.1) (2025-07-29)
+
+
+### Bug Fixes
+
+* use --force for firebase-deploy ([e8e7656](https://github.com/papotte/stundenzettel/commit/e8e7656ab73424339bbe13dcfc8fe2525ccd33d4))
+
 # [1.9.0](https://github.com/papotte/stundenzettel/compare/v1.8.2...v1.9.0) (2025-07-28)
 
 
