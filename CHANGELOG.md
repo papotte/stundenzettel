@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/papotte/stundenzettel/compare/v1.9.1...v1.9.2) (2025-07-29)
+
+
+### Bug Fixes
+
+* remove __name__ from indexes since it's added implicitly ([6d12195](https://github.com/papotte/stundenzettel/commit/6d12195a5077e405e4128a7176ddbeb210e50776))
+
 ## [1.9.1](https://github.com/papotte/stundenzettel/compare/v1.9.0...v1.9.1) (2025-07-29)
 
 
