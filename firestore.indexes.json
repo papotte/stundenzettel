@@ -15,10 +15,6 @@
         {
           "fieldPath": "invitedAt",
           "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
         }
       ]
     },
@@ -36,10 +32,6 @@
         },
         {
           "fieldPath": "invitedAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
           "order": "DESCENDING"
         }
       ]
