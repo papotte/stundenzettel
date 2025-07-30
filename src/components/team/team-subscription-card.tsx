@@ -10,7 +10,7 @@ import {
   RefreshCw,
   Users,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,6 @@ import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
-import { formatAppDate } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
 
@@ -52,7 +51,8 @@ export function TeamSubscriptionCard({
   const [showSeatAssignmentDialog, setShowSeatAssignmentDialog] =
     useState(false)
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter()
   const { user } = useAuth()
 
   const getStatusColor = (status: string) => {
@@ -93,7 +93,7 @@ export function TeamSubscriptionCard({
     } catch (error) {
       console.error('Error refreshing subscription:', error)
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.failedToRefreshSubscription'),
         variant: 'destructive',
       })
@@ -118,7 +118,7 @@ export function TeamSubscriptionCard({
       }
     } catch {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.failedToOpenSubscriptionManagement'),
         variant: 'destructive',
       })
@@ -273,10 +273,10 @@ export function TeamSubscriptionCard({
             <p className="font-medium">{t('teams.currentPeriod')}</p>
             <p className="text-sm text-muted-foreground">
               {t('teams.startedOn', {
-                date: formatAppDate(
+                date: format.dateTime(
                   new Date(subscription.currentPeriodStart),
-                  language,
-                  false,
+                  'long',
+                  { weekday: undefined },
                 ),
               })}
               {subscription.cancelAt && (
@@ -284,10 +284,10 @@ export function TeamSubscriptionCard({
                   {' '}
                   •{' '}
                   {t('teams.cancelsOn', {
-                    date: formatAppDate(
+                    date: format.dateTime(
                       new Date(subscription.cancelAt),
-                      language,
-                      false,
+                      'long',
+                      { weekday: undefined },
                     ),
                   })}
                 </span>
@@ -304,7 +304,7 @@ export function TeamSubscriptionCard({
               className="flex-1"
             >
               <CreditCard className="mr-2 h-4 w-4" />
-              {isLoading ? t('teams.loading') : t('teams.manageBilling')}
+              {isLoading ? t('common.loading') : t('teams.manageBilling')}
             </Button>
             {seatsUsed >= totalSeats && (
               <Button onClick={handleUpgradeSubscription} className="flex-1">

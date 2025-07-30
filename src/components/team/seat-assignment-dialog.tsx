@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import { Check, Users, X } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, TeamMember } from '@/lib/types'
-import { formatAppDate } from '@/lib/utils'
 import { assignSeat, unassignSeat } from '@/services/team-service'
 
 interface SeatAssignmentDialogProps {
@@ -47,7 +46,8 @@ export function SeatAssignmentDialog({
   currentUserId,
   onMembersChange,
 }: SeatAssignmentDialogProps) {
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter()
   const { toast } = useToast()
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
 
@@ -58,7 +58,7 @@ export function SeatAssignmentDialog({
   const handleAssignSeat = async (memberId: string) => {
     if (availableSeats <= 0) {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.seatLimitReached'),
         variant: 'destructive',
       })
@@ -90,7 +90,7 @@ export function SeatAssignmentDialog({
       })
     } catch {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.seatAssignmentFailed'),
         variant: 'destructive',
       })
@@ -104,7 +104,7 @@ export function SeatAssignmentDialog({
     const member = members.find((m) => m.id === memberId)
     if (member?.role === 'owner') {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.cannotUnassignOwnerSeat'),
         variant: 'destructive',
       })
@@ -136,7 +136,7 @@ export function SeatAssignmentDialog({
       })
     } catch {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.seatUnassignmentFailed'),
         variant: 'destructive',
       })
@@ -241,10 +241,10 @@ export function SeatAssignmentDialog({
                     <TableCell>
                       {member.seatAssignment?.isActive ? (
                         <div className="text-sm text-muted-foreground">
-                          {formatAppDate(
+                          {format.dateTime(
                             member.seatAssignment.assignedAt,
-                            language,
-                            false,
+                            'long',
+                            { weekday: undefined },
                           )}
                         </div>
                       ) : (

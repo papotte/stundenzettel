@@ -10,7 +10,7 @@ import {
   UserX,
   Users,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,7 +31,6 @@ import {
 } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import type { Subscription, TeamMember } from '@/lib/types'
-import { formatAppDate } from '@/lib/utils'
 import {
   getTeamMembers,
   removeTeamMember,
@@ -61,7 +60,8 @@ export function TeamMembersList({
   const [showSeatAssignmentDialog, setShowSeatAssignmentDialog] =
     useState(false)
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter()
 
   const canManageMembers =
     currentUserRole === 'owner' || currentUserRole === 'admin'
@@ -210,7 +210,9 @@ export function TeamMembersList({
                   </div>
                 </TableCell>
                 <TableCell>
-                  {formatAppDate(member.joinedAt, language, false)}
+                  {format.dateTime(member.joinedAt, 'long', {
+                    weekday: undefined,
+                  })}
                 </TableCell>
                 {canManageSeats && (
                   <TableCell>

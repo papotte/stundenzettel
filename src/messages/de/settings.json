@@ -69,10 +69,7 @@
   "passwordUpdatedDescription": "Ihr Passwort wurde erfolgreich geändert",
   "passwordUpdateError": "Fehler beim Aktualisieren des Passworts",
   "passwordUpdateInvalidCurrent": "Aktuelles Passwort ist falsch",
-  "error": "Fehler",
   "userNotAuthenticated": "Benutzer nicht authentifiziert",
-  "updating": "Aktualisiere...",
-  "change": "Ändern",
   "dangerZone": "Gefahrenbereich",
   "dangerZoneDescription": "Unumkehrbare und zerstörerische Aktionen",
   "deleteAccount": "Konto löschen",
@@ -94,12 +91,6 @@
   "deleteAccountSuccess": "Konto erfolgreich gelöscht",
   "deleteAccountError": "Konto konnte nicht gelöscht werden",
   "deleteAccountInvalidPassword": "Ungültiges Passwort. Bitte versuchen Sie es erneut.",
-  "noTeam": "Sie sind noch nicht Teil eines Teams.",
-  "noTeamDescription": "Sie sind noch nicht Teil eines Teams. Erstellen Sie Ihr Team, um mit anderen zusammenzuarbeiten",
-  "teamMembers": "{count} Mitglieder",
-  "manageAllTeams": "Alle Teams verwalten",
-  "createTeam": "Team erstellen",
-  "manage": "Verwalten",
   "noSubscription": "Kein aktives Abonnement",
   "noSubscriptionDescription": "Upgraden Sie zu einem kostenpflichtigen Tarif, um alle Funktionen freizuschalten.",
   "unknownPlan": "Unbekannter Tarif",
@@ -121,7 +112,5 @@
   "trialExpiringSoon": "Testphase läuft bald ab",
   "trialExpiringDescription": "Ihre Testphase endet bald. Fügen Sie eine Zahlungsmethode hinzu, um Ihr Abonnement fortzusetzen.",
   "addPaymentMethod": "Zahlungsmethode hinzufügen",
-  "viewPlans": "Tarife anzeigen",
-  "saving": "Wird gespeichert...",
-  "save": "Speichern"
+  "viewPlans": "Tarife anzeigen"
 }

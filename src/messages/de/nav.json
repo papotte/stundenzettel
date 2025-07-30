@@ -1,11 +1,11 @@
 {
   "bottom": {
-    "home": "Home",
-    "export": "Preview & Export"
+    "home": "Übersicht",
+    "export": "Vorschau & Export"
   },
   "top": {
-    "features": "Features",
-    "pricing": "Pricing",
-    "login": "Log in"
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "login": "Anmelden"
   }
 }

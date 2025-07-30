@@ -14,6 +14,12 @@ export default getRequestConfig(async () => {
     locale,
     formats: {
       dateTime: {
+        long: {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+          weekday: 'long',
+        },
         short: {
           month: 'numeric',
           day: 'numeric',
@@ -48,6 +54,7 @@ export default getRequestConfig(async () => {
       tracker: (await import(`./messages/${locale}/tracker.json`)).default,
       export: (await import(`./messages/${locale}/export.json`)).default,
       settings: (await import(`./messages/${locale}/settings.json`)).default,
+      teams: (await import(`./messages/${locale}/teams.json`)).default,
       special_locations: (
         await import(`./messages/${locale}/special-locations.json`)
       ).default,

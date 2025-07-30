@@ -10,7 +10,7 @@ import {
   Crown,
   ExternalLink,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -27,7 +27,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { useToast } from '@/hooks/use-toast'
-import { formatAppDate } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -35,7 +34,8 @@ export default function SubscriptionPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter().dateTime
   const {
     subscription,
     loading: subLoading,
@@ -188,7 +188,7 @@ export default function SubscriptionPage() {
                         </p>
                         <p className="text-xs text-blue-600 dark:text-blue-400">
                           {t('settings.trialEndsOn')}:{' '}
-                          {formatAppDate(trialEndDate, language)}
+                          {format(trialEndDate, 'long')}
                         </p>
                       </div>
                     </div>
@@ -220,7 +220,7 @@ export default function SubscriptionPage() {
                         {t('settings.cancellationDate')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        {formatAppDate(subscription.cancelAt, language)}
+                        {format(subscription.cancelAt, 'long')}
                       </p>
                     </div>
                   </div>

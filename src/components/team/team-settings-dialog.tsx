@@ -53,7 +53,7 @@ export function TeamSettingsDialog({
       })
     } catch {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.teamIdCopyError'),
         variant: 'destructive',
       })
@@ -87,7 +87,7 @@ export function TeamSettingsDialog({
       setOpen(false)
     } catch (error) {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description:
           error instanceof Error
             ? error.message
@@ -174,7 +174,7 @@ export function TeamSettingsDialog({
           </Button>
           {canEdit && (
             <Button onClick={handleSave} disabled={loading}>
-              {loading ? t('teams.saving') : t('teams.saveChanges')}
+              {loading ? t('common.saving') : t('common.save')}
             </Button>
           )}
         </DialogFooter>

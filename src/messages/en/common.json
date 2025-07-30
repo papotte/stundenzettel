@@ -9,5 +9,6 @@
   "close": "Close",
   "error": "Error",
   "updating": "Updating...",
-  "change": "Change"
+  "change": "Change",
+  "creating": "Creating..."
 }

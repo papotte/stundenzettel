@@ -8,32 +8,32 @@
     "headerTag": "Zeiterfassung, aber schlauer",
     "headerTitle": "Alles, was Sie brauchen – nichts Überflüssiges.",
     "headerDescription": "TimeWise Tracker ist vollgepackt mit Funktionen, die Ihre Zeiterfassung so einfach und effizient wie möglich machen.",
-    "list": [
-      {
+    "list": {
+      "timeTracking": {
         "title": "Live-Zeiterfassung",
         "desc": "Starten und stoppen Sie einen Timer mit nur einem Klick. Ihre Arbeitszeit wird genau und ohne manuelle Berechnung erfasst."
       },
-      {
+      "specialEntries": {
         "title": "Manuelle & spezielle Einträge",
         "desc": "Fügen Sie ganz einfach Einträge für vergangene Arbeiten hinzu oder erfassen Sie Kranktage, Urlaub und Feiertage mit speziellen Eintragstypen."
       },
-      {
+      "location": {
         "title": "Standort & Reisen",
         "desc": "Ermitteln Sie Ihren aktuellen Standort automatisch oder geben Sie ihn manuell ein. Erfassen Sie Reisezeiten und Fahrerstatus für eine genaue Vergütung."
       },
-      {
+      "export": {
         "title": "Nahtloser Export",
         "desc": "Erstellen Sie professionell aussehende Stundenzettel im Excel- und PDF-Format, bereit zum Versand für die Lohnabrechnung oder zur Ablage."
       },
-      {
+      "smart": {
         "title": "Intelligente Vorschläge",
         "desc": "Die App lernt Ihre Gewohnheiten und schlägt basierend auf früheren Einträgen Orte und Zeiten vor, um Ihren Workflow zu beschleunigen."
       },
-      {
+      "pauseCalculation": {
         "title": "Automatische Pausenberechnung",
         "desc": "Basierend auf Ihrer Arbeitszeit schlägt die App die gesetzlich vorgeschriebene Pause vor, die Sie mit einem Klick übernehmen können."
       }
-    ]
+    }
   },
   "pricing": {
     "landingTitle": "Einfache, transparente Preise",
