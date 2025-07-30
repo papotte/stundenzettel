@@ -1,27 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-
-import { Check, Clock, Mail, X } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 import type { TeamInvitation } from '@/lib/types'
-import { formatAppDate } from '@/lib/utils'
-import {
-  acceptTeamInvitation,
-  declineTeamInvitation,
-} from '@/services/team-service'
+import { acceptTeamInvitation, declineTeamInvitation } from '@/services/team-service'
+
+import { Check, Clock, Mail, X } from 'lucide-react'
+import { useFormatter, useTranslations } from 'next-intl'
+import { useState } from 'react'
 
 interface UserInvitationsListProps {
   invitations: TeamInvitation[]
@@ -32,17 +20,18 @@ interface UserInvitationsListProps {
 }
 
 export function UserInvitationsList({
-  invitations,
-  onInvitationsChange,
-  onInvitationAccepted,
-  currentUserEmail,
-  currentUserId,
-}: UserInvitationsListProps) {
+                                      invitations,
+                                      onInvitationsChange,
+                                      onInvitationAccepted,
+                                      currentUserEmail,
+                                      currentUserId,
+                                    }: UserInvitationsListProps) {
   const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(
     null,
   )
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter().dateTime
   const { refreshInvitations } = useUserInvitations()
 
   const handleAcceptInvitation = async (invitation: TeamInvitation) => {
@@ -148,7 +137,7 @@ export function UserInvitationsList({
               <TableRow key={invitation.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <Mail className="h-4 w-4 text-muted-foreground"/>
                     <span className="font-medium">
                       {t('teams.teamInvitation')}
                     </span>
@@ -157,7 +146,7 @@ export function UserInvitationsList({
                 <TableCell>{getRoleLabel(invitation.role)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-500" />
+                    <Clock className="h-4 w-4 text-amber-500"/>
                     <span
                       className={expired ? 'text-red-600' : 'text-amber-600'}
                     >
@@ -166,10 +155,10 @@ export function UserInvitationsList({
                   </div>
                 </TableCell>
                 <TableCell className={expired ? 'text-red-600' : ''}>
-                  {formatAppDate(
+                  {format(
                     new Date(invitation.expiresAt),
-                    language,
-                    false,
+                    'long',
+                    { weekday: undefined },
                   )}
                 </TableCell>
                 <TableCell>
@@ -181,7 +170,7 @@ export function UserInvitationsList({
                         disabled={loadingInvitationId === invitation.id}
                         className="h-8"
                       >
-                        <Check className="mr-1 h-3 w-3" />
+                        <Check className="mr-1 h-3 w-3"/>
                         {t('teams.accept')}
                       </Button>
                       <Button
@@ -191,7 +180,7 @@ export function UserInvitationsList({
                         disabled={loadingInvitationId === invitation.id}
                         className="h-8"
                       >
-                        <X className="mr-1 h-3 w-3" />
+                        <X className="mr-1 h-3 w-3"/>
                         {t('teams.decline')}
                       </Button>
                     </div>

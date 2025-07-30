@@ -7,7 +7,6 @@ import {
   format,
   startOfMonth,
 } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
 import { twMerge } from 'tailwind-merge'
 
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from './constants'
@@ -84,19 +83,6 @@ export function formatMinutesToTimeInput(
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
-}
-
-/**
- * Formats a date in a consistent, locale-aware way for the app (e.g., July 2nd, 2025).
- * Defaults to 'en' if no locale is provided or recognized.
- */
-export function formatAppDate(
-  date: Date,
-  locale: string = 'en',
-  includeDay: boolean = true,
-) {
-  const localeObj = locale === 'de' ? de : enUS
-  return format(date, includeDay ? 'PPPP' : 'PPP', { locale: localeObj })
 }
 
 /**
