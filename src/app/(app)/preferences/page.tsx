@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { locales } from '@/i18n'
 import { setUserLocale } from '@/services/locale'
 import {
   getUserSettings,
@@ -52,7 +53,7 @@ const preferencesFormSchema = z.object({
   defaultEndTime: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
-  language: z.enum(['en', 'de']),
+  language: z.enum(locales),
 })
 
 type PreferencesFormValues = z.infer<typeof preferencesFormSchema>
@@ -62,7 +63,7 @@ export default function PreferencesPage() {
   const router = useRouter()
   const { toast } = useToast()
   const t = useTranslations()
-  const language = useLocale()
+  const language: string = useLocale()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const languageFieldId = useId()
