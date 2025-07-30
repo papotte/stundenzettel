@@ -1,12 +1,14 @@
 'use client'
 
-import React, { ReactNode, createContext, useEffect, useState } from 'react'
-
-import { signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
-
 import LoadingIcon from '@/components/ui/loading-icon'
+import { defaultLocale } from '@/i18n'
 import { auth as firebaseAuth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
+import { getUserLocale, setUserLocale } from '@/services/locale'
+import { getUserSettings, setUserSettings } from '@/services/user-settings-service'
+
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth'
+import React, { createContext, ReactNode, useEffect, useState, useTransition } from 'react'
 
 interface AuthContextType {
   user: AuthenticatedUser | null
@@ -23,16 +25,53 @@ const MOCK_USER_STORAGE_KEY = 'mockUser'
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signOut: async () => {},
+  signOut: async () => {
+  },
 })
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [_, startTransition] = useTransition()
 
-  const loginAsMockUser = (user: AuthenticatedUser | null) => {
+  const syncLanguage = async (uid?: string) => {
+    let targetLanguage = undefined
+    if (uid) {
+      try {
+        // Get user's saved language preference
+        const settings = await getUserSettings(uid)
+        if (settings.language) {
+          targetLanguage = settings.language
+        } else {
+          // If user has no saved preference, save current cookie to user settings
+          const currentLanguage = await getUserLocale()
+          const updatedSettings = {
+            ...settings,
+            language: currentLanguage as 'en' | 'de',
+          }
+          console.info('Saving current language to user settings:', updatedSettings.language, 'for user:', uid)
+          await setUserSettings(uid, updatedSettings)
+        }
+      } catch (error) {
+        console.error('Failed to sync language on login:', error)
+      }
+    } else {
+      targetLanguage = defaultLocale
+    }
+
+    if (targetLanguage != undefined) {
+      console.info('Changing language to:', targetLanguage, 'for user:', uid || 'guest')
+      startTransition(() => {
+        setUserLocale(targetLanguage)
+      })
+    }
+  }
+
+  const loginAsMockUser = async (user: AuthenticatedUser | null) => {
     if (user) {
       localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(user))
+      // Sync language on mock login
+      await syncLanguage(user.uid)
     } else {
       localStorage.removeItem(MOCK_USER_STORAGE_KEY)
     }
@@ -41,6 +80,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const signOut = async () => {
+    // Sync language on logout
+    syncLanguage()
+
     if (useMocks) {
       loginAsMockUser(null)
     } else if (
@@ -78,13 +120,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return
     }
 
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser({
+        const user = {
           uid: firebaseUser.uid,
           displayName: firebaseUser.displayName,
           email: firebaseUser.email || '',
-        })
+        }
+        setUser(user)
+
+        // Sync language on login
+        await syncLanguage(user.uid)
       } else {
         setUser(null)
       }
@@ -106,7 +152,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {loading ? (
         <div className="flex h-screen items-center justify-center bg-background">
           <div className="flex flex-col items-center space-y-4">
-            <LoadingIcon size="xl" />
+            <LoadingIcon size="xl"/>
             <p className="text-muted-foreground">Loading TimeWise Tracker...</p>
           </div>
         </div>

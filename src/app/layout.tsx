@@ -4,7 +4,6 @@ import { Lora, PT_Sans } from 'next/font/google'
 
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
-import { NextIntlProvider } from '@/context/next-intl-provider'
 // Import dev utilities for development mode
 import '@/lib/dev-utils'
 

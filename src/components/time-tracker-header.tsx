@@ -38,7 +38,7 @@ const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
       <div className="flex items-center gap-2">
         <TimeWiseIcon className="h-6 w-6 text-primary" />
         <h1 className="font-headline text-xl font-bold tracking-tight">
-          {t('appName')}
+          {t('common.appName')}
         </h1>
       </div>
       <div

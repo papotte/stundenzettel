@@ -9,13 +9,13 @@ const navItems = [
   {
     href: '/tracker',
     icon: Home,
-    labelKey: 'bottomNav.home',
+    labelKey: 'nav.bottom.home',
     labelDefault: 'Home',
   },
   {
     href: '/export',
     icon: FileSpreadsheet,
-    labelKey: 'bottomNav.export',
+    labelKey: 'nav.bottom.export',
     labelDefault: 'Export',
   },
 ]

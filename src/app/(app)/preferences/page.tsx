@@ -1,43 +1,25 @@
 'use client'
 
-import React, { useEffect, useId, useState } from 'react'
-
-import { zodResolver } from '@hookform/resolvers/zod'
-
-import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-
 import LanguageSelect from '@/components/language-select'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import {
-  getUserSettings,
-  setUserSettings,
-} from '@/services/user-settings-service'
+import { setUserLocale } from '@/services/locale'
+import { getUserSettings, setUserSettings } from '@/services/user-settings-service'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import React, { useEffect, useId, useState, useTransition } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
@@ -60,10 +42,13 @@ export default function PreferencesPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { t, setLanguageState, language } = useTranslation()
+  const t = useTranslations()
+  const language = useLocale()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const languageFieldId = useId()
+  const [_, startTransition] = useTransition()
+  console.log(language)
 
   const form = useForm<PreferencesFormValues>({
     resolver: zodResolver(preferencesFormSchema),
@@ -111,7 +96,9 @@ export default function PreferencesPage() {
     setIsSaving(true)
     try {
       await setUserSettings(user.uid, data)
-      setLanguageState(data.language)
+      startTransition(() => {
+        setUserLocale(data.language)
+      })
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),
@@ -132,8 +119,8 @@ export default function PreferencesPage() {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">
-          <Skeleton className="mb-8 h-10 w-32" />
-          <Skeleton className="h-96 w-full" />
+          <Skeleton className="mb-8 h-10 w-32"/>
+          <Skeleton className="h-96 w-full"/>
         </div>
       </div>
     )
@@ -148,7 +135,7 @@ export default function PreferencesPage() {
       <div className="mx-auto max-w-2xl">
         <Button asChild variant="outline" className="mb-8">
           <Link href="/tracker">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-4 w-4"/>
             {t('settings.backToTracker')}
           </Link>
         </Button>
@@ -157,7 +144,7 @@ export default function PreferencesPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-5 w-5"/>
                   {t('settings.preferences')}
                 </CardTitle>
                 <CardDescription>
@@ -180,7 +167,7 @@ export default function PreferencesPage() {
                       <FormDescription>
                         {t('settings.displayNameDescription')}
                       </FormDescription>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
@@ -203,7 +190,7 @@ export default function PreferencesPage() {
                       <FormDescription>
                         {t('settings.languageDescription')}
                       </FormDescription>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
@@ -226,7 +213,7 @@ export default function PreferencesPage() {
                       <FormDescription>
                         {t('settings.defaultWorkHoursDescription')}
                       </FormDescription>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
@@ -244,7 +231,7 @@ export default function PreferencesPage() {
                         <FormDescription>
                           {t('settings.defaultStartTimeDescription')}
                         </FormDescription>
-                        <FormMessage />
+                        <FormMessage/>
                       </FormItem>
                     )}
                   />
@@ -261,7 +248,7 @@ export default function PreferencesPage() {
                         <FormDescription>
                           {t('settings.defaultEndTimeDescription')}
                         </FormDescription>
-                        <FormMessage />
+                        <FormMessage/>
                       </FormItem>
                     )}
                   />
@@ -280,9 +267,9 @@ export default function PreferencesPage() {
                       data-testid="loader-icon"
                     />
                   ) : (
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save className="mr-2 h-4 w-4"/>
                   )}
-                  {isSaving ? t('settings.saving') : t('settings.save')}
+                  {isSaving ? t('common.saving') : t('common.save')}
                 </Button>
               </CardFooter>
             </Card>

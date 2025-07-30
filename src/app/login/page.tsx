@@ -217,7 +217,7 @@ export default function LoginPage() {
       <div className="mb-4 flex items-center gap-2">
         <TimeWiseIcon className="h-8 w-8 text-primary" />
         <h1 className="font-headline text-3xl font-bold tracking-tight">
-          {t('appName')}
+          {t('common.appName')}
         </h1>
       </div>
       <Card className="w-full max-w-sm">

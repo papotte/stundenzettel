@@ -1,17 +1,29 @@
-import { useLanguageManager } from '@/hooks/use-language-manager'
+import { Locale } from '@/i18n'
+import { setUserLocale } from '@/services/locale'
+import { useLocale } from 'next-intl'
+import { useTransition } from 'react'
 
 import LanguageSelect from './language-select'
 
 export default function LanguageSwitcher({
-  className,
-}: {
+                                           className,
+                                         }: {
   className?: string
 }) {
-  const { currentLanguage, changeLanguage } = useLanguageManager()
+  const [_, startTransition] = useTransition()
+  const locale = useLocale()
+
+  function onChange(value: string) {
+    const locale = value as Locale
+    startTransition(() => {
+      setUserLocale(locale)
+    })
+  }
+
   return (
     <LanguageSelect
-      value={currentLanguage}
-      onChange={(lang) => changeLanguage(lang as 'en' | 'de')}
+      value={locale}
+      onChange={onChange}
       className={className}
       data-testid="language-switcher"
     />

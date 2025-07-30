@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { TimeTrackerProvider } from '@/context/time-tracker-context'
@@ -18,7 +18,8 @@ import TimeTrackerLiveCard from './time-tracker-live-card'
 
 export default function TimeTracker() {
   const { user } = useAuth()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const language = useLocale();
   const { toast } = useToast()
 
   return (

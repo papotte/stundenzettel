@@ -2,8 +2,12 @@
   "appName": "TimeWise Tracker",
   "cancel": "Cancel",
   "save": "Save",
+  "saving": "Saving...",
   "delete": "Delete",
   "edit": "Edit",
   "loading": "Loading...",
-  "close": "Close"
+  "close": "Close",
+  "error": "Error",
+  "updating": "Updating...",
+  "change": "Change"
 }
