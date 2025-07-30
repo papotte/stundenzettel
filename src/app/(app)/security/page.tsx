@@ -268,7 +268,7 @@ export default function SecurityPage() {
                     size="sm"
                     data-testid="change-email-trigger"
                   >
-                    {t('settings.change')}
+                    {t('common.change')}
                   </Button>
                 ) : (
                   <TooltipProvider>
@@ -281,7 +281,7 @@ export default function SecurityPage() {
                             disabled
                             data-testid="change-email-trigger"
                           >
-                            {t('settings.change')}
+                            {t('common.change')}
                           </Button>
                         </div>
                       </TooltipTrigger>
@@ -308,7 +308,7 @@ export default function SecurityPage() {
                       size="sm"
                       data-testid="change-password-trigger"
                     >
-                      {t('settings.change')}
+                      {t('common.change')}
                     </Button>
                   </PasswordChangeDialog>
                 </div>

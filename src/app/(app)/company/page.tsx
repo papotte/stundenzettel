@@ -356,7 +356,7 @@ export default function CompanyPage() {
                   ) : (
                     <Save className="mr-2 h-4 w-4" />
                   )}
-                  {isSaving ? t('settings.saving') : t('settings.save')}
+                  {isSaving ? t('common.saving') : t('common.save')}
                 </Button>
               </CardFooter>
             </Card>
