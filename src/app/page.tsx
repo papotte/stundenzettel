@@ -22,7 +22,6 @@ export default function LandingPage() {
   const features = Object.keys(messages.landing.features.list)
   const faqs = Object.keys(messages.landing.faqs)
 
-  console.log(features)
   return (
     <LandingLayout>
       {/* Hero Section */}

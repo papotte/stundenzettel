@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
 
 const TermsEn = dynamic(() => import('@/../content/legal/terms.en.mdx'))
 const TermsDe = dynamic(() => import('@/../content/legal/terms.de.mdx'))
 
 export default function TermsPage() {
-  const { language } = useTranslation()
+  const language = useLocale()
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)

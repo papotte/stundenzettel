@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
 
 const PrivacyEn = dynamic(() => import('@/../content/legal/privacy.en.mdx'))
 const PrivacyDe = dynamic(() => import('@/../content/legal/privacy.de.mdx'))
 
 export default function PrivacyPage() {
-  const { language } = useTranslation()
+  const language = useLocale()
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)
