@@ -28,7 +28,7 @@ const DailyActionsCard: React.FC = () => {
             ? t('tracker.dailyActionsDescription', {
                 date: formattedSelectedDate,
               })
-            : 'Loading...'}
+            : t('common.loading')}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4 md:grid-cols-4">

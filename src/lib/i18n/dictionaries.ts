@@ -94,60 +94,7 @@ export const dictionaries = {
     },
     // Time Entry Form
     time_entry_form: {
-      addTitle: 'Add Time Entry',
-      editTitle: 'Edit Time Entry',
-      addDescription: 'Manually add a new time entry for your records.',
-      editDescription: 'Update the details of your time entry.',
-      locationLabel: 'Location',
-      locationPlaceholder: 'e.g., Office, Home',
-      dateLabel: 'Date',
-      pickDate: 'Pick a date',
-      startTimeLabel: 'Start time',
-      endTimeLabel: 'End time',
-      optionalDetailsTitle: 'Optional Details',
-      pauseLabel: 'Pause',
-      pauseDurationLabel: 'Pause Duration (HH:mm)',
-      pauseDurationDescription:
-        'Enter the total duration of your pause in HH:mm format (e.g. {example} for 30 minutes).',
-      pauseDurationInvalid:
-        'Please enter a valid duration in HH:mm format (e.g. {example}).',
-      pauseSuggestion: 'Suggest: {minutes} min',
-      pauseSuggestionTooltip:
-        'Activity over {hours}. Recommended pause: {minutes} mins.',
-      driverTimeLabel: 'Driving Time (as Driver)',
-      passengerTimeLabel: 'Driving Time (as Passenger)',
-      totalTimeLabel: 'Total Compensated Time:',
-      warning10HoursTitle: 'Warning: Exceeds 10 Hours',
-      warning10HoursDescription:
-        'The work duration exceeds the legal maximum of 10 hours per day.',
-      saveButton: 'Save Entry',
-      cancelConfirmTitle: 'Discard changes?',
-      cancelConfirmDescription:
-        'Are you sure you want to cancel? Unsaved changes will be lost.',
-      cancelConfirmAbort: 'Keep editing',
-      cancelConfirmConfirm: 'Discard',
-      locationFetchToastTitle: 'Fetching location...',
-      locationFetchToastDescription: 'Please wait while we get your address.',
-      locationFetchedToastTitle: 'Location fetched!',
-      locationFetchedToastDescription:
-        'Your location has been set to "{address}".',
-      locationErrorToastTitle: 'Could not get address',
-      locationCoordsErrorToastTitle: 'Could not get your coordinates',
-      locationCoordsErrorToastDescription:
-        'Please ensure location services are enabled and permission is granted in your browser.',
-      geolocationNotSupportedToastTitle: 'Geolocation not supported',
-      geolocationNotSupportedToastDescription:
-        'Your browser does not support geolocation.',
-      entryModeLabel: 'Entry mode',
-      modeInterval: 'By interval',
-      modeDuration: 'By duration',
-      durationLabel: 'Duration',
-      durationFormLabel: 'Duration (minutes)',
-      durationInvalid:
-        'Please enter a valid duration in minutes. Minimum is 5 minutes.',
-      compensatedInfo:
-        'Compensated time = Worked time - Pause + Driver time × {driver}% + Passenger time × {passenger}%',
-      smartSuggestionTooltip: 'Smart suggestion based on your previous entries',
+
     },
     // Toasts
     toasts: {
@@ -539,12 +486,7 @@ export const dictionaries = {
       clearDataAlertConfirm: 'Ja, alles löschen',
     },
     // Special Locations
-    special_locations: {
-      SICK_LEAVE: 'Krankschreibung',
-      PTO: 'Urlaub',
-      BANK_HOLIDAY: 'Feiertag',
-      TIME_OFF_IN_LIEU: 'Stundenabbau',
-    },
+
     // Time Entry Card
     time_entry_card: {
       editLabel: 'Bearbeiten',

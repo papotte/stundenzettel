@@ -1,21 +1,5 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
-
-import { zodResolver } from '@hookform/resolvers/zod'
-
-import { differenceInMinutes, parse, set } from 'date-fns'
-import {
-  AlertTriangle,
-  Calendar as CalendarIcon,
-  Info,
-  Lightbulb,
-  Save,
-} from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -30,33 +14,11 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
@@ -79,6 +41,15 @@ import {
   getLocationDisplayName,
   timeStringToMinutes,
 } from '@/lib/utils'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { differenceInMinutes, parse, set } from 'date-fns'
+import { AlertTriangle, Calendar as CalendarIcon, Info, Lightbulb, Save } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import React, { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 import { LocationInput } from './location-input'
 import { Calendar } from './ui/calendar'
@@ -149,14 +120,15 @@ interface TimeEntryFormProps {
 }
 
 export default function TimeEntryForm({
-  entry,
-  selectedDate,
-  onSave,
-  onClose,
-  userSettings,
-}: TimeEntryFormProps) {
+                                        entry,
+                                        selectedDate,
+                                        onSave,
+                                        onClose,
+                                        userSettings,
+                                      }: TimeEntryFormProps) {
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const language = useLocale()
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const isMobile = useIsMobile()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
@@ -291,11 +263,11 @@ export default function TimeEntryForm({
           modeValue === 'interval' && startTimeValue
             ? parse(startTimeValue, 'HH:mm', new Date(getValues('date')))
             : set(getValues('date') || new Date(), {
-                hours: 12,
-                minutes: 0,
-                seconds: 0,
-                milliseconds: 0,
-              }),
+              hours: 12,
+              minutes: 0,
+              seconds: 0,
+              milliseconds: 0,
+            }),
         endTime:
           modeValue === 'interval' && endTimeValue
             ? parse(endTimeValue, 'HH:mm', new Date(getValues('date')))
@@ -498,6 +470,12 @@ export default function TimeEntryForm({
   // Use the generalized getLocationDisplayName for displaying location
   const displayLocation = getLocationDisplayName(getValues('location'), t)
 
+  let compensatedInfoTooltip = t('time_entry_form.compensatedInfo', {
+    driver:
+      userSettings?.driverCompensationPercent ?? 100,
+    passenger:
+      userSettings?.passengerCompensationPercent ?? 100,
+  })
   return (
     <>
       <SheetHeader className="px-6 pt-6">
@@ -539,10 +517,11 @@ export default function TimeEntryForm({
                           field.onBlur()
                           form.trigger('location')
                         }}
-                        onFocus={() => {}}
+                        onFocus={() => {
+                        }}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage/>
                   </FormItem>
                 )}
               />
@@ -562,7 +541,7 @@ export default function TimeEntryForm({
                               !field.value && 'text-muted-foreground',
                             )}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className="mr-2 h-4 w-4"/>
                             {field.value ? (
                               formatAppDate(field.value, language)
                             ) : (
@@ -579,7 +558,7 @@ export default function TimeEntryForm({
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormMessage />
+                    <FormMessage/>
                   </FormItem>
                 )}
               />
@@ -639,7 +618,7 @@ export default function TimeEntryForm({
                                       })
                                     }
                                   >
-                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70"/>
                                     {s}
                                   </Button>
                                 </TooltipTrigger>
@@ -650,7 +629,7 @@ export default function TimeEntryForm({
                             ))}
                           </div>
                         )}
-                        <FormMessage />
+                        <FormMessage/>
                       </FormItem>
                     )}
                   />
@@ -682,7 +661,7 @@ export default function TimeEntryForm({
                                       })
                                     }
                                   >
-                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70"/>
                                     {s}
                                   </Button>
                                 </TooltipTrigger>
@@ -693,7 +672,7 @@ export default function TimeEntryForm({
                             ))}
                           </div>
                         )}
-                        <FormMessage />
+                        <FormMessage/>
                       </FormItem>
                     )}
                   />
@@ -718,14 +697,14 @@ export default function TimeEntryForm({
                           value={field.value?.toString() ?? ''}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage/>
                     </FormItem>
                   )}
                 />
               )}
               {!isSpecialEntry && modeValue === 'interval' && (
                 <>
-                  <Separator />
+                  <Separator/>
                   <p className="text-sm font-medium text-muted-foreground">
                     {t('time_entry_form.optionalDetailsTitle')}
                   </p>
@@ -775,7 +754,7 @@ export default function TimeEntryForm({
                               example: '00:30',
                             })}
                           </FormDescription>
-                          <FormMessage />
+                          <FormMessage/>
                           <div className="pt-2">
                             {pauseSuggestion && (
                               <Tooltip>
@@ -793,7 +772,7 @@ export default function TimeEntryForm({
                                       )
                                     }
                                   >
-                                    <Lightbulb className="mr-1 h-4 w-4" />
+                                    <Lightbulb className="mr-1 h-4 w-4"/>
                                     {t('time_entry_form.pauseSuggestion', {
                                       minutes: pauseSuggestion.minutes,
                                     })}
@@ -857,7 +836,7 @@ export default function TimeEntryForm({
                                           })
                                         }
                                       >
-                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70"/>
                                         {s}
                                       </Button>
                                     </TooltipTrigger>
@@ -870,7 +849,7 @@ export default function TimeEntryForm({
                                 ))}
                               </div>
                             )}
-                            <FormMessage />
+                            <FormMessage/>
                           </FormItem>
                         )}
                       />
@@ -914,7 +893,7 @@ export default function TimeEntryForm({
                                           })
                                         }
                                       >
-                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70"/>
                                         {s}
                                       </Button>
                                     </TooltipTrigger>
@@ -927,7 +906,7 @@ export default function TimeEntryForm({
                                 ))}
                               </div>
                             )}
-                            <FormMessage />
+                            <FormMessage/>
                           </FormItem>
                         )}
                       />
@@ -937,7 +916,7 @@ export default function TimeEntryForm({
               )}
 
               <div className="space-y-4 pt-4">
-                <Separator />
+                <Separator/>
                 <div className="flex items-center justify-between font-medium">
                   <span className="text-muted-foreground flex items-center gap-2">
                     {t('time_entry_form.totalTimeLabel')}
@@ -947,12 +926,10 @@ export default function TimeEntryForm({
                           <button
                             type="button"
                             tabIndex={0}
-                            aria-label={t(
-                              'time_entry_form.compensatedInfoLabel',
-                            )}
+                            aria-label={compensatedInfoTooltip}
                             className="ml-1 text-primary hover:text-primary/80 focus:outline-none"
                           >
-                            <Info className="w-4 h-4" />
+                            <Info className="w-4 h-4"/>
                           </button>
                         </TooltipTrigger>
                         <TooltipContent
@@ -960,12 +937,7 @@ export default function TimeEntryForm({
                           align="start"
                           className="max-w-xs text-xs"
                         >
-                          {t('time_entry_form.compensatedInfo', {
-                            driver:
-                              userSettings?.driverCompensationPercent ?? 100,
-                            passenger:
-                              userSettings?.passengerCompensationPercent ?? 100,
-                          })}
+                          {compensatedInfoTooltip}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -976,7 +948,7 @@ export default function TimeEntryForm({
                 </div>
                 {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (
                   <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTriangle className="h-4 w-4"/>
                     <AlertTitle>
                       {t('time_entry_form.warning10HoursTitle')}
                     </AlertTitle>
@@ -1033,7 +1005,7 @@ export default function TimeEntryForm({
                   </AlertDialogContent>
                 </AlertDialog>
                 <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 h-4 w-4"/>
                   {t('time_entry_form.saveButton')}
                 </Button>
               </SheetFooter>
