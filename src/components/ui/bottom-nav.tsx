@@ -1,10 +1,9 @@
 'use client'
 
 import { FileSpreadsheet, Home } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
-import { useTranslation } from '@/hooks/use-translation-compat'
 
 const navItems = [
   {
@@ -23,7 +22,7 @@ const navItems = [
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   return (
     <nav

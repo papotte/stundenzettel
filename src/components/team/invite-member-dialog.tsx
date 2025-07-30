@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { UserPlus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -34,7 +35,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 import { createTeamInvitation } from '@/services/team-service'
@@ -58,7 +58,7 @@ export function InviteMemberDialog({
   const [open, setOpen] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(

@@ -1,0 +1,99 @@
+{
+  "heroTitle": "Effortless Time Tracking for Your Business",
+  "heroDescription": "TimeWise Tracker helps you and your team manage work hours seamlessly. From live tracking to detailed exports, we have you covered.",
+  "getStarted": "Get Started",
+  "learnMore": "Learn More",
+  "features": {
+    "keyFeatures": "Key Features",
+    "headerTag": "Track Time Smarter",
+    "headerTitle": "Everything you need, nothing you don't.",
+    "headerDescription": "TimeWise Tracker is packed with features designed to make your time tracking as effortless and accurate as possible.",
+    "list": {
+      "timeTracking": {
+        "title": "Live Time Tracking",
+        "desc": "Start and stop a timer with one click. Your work duration is recorded accurately without any manual calculations."
+      },
+      "specialEntries": {
+        "title": "Manual & Special Entries",
+        "desc": "Easily add or edit entries for past work, or log sick leave, PTO, and holidays with dedicated entry types."
+      },
+      "location": {
+        "title": "Location & Travel",
+        "desc": "Automatically fetch your current location or manually input it. Track travel time and driver status for accurate compensation."
+      },
+      "export": {
+        "title": "Seamless Export",
+        "desc": "Generate professional-looking timesheets in Excel and PDF formats, ready to be sent for payroll or records."
+      },
+      "smart": {
+        "title": "Smart Suggestions",
+        "desc": "The app learns your habits and suggests locations and times based on your previous entries to speed up your workflow."
+      },
+      "pauseCalculation": {
+        "title": "Automatic Pause Calculation",
+        "desc": "Based on your work duration, the app suggests the legally required pause time, which you can apply with one click."
+      }
+    }
+  },
+  "pricing": {
+    "landingTitle": "Simple, Transparent Pricing",
+    "landingDescription": "One plan that includes everything you need. No tiers, no add-ons, no surprises.",
+    "title": "Choose Your Plan",
+    "subtitle": "Select the perfect plan for your time tracking needs",
+    "loadingPlans": "Loading plans...",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save20": "Save 20%",
+    "tieredHint": "Price shown is for 10+ users",
+    "perUserPerMonth": "per user per month",
+    "month": "month",
+    "year": "year",
+    "mostPopular": "Most Popular",
+    "getStarted": "Get Started",
+    "createTeam": "Create Team",
+    "processing": "Processing...",
+    "faqTitle": "Frequently Asked Questions",
+    "faq1Question": "Can I cancel anytime?",
+    "faq1Answer": "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.",
+    "faq2Question": "What payment methods do you accept?",
+    "faq2Answer": "We accept all major credit cards and debit cards through our secure payment processor.",
+    "faq3Question": "Is there a free trial?",
+    "faq3Answer": "Yes, we offer a 14-day free trial for all plans. No credit card required to start.",
+    "faq4Question": "Can I change plans later?",
+    "faq4Answer": "Absolutely! You can upgrade or downgrade your plan at any time from your account settings.",
+    "loginRequiredTitle": "Login Required",
+    "loginRequiredDescription": "Please log in to subscribe to a plan.",
+    "errorTitle": "Payment Error",
+    "errorDescription": "There was an error processing your payment. Please try again.",
+    "tryForFree": "Try for Free",
+    "freeTrial": "Free Trial",
+    "noCreditCard": "No credit card required",
+    "successToast": "Subscription successful!",
+    "cancelledToast": "Subscription creation cancelled."
+  },
+  "faqTitle": "Frequently Asked Questions",
+  "faqs": [
+    {
+      "question": "Is there a free trial available?",
+      "answer": "Yes, you can sign up and use TimeWise Tracker with all its features for free for 14 days. No credit card is required to start your trial."
+    },
+    {
+      "question": "Can I track time for multiple projects or clients?",
+      "answer": "Absolutely. The 'Location' field can be used to specify different projects, clients, or tasks. Our upcoming features will include dedicated project and client management for even better organization."
+    },
+    {
+      "question": "How does the Excel and PDF export work?",
+      "answer": "From the \"Preview & Export\" page, you can select any month and download a professionally formatted timesheet. The Excel file is ready for calculations, and the PDF is perfect for printing and signing."
+    },
+    {
+      "question": "Is my data secure?",
+      "answer": "Yes, your data is securely stored using Firebase, a platform by Google. We use industry-standard security practices to ensure your information is safe."
+    }
+  ],
+  "footer": {
+    "copyright": "© 2025 TimeWise Tracker. All rights reserved.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy",
+    "imprint": "Imprint"
+  }
+}

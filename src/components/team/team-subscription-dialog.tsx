@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Check, CreditCard, Minus, Plus, Users } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan, Team } from '@/lib/types'

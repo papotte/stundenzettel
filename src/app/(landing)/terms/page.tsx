@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
-
-import { useTranslation } from '@/hooks/use-translation-compat'
 
 const TermsEn = dynamic(() => import('@/../content/legal/terms.en.mdx'))
 const TermsDe = dynamic(() => import('@/../content/legal/terms.de.mdx'))

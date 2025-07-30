@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { ArrowLeft, Building, Loader2, Save } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -30,7 +31,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -59,7 +59,8 @@ export default function CompanyPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 

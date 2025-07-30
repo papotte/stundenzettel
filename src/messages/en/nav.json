@@ -1,0 +1,11 @@
+{
+  "bottom": {
+    "home": "Home",
+    "export": "Preview & Export"
+  },
+  "top": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "login": "Log in"
+  }
+}

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
-
-import { useTranslation } from '@/hooks/use-translation-compat'
 
 const CookiePolicyEn = dynamic(
   () => import('@/../content/legal/cookie-policy.en.mdx'),

@@ -2,10 +2,11 @@
 
 import React from 'react'
 
+import { useTranslations } from 'next-intl'
+
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { useTranslation } from '@/hooks/use-translation-compat'
 
 interface BillingToggleProps {
   isYearly: boolean
@@ -16,7 +17,7 @@ export default function BillingToggle({
   isYearly,
   onToggle,
 }: BillingToggleProps) {
-  const { t } = useTranslation()
+  const t = useTranslations('landing')
 
   return (
     <div className="flex justify-center items-center space-x-4 mb-8">

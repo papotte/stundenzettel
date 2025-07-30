@@ -3,9 +3,9 @@
 import { useState } from 'react'
 
 import { Sparkles } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan } from '@/lib/types'
@@ -35,7 +35,8 @@ export default function TryForFreeButton({
 }: TryForFreeButtonProps) {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations('landing')
+
   const [loading, setLoading] = useState(false)
 
   const handleTryForFree = async () => {

@@ -3,12 +3,12 @@
 import React from 'react'
 
 import { Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 
-import { useTranslation } from '@/hooks/use-translation-compat'
-
 export default function FeaturesPage() {
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const features = t('landing.features.list')
   return (
     <div>

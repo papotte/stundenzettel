@@ -1,4 +1,4 @@
-import { useTranslation } from '@/hooks/use-translation-compat'
+import { useTranslations } from 'next-intl'
 
 import {
   Select,
@@ -20,7 +20,7 @@ export default function LanguageSelect({
   className?: string
   id?: string
 }) {
-  const { t } = useTranslation()
+  const t = useTranslations()
   return (
     <Select value={value} onValueChange={onChange} {...props}>
       <SelectTrigger className={className || 'w-24'} id={id}>

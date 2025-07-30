@@ -5,6 +5,7 @@ import React, { useCallback, useMemo } from 'react'
 import { differenceInMinutes, format, getDay, isSameMonth } from 'date-fns'
 import { de, enUS } from 'date-fns/locale'
 import { Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'

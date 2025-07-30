@@ -2,15 +2,18 @@
 
 import { useCallback } from 'react'
 
+import { useLocale } from 'next-intl'
+
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { getUserSettings, setUserSettings } from '@/services/user-settings-service'
-
-import { useTranslation } from './use-translation-compat'
+import {
+  getUserSettings,
+  setUserSettings,
+} from '@/services/user-settings-service'
 
 export function useLanguageManager() {
   const { user } = useAuth()
-  const { language } = useTranslation()
+  const language = useLocale()
   const { toast } = useToast()
 
   const changeLanguage = useCallback(
@@ -27,7 +30,7 @@ export function useLanguageManager() {
       try {
         // Get current settings
         const currentSettings = await getUserSettings(user.uid)
-        
+
         // Update language preference
         const updatedSettings = {
           ...currentSettings,
@@ -40,7 +43,6 @@ export function useLanguageManager() {
         // Refresh the page to apply new language
         // In next-intl without routing, we need to reload to pick up new language
         window.location.reload()
-
       } catch (error) {
         console.error('Failed to change language:', error)
         toast({
@@ -50,7 +52,7 @@ export function useLanguageManager() {
         })
       }
     },
-    [user, language, toast]
+    [user, language, toast],
   )
 
   return {

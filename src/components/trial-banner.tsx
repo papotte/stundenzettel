@@ -3,10 +3,10 @@
 import React from 'react'
 
 import { AlertTriangle, Clock } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -21,7 +21,7 @@ export default function TrialBanner({
   onManageTrial,
   className = '',
 }: TrialBannerProps) {
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   // Check if user is in trial
   const isInTrial = subscriptionService.isInTrial(subscription)

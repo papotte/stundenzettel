@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Plus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -28,7 +29,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 import { createTeam, getTeam } from '@/services/team-service'
@@ -52,7 +52,7 @@ export function CreateTeamDialog({
   const [open, setOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   const form = useForm<TeamFormValues>({
     resolver: zodResolver(

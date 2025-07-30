@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { NextIntlClientProvider } from 'next-intl'
 import { Lora, PT_Sans } from 'next/font/google'
 
 import { Toaster } from '@/components/ui/toaster'
@@ -54,10 +55,10 @@ export default function RootLayout({
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
         <AuthProvider>
-          <NextIntlProvider>
+          <NextIntlClientProvider>
             {children}
             <Toaster />
-          </NextIntlProvider>
+          </NextIntlClientProvider>
         </AuthProvider>
       </body>
     </html>

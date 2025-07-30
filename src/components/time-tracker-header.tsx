@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { FileSpreadsheet, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import {
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent } from '@/components/ui/tooltip'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 
 import TimeWiseIcon from './time-wise-icon'
@@ -29,7 +29,8 @@ interface TimeTrackerHeaderProps {
 const TimeTrackerHeader: React.FC<TimeTrackerHeaderProps> = ({
   showClearData,
 }) => {
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const { handleClearData } = useTimeTrackerContext()
 
   return (

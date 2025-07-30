@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Save,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -56,7 +57,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'

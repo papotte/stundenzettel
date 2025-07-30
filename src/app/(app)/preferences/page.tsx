@@ -5,6 +5,7 @@ import React, { useEffect, useId, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -31,7 +32,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import {

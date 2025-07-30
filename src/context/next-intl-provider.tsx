@@ -1,7 +1,8 @@
 'use client'
 
-import { NextIntlClientProvider } from 'next-intl'
 import { ReactNode, useEffect, useState } from 'react'
+
+import { NextIntlClientProvider } from 'next-intl'
 
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useAuth } from '@/hooks/use-auth'
@@ -32,11 +33,22 @@ export const NextIntlProvider = ({ children }: { children: ReactNode }) => {
 
       // Load messages for the selected locale
       try {
-        const [common, login, tracker, settings] = await Promise.all([
+        const [
+          common,
+          login,
+          tracker,
+          settings,
+          specialLocations,
+          timeEntryCard,
+          toasts,
+        ] = await Promise.all([
           import(`@/messages/${selectedLocale}/common.json`),
           import(`@/messages/${selectedLocale}/login.json`),
           import(`@/messages/${selectedLocale}/tracker.json`),
           import(`@/messages/${selectedLocale}/settings.json`),
+          import(`@/messages/${selectedLocale}/special-locations.json`),
+          import(`@/messages/${selectedLocale}/time-entry-card.json`),
+          import(`@/messages/${selectedLocale}/toasts.json`),
         ])
 
         const loadedMessages = {
@@ -54,7 +66,15 @@ export const NextIntlProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Failed to load translation messages:', error)
         // Fallback to English
-        const [common, login, tracker, settings, specialLocations, timeEntryCard, toasts] = await Promise.all([
+        const [
+          common,
+          login,
+          tracker,
+          settings,
+          specialLocations,
+          timeEntryCard,
+          toasts,
+        ] = await Promise.all([
           import(`@/messages/en/common.json`),
           import(`@/messages/en/login.json`),
           import(`@/messages/en/tracker.json`),

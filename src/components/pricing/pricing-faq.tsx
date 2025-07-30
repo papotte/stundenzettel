@@ -2,10 +2,10 @@
 
 import React from 'react'
 
-import { useTranslation } from '@/hooks/use-translation-compat'
+import { useTranslations } from 'next-intl'
 
 export default function PricingFAQ() {
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   return (
     <div className="mt-16 text-center">

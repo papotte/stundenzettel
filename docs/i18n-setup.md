@@ -35,11 +35,11 @@ src/
 ### Using Translations in Components
 
 ```tsx
-import { useTranslation } from '@/hooks/use-translation-compat'
+import { useTranslations } from 'next-intl'
 
 function MyComponent() {
-  const { t } = useTranslation()
-  
+  const t = useTranslations()
+
   return (
     <div>
       <h1>{t('common.appName')}</h1>
@@ -57,10 +57,10 @@ import { useLanguageManager } from '@/hooks/use-language-manager'
 
 function LanguageSwitcher() {
   const { currentLanguage, changeLanguage } = useLanguageManager()
-  
+
   return (
-    <select 
-      value={currentLanguage} 
+    <select
+      value={currentLanguage}
       onChange={(e) => changeLanguage(e.target.value as 'en' | 'de')}
     >
       <option value="en">English</option>
@@ -106,6 +106,7 @@ Translation keys use dot notation to organize by namespace:
 ## Language Persistence
 
 Language preferences are automatically:
+
 - Loaded from user settings on login
 - Saved to user settings when changed
 - Applied on page reload for consistency

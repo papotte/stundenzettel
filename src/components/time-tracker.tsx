@@ -2,8 +2,9 @@
 
 import React from 'react'
 
+import { useTranslations } from 'next-intl'
+
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { TimeTrackerProvider } from '@/context/time-tracker-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'

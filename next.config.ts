@@ -1,7 +1,7 @@
 import withMDX from '@next/mdx'
-import createNextIntlPlugin from 'next-intl/plugin'
 
 import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
 
 const withMdx = withMDX({
   // You can add MDX-specific options here if needed

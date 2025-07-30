@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { Check, Clock, Mail, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useToast } from '@/hooks/use-toast'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 import type { TeamInvitation } from '@/lib/types'

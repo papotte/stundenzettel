@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { BedDouble, Hourglass, Landmark, Plane } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -10,11 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 
 const DailyActionsCard: React.FC = () => {
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const { selectedDate, handleAddSpecialEntry, formattedSelectedDate } =
     useTimeTrackerContext()
 

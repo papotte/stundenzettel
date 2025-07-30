@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -26,7 +27,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { sendPasswordChangeNotification } from '@/services/email-notification-service'
@@ -59,7 +59,8 @@ interface PasswordChangeDialogProps {
 export default function PasswordChangeDialog({
   children,
 }: PasswordChangeDialogProps) {
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const { user } = useAuth()
   const { toast } = useToast()
   const [isOpen, setIsOpen] = useState(false)

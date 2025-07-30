@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { BarChart } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import {
   Card,
@@ -9,12 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useTranslation } from '@/hooks/use-translation-compat'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { formatHoursAndMinutes } from '@/lib/utils'
 
 const SummaryCard: React.FC = () => {
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const { dailyTotal, weeklyTotal, monthlyTotal } = useTimeTrackerContext()
 
   return (

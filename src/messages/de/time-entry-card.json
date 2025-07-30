@@ -1,6 +1,6 @@
 {
   "editLabel": "Bearbeiten",
-  "deleteLabel": "Löschen", 
+  "deleteLabel": "Löschen",
   "deleteAlertTitle": "Sind Sie sicher?",
   "deleteAlertDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Der Zeiteintrag für \"{location}\" wird dauerhaft gelöscht.",
   "deleteAlertConfirm": "Löschen",
