@@ -2,41 +2,13 @@ import React from 'react'
 
 import { render, screen } from '@testing-library/react'
 
-import { dictionaries } from '@/lib/i18n/dictionaries'
 import type { UserSettings } from '@/lib/types'
 
 import TimesheetHeader from '../timesheet-header'
 
-// Helper to resolve nested keys from the dictionary
-const getNestedValue = (obj: Record<string, unknown>, key: string): string => {
-  return (key
-    .split('.')
-    .reduce<unknown>(
-      (acc, part) =>
-        acc && typeof acc === 'object'
-          ? (acc as Record<string, unknown>)[part]
-          : undefined,
-      obj,
-    ) ?? key) as string
-}
-
-// Mock t function using the actual dictionary
-const t = (key: string, replacements?: Record<string, string | number>) => {
-  let value = getNestedValue(dictionaries.en, key)
-  if (replacements) {
-    Object.keys(replacements).forEach((placeholder) => {
-      value = value.replace(
-        `{${placeholder}}`,
-        String(replacements[placeholder]),
-      )
-    })
-  }
-  return value
-}
-
 describe('TimesheetHeader', () => {
   it('renders nothing when user settings are not provided', () => {
-    const { container } = render(<TimesheetHeader userSettings={null} t={t} />)
+    const { container } = render(<TimesheetHeader userSettings={null} />)
     expect(container.firstChild).toBeNull()
   })
 
@@ -48,7 +20,7 @@ describe('TimesheetHeader', () => {
       language: 'en',
     }
     const { container } = render(
-      <TimesheetHeader userSettings={userSettings} t={t} />,
+      <TimesheetHeader userSettings={userSettings} />,
     )
     expect(container.firstChild).toBeNull()
   })
@@ -66,9 +38,9 @@ describe('TimesheetHeader', () => {
       language: 'en',
     }
 
-    render(<TimesheetHeader userSettings={userSettings} t={t} />)
+    render(<TimesheetHeader userSettings={userSettings} />)
 
-    expect(screen.getByText('Name and Phone / Radio:')).toBeInTheDocument()
+    expect(screen.getByText('export.headerCompany')).toBeInTheDocument()
     const details = screen.getByText(/Test Corp/)
     expect(details).toHaveTextContent('test@corp.com')
     expect(details).toHaveTextContent('Tel.: 123-456 / 789-012')
@@ -88,9 +60,9 @@ describe('TimesheetHeader', () => {
       companyFax: '',
     }
 
-    render(<TimesheetHeader userSettings={userSettings} t={t} />)
+    render(<TimesheetHeader userSettings={userSettings} />)
 
-    expect(screen.getByText('Name and Phone / Radio:')).toBeInTheDocument()
+    expect(screen.getByText('export.headerCompany')).toBeInTheDocument()
     const details = screen.getByText(/Partial Inc./)
     expect(details).toHaveTextContent('Tel.: 123-456')
     expect(screen.queryByText(/test@corp.com/)).not.toBeInTheDocument()

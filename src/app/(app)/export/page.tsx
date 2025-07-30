@@ -40,7 +40,7 @@ export default function ExportPage() {
             >
               <Link href="/tracker">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                {t('export.backButton')}
+                {t('settings.backToTracker')}
               </Link>
             </Button>
             <ExportPreview />

@@ -1,5 +1,6 @@
 import { getRequestConfig } from 'next-intl/server'
 
+import { formattingProps } from './lib/i18n/formats'
 import { getUserLocale } from './services/locale'
 
 export const locales: [string, ...string[]] = ['en', 'de']
@@ -12,40 +13,7 @@ export default getRequestConfig(async () => {
 
   return {
     locale,
-    formats: {
-      dateTime: {
-        long: {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-          weekday: 'long',
-        },
-        short: {
-          month: 'numeric',
-          day: 'numeric',
-          year: 'numeric',
-        },
-        shortTime: {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        },
-        month: {
-          month: 'long',
-        },
-        monthYear: {
-          month: 'long',
-          year: 'numeric',
-        },
-        yearMonth: {
-          year: 'numeric',
-          month: 'numeric',
-        },
-        weekday: {
-          weekday: 'short',
-        },
-      },
-    },
+    formats: formattingProps,
     messages: {
       common: (await import(`./messages/${locale}/common.json`)).default,
       nav: (await import(`./messages/${locale}/nav.json`)).default,

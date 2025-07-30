@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useId, useState, useTransition } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -67,7 +67,6 @@ export default function PreferencesPage() {
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const languageFieldId = useId()
-  const [_, startTransition] = useTransition()
 
   const form = useForm<PreferencesFormValues>({
     resolver: zodResolver(preferencesFormSchema),
@@ -115,9 +114,7 @@ export default function PreferencesPage() {
     setIsSaving(true)
     try {
       await setUserSettings(user.uid, data)
-      startTransition(() => {
-        setUserLocale(data.language)
-      })
+      await setUserLocale(data.language)
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),

@@ -67,7 +67,7 @@ export function useTimeTracker(user: { uid: string } | null) {
       }
     }
     fetchInitialData()
-  }, [user, toast, t])
+  }, [user])
 
   useEffect(() => {
     let interval: NodeJS.Timeout

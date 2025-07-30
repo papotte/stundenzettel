@@ -1,5 +1,4 @@
 {
-  "backButton": "Back to Tracker",
   "exportButton": "Export to Excel",
   "exportPdfButton": "Download PDF",
   "timesheetTitle": "Timesheet for the month: {month}",

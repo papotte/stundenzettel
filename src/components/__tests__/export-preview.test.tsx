@@ -212,6 +212,7 @@ describe('ExportPreview', () => {
       const expectedMonth = previousMonth.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
+        timeZone: 'UTC',
       })
 
       await waitFor(() => {
@@ -240,6 +241,7 @@ describe('ExportPreview', () => {
       const expectedMonth = nextMonth.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
+        timeZone: 'UTC',
       })
 
       await waitFor(() => {
@@ -269,10 +271,10 @@ describe('ExportPreview', () => {
         user: mockAuthContext.user,
         userSettings: mockUserSettings,
         entries: mockTimeEntries,
-        t: expect.any(Function),
-        locale: expect.any(Object),
         getEntriesForDay: expect.any(Function),
         getLocationDisplayName: expect.any(Function),
+        t: expect.any(Function),
+        format: expect.any(Object),
       })
     })
 
@@ -322,7 +324,7 @@ describe('ExportPreview', () => {
       await user.hover(exportButton)
 
       await waitFor(() => {
-        expect(screen.getAllByText('export_preview.noDataHint')).toHaveLength(2)
+        expect(screen.getAllByText('export.noDataHint')).toHaveLength(2)
       })
     })
   })

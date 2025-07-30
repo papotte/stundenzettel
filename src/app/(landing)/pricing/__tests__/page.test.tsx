@@ -7,6 +7,6 @@ describe('PricingPage', () => {
   it('renders the Pricing page', () => {
     render(<PricingPage />)
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-    expect(screen.getByText('pricing.title')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.title')).toBeInTheDocument()
   })
 })

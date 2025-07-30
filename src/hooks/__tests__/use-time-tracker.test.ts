@@ -10,8 +10,6 @@ jest.mock('@/services/time-entry-service')
 jest.mock('@/services/user-settings-service')
 
 describe('useTimeTracker', () => {
-  const mockToast = jest.fn()
-  const mockT = jest.fn((key) => key)
   const user = { uid: 'user1' }
 
   beforeEach(() => {
@@ -26,9 +24,7 @@ describe('useTimeTracker', () => {
   })
 
   it('should initialize with default state', async () => {
-    const { result } = renderHook(() =>
-      useTimeTracker(user, mockToast, mockT, 'en'),
-    )
+    const { result } = renderHook(() => useTimeTracker(user))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.entries).toEqual([])
     expect(result.current.selectedDate).toBeInstanceOf(Date)
@@ -36,9 +32,7 @@ describe('useTimeTracker', () => {
   })
 
   it('should update runningTimer when handleStartTimer is called', async () => {
-    const { result } = renderHook(() =>
-      useTimeTracker(user, mockToast, mockT, 'en'),
-    )
+    const { result } = renderHook(() => useTimeTracker(user))
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     act(() => {
       result.current.setLocation('Office')

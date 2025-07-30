@@ -15,6 +15,11 @@ const config: Config = {
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Mock next-intl to avoid ESM issues in tests
+    '^next-intl$': '<rootDir>/src/test-utils/next-intl-mock.ts',
+    '^next-intl/server$': '<rootDir>/src/test-utils/next-intl-mock.ts',
+    '^next-intl/server/react-client$':
+      '<rootDir>/src/test-utils/next-intl-mock.ts',
   },
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -42,7 +47,9 @@ const config: Config = {
     '!jest.config.ts',
     '!jest.setup.ts',
   ],
-  transformIgnorePatterns: ['/node_modules/(?!(lucide-react)/)'],
+  transformIgnorePatterns: [
+    '/node_modules/(?!(lucide-react|next-intl|use-intl|@next-intl|@formatjs|@formatjs|intl-messageformat|@formatjs|intl-format-cache)/)',
+  ],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

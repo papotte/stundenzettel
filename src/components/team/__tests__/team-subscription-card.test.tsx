@@ -357,7 +357,7 @@ describe('TeamSubscriptionCard', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToOpenSubscriptionManagement',
           variant: 'destructive',
         })
@@ -379,7 +379,7 @@ describe('TeamSubscriptionCard', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToOpenSubscriptionManagement',
           variant: 'destructive',
         })
@@ -436,13 +436,13 @@ describe('TeamSubscriptionCard', () => {
 
       // Wait for the loading state to appear
       await waitFor(() => {
-        expect(screen.getByText('teams.loading')).toBeInTheDocument()
+        expect(screen.getByText('common.loading')).toBeInTheDocument()
       })
 
       resolvePromise!({ url: 'https://example.com/portal' })
 
       await waitFor(() => {
-        expect(screen.queryByText('teams.loading')).not.toBeInTheDocument()
+        expect(screen.queryByText('common.loading')).not.toBeInTheDocument()
       })
     })
   })
@@ -493,7 +493,7 @@ describe('TeamSubscriptionCard', () => {
       // Should show error toast
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToRefreshSubscription',
           variant: 'destructive',
         })

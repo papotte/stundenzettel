@@ -125,8 +125,8 @@ describe('TimeEntryForm', () => {
       id: '1',
       userId: 'user-1',
       location: 'Test Office',
-      startTime: new Date('2024-01-10T10:00:00'),
-      endTime: new Date('2024-01-10T18:30:00'),
+      startTime: new Date('2024-01-10T10:00:00Z'),
+      endTime: new Date('2024-01-10T18:30:00Z'),
       pauseDuration: 45,
       driverTimeHours: 0.5,
       passengerTimeHours: 0.25,
@@ -145,9 +145,8 @@ describe('TimeEntryForm', () => {
     expect(screen.getByLabelText('time_entry_form.locationLabel')).toHaveValue(
       'Test Office',
     )
-    expect(screen.getByLabelText('time_entry_form.startTimeLabel')).toHaveValue(
-      '10:00',
-    )
+    let byLabelText = screen.getByLabelText('time_entry_form.startTimeLabel')
+    expect(byLabelText).toHaveValue('10:00')
     expect(screen.getByLabelText('time_entry_form.endTimeLabel')).toHaveValue(
       '18:30',
     )

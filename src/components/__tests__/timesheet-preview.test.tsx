@@ -29,8 +29,8 @@ const mockEntries: TimeEntry[] = [
     id: '1',
     userId: 'test-user',
     location: 'Office',
-    startTime: new Date('2024-07-01T09:00:00'),
-    endTime: new Date('2024-07-01T17:00:00'),
+    startTime: new Date('2024-07-01T09:00:00Z'),
+    endTime: new Date('2024-07-01T17:00:00Z'),
     pauseDuration: 30, // 0.5 hours -> 0.50
     driverTimeHours: 0.5, // 0.5 hours as driver
     passengerTimeHours: 0,
@@ -39,8 +39,8 @@ const mockEntries: TimeEntry[] = [
     id: '2',
     userId: 'test-user',
     location: 'SICK_LEAVE',
-    startTime: new Date('2024-07-02T09:00:00'),
-    endTime: new Date('2024-07-02T17:00:00'), // 8 hours
+    startTime: new Date('2024-07-02T09:00:00Z'),
+    endTime: new Date('2024-07-02T17:00:00Z'), // 8 hours
     pauseDuration: 0,
     driverTimeHours: 0,
     passengerTimeHours: 0,
@@ -56,7 +56,7 @@ const mockOnEdit = jest.fn()
 const mockOnAdd = jest.fn()
 
 const defaultProps = {
-  selectedMonth: new Date('2024-07-15'),
+  selectedMonth: new Date('2024-07-15T00:00:00Z'),
   user: mockUser,
   entries: mockEntries,
   userSettings: mockUserSettings,
@@ -74,9 +74,7 @@ describe('TimesheetPreview', () => {
 
   it('renders the header with user and company details', () => {
     render(<TimesheetPreview {...defaultProps} />)
-    expect(
-      screen.getByText('export_preview.timesheetTitle'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('export.timesheetTitle')).toBeInTheDocument()
     expect(screen.getByText('John Doe')).toBeInTheDocument()
     expect(screen.getByText(/Test Inc/)).toBeInTheDocument()
   })
@@ -103,7 +101,7 @@ describe('TimesheetPreview', () => {
     render(<TimesheetPreview {...defaultProps} />)
     // The component renders a "Total per week" for each week in the month.
     expect(
-      screen.getAllByText('export_preview.footerTotalPerWeek').length,
+      screen.getAllByText('export.footerTotalPerWeek').length,
     ).toBeGreaterThan(0)
 
     // Only the week with entries, the grand total and the total after conversion should show "16.00" (8+8)
@@ -129,8 +127,8 @@ describe('TimesheetPreview', () => {
     render(<TimesheetPreview {...defaultProps} />)
 
     // Find the row for July 3rd, which is empty, and click its plus button
-    // The row text is "3/7/2024". We target its parent row, then find the button.
-    const dateCell = screen.getByText('3/7/2024')
+    // The row text is "7/3/2024" (month/day/year format in UTC).
+    const dateCell = screen.getByText('7/3/2024')
     const row = dateCell.closest('tr')
     expect(row).not.toBeNull()
     const addButton = row!.querySelector('button')
@@ -140,10 +138,20 @@ describe('TimesheetPreview', () => {
 
     expect(mockOnAdd).toHaveBeenCalledTimes(1)
     const calledDate = mockOnAdd.mock.calls[0][0] as Date
-    // Check components of the date to avoid timezone issues
-    expect(calledDate.getFullYear()).toBe(2024)
-    expect(calledDate.getMonth()).toBe(6) // 0-indexed, so 6 is July
-    expect(calledDate.getDate()).toBe(3)
+
+    // The date should be July 3rd, 2024 in UTC
+    // Create the expected UTC date for comparison
+    const expectedDate = new Date('2024-07-03T00:00:00Z')
+
+    // Compare the dates by converting to UTC strings to avoid timezone issues
+    expect(calledDate.toISOString().split('T')[0]).toBe(
+      expectedDate.toISOString().split('T')[0],
+    )
+
+    // Also verify the individual components for clarity
+    expect(calledDate.getUTCFullYear()).toBe(2024)
+    expect(calledDate.getUTCMonth()).toBe(6) // 0-indexed, so 6 is July
+    expect(calledDate.getUTCDate()).toBe(3)
   })
 
   it('displays correct converted totals with passenger hours', () => {
@@ -152,8 +160,8 @@ describe('TimesheetPreview', () => {
         id: '1',
         userId: 'test-user',
         location: 'Office',
-        startTime: new Date('2024-07-01T09:00:00'),
-        endTime: new Date('2024-07-01T17:00:00'),
+        startTime: new Date('2024-07-01T09:00:00Z'),
+        endTime: new Date('2024-07-01T17:00:00Z'),
         pauseDuration: 30,
         driverTimeHours: 0,
         passengerTimeHours: 2, // 2 hours as passenger

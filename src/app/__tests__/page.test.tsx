@@ -17,7 +17,7 @@ describe('StartPage', () => {
 
   it('should render the pricing section', () => {
     render(<LandingPage />)
-    expect(screen.getByText('landing.pricing.headerTitle')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.landingTitle')).toBeInTheDocument()
   })
 
   it('should render the FAQ section', () => {

@@ -1,178 +1,76 @@
 # Test Utilities
 
-This directory contains centralized test utilities to reduce duplication across test files.
+This directory contains utilities to help with testing components in the application.
 
-## Auth Mocks
+## Internationalization (i18n) Testing
 
-The `auth-mocks.ts` file provides centralized authentication mocking utilities to replace the duplicated `mockAuth` patterns found across test files.
+Internationalization is handled globally through Jest configuration. The `jest.config.ts` file mocks `next-intl` to use `src/test-utils/next-intl-mock.ts`, which provides all necessary i18n functions globally for tests.
 
-### Basic Usage
+### How it works
 
-Instead of creating individual mock auth objects in each test file:
+The global mock provides:
 
-```typescript
-// ❌ Old way - duplicated across files
-const mockUseAuth = {
-  user: null as any,
-  loading: false,
-  signOut: jest.fn(),
-}
+- `useTranslations` - Returns translation keys (e.g., `'common.button.save'`)
+- `useFormatter` - Provides date, number, and relative time formatting
+- `useLocale` - Returns the current locale
+- `useMessages` - Returns mock message objects
 
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
-}))
-```
+This approach allows you to:
 
-Use the centralized utilities:
+1. Test that the correct translation keys are being used
+2. Avoid loading actual translation files in tests
+3. Make tests more predictable and faster
+4. Focus on testing component logic rather than translation content
 
-```typescript
-// ✅ New way - centralized and reusable
-import { createMockAuthContext } from '@/test-utils/auth-mocks'
+### Usage
 
-const mockAuthContext = createMockAuthContext()
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockAuthContext,
-}))
-```
+Since i18n is handled globally, you can test components normally without any special wrappers:
 
-### Available Functions
+```tsx
+import { render, screen } from '@testing-library/react'
 
-#### `createMockAuthContext(overrides?)`
+import MyComponent from './MyComponent'
 
-Creates a basic mock auth context with default values:
+describe('MyComponent', () => {
+  it('should render translated content', () => {
+    render(<MyComponent />)
 
-```typescript
-const mockAuth = createMockAuthContext({
-  user: { uid: 'custom-id', email: 'custom@example.com' },
-  loading: true,
-})
-```
-
-#### `createMockUser(overrides?)`
-
-Creates a mock authenticated user:
-
-```typescript
-const user = createMockUser({
-  displayName: 'Custom User',
-  email: 'custom@example.com',
-})
-```
-
-#### `authScenarios`
-
-Pre-configured auth scenarios for common testing patterns:
-
-```typescript
-import { authScenarios } from '@/test-utils/auth-mocks'
-
-// Authenticated user
-const authenticatedAuth = authScenarios.authenticated()
-
-// Unauthenticated user
-const unauthenticatedAuth = authScenarios.unauthenticated()
-
-// Loading state
-const loadingAuth = authScenarios.loading()
-
-// With password update functionality
-const authWithPasswordUpdate = authScenarios.withPasswordUpdate()
-
-// With account deletion functionality
-const authWithAccountDeletion = authScenarios.withAccountDeletion()
-```
-
-### Migration Examples
-
-#### Simple Component Test
-
-**Before:**
-
-```typescript
-const mockUseAuth = {
-  user: null,
-  loading: false,
-  signOut: jest.fn(),
-}
-
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
-}))
-
-// In tests
-mockUseAuth.user = { uid: 'test-id', email: 'test@example.com' }
-```
-
-**After:**
-
-```typescript
-import { createMockAuthContext } from '@/test-utils/auth-mocks'
-
-const mockAuthContext = createMockAuthContext()
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockAuthContext,
-}))
-
-// In tests
-mockAuthContext.user = { uid: 'test-id', email: 'test@example.com' }
-```
-
-#### Component with Auth Scenarios
-
-**Before:**
-
-```typescript
-const mockUseAuth = {
-  user: null,
-  loading: false,
-  signOut: jest.fn(),
-  updatePassword: jest.fn(),
-}
-
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockUseAuth,
-}))
-
-describe('when user is authenticated', () => {
-  beforeEach(() => {
-    mockUseAuth.user = { uid: 'test-id', email: 'test@example.com' }
-  })
-})
-
-describe('when user is not authenticated', () => {
-  beforeEach(() => {
-    mockUseAuth.user = null
+    // The component will display translation keys instead of actual messages
+    expect(screen.getByText('common.button.save')).toBeInTheDocument()
+    expect(screen.getByText('landing.features.title')).toBeInTheDocument()
   })
 })
 ```
 
-**After:**
+### Migration from existing tests
 
-```typescript
-import { authScenarios } from '@/test-utils/auth-mocks'
+If you have existing tests that expect actual translated text, you can update them to expect the translation keys instead:
 
-const mockAuthContext = authScenarios.withPasswordUpdate()
-jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => mockAuthContext,
-}))
+```tsx
+// Before
+expect(screen.getByText('Save')).toBeInTheDocument()
 
-describe('when user is authenticated', () => {
-  beforeEach(() => {
-    Object.assign(mockAuthContext, authScenarios.authenticated())
-  })
-})
-
-describe('when user is not authenticated', () => {
-  beforeEach(() => {
-    Object.assign(mockAuthContext, authScenarios.unauthenticated())
-  })
-})
+// After
+expect(screen.getByText('common.button.save')).toBeInTheDocument()
 ```
 
-### Benefits
+This makes tests more maintainable and less dependent on specific translation content.
 
-1. **Reduced Duplication**: No more copying the same mock structure across files
-2. **Consistency**: All tests use the same mock structure and default values
-3. **Maintainability**: Changes to auth structure only need to be made in one place
-4. **Type Safety**: Better TypeScript support with proper interfaces
-5. **Reusability**: Common scenarios are pre-configured and ready to use
+## Available Utilities
+
+### Auth Mocks
+
+The `auth-mocks.ts` file provides utilities for mocking authentication in tests:
+
+- `createMockAuthContext` - Creates a mock auth context
+- `createMockUser` - Creates a mock user object
+- `authScenarios` - Predefined auth scenarios for testing
+- `setupAuthMock` - Sets up auth mocks for specific test scenarios
+
+### Stripe Mocks
+
+The `stripe-mocks.ts` file provides utilities for mocking Stripe functionality in tests.
+
+### Common Testing Utilities
+
+The `index.ts` file re-exports common testing utilities from `@testing-library/react` and `@testing-library/user-event` for convenience.

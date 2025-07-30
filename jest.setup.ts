@@ -24,23 +24,6 @@ Element.prototype.hasPointerCapture = jest.fn()
 // Mock scrollIntoView, which is used by Radix UI Select components.
 Element.prototype.scrollIntoView = jest.fn()
 
-// Mock next-intl for testing
-jest.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
-  useLocale: () => 'en',
-  useMessages: () => ({
-    common: {},
-    nav: {},
-    landing: {},
-    login: {},
-    tracker: {},
-    settings: {},
-    'special-locations': {},
-    'time-entry-card': {},
-    toasts: {},
-  }),
-}))
-
 // Global mock for useAuth that can be overridden in individual tests
 const defaultMockAuth = {
   user: null,

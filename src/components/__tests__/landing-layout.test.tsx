@@ -82,11 +82,11 @@ describe('LandingLayout', () => {
         <div>Main Content</div>
       </LandingLayout>,
     )
-    expect(screen.getByText('topNav.features').closest('a')).toHaveAttribute(
+    expect(screen.getByText('nav.top.features').closest('a')).toHaveAttribute(
       'href',
       '/features',
     )
-    expect(screen.getByText('topNav.pricing').closest('a')).toHaveAttribute(
+    expect(screen.getByText('nav.top.pricing').closest('a')).toHaveAttribute(
       'href',
       '/pricing',
     )

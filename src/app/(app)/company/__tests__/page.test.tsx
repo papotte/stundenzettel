@@ -272,7 +272,7 @@ describe('CompanyPage', () => {
         )
       }
 
-      expect(screen.getByText('settings.saving')).toBeInTheDocument()
+      expect(screen.getByText('common.saving')).toBeInTheDocument()
     })
 
     it('navigates back to tracker', async () => {

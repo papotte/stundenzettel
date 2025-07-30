@@ -103,7 +103,7 @@ export default function TimesheetPreview({
       data-testid="timesheet-preview"
     >
       <div id="pdf-header-section">
-        <TimesheetHeader userSettings={userSettings} t={t} />
+        <TimesheetHeader userSettings={userSettings} />
         <header
           className="mb-4 flex items-start justify-between print:mb-2"
           data-testid="timesheet-title"

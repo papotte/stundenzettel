@@ -2,14 +2,17 @@
 
 import React from 'react'
 
+import { useTranslations } from 'next-intl'
+
 import type { UserSettings } from '@/lib/types'
 
 interface TimesheetHeaderProps {
   userSettings: UserSettings | null
-  t: (key: string, replacements?: Record<string, string | number>) => string
 }
 
-const TimesheetHeader = ({ userSettings, t }: TimesheetHeaderProps) => {
+const TimesheetHeader = ({ userSettings }: TimesheetHeaderProps) => {
+  const t = useTranslations()
+
   const companyName = userSettings?.companyName || ''
   const email = userSettings?.companyEmail || ''
   const phone1 = userSettings?.companyPhone1 || ''

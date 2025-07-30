@@ -47,6 +47,11 @@ jest.mock('@/services/user-settings-service')
 const mockedGetUserSettings = getUserSettings as jest.Mock
 const mockedSetUserSettings = setUserSettings as jest.Mock
 
+// Mock the locale service to avoid cookies() error in tests
+jest.mock('@/services/locale', () => ({
+  setUserLocale: jest.fn().mockResolvedValue(undefined),
+}))
+
 const mockSettings: UserSettings = {
   displayName: 'Test User',
   defaultWorkHours: 7.5,
@@ -252,7 +257,7 @@ describe('PreferencesPage', () => {
       await user.click(languageSelect)
 
       const germanOption = screen.getByRole('option', {
-        name: /settings\.languageGerman/i,
+        name: /settings\.languageDe/i,
       })
       await user.click(germanOption)
 

@@ -64,7 +64,7 @@ describe('ExportPage', () => {
     expect(screen.getByTestId('export-preview')).toBeInTheDocument()
     expect(screen.getByTestId('time-tracker-provider')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: 'export_page.backButton' }),
+      screen.getByRole('link', { name: 'settings.backToTracker' }),
     ).toBeInTheDocument()
   })
 })
