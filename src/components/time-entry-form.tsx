@@ -498,7 +498,7 @@ export default function TimeEntryForm({
   // Use the generalized getLocationDisplayName for displaying location
   const displayLocation = getLocationDisplayName(getValues('location'), t)
 
-  let compensatedInfoTooltip = t('time_entry_form.compensatedInfo', {
+  const compensatedInfoTooltip = t('time_entry_form.compensatedInfo', {
     driver: userSettings?.driverCompensationPercent ?? 100,
     passenger: userSettings?.passengerCompensationPercent ?? 100,
   })

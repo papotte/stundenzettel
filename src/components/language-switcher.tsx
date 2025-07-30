@@ -12,7 +12,7 @@ export default function LanguageSwitcher({
 }: {
   className?: string
 }) {
-  const [_, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const locale = useLocale()
 
   function onChange(value: string) {

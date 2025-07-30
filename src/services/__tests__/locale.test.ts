@@ -19,6 +19,7 @@ jest.mock('next-intl/server', () => ({
 }))
 
 describe('Locale Service', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mockCookies = require('next/headers').cookies
 
   beforeEach(() => {

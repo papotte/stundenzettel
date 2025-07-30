@@ -67,6 +67,7 @@ export function useTimeTracker(user: { uid: string } | null) {
       }
     }
     fetchInitialData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   useEffect(() => {

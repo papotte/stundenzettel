@@ -41,7 +41,7 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [_, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   const syncLanguage = async (uid?: string) => {
     let targetLanguage = undefined
