@@ -1,0 +1,23 @@
+{
+  "backButton": "Zurück zur Übersicht",
+  "exportButton": "Nach Excel exportieren",
+  "exportPdfButton": "PDF herunterladen",
+  "timesheetTitle": "Stundenzettel für den Monat: {month}",
+  "headerCompany": "Name und Telefon / Funk:",
+  "headerWeek": "Woche",
+  "headerDate": "Datum",
+  "headerLocation": "Einsatzort",
+  "headerWorkTime": "tatsächliche Arbeitszeit",
+  "headerPauseDuration": "abzgl. Pause",
+  "headerDriverTime": "zzgl. FZ als Fahrer",
+  "headerPassengerTime": "FZ als Beifahrer",
+  "headerCompensatedTime": "gesamt AZ",
+  "headerFrom": "von",
+  "headerTo": "bis",
+  "footerTotalPerWeek": "Gesamt pro Woche:",
+  "footerTotalHours": "Stunden insgesamt:",
+  "footerTotalAfterConversion": "Gesamt nach Umrechnung:",
+  "headerMileage": "km eig. PKW/Verpfl.",
+  "signatureLine": "Unterschrift:",
+  "noDataHint": "Keine Daten für den Export in diesem Monat verfügbar."
+}

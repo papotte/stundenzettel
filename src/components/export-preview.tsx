@@ -1,11 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { addMonths, format, isSameDay, subMonths } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
+import { addMonths, isSameDay, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight, Download, Printer } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -34,7 +33,8 @@ import TimesheetPreview from './timesheet-preview'
 
 export default function ExportPreview() {
   const { user } = useAuth()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter()
   const { toast } = useToast()
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
@@ -43,8 +43,6 @@ export default function ExportPreview() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [newEntryDate, setNewEntryDate] = useState<Date | null>(null)
-
-  const locale = useMemo(() => (language === 'de' ? de : enUS), [language])
 
   useEffect(() => {
     if (!user) return
@@ -97,10 +95,10 @@ export default function ExportPreview() {
       user,
       userSettings,
       entries,
-      t,
-      locale,
       getEntriesForDay,
       getLocationDisplayName,
+      t,
+      format,
     })
   }
 
@@ -219,7 +217,7 @@ export default function ExportPreview() {
                 className="text-2xl font-bold"
                 data-testid="export-preview-month"
               >
-                {format(selectedMonth, 'MMMM yyyy', { locale })}
+                {format.dateTime(selectedMonth, 'monthYear')}
               </h2>
               <Button
                 variant="outline"
@@ -240,13 +238,13 @@ export default function ExportPreview() {
                       disabled={entries.length === 0}
                     >
                       <Download className="mr-2 h-4 w-4" />
-                      {t('export_preview.exportButton')}
+                      {t('export.exportButton')}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {entries.length === 0 && (
                   <TooltipContent side="top">
-                    {t('export_preview.noDataHint', {
+                    {t('export.noDataHint', {
                       defaultValue:
                         'No data available for export in this month.',
                     })}
@@ -263,13 +261,13 @@ export default function ExportPreview() {
                       disabled={entries.length === 0}
                     >
                       <Printer className="mr-2 h-4 w-4" />
-                      {t('export_preview.exportPdfButton')}
+                      {t('export.exportPdfButton')}
                     </Button>
                   </span>
                 </TooltipTrigger>
                 {entries.length === 0 && (
                   <TooltipContent side="top">
-                    {t('export_preview.noDataHint', {
+                    {t('export.noDataHint', {
                       defaultValue:
                         'No data available for export in this month.',
                     })}

@@ -93,9 +93,7 @@ export const dictionaries = {
       passengerLabel: '{hours}h passenger',
     },
     // Time Entry Form
-    time_entry_form: {
-
-    },
+    time_entry_form: {},
     // Toasts
     toasts: {
       locationRequiredTitle: 'Location required',
@@ -125,9 +123,7 @@ export const dictionaries = {
         "Could not connect to the database. Please see the 'Troubleshooting' section in the README.md file.",
     },
     // Settings Page
-    settings: {
-
-    },
+    settings: {},
     // Pricing Page
     pricing: {},
     // Subscription Guard
@@ -316,32 +312,9 @@ export const dictionaries = {
       ownerSeatRequired: 'Owner seat required',
     },
     // Export Page
-    export_page: {
-      backButton: 'Back to Tracker',
-    },
+    export_page: {},
     // Export Preview Component
-    export_preview: {
-      exportButton: 'Export to Excel',
-      exportPdfButton: 'Download PDF',
-      timesheetTitle: 'Timesheet for the month: {month}',
-      headerCompany: 'Name and Phone / Radio:',
-      headerWeek: 'Week',
-      headerDate: 'Date',
-      headerLocation: 'Location',
-      headerWorkTime: 'Actual Work Time',
-      headerPauseDuration: 'Pause (hrs)',
-      headerDriverTime: 'Driver Time (hrs)',
-      headerPassengerTime: 'Passenger Time (hrs)',
-      headerCompensatedTime: 'Compensated Hours',
-      headerFrom: 'From',
-      headerTo: 'To',
-      footerTotalPerWeek: 'Total per week:',
-      footerTotalHours: 'Total hours:',
-      footerTotalAfterConversion: 'Total after conversion:',
-      headerMileage: 'Mileage/Expenses',
-      signatureLine: 'Signature:',
-      noDataHint: 'No data available for export in this month.',
-    },
+    export_preview: {},
     // Bottom Navigation
 
     // Landing Page
@@ -593,158 +566,7 @@ export const dictionaries = {
         "Verbindung zur Datenbank fehlgeschlagen. Bitte lesen Sie den Abschnitt 'Fehlerbehebung' in der README.md-Datei.",
     },
     // Settings Page
-    settings: {
-      backToTracker: 'Zurück zur Übersicht',
-      preferences: 'Meine Einstellungen',
-      preferencesDescription:
-        'Persönliche Einstellungen und Anzeigepräferenzen',
-      company: 'Firma',
-      companyDescription: 'Firmeninformationen für Exporte',
-      security: 'Sicherheit',
-      securityDescription: 'Passwort- und Kontoverwaltung',
-      manageTeam: 'Team verwalten',
-      manageSubscription: 'Abonnement verwalten',
-      manageSubscriptionDescription: 'Abrechnung und Abonnementeinstellungen',
-      errorLoadingTitle: 'Fehler',
-      errorLoadingDescription:
-        'Ihre Einstellungen konnten nicht geladen werden.',
-      savedTitle: 'Einstellungen gespeichert',
-      savedDescription: 'Ihre neuen Einstellungen wurden übernommen.',
-      errorSavingTitle: 'Fehler',
-      errorSavingDescription:
-        'Ihre Einstellungen konnten nicht gespeichert werden.',
-      displayName: 'Anzeigename',
-      displayNamePlaceholder: 'z.B. Max Mustermann',
-      displayNameDescription:
-        'Dieser Name erscheint in der Export-Vorschau und in der Excel-Datei. Leer lassen, um den Kontonamen zu verwenden.',
-      language: 'Sprache',
-      languageEnglish: 'Englisch',
-      languageGerman: 'Deutsch',
-      languageDescription: 'Wählen Sie die Anzeigesprache der Anwendung.',
-      selectLanguage: 'Sprache auswählen',
-      defaultWorkHours: 'Tägliche Standardarbeitszeit',
-      defaultWorkHoursDescription:
-        'Wird für Krankheits-, Urlaubs- und Feiertagseinträge verwendet.',
-      defaultStartTime: 'Standard-Startzeit',
-      defaultStartTimeDescription: 'Standard-Startzeit für neue Einträge.',
-      defaultEndTime: 'Standard-Endzeit',
-      defaultEndTimeDescription: 'Standard-Endzeit für neue Einträge.',
-      companyName: 'Firmenname',
-      companyNamePlaceholder: 'Ihr Firmenname',
-      companyNameDescription: 'Firmenname für Ihre Exporte.',
-      companyEmail: 'Firmen-E-Mail',
-      companyEmailPlaceholder: 'kontakt@firma.com',
-      companyEmailDescription: 'Kontakt-E-Mail für Ihre Firma.',
-      companyPhone1: 'Telefonnummer 1',
-      companyPhone1Placeholder: '+49 123 456 789',
-      companyPhone2: 'Telefonnummer 2',
-      companyPhone2Placeholder: '+49 123 456 790',
-      companyFax: 'Faxnummer',
-      companyFaxPlaceholder: '+49 123 456 791',
-      compensationSettings: 'Vergütungseinstellungen',
-      driverCompensationPercent: 'Vergütung Fahrerzeit (%)',
-      driverCompensationPercentDescription:
-        'Prozentsatz der Fahrerzeit, der als vergütete Zeit angerechnet wird.',
-      passengerCompensationPercent: 'Vergütung Beifahrerzeit (%)',
-      passengerCompensationPercentDescription:
-        'Prozentsatz der Beifahrerzeit, der als vergütete Zeit angerechnet wird.',
-      // Security Section
-      accountEmail: 'Konto-E-Mail',
-      emailChangeDisabledTooltip:
-        'Dieses Konto wurde mit einem Anbieter verknüpft. Sie können Ihre E-Mail nicht ändern.',
-      password: 'Passwort',
-      passwordDescription: 'Ändern Sie Ihr Kontopasswort',
-      changePassword: 'Passwort ändern',
-      changePasswordTitle: 'Passwort ändern',
-      changePasswordDescription:
-        'Aktualisieren Sie Ihr Kontopasswort für mehr Sicherheit',
-      currentPasswordLabel: 'Aktuelles Passwort',
-      currentPasswordPlaceholder: 'Geben Sie Ihr aktuelles Passwort ein',
-      newPasswordLabel: 'Neues Passwort',
-      newPasswordPlaceholder: 'Geben Sie Ihr neues Passwort ein',
-      confirmPasswordLabel: 'Neues Passwort bestätigen',
-      confirmPasswordPlaceholder: 'Bestätigen Sie Ihr neues Passwort',
-      passwordRequirements:
-        'Passwort muss mindestens 8 Zeichen lang sein und Groß-, Kleinbuchstaben, Zahlen sowie Sonderzeichen enthalten',
-      passwordsDoNotMatch: 'Neue Passwörter stimmen nicht überein',
-      currentPasswordRequired: 'Aktuelles Passwort ist erforderlich',
-      newPasswordRequired: 'Neues Passwort ist erforderlich',
-      confirmPasswordRequired: 'Bitte bestätigen Sie Ihr neues Passwort',
-      passwordTooShort: 'Passwort muss mindestens 8 Zeichen lang sein',
-      passwordUpdated: 'Passwort aktualisiert',
-      passwordUpdatedDescription: 'Ihr Passwort wurde erfolgreich geändert',
-      passwordUpdateError: 'Fehler beim Aktualisieren des Passworts',
-      passwordUpdateInvalidCurrent: 'Aktuelles Passwort ist falsch',
-      error: 'Fehler',
-      userNotAuthenticated: 'Benutzer nicht authentifiziert',
-      updating: 'Aktualisiere...',
-      change: 'Ändern',
-      dangerZone: 'Gefahrenbereich',
-      dangerZoneDescription: 'Unumkehrbare und zerstörerische Aktionen',
-      deleteAccount: 'Konto löschen',
-      deleteAccountDescription: 'Ihr Konto und alle Daten dauerhaft löschen',
-      deleteAccountConfirmTitle: 'Sind Sie sich absolut sicher?',
-      deleteAccountConfirmDescription:
-        'Diese Aktion kann nicht rückgängig gemacht werden. Alle Ihre Daten werden dauerhaft gelöscht.',
-      deleteAccountPasswordLabel: 'Geben Sie Ihr Passwort zur Bestätigung ein',
-      deleteAccountPasswordPlaceholder: 'Ihr Passwort',
-      deleteAccountPasswordRequired:
-        'Passwort ist erforderlich, um Ihr Konto zu löschen',
-      deleteAccountEmailLabel: 'Geben Sie Ihre E-Mail zur Bestätigung ein',
-      deleteAccountEmailPlaceholder: 'Ihre E-Mail-Adresse',
-      deleteAccountEmailRequired:
-        'E-Mail ist erforderlich, um Ihr Konto zu löschen',
-      deleteAccountEmailHelper:
-        'Geben Sie Ihre E-Mail ein, um die Kontolöschung zu bestätigen',
-      deleteAccountInvalidEmail: 'E-Mail stimmt nicht mit Ihrem Konto überein',
-      deleteAccountGoogleMessage:
-        'Sie werden aufgefordert, sich erneut mit Google zu authentifizieren, um die Löschung zu bestätigen.',
-      deleteAccountCancelled: 'Kontolöschung wurde abgebrochen',
-      deleteAccountConfirmButton: 'Mein Konto löschen',
-      deleteAccountProcessing: 'Konto wird gelöscht...',
-      deleteAccountSuccess: 'Konto erfolgreich gelöscht',
-      deleteAccountError: 'Konto konnte nicht gelöscht werden',
-      deleteAccountInvalidPassword:
-        'Ungültiges Passwort. Bitte versuchen Sie es erneut.',
-      // Team page
-      noTeam: 'Sie sind noch nicht Teil eines Teams.',
-      noTeamDescription:
-        'Sie sind noch nicht Teil eines Teams. Erstellen Sie Ihr Team, um mit anderen zusammenzuarbeiten',
-      teamMembers: '{count} Mitglieder',
-      manageAllTeams: 'Alle Teams verwalten',
-      createTeam: 'Team erstellen',
-      manage: 'Verwalten',
-      // Subscription page
-      noSubscription: 'Kein aktives Abonnement',
-      noSubscriptionDescription:
-        'Upgraden Sie zu einem kostenpflichtigen Tarif, um alle Funktionen freizuschalten.',
-      unknownPlan: 'Unbekannter Tarif',
-      unknownPlanDescription: 'Tarifdetails nicht verfügbar',
-      changePlan: 'Tarif ändern',
-      active: 'Aktiv',
-      trialing: 'Testphase',
-      currentPlan: 'Aktueller Tarif',
-      nextBilling: 'Nächster Abrechnungstermin',
-      cancellationDate: 'Gültig bis',
-      manageBilling: 'Abrechnung verwalten',
-      upgrade: 'Upgrade',
-      errorPortalTitle: 'Portal-Fehler',
-      errorPortalDescription:
-        'Das Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.',
-      // Trial-specific
-      trialStatus: 'Test-Status',
-      trialDaysRemaining: '{days} Tage verbleibend',
-      trialEndsToday: 'Testphase endet heute',
-      trialEndsOn: 'Testphase endet am',
-      trialExpiringSoon: 'Testphase läuft bald ab',
-      trialExpiringDescription:
-        'Ihre Testphase endet bald. Fügen Sie eine Zahlungsmethode hinzu, um Ihr Abonnement fortzusetzen.',
-      addPaymentMethod: 'Zahlungsmethode hinzufügen',
-      viewPlans: 'Tarife anzeigen',
-      // Common
-      saving: 'Wird gespeichert...',
-      save: 'Speichern',
-    },
+    settings: {},
     // Teams Page
     teams: {
       title: 'Team-Verwaltung',
@@ -968,32 +790,9 @@ export const dictionaries = {
       cancelledToast: 'Abonnement-Erstellung abgebrochen.',
     },
     // Export Page
-    export_page: {
-      backButton: 'Zurück zur Übersicht',
-    },
+    export_page: {},
     // Export Preview Component
-    export_preview: {
-      exportButton: 'Nach Excel exportieren',
-      exportPdfButton: 'PDF herunterladen',
-      timesheetTitle: 'Stundenzettel für den Monat: {month}',
-      headerCompany: 'Name und Telefon / Funk:',
-      headerWeek: 'Woche',
-      headerDate: 'Datum',
-      headerLocation: 'Einsatzort',
-      headerWorkTime: 'tatsächliche Arbeitszeit',
-      headerPauseDuration: 'abzgl. Pause',
-      headerDriverTime: 'zzgl. FZ als Fahrer',
-      headerPassengerTime: 'FZ als Beifahrer',
-      headerCompensatedTime: 'gesamt AZ',
-      headerFrom: 'von',
-      headerTo: 'bis',
-      footerTotalPerWeek: 'Gesamt pro Woche:',
-      footerTotalHours: 'Stunden insgesamt:',
-      footerTotalAfterConversion: 'Gesamt nach Umrechnung:',
-      headerMileage: 'km eig. PKW/Verpfl.',
-      signatureLine: 'Unterschrift:',
-      noDataHint: 'Keine Daten für den Export in diesem Monat verfügbar.',
-    },
+    export_preview: {},
     // Bottom Navigation
     bottomNav: {
       home: 'Übersicht',

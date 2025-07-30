@@ -11,9 +11,10 @@ import {
   startOfWeek,
   subDays,
 } from 'date-fns'
+import { useLocale, useTranslations } from 'next-intl'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
-import type { Toast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
@@ -27,12 +28,10 @@ import {
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 
-export function useTimeTracker(
-  user: { uid: string } | null,
-  toast: (options: Toast) => void,
-  t: (key: string, params?: Record<string, string | number>) => string,
-  locale: string = 'en',
-) {
+export function useTimeTracker(user: { uid: string } | null) {
+  const { toast } = useToast()
+  const t = useTranslations()
+  const locale = useLocale()
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null)

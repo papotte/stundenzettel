@@ -1,16 +1,17 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+
 import LanguageSwitcher from '@/components/language-switcher'
 import TimeWiseIcon from '@/components/time-wise-icon'
 import ColorfulBackground from '@/components/ui/colorful-background'
 import UserMenu from '@/components/user-menu'
 import { useAuth } from '@/hooks/use-auth'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 
 export default function LandingLayout({
-                                        children,
-                                      }: {
+  children,
+}: {
   children: React.ReactNode
 }) {
   const t = useTranslations()
@@ -30,7 +31,7 @@ export default function LandingLayout({
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 group">
               <span className="sr-only">{t('common.appName')}</span>
-              <TimeWiseIcon className="h-12 w-auto"/>
+              <TimeWiseIcon className="h-12 w-auto" />
               <span className="text-lg font-bold text-primary group-hover:underline">
                 {t('common.appName')}
               </span>
@@ -49,8 +50,8 @@ export default function LandingLayout({
             ))}
           </div>
           <div className="flex items-center gap-4">
-            {!user && <LanguageSwitcher/>}
-            <UserMenu/>
+            {!user && <LanguageSwitcher />}
+            <UserMenu />
           </div>
         </nav>
       </header>
@@ -58,8 +59,7 @@ export default function LandingLayout({
         {children}
       </ColorfulBackground>
       <footer data-testid="footer">
-        <div
-          className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 sm:flex-row md:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 sm:flex-row md:px-6">
           <p className="text-xs text-muted-foreground">
             {t('landing.footer.copyright')}
           </p>

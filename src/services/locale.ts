@@ -1,7 +1,8 @@
 'use server'
 
-import { defaultLocale, Locale } from '@/i18n'
 import { cookies } from 'next/headers'
+
+import { Locale, defaultLocale } from '@/i18n'
 
 // In this example the locale is read from a cookie. You could alternatively
 // also read it from a database, backend service, or any other source.
@@ -12,5 +13,5 @@ export async function getUserLocale() {
 }
 
 export async function setUserLocale(locale: Locale) {
-  (await cookies()).set(COOKIE_NAME, locale)
+  ;(await cookies()).set(COOKIE_NAME, locale)
 }

@@ -1,13 +1,15 @@
+import { useTransition } from 'react'
+
+import { useLocale } from 'next-intl'
+
 import { Locale } from '@/i18n'
 import { setUserLocale } from '@/services/locale'
-import { useLocale } from 'next-intl'
-import { useTransition } from 'react'
 
 import LanguageSelect from './language-select'
 
 export default function LanguageSwitcher({
-                                           className,
-                                         }: {
+  className,
+}: {
   className?: string
 }) {
   const [_, startTransition] = useTransition()

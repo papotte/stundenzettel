@@ -1,33 +1,18 @@
-import {
-  type Locale,
-  differenceInMinutes,
-  format,
-  getDay,
-  isSameMonth,
-} from 'date-fns'
+import { differenceInMinutes, getDay, isSameMonth } from 'date-fns'
 import ExcelJS from 'exceljs'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
-
-const dayOfWeekMap: { [key: number]: string } = {
-  1: 'Mo',
-  2: 'Di',
-  3: 'Mi',
-  4: 'Do',
-  5: 'Fr',
-  6: 'Sa',
-  0: 'So',
-}
 
 interface ExportParams {
   selectedMonth: Date
   user: AuthenticatedUser | null
   userSettings: UserSettings
   entries: TimeEntry[]
-  t: (key: string, replacements?: Record<string, string | number>) => string
-  locale: Locale
+  t: ReturnType<typeof useTranslations>
+  format: ReturnType<typeof useFormatter>
   getEntriesForDay: (day: Date) => TimeEntry[]
   getLocationDisplayName: (location: string) => string
 }
@@ -36,10 +21,10 @@ export const exportToExcel = async ({
   selectedMonth,
   user,
   userSettings,
-  t,
-  locale,
   getEntriesForDay,
   getLocationDisplayName,
+  t,
+  format,
 }: ExportParams) => {
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Stundenzettel')
@@ -59,10 +44,10 @@ export const exportToExcel = async ({
   ].filter(Boolean)
 
   if (contactParts.length > 0) {
-    worksheet.headerFooter.oddHeader = `&L${t('export_preview.headerCompany')}&R${contactParts.join(' ')}`
+    worksheet.headerFooter.oddHeader = `&L${t('export.headerCompany')}&R${contactParts.join(' ')}`
   }
 
-  const signatureString = t('export_preview.signatureLine')
+  const signatureString = t('export.signatureLine')
   worksheet.headerFooter.oddFooter = `&C${signatureString}`
 
   // --- STYLES ---
@@ -107,8 +92,8 @@ export const exportToExcel = async ({
 
   // --- IN-SHEET TITLE AND USER NAME ---
   const titleRow = worksheet.addRow([])
-  titleRow.getCell('A').value = t('export_preview.timesheetTitle', {
-    month: format(selectedMonth, 'MMMM', { locale }),
+  titleRow.getCell('A').value = t('export.timesheetTitle', {
+    month: format.dateTime(selectedMonth, 'month'),
   })
   titleRow.getCell('A').font = { bold: true, size: 12 }
 
@@ -144,16 +129,16 @@ export const exportToExcel = async ({
 
     const headerRow1 = worksheet.getRow(headerRow1Num)
     headerRow1.values = [
-      t('export_preview.headerWeek'),
-      t('export_preview.headerDate'),
-      t('export_preview.headerLocation'),
-      t('export_preview.headerWorkTime'),
+      t('export.headerWeek'),
+      t('export.headerDate'),
+      t('export.headerLocation'),
+      t('export.headerWorkTime'),
       '',
-      t('export_preview.headerPauseDuration'),
-      t('export_preview.headerDriverTime'),
-      t('export_preview.headerCompensatedTime'),
-      t('export_preview.headerPassengerTime'),
-      t('export_preview.headerMileage'),
+      t('export.headerPauseDuration'),
+      t('export.headerDriverTime'),
+      t('export.headerCompensatedTime'),
+      t('export.headerPassengerTime'),
+      t('export.headerMileage'),
     ]
 
     const headerRow2 = worksheet.getRow(headerRow2Num)
@@ -161,8 +146,8 @@ export const exportToExcel = async ({
       '',
       '',
       '',
-      t('export_preview.headerFrom'),
-      t('export_preview.headerTo'),
+      t('export.headerFrom'),
+      t('export.headerTo'),
     ]
 
     worksheet.mergeCells(headerRow1Num, 1, headerRow2Num, 1)
@@ -268,8 +253,12 @@ export const exportToExcel = async ({
               compensatedHours =
                 compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
             }
-            fromValue = entry.startTime ? format(entry.startTime, 'HH:mm') : ''
-            toValue = entry.endTime ? format(entry.endTime, 'HH:mm') : ''
+            fromValue = entry.startTime
+              ? format.dateTime(entry.startTime, 'shortTime')
+              : ''
+            toValue = entry.endTime
+              ? format.dateTime(entry.endTime, 'shortTime')
+              : ''
           }
           const pauseDecimal = parseFloat(
             formatDecimalHours(entry.pauseDuration),
@@ -319,7 +308,7 @@ export const exportToExcel = async ({
 
         // Set and merge weekday and date cells
         const dayCell = worksheet.getCell(startRowForDay, 1)
-        dayCell.value = dayOfWeekMap[getDay(day)]
+        dayCell.value = format.dateTime(day, 'weekday')
         dayCell.fill = dayColFill
         dayCell.alignment = { vertical: 'middle', horizontal: 'left' }
         worksheet.mergeCells(
@@ -330,7 +319,7 @@ export const exportToExcel = async ({
         )
 
         const dateCell = worksheet.getCell(startRowForDay, 2)
-        dateCell.value = format(day, 'dd.MM.yyyy')
+        dateCell.value = format.dateTime(day, 'short')
         dateCell.alignment = { vertical: 'middle', horizontal: 'right' }
         worksheet.mergeCells(
           startRowForDay,
@@ -340,8 +329,8 @@ export const exportToExcel = async ({
         )
       } else if (!isSunday) {
         const emptyRow = worksheet.addRow([
-          dayOfWeekMap[getDay(day)],
-          format(day, 'dd.MM.yyyy'),
+          format.dateTime(day, 'weekday'),
+          format.dateTime(day, 'short'),
           '',
           '',
           '',
@@ -378,7 +367,7 @@ export const exportToExcel = async ({
     const totalRow = worksheet.addRow([])
     worksheet.mergeCells(totalRow.number, 1, totalRow.number, 6)
     const totalLabelCell = totalRow.getCell(7)
-    totalLabelCell.value = t('export_preview.footerTotalPerWeek')
+    totalLabelCell.value = t('export.footerTotalPerWeek')
     const totalCompCell = totalRow.getCell(8)
     totalCompCell.value = weekCompTotal
     totalCompCell.numFmt = '0.00'
@@ -433,7 +422,7 @@ export const exportToExcel = async ({
   const grandTotalRow = worksheet.addRow([])
   worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 6)
   const grandTotalLabelCell = grandTotalRow.getCell(7)
-  grandTotalLabelCell.value = t('export_preview.footerTotalHours')
+  grandTotalLabelCell.value = t('export.footerTotalHours')
   const grandTotalCompCell = grandTotalRow.getCell(8)
   grandTotalCompCell.value = monthCompTotal
   grandTotalCompCell.numFmt = '0.00'
@@ -459,9 +448,7 @@ export const exportToExcel = async ({
     afterConversionRow.number,
     6,
   )
-  afterConversionRow.getCell(7).value = t(
-    'export_preview.footerTotalAfterConversion',
-  )
+  afterConversionRow.getCell(7).value = t('export.footerTotalAfterConversion')
   afterConversionRow.getCell(8).value =
     monthCompTotal + compensatedPassengerHours
   afterConversionRow.getCell(8).numFmt = '0.00'
@@ -475,7 +462,7 @@ export const exportToExcel = async ({
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Stundenzettel_${userExportName || 'Export'}_${format(selectedMonth, 'yyyy-MM')}.xlsx`
+  a.download = `Stundenzettel_${userExportName || 'Export'}_${format.dateTime(selectedMonth, 'yearMonth')}.xlsx`
   document.body.appendChild(a)
   a.click()
   window.URL.revokeObjectURL(url)
