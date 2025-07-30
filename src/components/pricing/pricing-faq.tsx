@@ -5,7 +5,7 @@ import React from 'react'
 import { useTranslations } from 'next-intl'
 
 export default function PricingFAQ() {
-  const t = useTranslations()
+  const t = useTranslations('landing')
 
   return (
     <div className="mt-16 text-center">

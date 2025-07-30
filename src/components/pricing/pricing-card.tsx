@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -61,29 +60,25 @@ export default function PricingCard({
 
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-        <CardDescription className="text-gray-600">
-          {t('pricing.perUserPerMonth')}
-        </CardDescription>
         <div className="mt-4">
           {plan.tieredPricing ? (
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">Starting at</div>
+              <div className="text-sm text-gray-600 mb-1">
+                {t('pricing.startingAt')}
+              </div>
               <div className="text-3xl font-bold text-gray-900">
                 {format.number(
-                  Math.min(
-                    ...plan.tieredPricing.tiers.map((tier) => tier.price),
-                  ),
+                  Math.min(...plan.tieredPricing.map((tier) => tier.price)),
                   {
-                    currency: plan.tieredPricing.tiers[0].currency,
+                    currency: plan.tieredPricing[0].currency,
                     style: 'currency',
                   },
                 )}
               </div>
               <div className="text-sm text-gray-600 mt-1">
-                per user /{' '}
                 {plan.interval === 'month'
-                  ? t('pricing.month')
-                  : t('pricing.year')}
+                  ? t('pricing.perUserPerMonth')
+                  : t('pricing.perUserPerYear')}
               </div>
             </div>
           ) : (
@@ -103,7 +98,7 @@ export default function PricingCard({
             </>
           )}
         </div>
-        {plan.tieredPricing && plan.tieredPricing.tiers.length > 1 && (
+        {plan.tieredPricing && plan.tieredPricing.length > 1 && (
           <p className="text-sm text-gray-500 mt-2">
             {t('pricing.tieredHint')}
           </p>
