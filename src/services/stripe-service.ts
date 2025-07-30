@@ -1,5 +1,4 @@
 import type { PricingPlan } from '@/lib/types'
-import { formatCurrency } from '@/lib/utils'
 
 interface StripeProduct {
   id: string
@@ -152,34 +151,19 @@ export class StripeService {
     return prices[0]
   }
 
-  private static getTieredPricingInfo(prices: StripePrice[]): {
-    tiers: Array<{ from: number; to?: number; price: number; currency: string }>
-    displayText: string
-  } {
+  private static getTieredPricingInfo(
+    prices: StripePrice[],
+  ): Array<{ from: number; to?: number; price: number; currency: string }> {
     // Find a price with tiered pricing
     const tieredPrice = prices.find((p) => p.tiers && p.tiers.length > 0)
 
     if (tieredPrice && tieredPrice.tiers) {
-      const tiers = tieredPrice.tiers.map((tier, index) => ({
+      return tieredPrice.tiers.map((tier, index) => ({
         from: index === 0 ? 1 : (tieredPrice.tiers![index - 1].up_to || 0) + 1,
         to: tier.up_to || undefined,
         price: tier.unit_amount / 100,
         currency: tieredPrice.currency.toUpperCase(),
       }))
-
-      // Create display text
-      const firstTier = tiers[0]
-      const lastTier = tiers[tiers.length - 1]
-
-      let displayText = `Starting at ${formatCurrency(firstTier.price, firstTier.currency)}`
-      if (firstTier.price !== lastTier.price) {
-        displayText += `, up to ${formatCurrency(lastTier.price, lastTier.currency)}`
-      }
-
-      return {
-        tiers,
-        displayText,
-      }
     }
 
     // Fallback: use the old logic for non-tiered prices
@@ -187,25 +171,12 @@ export class StripeService {
       .filter((p) => p.unit_amount !== null)
       .sort((a, b) => (a.unit_amount || 0) - (b.unit_amount || 0))
 
-    const tiers = sortedPrices.map((price, index) => ({
+    return sortedPrices.map((price, index) => ({
       from: index === 0 ? 1 : (sortedPrices[index - 1]?.unit_amount || 0) + 1,
       to: undefined,
       price: (price.unit_amount || 0) / 100,
       currency: price.currency.toUpperCase(),
     }))
-
-    const firstPrice = tiers[0]
-    const lastPrice = tiers[tiers.length - 1]
-
-    let displayText = `Starting at ${formatCurrency(firstPrice.price, firstPrice.currency)}`
-    if (firstPrice.price !== lastPrice.price) {
-      displayText += `, up to ${formatCurrency(lastPrice.price, lastPrice.currency)}`
-    }
-
-    return {
-      tiers,
-      displayText,
-    }
   }
 
   private static getFeaturesForProduct(

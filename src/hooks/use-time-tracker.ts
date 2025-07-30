@@ -1,3 +1,18 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import {
+  addDays,
+  endOfMonth,
+  endOfWeek,
+  isSameDay,
+  isWithinInterval,
+  set,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+} from 'date-fns'
+import { useFormatter, useTranslations } from 'next-intl'
+
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
@@ -12,20 +27,6 @@ import {
   updateTimeEntry,
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
-
-import {
-  addDays,
-  endOfMonth,
-  endOfWeek,
-  isSameDay,
-  isWithinInterval,
-  set,
-  startOfMonth,
-  startOfWeek,
-  subDays,
-} from 'date-fns'
-import { useFormatter, useTranslations } from 'next-intl'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export function useTimeTracker(user: { uid: string } | null) {
   const { toast } = useToast()
@@ -75,9 +76,9 @@ export function useTimeTracker(user: { uid: string } | null) {
         setElapsedTime(
           runningTimer.startTime
             ? Math.floor(
-              (new Date().getTime() - runningTimer.startTime.getTime()) /
-              1000,
-            )
+                (new Date().getTime() - runningTimer.startTime.getTime()) /
+                  1000,
+              )
             : 0,
         )
       }, 1000)
@@ -346,9 +347,9 @@ export function useTimeTracker(user: { uid: string } | null) {
     () =>
       selectedDate
         ? entries.filter(
-          (entry) =>
-            entry.startTime && isSameDay(entry.startTime, selectedDate),
-        )
+            (entry) =>
+              entry.startTime && isSameDay(entry.startTime, selectedDate),
+          )
         : [],
     [entries, selectedDate],
   )

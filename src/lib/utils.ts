@@ -4,7 +4,6 @@ import {
   eachWeekOfInterval,
   endOfMonth,
   endOfWeek,
-  format,
   startOfMonth,
 } from 'date-fns'
 import { twMerge } from 'tailwind-merge'
@@ -95,41 +94,6 @@ export function formatAppNumber(
   options?: Intl.NumberFormatOptions,
 ) {
   return new Intl.NumberFormat(locale, options).format(value)
-}
-
-/**
- * Formats a time in 24h format (HH:mm) in a locale-aware way for the app.
- * Defaults to 'en' if no locale is provided or recognized.
- */
-export function formatAppTime(date: Date) {
-  // Note: 'HH:mm' is not locale-sensitive, but we keep the locale param for future-proofing
-  return format(date, 'HH:mm')
-}
-
-/**
- * Formats a number as currency in a locale-aware way using Intl.NumberFormat.
- * @param value The numeric value (e.g., 12.34)
- * @param currency The ISO 4217 currency code (e.g., 'EUR', 'USD')
- * @param locale Optional locale string (defaults to browser or 'en')
- */
-export function formatCurrency(
-  value: number,
-  currency: string,
-  locale: string = 'en',
-) {
-  if (
-    locale === 'en' &&
-    typeof window !== 'undefined' &&
-    window.navigator.language
-  ) {
-    locale = window.navigator.language
-  }
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value)
 }
 
 export function compareEntriesByStartTime(a: TimeEntry, b: TimeEntry) {

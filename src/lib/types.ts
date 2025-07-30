@@ -81,10 +81,12 @@ export interface PricingPlan {
   features: string[]
   stripePriceId: string
   maxUsers?: number // For team plans
-  tieredPricing?: {
-    tiers: Array<{ from: number; to?: number; price: number; currency: string }>
-    displayText: string
-  }
+  tieredPricing?: Array<{
+    from: number
+    to?: number
+    price: number
+    currency: string
+  }>
   trialDays?: number // Number of trial days, undefined if no trial
   trialEnabled?: boolean // Whether this plan offers trials
 }

@@ -2,8 +2,6 @@ import type { TimeEntry } from '../types'
 import {
   compareEntriesByStartTime,
   formatAppNumber,
-  formatAppTime,
-  formatCurrency,
   formatDecimalHours,
   formatDuration,
   formatHoursAndMinutes,
@@ -82,28 +80,6 @@ describe('utils', () => {
     })
   })
 
-  describe('formatCurrency', () => {
-    it('should format EUR in en locale', () => {
-      expect(formatCurrency(1234.56, 'EUR', 'en')).toBe('€1,234.56')
-    })
-    it('should format USD in en locale', () => {
-      expect(formatCurrency(1234.56, 'USD', 'en')).toBe('$1,234.56')
-    })
-    it('should format EUR in de locale', () => {
-      expect(formatCurrency(1234.56, 'EUR', 'de')).toBe('1.234,56 €')
-    })
-    it('should format JPY in en locale (no decimals)', () => {
-      expect(formatCurrency(1234, 'JPY', 'en')).toBe('¥1,234')
-    })
-    it('should handle zero and negative values', () => {
-      expect(formatCurrency(0, 'USD', 'en')).toBe('$0')
-      expect(formatCurrency(-99.99, 'USD', 'en')).toBe('-$99.99')
-    })
-    it('should default to en locale if not provided', () => {
-      expect(formatCurrency(100, 'USD')).toBe('$100')
-    })
-  })
-
   describe('compareEntriesByStartTime', () => {
     const now = new Date('2024-01-10T12:00:00')
     const earlier = new Date('2024-01-09T12:00:00')
@@ -155,25 +131,6 @@ describe('utils', () => {
       arr.sort(compareEntriesByStartTime)
       expect(arr.slice(0, 2)).toEqual([intervalEntry1, intervalEntry2])
       expect(arr.slice(2)).toEqual([durationEntry1, durationEntry2])
-    })
-  })
-
-  describe('formatAppTime', () => {
-    it('formats a typical time correctly', () => {
-      const date = new Date('2024-01-10T09:05:00')
-      expect(formatAppTime(date)).toBe('09:05')
-    })
-    it('formats midnight as 00:00', () => {
-      const date = new Date('2024-01-10T00:00:00')
-      expect(formatAppTime(date)).toBe('00:00')
-    })
-    it('formats single-digit hours and minutes with leading zeros', () => {
-      const date = new Date('2024-01-10T03:07:00')
-      expect(formatAppTime(date)).toBe('03:07')
-    })
-    it('formats 23:59 correctly', () => {
-      const date = new Date('2024-01-10T23:59:00')
-      expect(formatAppTime(date)).toBe('23:59')
     })
   })
 
