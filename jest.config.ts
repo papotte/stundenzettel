@@ -41,6 +41,7 @@ const config: Config = {
     '!src/test-utils/**',
     '!jest.config.ts',
     '!jest.setup.ts',
+    '!src/i18n.ts',
   ],
   transformIgnorePatterns: [
     '/node_modules/(?!(lucide-react|next-intl|use-intl)/)',

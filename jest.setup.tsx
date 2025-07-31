@@ -93,24 +93,31 @@ const messages = {
   },
 }
 
-export const AllTheProviders = ({ children }: React.PropsWithChildren) => {
-  return (
-    <NextIntlClientProvider
-      locale="en"
-      messages={messages}
-      formats={formattingProps}
-      timeZone={'UTC'}
-      onError={(_) => {}}
-      getMessageFallback={({ namespace, key }) =>
-        `${namespace != null ? namespace + '.' : ''}${key}`
-      }
-    >
-      {children}
-    </NextIntlClientProvider>
-  )
-}
+export const AllTheProviders =
+  (locale: string = 'en') =>
+  ({ children }: React.PropsWithChildren) => {
+    return (
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        formats={formattingProps}
+        timeZone={'UTC'}
+        onError={(_) => {}}
+        getMessageFallback={({ namespace, key }) =>
+          `${namespace != null ? namespace + '.' : ''}${key}`
+        }
+      >
+        {children}
+      </NextIntlClientProvider>
+    )
+  }
 const customRender = (ui: React.ReactNode, options?: RenderOptions) =>
-  rtlRender(ui, { wrapper: AllTheProviders, ...options })
+  rtlRender(ui, { wrapper: AllTheProviders(), ...options })
+
+export const renderWithGermanLocale = (
+  ui: React.ReactNode,
+  options?: RenderOptions,
+) => rtlRender(ui, { wrapper: AllTheProviders('de'), ...options })
 
 // Re-export everything from @testing-library/react
 export * from '@testing-library/react'

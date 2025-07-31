@@ -15,6 +15,7 @@
   - [Deploying to Production (Firebase)](#deploying-to-production--firebase-)
   - [CI/CD with GitHub Actions](#cicd-with-github-actions)
 - **Other**
+  - [Internationalization (i18n)](#internationalization--i18n-)
   - [Troubleshooting](#troubleshooting)
 
 A Next.js application for effortless time tracking, designed for Firebase Studio.
@@ -78,6 +79,7 @@ This is ideal for export, download, or other premium actions.
 - [ShadCN UI](https://ui.shadcn.com/)
 - [Firebase](https://firebase.google.com/) (Authentication & Firestore)
 - [ExcelJS](https://github.com/exceljs/exceljs) for Excel exports
+- [next-intl](https://next-intl-docs.vercel.app/) for internationalization
 
 ---
 
@@ -370,6 +372,22 @@ To allow GitHub Actions to deploy your application to Firebase, you must create 
     - Click **Add secret**.
 
 The `deploy.yml` workflow is now configured to use this secret to authenticate with Firebase and deploy your application.
+
+---
+
+## Internationalization (i18n)
+
+This project supports **English** and **German** languages using [next-intl](https://next-intl-docs.vercel.app/).
+
+**Quick start:**
+
+```tsx
+import { useTranslations } from 'next-intl'
+const t = useTranslations()
+return <h1>{t('common.appName')}</h1>
+```
+
+**For complete documentation:** See [docs/i18n-setup.md](./docs/i18n-setup.md)
 
 ---
 

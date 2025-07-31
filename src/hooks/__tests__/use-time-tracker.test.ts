@@ -25,7 +25,7 @@ describe('useTimeTracker', () => {
 
   function renderTimeTracker() {
     const { result } = renderHook(() => useTimeTracker(user), {
-      wrapper: AllTheProviders,
+      wrapper: AllTheProviders(),
     })
     return result
   }
