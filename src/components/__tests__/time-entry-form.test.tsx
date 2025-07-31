@@ -1,10 +1,17 @@
+import React from 'react'
+
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import React from 'react'
 
 import TimeEntryForm from '../time-entry-form'
 
@@ -138,7 +145,9 @@ describe('TimeEntryForm', () => {
     expect(screen.getByLabelText('time_entry_form.locationLabel')).toHaveValue(
       'Test Office',
     )
-    expect(screen.getByLabelText('time_entry_form.startTimeLabel')).toHaveValue('10:00')
+    expect(screen.getByLabelText('time_entry_form.startTimeLabel')).toHaveValue(
+      '10:00',
+    )
     expect(screen.getByLabelText('time_entry_form.endTimeLabel')).toHaveValue(
       '18:30',
     )

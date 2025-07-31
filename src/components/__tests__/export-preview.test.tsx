@@ -3,6 +3,8 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { addMonths, subMonths } from 'date-fns'
+
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { exportToExcel } from '@/lib/excel-export'
 import { getTimeEntries } from '@/services/time-entry-service'
@@ -207,8 +209,7 @@ describe('ExportPreview', () => {
       await user.click(previousButton)
 
       // Should show previous month
-      const previousMonth = new Date()
-      previousMonth.setMonth(previousMonth.getMonth() - 1)
+      const previousMonth = subMonths(new Date(), 1)
       const expectedMonth = previousMonth.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
@@ -236,8 +237,7 @@ describe('ExportPreview', () => {
       await user.click(nextButton)
 
       // Should show next month
-      const nextMonth = new Date()
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
+      const nextMonth = addMonths(new Date(), 1)
       const expectedMonth = nextMonth.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',

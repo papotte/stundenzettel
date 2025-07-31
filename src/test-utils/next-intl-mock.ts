@@ -4,6 +4,19 @@ import { formattingProps } from '@/lib/i18n/formats'
 // Mock for next-intl to avoid ESM issues in tests
 // This file provides all the exports that next-intl provides
 
+// Type definitions for formatter parameters
+type DateTimeFormatOptions = Intl.DateTimeFormatOptions
+type NumberFormatOptions = Intl.NumberFormatOptions
+
+interface DateTimeFormatOverrides {
+  [key: string]: string | number | boolean | undefined
+}
+
+interface DateTimeFormatObject {
+  format?: string
+  [key: string]: string | number | boolean | undefined
+}
+
 // Client-side hooks
 const createTranslationFunction = (namespace?: string) => {
   const fn = (key: string) => (namespace ? `${namespace}.${key}` : key)
@@ -36,39 +49,29 @@ export const useMessages = jest.fn(() => ({
 
 export const useLocale = jest.fn(() => 'en')
 
-// Create a real formatter using dynamic import to avoid ESM issues
-let realFormatter: any = null
-
-const getRealFormatter = async () => {
-  if (!realFormatter) {
-    const { createFormatter } = await import('use-intl')
-    realFormatter = createFormatter({
-      locale: 'en',
-      formats: formattingProps,
-    })
-  }
-  return realFormatter
-}
-
 // Fallback formatter for synchronous operations
 const fallbackFormatter = {
-  dateTime: (value: Date, formatOrOptions?: any, overrides?: any) => {
+  dateTime: (
+    value: Date,
+    formatOrOptions?: string | DateTimeFormatObject,
+    overrides?: DateTimeFormatOverrides,
+  ) => {
     // Handle case: dateTime(date, 'long', { weekday: undefined })
     if (typeof formatOrOptions === 'string' && typeof overrides === 'object') {
       const formatName = formatOrOptions
       if (formattingProps.dateTime && formatName in formattingProps.dateTime) {
         const formatOptions = formattingProps.dateTime[
           formatName
-        ] as Intl.DateTimeFormatOptions
+        ] as DateTimeFormatOptions
 
         // Merge format options with overrides, handling undefined values
-        const mergedOptions: Intl.DateTimeFormatOptions = { ...formatOptions }
+        const mergedOptions: Record<string, unknown> = { ...formatOptions }
         for (const [key, value] of Object.entries(overrides)) {
           if (value === undefined) {
             // Remove the property if value is undefined
-            delete (mergedOptions as any)[key]
+            delete mergedOptions[key]
           } else {
-            ;(mergedOptions as any)[key] = value
+            mergedOptions[key] = value
           }
         }
 
@@ -87,7 +90,7 @@ const fallbackFormatter = {
     ) {
       const formatOptions = formattingProps.dateTime[
         formatOrOptions
-      ] as Intl.DateTimeFormatOptions
+      ] as DateTimeFormatOptions
 
       // For shortTime, we want to show only the time in 24-hour format
       if (formatOrOptions === 'shortTime') {
@@ -112,22 +115,22 @@ const fallbackFormatter = {
       formatOrOptions !== null &&
       !Array.isArray(formatOrOptions)
     ) {
-      const formatName = (formatOrOptions as any).format || 'long'
+      const formatName = formatOrOptions.format || 'long'
       const overrides = { ...formatOrOptions }
-      delete (overrides as any).format
+      delete overrides.format
 
       if (formattingProps.dateTime && formatName in formattingProps.dateTime) {
         const formatOptions = formattingProps.dateTime[
           formatName
-        ] as Intl.DateTimeFormatOptions
+        ] as DateTimeFormatOptions
 
         // Merge format options with overrides, handling undefined values
-        const mergedOptions: Intl.DateTimeFormatOptions = { ...formatOptions }
+        const mergedOptions: Record<string, unknown> = { ...formatOptions }
         for (const [key, value] of Object.entries(overrides)) {
           if (value === undefined) {
-            delete (mergedOptions as any)[key]
+            delete mergedOptions[key]
           } else {
-            ;(mergedOptions as any)[key] = value
+            mergedOptions[key] = value
           }
         }
 
@@ -140,11 +143,11 @@ const fallbackFormatter = {
 
     // Fallback
     return value.toLocaleDateString('en', {
-      ...formatOrOptions,
+      ...(formatOrOptions as DateTimeFormatOptions),
       timeZone: 'UTC',
     })
   },
-  number: (value: number, options?: any) => {
+  number: (value: number, options?: NumberFormatOptions) => {
     return value.toLocaleString('en', options)
   },
   relativeTime: (value: Date) => {
@@ -159,10 +162,16 @@ const fallbackFormatter = {
 }
 
 const formatterFunctions = {
-  dateTime: jest.fn((value: Date, formatOrOptions?: any, overrides?: any) => {
-    return fallbackFormatter.dateTime(value, formatOrOptions, overrides)
-  }),
-  number: jest.fn((value: number, options?: any) => {
+  dateTime: jest.fn(
+    (
+      value: Date,
+      formatOrOptions?: string | DateTimeFormatObject,
+      overrides?: DateTimeFormatOverrides,
+    ) => {
+      return fallbackFormatter.dateTime(value, formatOrOptions, overrides)
+    },
+  ),
+  number: jest.fn((value: number, options?: NumberFormatOptions) => {
     return fallbackFormatter.number(value, options)
   }),
   relativeTime: jest.fn((value: Date) => {
