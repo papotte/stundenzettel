@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { useRouter } from 'next/navigation'

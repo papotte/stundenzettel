@@ -169,7 +169,6 @@ export default function TimeEntryForm({
     isDurationEntry && entry?.durationMinutes != null
       ? entry.durationMinutes
       : 15
-  console.log(entry)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -191,7 +190,6 @@ export default function TimeEntryForm({
       passengerTimeHours: entry?.passengerTimeHours || 0,
     },
   })
-  console.log('Form default values:', form.getValues())
 
   const { watch, setValue, getValues } = form
   const modeValue = watch('mode')

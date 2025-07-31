@@ -1,4 +1,4 @@
-import { act, renderHook, waitFor } from '@testing-library/react'
+import { AllTheProviders, act, renderHook, waitFor } from '@jest-setup'
 
 import * as timeEntryService from '@/services/time-entry-service'
 import * as userSettingsService from '@/services/user-settings-service'
@@ -23,8 +23,15 @@ describe('useTimeTracker', () => {
     })
   })
 
+  function renderTimeTracker() {
+    const { result } = renderHook(() => useTimeTracker(user), {
+      wrapper: AllTheProviders,
+    })
+    return result
+  }
+
   it('should initialize with default state', async () => {
-    const { result } = renderHook(() => useTimeTracker(user))
+    const result = renderTimeTracker()
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     expect(result.current.entries).toEqual([])
     expect(result.current.selectedDate).toBeInstanceOf(Date)
@@ -32,7 +39,7 @@ describe('useTimeTracker', () => {
   })
 
   it('should update runningTimer when handleStartTimer is called', async () => {
-    const { result } = renderHook(() => useTimeTracker(user))
+    const result = renderTimeTracker()
     await waitFor(() => expect(result.current.isLoading).toBe(false))
     act(() => {
       result.current.setLocation('Office')

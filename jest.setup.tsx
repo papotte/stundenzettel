@@ -1,5 +1,13 @@
 // Learn more: https://github.com/testing-library/jest-dom
+import React from 'react'
+
 import '@testing-library/jest-dom'
+// Redefine `render` to always include NextIntlClientProvider
+import { RenderOptions, render as rtlRender } from '@testing-library/react'
+
+import { NextIntlClientProvider } from 'next-intl'
+
+import { formattingProps } from '@/lib/i18n/formats'
 
 // Set the environment to 'test' for all Jest tests.
 // This ensures that the application uses mock services instead of live ones.
@@ -71,3 +79,41 @@ jest.mock('next/server', () => ({
     })),
   },
 }))
+
+// Example messages object (replace with your actual messages)
+const messages = {
+  landing: {
+    features: {
+      list: {
+        feature1: 'Feature 1',
+        feature2: 'Feature 2',
+      },
+    },
+    faqs: [],
+  },
+}
+
+export const AllTheProviders = ({ children }: React.PropsWithChildren) => {
+  return (
+    <NextIntlClientProvider
+      locale="en"
+      messages={messages}
+      formats={formattingProps}
+      timeZone={'UTC'}
+      onError={(_) => {}}
+      getMessageFallback={({ namespace, key }) =>
+        `${namespace != null ? namespace + '.' : ''}${key}`
+      }
+    >
+      {children}
+    </NextIntlClientProvider>
+  )
+}
+const customRender = (ui: React.ReactNode, options?: RenderOptions) =>
+  rtlRender(ui, { wrapper: AllTheProviders, ...options })
+
+// Re-export everything from @testing-library/react
+export * from '@testing-library/react'
+
+// Override render method
+export { customRender as render }

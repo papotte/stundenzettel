@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import type { Team } from '@/lib/types'

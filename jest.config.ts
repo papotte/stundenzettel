@@ -1,5 +1,5 @@
 import type { Config } from 'jest'
-import nextJest from 'next/jest.js'
+import nextJest from 'next/jest'
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
@@ -9,17 +9,12 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const config: Config = {
   coverageProvider: 'v8',
-  testEnvironment: 'jest-environment-jsdom',
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.tsx'],
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/src/$1',
-    // Mock next-intl to avoid ESM issues in tests
-    '^next-intl$': '<rootDir>/src/test-utils/next-intl-mock.ts',
-    '^next-intl/server$': '<rootDir>/src/test-utils/next-intl-mock.ts',
-    '^next-intl/server/react-client$':
-      '<rootDir>/src/test-utils/next-intl-mock.ts',
+    '@jest-setup': '<rootDir>/jest.setup.tsx',
   },
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -48,9 +43,15 @@ const config: Config = {
     '!jest.setup.ts',
   ],
   transformIgnorePatterns: [
-    '/node_modules/(?!(lucide-react|next-intl|use-intl|@next-intl|@formatjs|@formatjs|intl-messageformat|@formatjs|intl-format-cache)/)',
+    '/node_modules/(?!(lucide-react|next-intl|use-intl)/)',
   ],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(config)
+//export default createJestConfig(config)
+export default async () => ({
+  ...(await createJestConfig({
+    testEnvironment: 'jsdom',
+  })()),
+  ...config,
+})

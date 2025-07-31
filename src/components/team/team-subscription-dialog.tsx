@@ -99,7 +99,7 @@ export function TeamSubscriptionDialog({
   const getSeatPrice = (plan: PricingPlan, seatCount: number) => {
     if (plan.tieredPricing) {
       // Find the appropriate tier for the current seat count
-      const tier = plan.tieredPricing.tiers.find(
+      const tier = plan.tieredPricing.find(
         (t) => seatCount >= t.from && (!t.to || seatCount <= t.to),
       )
       return tier?.price || plan.price

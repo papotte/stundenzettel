@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@jest-setup'
 
 import TimeEntriesList from '@/components/time-entries-list'
 import { TimeEntry } from '@/lib/types'

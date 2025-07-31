@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
+import { getLocale } from 'next-intl/server'
 import { Lora, PT_Sans } from 'next/font/google'
 
 import { Toaster } from '@/components/ui/toaster'
@@ -27,13 +28,14 @@ export const metadata: Metadata = {
   description: 'Track your work hours effortlessly',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const locale = await getLocale()
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.png" sizes="any" />
         <link

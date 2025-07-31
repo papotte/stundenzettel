@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@jest-setup'
 
 import { useToast } from '@/hooks/use-toast'
 import type { TeamMember } from '@/lib/types'
