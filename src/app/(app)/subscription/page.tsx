@@ -71,8 +71,8 @@ export default function SubscriptionPage() {
     } catch (error) {
       console.error('Error creating customer portal session:', error)
       toast({
-        title: t('settings.errorPortalTitle'),
-        description: t('settings.errorPortalDescription'),
+        title: t('subscription.errorPortalTitle'),
+        description: t('subscription.errorPortalDescription'),
         variant: 'destructive',
       })
     }
@@ -135,14 +135,14 @@ export default function SubscriptionPage() {
               <div className="text-center py-8">
                 <Crown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">
-                  {t('settings.noSubscription')}
+                  {t('subscription.noSubscription')}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  {t('settings.noSubscriptionDescription')}
+                  {t('subscription.noSubscriptionDescription')}
                 </p>
                 <Button onClick={handleUpgrade}>
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  {t('settings.upgrade')}
+                  {t('subscription.upgrade')}
                 </Button>
               </div>
             ) : (
@@ -150,22 +150,22 @@ export default function SubscriptionPage() {
                 <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
                     <h4 className="text-xs font-medium mb-2">
-                      {t('settings.currentPlan')}
+                      {t('subscription.currentPlan')}
                     </h4>
                     <h3 className="font-headline text-xl font-semibold leading-none tracking-tight">
-                      {subscription?.planName ?? t('settings.unknownPlan')}
+                      {subscription?.planName ?? t('subscription.unknownPlan')}
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       {subscription?.planDescription ??
-                        t('settings.unknownPlanDescription')}
+                        t('subscription.unknownPlanDescription')}
                     </p>
                     <Badge
                       variant={isInTrial ? 'secondary' : 'default'}
                       className="mt-1"
                     >
                       {subscription?.status === 'active'
-                        ? t('settings.active')
-                        : t('settings.trialing')}
+                        ? t('subscription.active')
+                        : t('subscription.trialing')}
                     </Badge>
                   </div>
                 </div>
@@ -177,17 +177,17 @@ export default function SubscriptionPage() {
                       <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
                       <div className="flex-1">
                         <h3 className="font-medium text-blue-900 dark:text-blue-100">
-                          {t('settings.trialStatus')}
+                          {t('subscription.trialStatus')}
                         </h3>
                         <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
                           {daysRemaining !== null && daysRemaining > 0
-                            ? t('settings.trialDaysRemaining', {
+                            ? t('subscription.trialDaysRemaining', {
                                 days: daysRemaining,
                               })
-                            : t('settings.trialEndsToday')}
+                            : t('subscription.trialEndsToday')}
                         </p>
                         <p className="text-xs text-blue-600 dark:text-blue-400">
-                          {t('settings.trialEndsOn')}:{' '}
+                          {t('subscription.trialEndsOn')}:{' '}
                           {format(trialEndDate, 'long')}
                         </p>
                       </div>
@@ -202,10 +202,10 @@ export default function SubscriptionPage() {
                       <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
                       <div className="flex-1">
                         <h3 className="font-medium text-orange-900 dark:text-orange-100">
-                          {t('settings.trialExpiringSoon')}
+                          {t('subscription.trialExpiringSoon')}
                         </h3>
                         <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
-                          {t('settings.trialExpiringDescription')}
+                          {t('subscription.trialExpiringDescription')}
                         </p>
                       </div>
                     </div>
@@ -217,7 +217,7 @@ export default function SubscriptionPage() {
                   <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-medium">
-                        {t('settings.cancellationDate')}
+                        {t('subscription.cancellationDate')}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {format(subscription.cancelAt, 'long')}
@@ -230,8 +230,8 @@ export default function SubscriptionPage() {
                   <Button onClick={handleManageBilling} className="w-full">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     {isInTrial
-                      ? t('settings.addPaymentMethod')
-                      : t('settings.manageBilling')}
+                      ? t('subscription.addPaymentMethod')
+                      : t('subscription.manageBilling')}
                   </Button>
                 </div>
               </div>

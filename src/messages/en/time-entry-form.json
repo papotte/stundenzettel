@@ -41,6 +41,7 @@
   "durationLabel": "Duration",
   "durationFormLabel": "Duration (minutes)",
   "durationInvalid": "Please enter a valid duration in minutes. Minimum is 5 minutes.",
+  "compensatedInfoLabel": "Compensated time information",
   "compensatedInfo": "Compensated time = Worked time - Pause + Driver time × {driver}% + Passenger time × {passenger}%",
   "smartSuggestionTooltip": "Smart suggestion based on your previous entries"
 }

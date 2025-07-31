@@ -41,6 +41,7 @@
   "durationLabel": "Dauer",
   "durationFormLabel": "Dauer (Minuten)",
   "durationInvalid": "Bitte geben Sie eine gültige Dauer in Minuten ein. Mindestdauer ist 5 Minuten.",
+  "compensatedInfoLabel": "Vergütete Zeit Info",
   "compensatedInfo": "Vergütete Zeit = Arbeitszeit - Pause + Fahrerzeit × {driver}% + Beifahrerzeit × {passenger}%",
   "smartSuggestionTooltip": "Intelligente Vorschläge basierend auf Ihren vorherigen Einträgen"
 }

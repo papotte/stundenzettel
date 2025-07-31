@@ -98,7 +98,9 @@ describe('SubscriptionPage', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('settings.noSubscription')).toBeInTheDocument()
+        expect(
+          screen.getByText('subscription.noSubscription'),
+        ).toBeInTheDocument()
       },
       { timeout: 3000 },
     )
@@ -124,7 +126,7 @@ describe('SubscriptionPage', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('settings.currentPlan')).toBeInTheDocument()
+        expect(screen.getByText('subscription.currentPlan')).toBeInTheDocument()
       },
       { timeout: 3000 },
     )
@@ -145,12 +147,12 @@ describe('SubscriptionPage', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('settings.upgrade')).toBeInTheDocument()
+        expect(screen.getByText('subscription.upgrade')).toBeInTheDocument()
       },
       { timeout: 3000 },
     )
 
-    await user.click(screen.getByText('settings.upgrade'))
+    await user.click(screen.getByText('subscription.upgrade'))
 
     expect(window.location.href).toBe('/pricing')
 

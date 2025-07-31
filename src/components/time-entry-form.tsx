@@ -951,7 +951,9 @@ export default function TimeEntryForm({
                           <button
                             type="button"
                             tabIndex={0}
-                            aria-label={compensatedInfoTooltip}
+                            aria-label={t(
+                              'time_entry_form.compensatedInfoLabel',
+                            )}
                             className="ml-1 text-primary hover:text-primary/80 focus:outline-none"
                           >
                             <Info className="w-4 h-4" />
