@@ -93,6 +93,31 @@ export interface PricingPlan {
 }
 
 // Team Management Types
+export interface TeamSettings {
+  // Export configuration
+  exportFormat?: 'excel' | 'pdf' | 'both'
+  exportFields?: {
+    includeLocation?: boolean
+    includePauseDuration?: boolean
+    includeDriverTime?: boolean
+    includePassengerTime?: boolean
+    includeMileage?: boolean
+  }
+  // Default compensation settings for all team members
+  defaultDriverCompensationPercent?: number
+  defaultPassengerCompensationPercent?: number
+  // Override permissions
+  allowMembersToOverrideCompensation?: boolean
+  allowMembersToOverrideExportSettings?: boolean
+  allowMembersToOverrideWorkHours?: boolean
+  // Company details for exports
+  companyName?: string
+  companyEmail?: string
+  companyPhone1?: string
+  companyPhone2?: string
+  companyFax?: string
+}
+
 export interface Team {
   id: string
   name: string
@@ -101,6 +126,7 @@ export interface Team {
   createdAt: Date
   updatedAt: Date
   subscription?: Subscription
+  settings?: TeamSettings
 }
 
 export interface TeamMember {
