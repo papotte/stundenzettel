@@ -1,0 +1,11 @@
+{
+  "bottom": {
+    "home": "Inicio",
+    "export": "Vista Previa y Exportar"
+  },
+  "top": {
+    "features": "Características",
+    "pricing": "Precios",
+    "login": "Iniciar Sesión"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "editLabel": "Editar",
+  "deleteLabel": "Eliminar",
+  "deleteAlertTitle": "¿Estás seguro?",
+  "deleteAlertDescription": "Esta acción no se puede deshacer. Esto eliminará permanentemente la entrada de tiempo para \"{location}\".",
+  "deleteAlertConfirm": "Eliminar",
+  "pauseLabel": "{minutes}m pausa",
+  "drivingLabel": "{hours}h conduciendo",
+  "passengerLabel": "{hours}h pasajero"
+}
