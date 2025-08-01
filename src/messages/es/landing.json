@@ -1,0 +1,101 @@
+{
+  "heroTitle": "Seguimiento de Tiempo Sin Esfuerzo para Tu Negocio",
+  "heroDescription": "TimeWise Tracker te ayuda a ti y a tu equipo a gestionar las horas de trabajo sin problemas. Desde seguimiento en vivo hasta exportaciones detalladas, te tenemos cubierto.",
+  "getStarted": "Comenzar",
+  "learnMore": "Aprender Más",
+  "features": {
+    "keyFeatures": "Características Clave",
+    "headerTag": "Rastrea el Tiempo de Manera Inteligente",
+    "headerTitle": "Todo lo que necesitas, nada que no.",
+    "headerDescription": "TimeWise Tracker está lleno de características diseñadas para hacer tu seguimiento de tiempo tan fácil y preciso como sea posible.",
+    "list": {
+      "timeTracking": {
+        "title": "Seguimiento de Tiempo en Vivo",
+        "desc": "Inicia y detén un cronómetro con un clic. La duración de tu trabajo se registra con precisión sin cálculos manuales."
+      },
+      "specialEntries": {
+        "title": "Entradas Manuales y Especiales",
+        "desc": "Agrega o edita fácilmente entradas para trabajo pasado, o registra bajas por enfermedad, PTO y días feriados con tipos de entrada dedicados."
+      },
+      "location": {
+        "title": "Ubicación y Viajes",
+        "desc": "Obtén automáticamente tu ubicación actual o ingrésala manualmente. Rastrea tiempo de viaje y estado de conductor para compensación precisa."
+      },
+      "export": {
+        "title": "Exportación Perfecta",
+        "desc": "Genera hojas de tiempo de aspecto profesional en formatos Excel y PDF, listas para ser enviadas para nómina o registros."
+      },
+      "smart": {
+        "title": "Sugerencias Inteligentes",
+        "desc": "La aplicación aprende tus hábitos y sugiere ubicaciones y tiempos basados en tus entradas anteriores para acelerar tu flujo de trabajo."
+      },
+      "pauseCalculation": {
+        "title": "Cálculo Automático de Pausas",
+        "desc": "Basado en la duración de tu trabajo, la aplicación sugiere el tiempo de pausa legalmente requerido, que puedes aplicar con un clic."
+      }
+    }
+  },
+  "pricing": {
+    "landingTitle": "Precios Simples y Transparentes",
+    "landingDescription": "Un plan que incluye todo lo que necesitas. Sin niveles, sin complementos, sin sorpresas.",
+    "title": "Elige Tu Plan",
+    "subtitle": "Selecciona el plan perfecto para tus necesidades de seguimiento de tiempo",
+    "loadingPlans": "Cargando planes...",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "save20": "Ahorra 20%",
+    "tieredHint": "Precio mostrado es para 10+ usuarios",
+    "perUserPerMonth": "por usuario / mes",
+    "perUserPerYear": "por usuario / año",
+    "month": "mes",
+    "year": "año",
+    "startingAt": "Comenzando en",
+    "mostPopular": "Más Popular",
+    "getStarted": "Comenzar",
+    "createTeam": "Crear Equipo",
+    "processing": "Procesando...",
+    "faqTitle": "Preguntas Frecuentes",
+    "faq1Question": "¿Puedo cancelar en cualquier momento?",
+    "faq1Answer": "Sí, puedes cancelar tu suscripción en cualquier momento. Continuarás teniendo acceso hasta el final de tu período de facturación.",
+    "faq2Question": "¿Qué métodos de pago aceptan?",
+    "faq2Answer": "Aceptamos todas las principales tarjetas de crédito y débito a través de nuestro procesador de pagos seguro.",
+    "faq3Question": "¿Hay una prueba gratuita?",
+    "faq3Answer": "Sí, ofrecemos una prueba gratuita de 14 días para todos los planes. No se requiere tarjeta de crédito para comenzar.",
+    "faq4Question": "¿Puedo cambiar de plan más tarde?",
+    "faq4Answer": "¡Absolutamente! Puedes actualizar o reducir tu plan en cualquier momento desde la configuración de tu cuenta.",
+    "loginRequiredTitle": "Inicio de Sesión Requerido",
+    "loginRequiredDescription": "Por favor inicia sesión para suscribirte a un plan.",
+    "errorTitle": "Error de Pago",
+    "errorDescription": "Hubo un error procesando tu pago. Por favor, inténtalo de nuevo.",
+    "tryForFree": "Probar Gratis",
+    "freeTrial": "Prueba Gratuita",
+    "noCreditCard": "No se requiere tarjeta de crédito",
+    "successToast": "¡Suscripción exitosa!",
+    "cancelledToast": "Creación de suscripción cancelada."
+  },
+  "faqTitle": "Preguntas Frecuentes",
+  "faqs": [
+    {
+      "question": "¿Hay una prueba gratuita disponible?",
+      "answer": "Sí, puedes registrarte y usar TimeWise Tracker con todas sus características gratis por 14 días. No se requiere tarjeta de crédito para comenzar tu prueba."
+    },
+    {
+      "question": "¿Puedo rastrear tiempo para múltiples proyectos o clientes?",
+      "answer": "Absolutamente. El campo 'Ubicación' puede usarse para especificar diferentes proyectos, clientes o tareas. Nuestras próximas características incluirán gestión dedicada de proyectos y clientes para una mejor organización."
+    },
+    {
+      "question": "¿Cómo funciona la exportación a Excel y PDF?",
+      "answer": "Desde la página \"Vista Previa y Exportar\", puedes seleccionar cualquier mes y descargar una hoja de tiempo con formato profesional. El archivo Excel está listo para cálculos, y el PDF es perfecto para imprimir y firmar."
+    },
+    {
+      "question": "¿Están seguros mis datos?",
+      "answer": "Sí, tus datos están almacenados de forma segura usando Firebase, una plataforma de Google. Usamos prácticas de seguridad estándar de la industria para asegurar que tu información esté segura."
+    }
+  ],
+  "footer": {
+    "copyright": "© 2025 TimeWise Tracker. Todos los derechos reservados.",
+    "terms": "Términos de Servicio",
+    "privacy": "Privacidad",
+    "imprint": "Impronta"
+  }
+}
