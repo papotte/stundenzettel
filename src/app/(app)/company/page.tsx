@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft, Building, Loader2, Save } from 'lucide-react'
+import { ArrowLeft, Building, Loader2, Save, Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Card,
   CardContent,
@@ -37,6 +38,8 @@ import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
+import { getEffectiveUserSettings } from '@/services/team-settings-service'
+import { getUserTeam } from '@/services/team-service'
 
 const companyFormSchema = z.object({
   companyName: z.string().optional(),
@@ -63,6 +66,11 @@ export default function CompanyPage() {
 
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [overridePermissions, setOverridePermissions] = useState({
+    canOverrideCompensation: true,
+    canOverrideExportSettings: true,
+    canOverrideWorkHours: true,
+  })
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -88,18 +96,36 @@ export default function CompanyPage() {
     if (user) {
       const fetchData = async () => {
         try {
-          const settings = await getUserSettings(user.uid)
-          form.reset({
-            companyName: settings.companyName || '',
-            companyEmail: settings.companyEmail || '',
-            companyPhone1: settings.companyPhone1 || '',
-            companyPhone2: settings.companyPhone2 || '',
-            companyFax: settings.companyFax || '',
-            driverCompensationPercent:
-              settings.driverCompensationPercent || 100,
-            passengerCompensationPercent:
-              settings.passengerCompensationPercent || 90,
-          })
+          // Get user's team to check for team settings
+          const userTeam = await getUserTeam(user.uid)
+          
+          if (userTeam) {
+            // User is part of a team, get effective settings with team overrides
+            const { settings: effectiveSettings, overrides } = await getEffectiveUserSettings(user.uid, userTeam.id)
+            setOverridePermissions(overrides)
+            
+            form.reset({
+              companyName: effectiveSettings.companyName || '',
+              companyEmail: effectiveSettings.companyEmail || '',
+              companyPhone1: effectiveSettings.companyPhone1 || '',
+              companyPhone2: effectiveSettings.companyPhone2 || '',
+              companyFax: effectiveSettings.companyFax || '',
+              driverCompensationPercent: effectiveSettings.driverCompensationPercent || 100,
+              passengerCompensationPercent: effectiveSettings.passengerCompensationPercent || 90,
+            })
+          } else {
+            // User is not part of a team, get individual settings
+            const settings = await getUserSettings(user.uid)
+            form.reset({
+              companyName: settings.companyName || '',
+              companyEmail: settings.companyEmail || '',
+              companyPhone1: settings.companyPhone1 || '',
+              companyPhone2: settings.companyPhone2 || '',
+              companyFax: settings.companyFax || '',
+              driverCompensationPercent: settings.driverCompensationPercent || 100,
+              passengerCompensationPercent: settings.passengerCompensationPercent || 90,
+            })
+          }
         } catch (error) {
           console.error('Failed to fetch user settings', error)
           toast({
@@ -280,6 +306,15 @@ export default function CompanyPage() {
                     {t('settings.compensationSettings')}
                   </h3>
 
+                  {!overridePermissions.canOverrideCompensation && (
+                    <Alert className="mb-4">
+                      <Info className="h-4 w-4" />
+                      <AlertDescription>
+                        {t('teams.settingsInheritedFromTeam')}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -295,6 +330,7 @@ export default function CompanyPage() {
                               min="0"
                               max="200"
                               step="0.1"
+                              disabled={!overridePermissions.canOverrideCompensation}
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -302,7 +338,9 @@ export default function CompanyPage() {
                             />
                           </FormControl>
                           <FormDescription>
-                            {t('settings.driverCompensationPercentDescription')}
+                            {!overridePermissions.canOverrideCompensation
+                              ? t('teams.settingsOverriddenByTeam')
+                              : t('settings.driverCompensationPercentDescription')}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -323,6 +361,7 @@ export default function CompanyPage() {
                               min="0"
                               max="200"
                               step="0.1"
+                              disabled={!overridePermissions.canOverrideCompensation}
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -330,9 +369,9 @@ export default function CompanyPage() {
                             />
                           </FormControl>
                           <FormDescription>
-                            {t(
-                              'settings.passengerCompensationPercentDescription',
-                            )}
+                            {!overridePermissions.canOverrideCompensation
+                              ? t('teams.settingsOverriddenByTeam')
+                              : t('settings.passengerCompensationPercentDescription')}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
