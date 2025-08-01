@@ -5,6 +5,7 @@ import React, { useEffect, useId, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -31,9 +32,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { locales } from '@/i18n'
+import { setUserLocale } from '@/services/locale'
 import {
   getUserSettings,
   setUserSettings,
@@ -51,7 +53,7 @@ const preferencesFormSchema = z.object({
   defaultEndTime: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
-  language: z.enum(['en', 'de']),
+  language: z.enum(locales),
 })
 
 type PreferencesFormValues = z.infer<typeof preferencesFormSchema>
@@ -60,7 +62,8 @@ export default function PreferencesPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { t, setLanguageState, language } = useTranslation()
+  const t = useTranslations()
+  const language: string = useLocale()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const languageFieldId = useId()
@@ -111,7 +114,7 @@ export default function PreferencesPage() {
     setIsSaving(true)
     try {
       await setUserSettings(user.uid, data)
-      setLanguageState(data.language)
+      await setUserLocale(data.language)
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),
@@ -282,7 +285,7 @@ export default function PreferencesPage() {
                   ) : (
                     <Save className="mr-2 h-4 w-4" />
                   )}
-                  {isSaving ? t('settings.saving') : t('settings.save')}
+                  {isSaving ? t('common.saving') : t('common.save')}
                 </Button>
               </CardFooter>
             </Card>

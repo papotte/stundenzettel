@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { Copy } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -17,7 +18,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 import { updateTeam } from '@/services/team-service'
@@ -40,7 +40,7 @@ export function TeamSettingsDialog({
   const [name, setName] = useState(team.name)
   const [description, setDescription] = useState(team.description || '')
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   const canEdit = currentUserRole === 'owner' || currentUserRole === 'admin'
 
@@ -53,7 +53,7 @@ export function TeamSettingsDialog({
       })
     } catch {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.teamIdCopyError'),
         variant: 'destructive',
       })
@@ -87,7 +87,7 @@ export function TeamSettingsDialog({
       setOpen(false)
     } catch (error) {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description:
           error instanceof Error
             ? error.message
@@ -174,7 +174,7 @@ export function TeamSettingsDialog({
           </Button>
           {canEdit && (
             <Button onClick={handleSave} disabled={loading}>
-              {loading ? t('teams.saving') : t('teams.saveChanges')}
+              {loading ? t('common.saving') : t('common.save')}
             </Button>
           )}
         </DialogFooter>

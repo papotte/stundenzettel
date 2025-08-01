@@ -11,6 +11,7 @@ import {
   Shield,
   Trash2,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -41,7 +42,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
@@ -56,7 +56,8 @@ export default function SecurityPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const [pageLoading, setPageLoading] = useState(true)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [password, setPassword] = useState('')
@@ -267,7 +268,7 @@ export default function SecurityPage() {
                     size="sm"
                     data-testid="change-email-trigger"
                   >
-                    {t('settings.change')}
+                    {t('common.change')}
                   </Button>
                 ) : (
                   <TooltipProvider>
@@ -280,7 +281,7 @@ export default function SecurityPage() {
                             disabled
                             data-testid="change-email-trigger"
                           >
-                            {t('settings.change')}
+                            {t('common.change')}
                           </Button>
                         </div>
                       </TooltipTrigger>
@@ -307,7 +308,7 @@ export default function SecurityPage() {
                       size="sm"
                       data-testid="change-password-trigger"
                     >
-                      {t('settings.change')}
+                      {t('common.change')}
                     </Button>
                   </PasswordChangeDialog>
                 </div>

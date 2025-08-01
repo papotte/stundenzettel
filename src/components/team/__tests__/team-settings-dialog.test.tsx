@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { useToast } from '@/hooks/use-toast'
@@ -104,7 +104,7 @@ describe('TeamSettingsDialog', () => {
         screen.getByRole('button', { name: 'common.cancel' }),
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('button', { name: 'teams.saveChanges' }),
+        screen.getByRole('button', { name: 'common.save' }),
       ).toBeInTheDocument()
     })
 
@@ -138,7 +138,7 @@ describe('TeamSettingsDialog', () => {
       await user.type(descriptionInput, 'Updated team description')
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
@@ -162,7 +162,7 @@ describe('TeamSettingsDialog', () => {
       await user.clear(descriptionInput)
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
@@ -193,7 +193,7 @@ describe('TeamSettingsDialog', () => {
       await user.type(nameInput, 'Updated Team Name')
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
@@ -221,7 +221,7 @@ describe('TeamSettingsDialog', () => {
       await user.type(nameInput, 'Updated Team Name')
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
@@ -250,13 +250,13 @@ describe('TeamSettingsDialog', () => {
       await user.type(nameInput, 'Updated Team Name')
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -272,13 +272,13 @@ describe('TeamSettingsDialog', () => {
       await user.type(nameInput, 'Updated Team Name')
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToUpdateTeamSettings',
           variant: 'destructive',
         })
@@ -308,16 +308,16 @@ describe('TeamSettingsDialog', () => {
       await user.type(nameInput, 'Updated Team Name')
 
       const saveButton = screen.getByRole('button', {
-        name: 'teams.saveChanges',
+        name: 'common.save',
       })
       await user.click(saveButton)
 
       // Should show loading state
       expect(
-        screen.getByRole('button', { name: 'teams.saving' }),
+        screen.getByRole('button', { name: 'common.saving' }),
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('button', { name: 'teams.saving' }),
+        screen.getByRole('button', { name: 'common.saving' }),
       ).toBeDisabled()
 
       // Resolve the promise
@@ -325,7 +325,7 @@ describe('TeamSettingsDialog', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByRole('button', { name: 'teams.saving' }),
+          screen.queryByRole('button', { name: 'common.saving' }),
         ).not.toBeInTheDocument()
       })
     })

@@ -1,4 +1,6 @@
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslations } from 'next-intl'
+
+import { locales } from '@/i18n'
 
 import {
   Select,
@@ -20,15 +22,20 @@ export default function LanguageSelect({
   className?: string
   id?: string
 }) {
-  const { t } = useTranslation()
+  const t = useTranslations()
   return (
     <Select value={value} onValueChange={onChange} {...props}>
       <SelectTrigger className={className || 'w-24'} id={id}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="en">{t('settings.languageEnglish')}</SelectItem>
-        <SelectItem value="de">{t('settings.languageGerman')}</SelectItem>
+        {locales.map((lang) => (
+          <SelectItem key={lang} value={lang}>
+            {t(
+              `settings.language${lang.charAt(0).toUpperCase() + lang.slice(1)}`,
+            )}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   )

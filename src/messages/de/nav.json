@@ -1,0 +1,11 @@
+{
+  "bottom": {
+    "home": "Übersicht",
+    "export": "Vorschau & Export"
+  },
+  "top": {
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "login": "Anmelden"
+  }
+}

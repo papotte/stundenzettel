@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
@@ -272,7 +272,7 @@ describe('CompanyPage', () => {
         )
       }
 
-      expect(screen.getByText('settings.saving')).toBeInTheDocument()
+      expect(screen.getByText('common.saving')).toBeInTheDocument()
     })
 
     it('navigates back to tracker', async () => {

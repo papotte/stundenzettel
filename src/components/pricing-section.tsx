@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from 'react'
 
+import { useTranslations } from 'next-intl'
+
 import BillingToggle from '@/components/pricing/billing-toggle'
 import PricingCard from '@/components/pricing/pricing-card'
 import PricingFAQ from '@/components/pricing/pricing-faq'
 import { TeamSubscriptionDialog } from '@/components/team/team-subscription-dialog'
 import LoadingIcon from '@/components/ui/loading-icon'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan, Team } from '@/lib/types'
@@ -29,7 +30,8 @@ export default function PricingSection({
 }: PricingSectionProps) {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const t = useTranslations('landing')
+
   const [isYearly, setIsYearly] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
@@ -148,12 +150,12 @@ export default function PricingSection({
               }`}
             >
               {variant === 'landing'
-                ? t('landing.pricing.headerTitle')
+                ? t('pricing.landingTitle')
                 : t('pricing.title')}
             </h2>
             <p className="mt-6 text-lg leading-8 text-muted-foreground">
               {variant === 'landing'
-                ? t('landing.pricing.headerDescription')
+                ? t('pricing.landingDescription')
                 : t('pricing.subtitle')}
             </p>
           </div>

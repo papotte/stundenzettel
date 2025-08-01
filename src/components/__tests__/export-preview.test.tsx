@@ -1,7 +1,9 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { addMonths, subMonths } from 'date-fns'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { exportToExcel } from '@/lib/excel-export'
@@ -207,11 +209,11 @@ describe('ExportPreview', () => {
       await user.click(previousButton)
 
       // Should show previous month
-      const previousMonth = new Date()
-      previousMonth.setMonth(previousMonth.getMonth() - 1)
+      const previousMonth = subMonths(new Date(), 1)
       const expectedMonth = previousMonth.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
+        timeZone: 'UTC',
       })
 
       await waitFor(() => {
@@ -235,11 +237,11 @@ describe('ExportPreview', () => {
       await user.click(nextButton)
 
       // Should show next month
-      const nextMonth = new Date()
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
+      const nextMonth = addMonths(new Date(), 1)
       const expectedMonth = nextMonth.toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
+        timeZone: 'UTC',
       })
 
       await waitFor(() => {
@@ -269,10 +271,10 @@ describe('ExportPreview', () => {
         user: mockAuthContext.user,
         userSettings: mockUserSettings,
         entries: mockTimeEntries,
-        t: expect.any(Function),
-        locale: expect.any(Object),
         getEntriesForDay: expect.any(Function),
         getLocationDisplayName: expect.any(Function),
+        t: expect.any(Function),
+        format: expect.any(Object),
       })
     })
 
@@ -322,7 +324,7 @@ describe('ExportPreview', () => {
       await user.hover(exportButton)
 
       await waitFor(() => {
-        expect(screen.getAllByText('export_preview.noDataHint')).toHaveLength(2)
+        expect(screen.getAllByText('export.noDataHint')).toHaveLength(2)
       })
     })
   })

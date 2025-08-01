@@ -1,7 +1,7 @@
 import React from 'react'
 
+import { render, screen } from '@jest-setup'
 import { TooltipProviderProps } from '@radix-ui/react-tooltip'
-import { render, screen } from '@testing-library/react'
 
 import ExportPage from '@/app/(app)/export/page'
 import { TimeTrackerProviderProps } from '@/context/time-tracker-context'
@@ -64,7 +64,7 @@ describe('ExportPage', () => {
     expect(screen.getByTestId('export-preview')).toBeInTheDocument()
     expect(screen.getByTestId('time-tracker-provider')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: 'export_page.backButton' }),
+      screen.getByRole('link', { name: 'settings.backToTracker' }),
     ).toBeInTheDocument()
   })
 })

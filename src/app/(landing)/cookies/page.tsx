@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
-
-import { useTranslation } from '@/context/i18n-context'
 
 const CookiePolicyEn = dynamic(
   () => import('@/../content/legal/cookie-policy.en.mdx'),
@@ -14,7 +13,7 @@ const CookiePolicyDe = dynamic(
 )
 
 export default function CookiePolicyPage() {
-  const { language } = useTranslation()
+  const language = useLocale()
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)

@@ -1,22 +1,24 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import LanguageSwitcher from '@/components/language-switcher'
 import TimeWiseIcon from '@/components/time-wise-icon'
 import ColorfulBackground from '@/components/ui/colorful-background'
 import UserMenu from '@/components/user-menu'
-import { useTranslation } from '@/context/i18n-context'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function LandingLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { t } = useTranslation()
+  const t = useTranslations()
+  const { user } = useAuth()
   const navigation = [
-    { name: t('topNav.features'), href: '/features' },
-    { name: t('topNav.pricing'), href: '/pricing' },
+    { name: t('nav.top.features'), href: '/features' },
+    { name: t('nav.top.pricing'), href: '/pricing' },
   ]
   return (
     <div className="bg-background min-h-dvh flex flex-col">
@@ -28,10 +30,10 @@ export default function LandingLayout({
         >
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="sr-only">{t('appName')}</span>
+              <span className="sr-only">{t('common.appName')}</span>
               <TimeWiseIcon className="h-12 w-auto" />
               <span className="text-lg font-bold text-primary group-hover:underline">
-                {t('appName')}
+                {t('common.appName')}
               </span>
             </Link>
           </div>
@@ -48,7 +50,7 @@ export default function LandingLayout({
             ))}
           </div>
           <div className="flex items-center gap-4">
-            <LanguageSwitcher />
+            {!user && <LanguageSwitcher />}
             <UserMenu />
           </div>
         </nav>

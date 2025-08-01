@@ -1,12 +1,24 @@
 'use client'
 
-import React, { ReactNode, createContext, useEffect, useState } from 'react'
+import React, {
+  ReactNode,
+  createContext,
+  useEffect,
+  useState,
+  useTransition,
+} from 'react'
 
 import { signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
 
 import LoadingIcon from '@/components/ui/loading-icon'
+import { defaultLocale } from '@/i18n'
 import { auth as firebaseAuth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
+import { getUserLocale, setUserLocale } from '@/services/locale'
+import {
+  getUserSettings,
+  setUserSettings,
+} from '@/services/user-settings-service'
 
 interface AuthContextType {
   user: AuthenticatedUser | null
@@ -29,10 +41,56 @@ export const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [, startTransition] = useTransition()
 
-  const loginAsMockUser = (user: AuthenticatedUser | null) => {
+  const syncLanguage = async (uid?: string) => {
+    let targetLanguage = undefined
+    if (uid) {
+      try {
+        // Get user's saved language preference
+        const settings = await getUserSettings(uid)
+        if (settings.language) {
+          targetLanguage = settings.language
+        } else {
+          // If user has no saved preference, save current cookie to user settings
+          const currentLanguage = await getUserLocale()
+          const updatedSettings = {
+            ...settings,
+            language: currentLanguage as 'en' | 'de',
+          }
+          console.info(
+            'Saving current language to user settings:',
+            updatedSettings.language,
+            'for user:',
+            uid,
+          )
+          await setUserSettings(uid, updatedSettings)
+        }
+      } catch (error) {
+        console.error('Failed to sync language on login:', error)
+      }
+    } else {
+      targetLanguage = defaultLocale
+    }
+
+    if (targetLanguage != undefined) {
+      console.info(
+        'Changing language to:',
+        targetLanguage,
+        'for user:',
+        uid || 'guest',
+      )
+      startTransition(() => {
+        setUserLocale(targetLanguage)
+      })
+    }
+  }
+
+  const loginAsMockUser = async (user: AuthenticatedUser | null) => {
     if (user) {
       localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(user))
+      // Sync language on mock login
+      await syncLanguage(user.uid)
     } else {
       localStorage.removeItem(MOCK_USER_STORAGE_KEY)
     }
@@ -41,6 +99,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const signOut = async () => {
+    // Sync language on logout
+    syncLanguage()
+
     if (useMocks) {
       loginAsMockUser(null)
     } else if (
@@ -78,18 +139,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return
     }
 
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          displayName: firebaseUser.displayName,
-          email: firebaseUser.email || '',
-        })
-      } else {
-        setUser(null)
-      }
-      setLoading(false)
-    })
+    const unsubscribe = onAuthStateChanged(
+      firebaseAuth,
+      async (firebaseUser) => {
+        if (firebaseUser) {
+          const user = {
+            uid: firebaseUser.uid,
+            displayName: firebaseUser.displayName,
+            email: firebaseUser.email || '',
+          }
+          setUser(user)
+
+          // Sync language on login
+          await syncLanguage(user.uid)
+        } else {
+          setUser(null)
+        }
+        setLoading(false)
+      },
+    )
 
     return () => unsubscribe()
   }, [])

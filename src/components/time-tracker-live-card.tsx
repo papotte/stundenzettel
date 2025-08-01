@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { Loader2, MapPin, Pause, Play } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,12 +17,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { formatDuration } from '@/lib/utils'
 
 const TimeTrackerLiveCard: React.FC = () => {
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const {
     runningTimer,
     elapsedTime,

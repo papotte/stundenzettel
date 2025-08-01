@@ -1,0 +1,18 @@
+{
+  "testMode": "TimeWise Tracker (Testmodus)",
+  "selectMockUser": "Wählen Sie einen Testbenutzer",
+  "mockUserDescription": "Wählen Sie einen Benutzer, um sich für lokale Tests anzumelden. Die Daten werden im Speicher gehalten und beim Neuladen der Seite zurückgesetzt.",
+  "loginAs": "Als {displayName} anmelden",
+  "signInTab": "Anmelden",
+  "signUpTab": "Registrieren",
+  "emailLabel": "E-Mail",
+  "emailPlaceholder": "m@beispiel.com",
+  "passwordLabel": "Passwort",
+  "signInButton": "Anmelden",
+  "signingInButton": "Anmeldung läuft...",
+  "signUpButton": "Registrieren",
+  "creatingAccountButton": "Konto wird erstellt...",
+  "continueWith": "Oder weiter mit",
+  "signInWithGoogle": "Mit Google anmelden",
+  "authFailedTitle": "Anmeldung fehlgeschlagen"
+}

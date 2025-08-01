@@ -3,6 +3,7 @@
 import React from 'react'
 
 import { Check, Star, Users } from 'lucide-react'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import TryForFreeButton from '@/components/try-for-free-button'
 import { Badge } from '@/components/ui/badge'
@@ -10,14 +11,11 @@ import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useTranslation } from '@/context/i18n-context'
 import type { PricingPlan } from '@/lib/types'
-import { formatCurrency } from '@/lib/utils'
 
 interface PricingCardProps {
   plan: PricingPlan
@@ -32,7 +30,8 @@ export default function PricingCard({
   onSubscribe,
   onTeamSubscribe,
 }: PricingCardProps) {
-  const { t, language } = useTranslation()
+  const t = useTranslations('landing')
+  const format = useFormatter()
 
   const renderFeatureIcon = (feature: string) => {
     if (feature.includes('support')) return <Star className="h-4 w-4" />
@@ -61,33 +60,34 @@ export default function PricingCard({
 
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-        <CardDescription className="text-gray-600">
-          {t('pricing.perUserPerMonth')}
-        </CardDescription>
         <div className="mt-4">
           {plan.tieredPricing ? (
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">Starting at</div>
+              <div className="text-sm text-gray-600 mb-1">
+                {t('pricing.startingAt')}
+              </div>
               <div className="text-3xl font-bold text-gray-900">
-                {formatCurrency(
-                  Math.min(
-                    ...plan.tieredPricing.tiers.map((tier) => tier.price),
-                  ),
-                  plan.tieredPricing.tiers[0].currency,
-                  language,
+                {format.number(
+                  Math.min(...plan.tieredPricing.map((tier) => tier.price)),
+                  {
+                    currency: plan.tieredPricing[0].currency,
+                    style: 'currency',
+                  },
                 )}
               </div>
               <div className="text-sm text-gray-600 mt-1">
-                per user /{' '}
                 {plan.interval === 'month'
-                  ? t('pricing.month')
-                  : t('pricing.year')}
+                  ? t('pricing.perUserPerMonth')
+                  : t('pricing.perUserPerYear')}
               </div>
             </div>
           ) : (
             <>
               <span className="text-4xl font-bold text-gray-900">
-                {formatCurrency(plan.price, plan.currency, language)}
+                {format.number(plan.price, {
+                  currency: plan.currency,
+                  style: 'currency',
+                })}
               </span>
               <span className="text-gray-600 ml-1">
                 /
@@ -98,9 +98,9 @@ export default function PricingCard({
             </>
           )}
         </div>
-        {plan.tieredPricing && plan.tieredPricing.tiers.length > 1 && (
+        {plan.tieredPricing && plan.tieredPricing.length > 1 && (
           <p className="text-sm text-gray-500 mt-2">
-            Price shown is for 10+ users
+            {t('pricing.tieredHint')}
           </p>
         )}
 

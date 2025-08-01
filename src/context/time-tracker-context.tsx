@@ -1,14 +1,10 @@
 import React, { ReactNode, createContext, useContext } from 'react'
 
 import { useTimeTracker } from '@/hooks/use-time-tracker'
-import type { Toast } from '@/hooks/use-toast'
 
 export interface TimeTrackerProviderProps {
   user: { uid: string } | null
-  toast: (options: Toast) => void
-  t: (key: string, params?: Record<string, string | number>) => string
   children: ReactNode
-  locale?: string
 }
 
 // The type returned by useTimeTracker
@@ -21,12 +17,9 @@ const TimeTrackerContext = createContext<TimeTrackerContextType | undefined>(
 
 export const TimeTrackerProvider = ({
   user,
-  toast,
-  t,
   children,
-  locale = 'en',
 }: TimeTrackerProviderProps) => {
-  const value = useTimeTracker(user, toast, t, locale)
+  const value = useTimeTracker(user)
   return (
     <TimeTrackerContext.Provider value={value}>
       {children}

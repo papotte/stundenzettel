@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Check, CreditCard, Minus, Plus, Users } from 'lucide-react'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,11 +19,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import type { PricingPlan, Team } from '@/lib/types'
-import { formatCurrency, getUserId } from '@/lib/utils'
+import { getUserId } from '@/lib/utils'
 import { getPricingPlans } from '@/services/payment-service'
 
 interface TeamSubscriptionDialogProps {
@@ -40,7 +40,8 @@ export function TeamSubscriptionDialog({
   currentMembersCount,
   onSubscriptionCreated,
 }: TeamSubscriptionDialogProps) {
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter()
   const { toast } = useToast()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -98,7 +99,7 @@ export function TeamSubscriptionDialog({
   const getSeatPrice = (plan: PricingPlan, seatCount: number) => {
     if (plan.tieredPricing) {
       // Find the appropriate tier for the current seat count
-      const tier = plan.tieredPricing.tiers.find(
+      const tier = plan.tieredPricing.find(
         (t) => seatCount >= t.from && (!t.to || seatCount <= t.to),
       )
       return tier?.price || plan.price
@@ -152,7 +153,7 @@ export function TeamSubscriptionDialog({
     } catch (error) {
       console.error('Error creating team checkout session:', error)
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.failedToUpgradeSubscription'),
         variant: 'destructive',
       })
@@ -206,7 +207,7 @@ export function TeamSubscriptionDialog({
           {/* Billing Frequency Toggle */}
           <div className="flex justify-center items-center space-x-4">
             <Label htmlFor="billing-toggle" className="text-sm font-medium">
-              {t('pricing.monthly')}
+              {t('landing.pricing.monthly')}
             </Label>
             <Switch
               id="billing-toggle"
@@ -214,10 +215,10 @@ export function TeamSubscriptionDialog({
               onCheckedChange={setIsYearly}
             />
             <Label htmlFor="billing-toggle" className="text-sm font-medium">
-              {t('pricing.yearly')}
+              {t('landing.pricing.yearly')}
             </Label>
             <Badge variant="secondary" className="ml-2">
-              {t('pricing.save20')}
+              {t('landing.pricing.save20')}
             </Badge>
           </div>
 
@@ -269,29 +270,27 @@ export function TeamSubscriptionDialog({
                               {t('teams.pricePerSeat')}:
                             </span>{' '}
                             <span className="font-medium">
-                              {formatCurrency(
-                                seatPrice,
-                                plan.currency,
-                                language,
-                              )}
+                              {format.number(seatPrice, {
+                                currency: plan.currency,
+                                style: 'currency',
+                              })}
                               /
                               {plan.interval === 'month'
-                                ? t('pricing.month')
-                                : t('pricing.year')}
+                                ? t('landing.pricing.month')
+                                : t('landing.pricing.year')}
                             </span>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-semibold">
-                            {formatCurrency(
-                              totalPrice,
-                              plan.currency,
-                              language,
-                            )}
+                            {format.number(totalPrice, {
+                              currency: plan.currency,
+                              style: 'currency',
+                            })}
                             /
                             {plan.interval === 'month'
-                              ? t('pricing.month')
-                              : t('pricing.year')}
+                              ? t('landing.pricing.month')
+                              : t('landing.pricing.year')}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {t('teams.forSeats', { count: seats })}
@@ -376,26 +375,24 @@ export function TeamSubscriptionDialog({
                   {t('teams.seatsSelected', { count: seats })}
                 </span>
                 <span className="text-sm">
-                  {formatCurrency(
-                    getSeatPrice(selectedPlan, seats),
-                    selectedPlan.currency,
-                    language,
-                  )}{' '}
+                  {format.number(getSeatPrice(selectedPlan, seats), {
+                    style: 'currency',
+                    currency: selectedPlan.currency,
+                  })}
                   × {seats}
                 </span>
               </div>
               <div className="flex items-center justify-between font-medium">
                 <span>{t('teams.totalPerPeriod')}</span>
                 <span className="text-lg">
-                  {formatCurrency(
-                    getTotalPrice(),
-                    selectedPlan.currency,
-                    language,
-                  )}
+                  {format.number(getTotalPrice(), {
+                    style: 'currency',
+                    currency: selectedPlan.currency,
+                  })}
                   /
                   {selectedPlan.interval === 'month'
-                    ? t('pricing.month')
-                    : t('pricing.year')}
+                    ? t('landing.pricing.month')
+                    : t('landing.pricing.year')}
                 </span>
               </div>
               {selectedPlan.trialEnabled && (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { Check, Clock, Mail, X } from 'lucide-react'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,11 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useTranslation } from '@/context/i18n-context'
 import { useToast } from '@/hooks/use-toast'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 import type { TeamInvitation } from '@/lib/types'
-import { formatAppDate } from '@/lib/utils'
 import {
   acceptTeamInvitation,
   declineTeamInvitation,
@@ -42,7 +41,8 @@ export function UserInvitationsList({
     null,
   )
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter().dateTime
   const { refreshInvitations } = useUserInvitations()
 
   const handleAcceptInvitation = async (invitation: TeamInvitation) => {
@@ -166,11 +166,9 @@ export function UserInvitationsList({
                   </div>
                 </TableCell>
                 <TableCell className={expired ? 'text-red-600' : ''}>
-                  {formatAppDate(
-                    new Date(invitation.expiresAt),
-                    language,
-                    false,
-                  )}
+                  {format(new Date(invitation.expiresAt), 'long', {
+                    weekday: undefined,
+                  })}
                 </TableCell>
                 <TableCell>
                   {!expired && (

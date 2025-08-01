@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -41,7 +41,7 @@ describe('UserMenu', () => {
     it('renders login button', () => {
       renderWithTooltipProvider(<UserMenu />)
 
-      const loginButton = screen.getByRole('link', { name: /topNav\.login/i })
+      const loginButton = screen.getByRole('link', { name: /nav.top\.login/i })
       expect(loginButton).toBeInTheDocument()
       expect(loginButton).toHaveAttribute('href', '/login')
     })
@@ -49,7 +49,7 @@ describe('UserMenu', () => {
     it('renders login button with custom variant and size', () => {
       renderWithTooltipProvider(<UserMenu variant="default" size="lg" />)
 
-      const loginButton = screen.getByRole('link', { name: /topNav\.login/i })
+      const loginButton = screen.getByRole('link', { name: /nav.top\.login/i })
       expect(loginButton).toBeInTheDocument()
     })
   })

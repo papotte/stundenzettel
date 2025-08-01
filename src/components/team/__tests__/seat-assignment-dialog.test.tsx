@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@jest-setup'
 
 import type { Subscription, TeamMember } from '@/lib/types'
 
@@ -14,48 +14,6 @@ jest.mock('@/services/team-service', () => ({
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: jest.fn(),
-  }),
-}))
-
-// Mock the translation context
-jest.mock('@/context/i18n-context', () => ({
-  useTranslation: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        'teams.seatAssignment': 'Seat Assignment',
-        'teams.seatAssignmentDescription':
-          'Manage seat assignments for your team members',
-        'teams.assignedSeats': 'Assigned Seats',
-        'teams.availableSeats': 'Available Seats',
-        'teams.totalSeats': 'Total Seats',
-        'teams.seatStatus': 'Seat Status',
-        'teams.assignedDate': 'Assigned Date',
-        'teams.actions': 'Actions',
-        'teams.member': 'Member',
-        'teams.role': 'Role',
-        'teams.seatAssigned': 'Seat assigned',
-        'teams.noSeatAssigned': 'No seat assigned',
-        'teams.assignSeat': 'Assign Seat',
-        'teams.unassignSeat': 'Unassign Seat',
-        'teams.seatLimitReached':
-          'Seat limit reached. Please upgrade your subscription to assign more seats.',
-        'teams.error': 'Error',
-        'teams.seatAssignedDescription':
-          'The seat has been successfully assigned to this member',
-        'teams.seatUnassignedDescription':
-          'The seat has been successfully unassigned from this member',
-        'teams.seatAssignmentFailed': 'Failed to assign seat',
-        'teams.seatUnassignmentFailed': 'Failed to unassign seat',
-        'teams.cannotUnassignOwnerSeat': 'Cannot unassign seat from team owner',
-        'teams.ownerSeatRequired': 'Owner seat required',
-        'teams.roles.member': 'Member',
-        'teams.roles.admin': 'Admin',
-        'teams.roles.owner': 'Owner',
-        'common.close': 'Close',
-      }
-      return translations[key] || key
-    },
-    language: 'en',
   }),
 }))
 
@@ -122,9 +80,9 @@ describe('SeatAssignmentDialog', () => {
   it('renders the dialog with seat assignment information', () => {
     render(<SeatAssignmentDialog {...defaultProps} />)
 
-    expect(screen.getByText('Seat Assignment')).toBeInTheDocument()
+    expect(screen.getByText('teams.seatAssignment')).toBeInTheDocument()
     expect(
-      screen.getByText('Manage seat assignments for your team members'),
+      screen.getByText('teams.seatAssignmentDescription'),
     ).toBeInTheDocument()
 
     // Check seat usage summary
@@ -138,11 +96,11 @@ describe('SeatAssignmentDialog', () => {
 
     // Member without seat assignment
     expect(screen.getByText('member1@example.com')).toBeInTheDocument()
-    expect(screen.getByText('No seat assigned')).toBeInTheDocument()
+    expect(screen.getByText('teams.noSeatAssigned')).toBeInTheDocument()
 
     // Member with seat assignment
     expect(screen.getByText('member2@example.com')).toBeInTheDocument()
-    expect(screen.getAllByText('Seat assigned')).toHaveLength(2) // member2 and owner
+    expect(screen.getAllByText('teams.seatAssigned')).toHaveLength(2) // member2 and owner
   })
 
   it('disables assign button when no seats available', () => {
@@ -158,7 +116,7 @@ describe('SeatAssignmentDialog', () => {
       />,
     )
 
-    const assignButtons = screen.getAllByText('Assign Seat')
+    const assignButtons = screen.getAllByText('teams.assignSeat')
     assignButtons.forEach((button) => {
       expect(button).toBeDisabled()
     })
@@ -177,11 +135,7 @@ describe('SeatAssignmentDialog', () => {
       />,
     )
 
-    expect(
-      screen.getByText(
-        'Seat limit reached. Please upgrade your subscription to assign more seats.',
-      ),
-    ).toBeInTheDocument()
+    expect(screen.getByText('teams.seatLimitReached')).toBeInTheDocument()
   })
 
   it('shows owner seat required message for owners with assigned seats', () => {
@@ -189,6 +143,6 @@ describe('SeatAssignmentDialog', () => {
 
     // Owner should show "Owner seat required" instead of unassign button
     expect(screen.getByText('owner1@example.com')).toBeInTheDocument()
-    expect(screen.getByText('Owner seat required')).toBeInTheDocument()
+    expect(screen.getByText('teams.ownerSeatRequired')).toBeInTheDocument()
   })
 })

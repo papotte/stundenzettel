@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale } from 'next-intl/server'
 import { Lora, PT_Sans } from 'next/font/google'
 
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
-import { I18nProvider } from '@/context/i18n-context'
 // Import dev utilities for development mode
 import '@/lib/dev-utils'
 
@@ -27,13 +28,14 @@ export const metadata: Metadata = {
   description: 'Track your work hours effortlessly',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const locale = await getLocale()
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.png" sizes="any" />
         <link
@@ -54,10 +56,10 @@ export default function RootLayout({
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
         <AuthProvider>
-          <I18nProvider>
+          <NextIntlClientProvider>
             {children}
             <Toaster />
-          </I18nProvider>
+          </NextIntlClientProvider>
         </AuthProvider>
       </body>
     </html>

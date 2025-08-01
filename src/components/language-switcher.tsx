@@ -1,4 +1,9 @@
-import { useTranslation } from '@/context/i18n-context'
+import { useTransition } from 'react'
+
+import { useLocale } from 'next-intl'
+
+import { Locale } from '@/i18n'
+import { setUserLocale } from '@/services/locale'
 
 import LanguageSelect from './language-select'
 
@@ -7,11 +12,20 @@ export default function LanguageSwitcher({
 }: {
   className?: string
 }) {
-  const { language, setLanguageState } = useTranslation()
+  const [, startTransition] = useTransition()
+  const locale = useLocale()
+
+  function onChange(value: string) {
+    const locale = value as Locale
+    startTransition(() => {
+      setUserLocale(locale)
+    })
+  }
+
   return (
     <LanguageSelect
-      value={language}
-      onChange={(lang) => setLanguageState(lang as 'en' | 'de')}
+      value={locale}
+      onChange={onChange}
       className={className}
       data-testid="language-switcher"
     />

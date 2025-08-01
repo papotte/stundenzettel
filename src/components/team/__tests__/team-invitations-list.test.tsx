@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { useToast } from '@/hooks/use-toast'
@@ -253,7 +253,7 @@ describe('TeamInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -282,7 +282,7 @@ describe('TeamInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -376,8 +376,8 @@ describe('TeamInvitationsList', () => {
       expect(screen.getByText('teams.roles.admin')).toBeInTheDocument()
 
       // Check that dates are displayed
-      expect(screen.getByText('January 8th, 2024')).toBeInTheDocument()
-      expect(screen.getByText('January 9th, 2024')).toBeInTheDocument()
+      expect(screen.getByText('January 8, 2024')).toBeInTheDocument()
+      expect(screen.getByText('January 9, 2024')).toBeInTheDocument()
     })
   })
 })

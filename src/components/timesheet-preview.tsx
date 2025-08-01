@@ -2,9 +2,9 @@
 
 import React, { useCallback, useMemo } from 'react'
 
-import { differenceInMinutes, format, getDay, isSameMonth } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
+import { differenceInMinutes, getDay, isSameMonth } from 'date-fns'
 import { Plus } from 'lucide-react'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -15,22 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useTranslation } from '@/context/i18n-context'
 import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
 import TimesheetHeader from './timesheet-header'
-
-const dayOfWeekMap: { [key: number]: string } = {
-  1: 'Mo',
-  2: 'Di',
-  3: 'Mi',
-  4: 'Do',
-  5: 'Fr',
-  6: 'Sa',
-  0: 'So',
-}
 
 interface TimesheetPreviewProps {
   selectedMonth: Date
@@ -60,8 +49,8 @@ export default function TimesheetPreview({
   onEdit,
   onAdd,
 }: TimesheetPreviewProps) {
-  const { t, language } = useTranslation()
-  const locale = language === 'de' ? de : enUS
+  const t = useTranslations()
+  const format = useFormatter()
 
   const weeksInMonth = useMemo(
     () => getWeeksForMonth(selectedMonth),
@@ -114,14 +103,14 @@ export default function TimesheetPreview({
       data-testid="timesheet-preview"
     >
       <div id="pdf-header-section">
-        <TimesheetHeader userSettings={userSettings} t={t} />
+        <TimesheetHeader userSettings={userSettings} />
         <header
           className="mb-4 flex items-start justify-between print:mb-2"
           data-testid="timesheet-title"
         >
           <h1 className="text-xl font-bold print:text-base">
-            {t('export_preview.timesheetTitle', {
-              month: format(selectedMonth, 'MMMM', { locale }),
+            {t('export.timesheetTitle', {
+              month: format.dateTime(selectedMonth, 'month'),
             })}
           </h1>
           <div className="text-right font-semibold print:text-sm">
@@ -158,63 +147,63 @@ export default function TimesheetPreview({
                       rowSpan={2}
                       className="w-[5%] border-r border-black align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerWeek')}
+                      {t('export.headerWeek')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerDate')}
+                      {t('export.headerDate')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-auto border-r border-black text-left print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerLocation')}
+                      {t('export.headerLocation')}
                     </TableHead>
                     <TableHead
                       colSpan={2}
                       className="w-[18%] border-b border-black print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerWorkTime')}
+                      {t('export.headerWorkTime')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-l border-r border-black align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerPauseDuration')}
+                      {t('export.headerPauseDuration')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerDriverTime')}
+                      {t('export.headerDriverTime')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerCompensatedTime')}
+                      {t('export.headerCompensatedTime')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerPassengerTime')}
+                      {t('export.headerPassengerTime')}
                     </TableHead>
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] align-middle print:h-auto print:p-1"
                     >
-                      {t('export_preview.headerMileage')}
+                      {t('export.headerMileage')}
                     </TableHead>
                   </TableRow>
                   <TableRow className="border-b border-black bg-table-header text-black hover:bg-table-header">
                     <TableHead className="border-r-0 print:h-auto print:p-1">
-                      {t('export_preview.headerFrom')}
+                      {t('export.headerFrom')}
                     </TableHead>
                     <TableHead className="print:h-auto print:p-1">
-                      {t('export_preview.headerTo')}
+                      {t('export.headerTo')}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -224,7 +213,7 @@ export default function TimesheetPreview({
                       return null
                     }
 
-                    const dayTestId = `timesheet-day-${format(day, 'yyyy-MM-dd')}`
+                    const dayTestId = `timesheet-day-${format.dateTime(day, 'short')}`
                     const dayEntries = getEntriesForDay(day)
                     const isSunday = getDay(day) === 0
 
@@ -237,10 +226,10 @@ export default function TimesheetPreview({
                           data-testid={dayTestId}
                         >
                           <TableCell className="border-r border-black bg-table-header text-left font-medium print:p-1">
-                            {dayOfWeekMap[getDay(day)]}
+                            {format.dateTime(day, 'weekday')}
                           </TableCell>
                           <TableCell className="group relative cursor-default border-r border-black text-right align-middle print:p-1">
-                            {format(day, 'd/M/yyyy')}
+                            {format.dateTime(day, 'short')}
                             <Button
                               variant="ghost"
                               size="icon"
@@ -297,10 +286,10 @@ export default function TimesheetPreview({
                             compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
                         }
                         fromValue = entry.startTime
-                          ? format(entry.startTime, 'HH:mm')
+                          ? format.dateTime(entry.startTime, 'shortTime')
                           : ''
                         toValue = entry.endTime
-                          ? format(entry.endTime, 'HH:mm')
+                          ? format.dateTime(entry.endTime, 'shortTime')
                           : ''
                       }
 
@@ -317,7 +306,7 @@ export default function TimesheetPreview({
                               rowSpan={dayEntries.length}
                               className="cursor-default border-r border-black bg-table-header text-left align-middle font-medium print:p-1"
                             >
-                              {dayOfWeekMap[getDay(day)]}
+                              {format.dateTime(day, 'weekday')}
                             </TableCell>
                           )}
                           {entryIndex === 0 && (
@@ -326,7 +315,7 @@ export default function TimesheetPreview({
                               rowSpan={dayEntries.length}
                               className="group relative cursor-default border-r border-black text-right align-middle print:p-1"
                             >
-                              {format(day, 'd/M/yyyy')}
+                              {format.dateTime(day, 'short')}
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -393,10 +382,10 @@ export default function TimesheetPreview({
               </Table>
               <div className="mt-2 flex w-full justify-end print:mt-1 print:text-xs">
                 <div className="flex w-full justify-end">
-                  <div style={{ flex: '0 0 50%' }}></div>
-                  <div className="flex gap-8 w-1/2 justify-between">
+                  <div className="md:flex-1"></div>
+                  <div className="flex flex-1 gap-8 w-1/2 justify-between">
                     <div className="flex-1 text-right font-semibold">
-                      {t('export_preview.footerTotalPerWeek')}
+                      {t('export.footerTotalPerWeek')}
                     </div>
                     <div className="flex flex-1 gap-8 border-b-2 border-black pb-1">
                       <div
@@ -422,10 +411,10 @@ export default function TimesheetPreview({
         {/* after all weeks, add monthly totals */}
         <div className="mt-8 flex w-full justify-end print:mt-4 print:text-xs">
           <div className="flex w-full justify-end">
-            <div style={{ flex: '0 0 50%' }}></div>
-            <div className="flex gap-8 w-1/2 justify-between">
+            <div className="md:flex-1"></div>
+            <div className="flex flex-1 gap-8 w-1/2 justify-between">
               <div className="flex-1 text-right font-semibold">
-                {t('export_preview.footerTotalHours')}
+                {t('export.footerTotalHours')}
               </div>
               <div className="flex flex-1 gap-8 border-b-4 border-double border-black pb-2">
                 <div
@@ -446,10 +435,10 @@ export default function TimesheetPreview({
           </div>
         </div>
         <div className="mt-4 flex w-full justify-end print:text-xs">
-          <div style={{ flex: '0 0 50%' }}></div>
-          <div className="flex gap-8 w-1/2 justify-between">
+          <div className="md:flex-1"></div>
+          <div className="flex flex-1 gap-8 w-1/2 justify-between">
             <div className="flex-1 text-right font-semibold">
-              {t('export_preview.footerTotalAfterConversion')}
+              {t('export.footerTotalAfterConversion')}
             </div>
             <div className="flex flex-1 gap-8 pb-2">
               <div
@@ -467,7 +456,7 @@ export default function TimesheetPreview({
         </div>
         <div id="pdf-footer-section" className="flex w-full justify-end">
           <div className="mt-24 text-right print:mt-12 print:text-sm">
-            <p className="mt-2">{t('export_preview.signatureLine')}</p>
+            <p className="mt-2">{t('export.signatureLine')}</p>
           </div>
         </div>
       </main>

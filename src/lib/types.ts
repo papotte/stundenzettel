@@ -1,3 +1,5 @@
+import { Locale } from '@/i18n'
+
 /**
  * TimeEntry represents a work entry for a user.
  * - All entries MUST have a startTime (used for date assignment).
@@ -21,7 +23,7 @@ export interface UserSettings {
   defaultWorkHours: number
   defaultStartTime: string
   defaultEndTime: string
-  language: 'en' | 'de'
+  language: Locale
   displayName?: string
   companyName?: string
   companyEmail?: string
@@ -79,10 +81,12 @@ export interface PricingPlan {
   features: string[]
   stripePriceId: string
   maxUsers?: number // For team plans
-  tieredPricing?: {
-    tiers: Array<{ from: number; to?: number; price: number; currency: string }>
-    displayText: string
-  }
+  tieredPricing?: Array<{
+    from: number
+    to?: number
+    price: number
+    currency: string
+  }>
   trialDays?: number // Number of trial days, undefined if no trial
   trialEnabled?: boolean // Whether this plan offers trials
 }

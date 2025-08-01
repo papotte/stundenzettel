@@ -11,13 +11,14 @@ import {
   startOfWeek,
   subDays,
 } from 'date-fns'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
-import type { Toast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-import { compareEntriesByStartTime, formatAppDate } from '@/lib/utils'
+import { compareEntriesByStartTime } from '@/lib/utils'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -27,12 +28,10 @@ import {
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 
-export function useTimeTracker(
-  user: { uid: string } | null,
-  toast: (options: Toast) => void,
-  t: (key: string, params?: Record<string, string | number>) => string,
-  locale: string = 'en',
-) {
+export function useTimeTracker(user: { uid: string } | null) {
+  const { toast } = useToast()
+  const t = useTranslations()
+  const format = useFormatter().dateTime
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null)
@@ -68,7 +67,8 @@ export function useTimeTracker(
       }
     }
     fetchInitialData()
-  }, [user, toast, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -400,8 +400,8 @@ export function useTimeTracker(
   }, [])
 
   const formattedSelectedDate = selectedDate
-    ? formatAppDate(selectedDate, locale)
-    : 'Loading...'
+    ? format(selectedDate, 'long')
+    : t('common.loading')
 
   return {
     entries,

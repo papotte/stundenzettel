@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { renderHook, waitFor } from '@jest-setup'
 
 import { subscriptionService } from '@/services/subscription-service'
 

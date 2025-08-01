@@ -4,10 +4,8 @@ import {
   eachWeekOfInterval,
   endOfMonth,
   endOfWeek,
-  format,
   startOfMonth,
 } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
 import { twMerge } from 'tailwind-merge'
 
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from './constants'
@@ -87,19 +85,6 @@ export function formatMinutesToTimeInput(
 }
 
 /**
- * Formats a date in a consistent, locale-aware way for the app (e.g., July 2nd, 2025).
- * Defaults to 'en' if no locale is provided or recognized.
- */
-export function formatAppDate(
-  date: Date,
-  locale: string = 'en',
-  includeDay: boolean = true,
-) {
-  const localeObj = locale === 'de' ? de : enUS
-  return format(date, includeDay ? 'PPPP' : 'PPP', { locale: localeObj })
-}
-
-/**
  * Formats a number in a locale-aware way for the app (e.g., 1,234.56 or 1.234,56).
  * Defaults to 'en' if no locale is provided or recognized.
  */
@@ -109,41 +94,6 @@ export function formatAppNumber(
   options?: Intl.NumberFormatOptions,
 ) {
   return new Intl.NumberFormat(locale, options).format(value)
-}
-
-/**
- * Formats a time in 24h format (HH:mm) in a locale-aware way for the app.
- * Defaults to 'en' if no locale is provided or recognized.
- */
-export function formatAppTime(date: Date) {
-  // Note: 'HH:mm' is not locale-sensitive, but we keep the locale param for future-proofing
-  return format(date, 'HH:mm')
-}
-
-/**
- * Formats a number as currency in a locale-aware way using Intl.NumberFormat.
- * @param value The numeric value (e.g., 12.34)
- * @param currency The ISO 4217 currency code (e.g., 'EUR', 'USD')
- * @param locale Optional locale string (defaults to browser or 'en')
- */
-export function formatCurrency(
-  value: number,
-  currency: string,
-  locale: string = 'en',
-) {
-  if (
-    locale === 'en' &&
-    typeof window !== 'undefined' &&
-    window.navigator.language
-  ) {
-    locale = window.navigator.language
-  }
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value)
 }
 
 export function compareEntriesByStartTime(a: TimeEntry, b: TimeEntry) {

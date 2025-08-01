@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@jest-setup'
 
 import TimeTrackerHeader from '@/components/time-tracker-header'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -36,7 +36,7 @@ describe('TimeTrackerHeader', () => {
 
   it('renders all buttons and links', () => {
     renderWithProvider(<TimeTrackerHeader showClearData={true} />)
-    expect(screen.getByText('appName')).toBeInTheDocument()
+    expect(screen.getByText('common.appName')).toBeInTheDocument()
     expect(screen.getByText('tracker.headerExportLink')).toBeInTheDocument()
     expect(
       screen.getByText('tracker.headerClearDataTooltip'),

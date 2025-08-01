@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@jest-setup'
 
 import type { PricingPlan } from '@/lib/types'
 
@@ -55,14 +55,11 @@ describe('PricingCard', () => {
     stripePriceId: 'price_enterprise_monthly',
     features: ['Enterprise feature 1', 'Enterprise feature 2'],
     maxUsers: undefined,
-    tieredPricing: {
-      tiers: [
-        { from: 1, to: 9, price: 49.99, currency: 'EUR' },
-        { from: 10, to: 49, price: 39.99, currency: 'EUR' },
-        { from: 50, price: 29.99, currency: 'EUR' },
-      ],
-      displayText: 'Price shown is for 10+ users',
-    },
+    tieredPricing: [
+      { from: 1, to: 9, price: 49.99, currency: 'EUR' },
+      { from: 10, to: 49, price: 39.99, currency: 'EUR' },
+      { from: 50, price: 29.99, currency: 'EUR' },
+    ],
   }
 
   beforeEach(() => {
@@ -84,7 +81,7 @@ describe('PricingCard', () => {
     expect(screen.getByText(/pricing\.month/)).toBeInTheDocument()
     expect(screen.getByText('Basic feature 1')).toBeInTheDocument()
     expect(screen.getByText('Basic feature 2')).toBeInTheDocument()
-    expect(screen.getByText('pricing.getStarted')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.getStarted')).toBeInTheDocument()
   })
 
   it('renders yearly pricing correctly', () => {
@@ -111,7 +108,7 @@ describe('PricingCard', () => {
       />,
     )
 
-    expect(screen.getByText('pricing.mostPopular')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.mostPopular')).toBeInTheDocument()
   })
 
   it('applies special styling to popular plans', () => {
@@ -138,7 +135,7 @@ describe('PricingCard', () => {
       />,
     )
 
-    expect(screen.getByText('pricing.createTeam')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.createTeam')).toBeInTheDocument()
   })
 
   it('calls onSubscribe for individual plans', () => {
@@ -151,7 +148,7 @@ describe('PricingCard', () => {
       />,
     )
 
-    const button = screen.getByText('pricing.getStarted')
+    const button = screen.getByText('landing.pricing.getStarted')
     fireEvent.click(button)
 
     expect(mockOnSubscribe).toHaveBeenCalledWith(basePlan)
@@ -168,7 +165,7 @@ describe('PricingCard', () => {
       />,
     )
 
-    const button = screen.getByText('pricing.createTeam')
+    const button = screen.getByText('landing.pricing.createTeam')
     fireEvent.click(button)
 
     expect(mockOnTeamSubscribe).toHaveBeenCalledWith(teamPlan)
@@ -185,7 +182,7 @@ describe('PricingCard', () => {
       />,
     )
 
-    expect(screen.getByText('pricing.processing')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.processing')).toBeInTheDocument()
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
@@ -199,9 +196,9 @@ describe('PricingCard', () => {
       />,
     )
 
-    expect(screen.getByText('Starting at')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.startingAt')).toBeInTheDocument()
     expect(screen.getByText('€29.99')).toBeInTheDocument() // Min price from tiers
-    expect(screen.getByText('Price shown is for 10+ users')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.tieredHint')).toBeInTheDocument()
   })
 
   it('renders correct feature icons', () => {

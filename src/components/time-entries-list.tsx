@@ -1,11 +1,11 @@
 import React from 'react'
 
 import { isSameDay } from 'date-fns'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { formatHoursAndMinutes } from '@/lib/utils'
 
@@ -23,7 +23,7 @@ const TimeEntriesList: React.FC = () => {
     formattedSelectedDate,
     userSettings,
   } = useTimeTrackerContext()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   return (
     <Card className="shadow-lg">

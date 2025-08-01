@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import BillingToggle from '../billing-toggle'
@@ -16,17 +16,19 @@ describe('BillingToggle', () => {
     it('renders with monthly selected by default', () => {
       render(<BillingToggle isYearly={false} onToggle={mockOnToggle} />)
 
-      expect(screen.getByText('pricing.monthly')).toBeInTheDocument()
-      expect(screen.getByText('pricing.yearly')).toBeInTheDocument()
-      expect(screen.queryByText('pricing.save20')).not.toBeInTheDocument()
+      expect(screen.getByText('landing.pricing.monthly')).toBeInTheDocument()
+      expect(screen.getByText('landing.pricing.yearly')).toBeInTheDocument()
+      expect(
+        screen.queryByText('landing.pricing.save20'),
+      ).not.toBeInTheDocument()
     })
 
     it('renders with yearly selected', () => {
       render(<BillingToggle isYearly={true} onToggle={mockOnToggle} />)
 
-      expect(screen.getByText('pricing.monthly')).toBeInTheDocument()
-      expect(screen.getByText('pricing.yearly')).toBeInTheDocument()
-      expect(screen.getByText('pricing.save20')).toBeInTheDocument()
+      expect(screen.getByText('landing.pricing.monthly')).toBeInTheDocument()
+      expect(screen.getByText('landing.pricing.yearly')).toBeInTheDocument()
+      expect(screen.getByText('landing.pricing.save20')).toBeInTheDocument()
     })
 
     it('has proper ARIA attributes', () => {
@@ -76,7 +78,7 @@ describe('BillingToggle', () => {
       const user = userEvent.setup()
       render(<BillingToggle isYearly={false} onToggle={mockOnToggle} />)
 
-      const yearlyLabel = screen.getByText('pricing.yearly')
+      const yearlyLabel = screen.getByText('landing.pricing.yearly')
       await user.click(yearlyLabel)
 
       expect(mockOnToggle).toHaveBeenCalledWith(true)
@@ -87,7 +89,9 @@ describe('BillingToggle', () => {
     it('applies correct classes for monthly selection', () => {
       render(<BillingToggle isYearly={false} onToggle={mockOnToggle} />)
 
-      const container = screen.getByText('pricing.monthly').closest('div')
+      const container = screen
+        .getByText('landing.pricing.monthly')
+        .closest('div')
       expect(container).toHaveClass(
         'flex',
         'justify-center',
@@ -100,7 +104,9 @@ describe('BillingToggle', () => {
     it('applies correct classes for yearly selection', () => {
       render(<BillingToggle isYearly={true} onToggle={mockOnToggle} />)
 
-      const container = screen.getByText('pricing.yearly').closest('div')
+      const container = screen
+        .getByText('landing.pricing.yearly')
+        .closest('div')
       expect(container).toHaveClass(
         'flex',
         'justify-center',
@@ -113,7 +119,7 @@ describe('BillingToggle', () => {
     it('shows save badge with correct styling when yearly is selected', () => {
       render(<BillingToggle isYearly={true} onToggle={mockOnToggle} />)
 
-      const saveBadge = screen.getByText('pricing.save20')
+      const saveBadge = screen.getByText('landing.pricing.save20')
       expect(saveBadge).toHaveClass('ml-2')
       expect(saveBadge.closest('div')).toHaveClass('badge', 'bg-secondary')
     })

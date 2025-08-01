@@ -1,0 +1,23 @@
+{
+  "locationRequiredTitle": "Standort erforderlich",
+  "locationRequiredDescription": "Bitte geben Sie einen Standort ein, um die Erfassung zu starten.",
+  "entryUpdatedTitle": "Eintrag aktualisiert",
+  "entryUpdatedDescription": "Änderungen an \"{location}\" wurden gespeichert.",
+  "entryAddedTitle": "Eintrag hinzugefügt",
+  "entryAddedDescription": "Neuer Eintrag für \"{location}\" wurde erstellt.",
+  "saveFailedTitle": "Speichern fehlgeschlagen",
+  "saveFailedDescription": "Beim Speichern Ihres Eintrags ist ein Problem aufgetreten.",
+  "entryDeletedTitle": "Eintrag gelöscht",
+  "deleteFailedTitle": "Löschen fehlgeschlagen",
+  "deleteFailedDescription": "Beim Löschen Ihres Eintrags ist ein Problem aufgetreten.",
+  "dataClearedTitle": "Daten gelöscht",
+  "dataClearedDescription": "Alle Ihre Zeiterfassungseinträge wurden aus der Datenbank entfernt.",
+  "clearFailedTitle": "Löschen fehlgeschlagen",
+  "clearFailedDescription": "Beim Löschen Ihrer Daten ist ein Problem aufgetreten.",
+  "entryExistsTitle": "Eintrag existiert bereits",
+  "entryExistsDescription": "Ein Eintrag für \"{location}\" an diesem Tag existiert bereits.",
+  "configurationErrorTitle": "Konfigurationsfehler",
+  "configurationErrorDescription": "Firebase ist nicht korrekt konfiguriert. Bitte überprüfen Sie Ihre Umgebungsvariablen.",
+  "databaseErrorTitle": "Datenbank-Verbindungsfehler",
+  "databaseConnectionError": "Verbindung zur Datenbank fehlgeschlagen. Bitte lesen Sie den Abschnitt 'Fehlerbehebung' in der README.md-Datei."
+}

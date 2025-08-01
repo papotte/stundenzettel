@@ -11,6 +11,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
 } from 'firebase/auth'
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import TimeWiseIcon from '@/components/time-wise-icon'
@@ -26,7 +27,6 @@ import ColorfulBackground from '@/components/ui/colorful-background'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
@@ -81,7 +81,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const { loginAsMockUser } = useAuth()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   // Get return URL from query parameters
   useEffect(() => {
@@ -217,7 +217,7 @@ export default function LoginPage() {
       <div className="mb-4 flex items-center gap-2">
         <TimeWiseIcon className="h-8 w-8 text-primary" />
         <h1 className="font-headline text-3xl font-bold tracking-tight">
-          {t('appName')}
+          {t('common.appName')}
         </h1>
       </div>
       <Card className="w-full max-w-sm">

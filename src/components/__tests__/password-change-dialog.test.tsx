@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { updateUserPassword } from '@/services/password-update-service'
@@ -270,7 +270,7 @@ describe('PasswordChangeDialog', () => {
     await user.click(submitButton)
 
     // Check loading state
-    expect(screen.getByText('settings.updating')).toBeInTheDocument()
+    expect(screen.getByText('common.updating')).toBeInTheDocument()
     expect(submitButton).toBeDisabled()
   })
 
@@ -344,7 +344,7 @@ describe('PasswordChangeDialog', () => {
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
-        title: 'settings.error',
+        title: 'common.error',
         description: 'settings.userNotAuthenticated',
         variant: 'destructive',
       })

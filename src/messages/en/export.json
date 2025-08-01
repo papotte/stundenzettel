@@ -1,0 +1,22 @@
+{
+  "exportButton": "Export to Excel",
+  "exportPdfButton": "Download PDF",
+  "timesheetTitle": "Timesheet for the month: {month}",
+  "headerCompany": "Name and Phone / Radio:",
+  "headerWeek": "Week",
+  "headerDate": "Date",
+  "headerLocation": "Location",
+  "headerWorkTime": "Actual Work Time",
+  "headerPauseDuration": "Pause (hrs)",
+  "headerDriverTime": "Driver Time (hrs)",
+  "headerPassengerTime": "Passenger Time (hrs)",
+  "headerCompensatedTime": "Compensated Hours",
+  "headerFrom": "From",
+  "headerTo": "To",
+  "footerTotalPerWeek": "Total per week:",
+  "footerTotalHours": "Total hours:",
+  "footerTotalAfterConversion": "Total after conversion:",
+  "headerMileage": "Mileage/Expenses",
+  "signatureLine": "Signature:",
+  "noDataHint": "No data available for export in this month."
+}

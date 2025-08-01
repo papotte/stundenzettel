@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { format, getWeekOfMonth } from 'date-fns'
 
-import { addManualEntry } from './test-helpers'
+import { GermanDateFormatString, addManualEntry } from './test-helpers'
 
 test.describe('Export Page', () => {
   let weekIndex: number = 0
@@ -108,7 +108,7 @@ test.describe('Export Page', () => {
 
     // Click the entry row to open the edit dialog
     const entryCell = page.getByTestId(
-      `timesheet-day-${format(new Date(), 'yyyy-MM-dd')}`,
+      `timesheet-day-${format(new Date(), GermanDateFormatString)}`,
     )
     await entryCell.click()
 
@@ -150,7 +150,7 @@ test.describe('Export Page', () => {
 
     // Click the entry row to open the edit dialog
     const entryCell = page.getByTestId(
-      `timesheet-day-${format(new Date(), 'yyyy-MM-dd')}`,
+      `timesheet-day-${format(new Date(), GermanDateFormatString)}`,
     )
     await entryCell.click()
 
@@ -186,7 +186,7 @@ test.describe('Export Page', () => {
 
     // Click the entry row to open the edit dialog
     const entryCell = page.getByTestId(
-      `timesheet-day-${format(new Date(), 'yyyy-MM-dd')}`,
+      `timesheet-day-${format(new Date(), GermanDateFormatString)}`,
     )
     await entryCell.click()
 
@@ -213,10 +213,7 @@ test.describe('Export Page', () => {
 
     // Find today's date in local time
     const today = new Date()
-    const yyyy = today.getFullYear()
-    const mm = String(today.getMonth() + 1).padStart(2, '0')
-    const dd = String(today.getDate()).padStart(2, '0')
-    const todayId = `timesheet-day-${yyyy}-${mm}-${dd}`
+    const todayId = `timesheet-day-${format(today, GermanDateFormatString)}`
 
     // Find the empty row for today and click the add button
     const dayRow = page.getByTestId(todayId)

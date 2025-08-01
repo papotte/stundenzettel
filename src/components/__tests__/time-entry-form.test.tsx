@@ -1,12 +1,6 @@
 import React from 'react'
 
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
@@ -125,8 +119,8 @@ describe('TimeEntryForm', () => {
       id: '1',
       userId: 'user-1',
       location: 'Test Office',
-      startTime: new Date('2024-01-10T10:00:00'),
-      endTime: new Date('2024-01-10T18:30:00'),
+      startTime: new Date('2024-01-10T10:00:00Z'),
+      endTime: new Date('2024-01-10T18:30:00Z'),
       pauseDuration: 45,
       driverTimeHours: 0.5,
       passengerTimeHours: 0.25,

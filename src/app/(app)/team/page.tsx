@@ -10,6 +10,7 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
@@ -30,7 +31,6 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
@@ -52,7 +52,8 @@ import {
 export default function TeamPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const { toast } = useToast()
   const { refreshInvitations } = useUserInvitations()
 

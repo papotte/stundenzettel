@@ -15,6 +15,7 @@ import {
   Trash2,
   UserPlus,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import {
   AlertDialog,
@@ -29,7 +30,6 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { useTranslation } from '@/context/i18n-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
@@ -57,7 +57,7 @@ export default function TimeEntryCard({
   driverCompensationPercent = 100,
   passengerCompensationPercent = 100,
 }: TimeEntryCardProps) {
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   const isSpecial = SPECIAL_LOCATION_KEYS.includes(
     entry.location as SpecialLocationKey,

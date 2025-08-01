@@ -12,6 +12,7 @@ import {
   Lightbulb,
   Save,
 } from 'lucide-react'
+import { useFormatter, useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -56,7 +57,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
@@ -72,8 +72,6 @@ import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
-  formatAppDate,
-  formatAppTime,
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
   getLocationDisplayName,
@@ -156,7 +154,8 @@ export default function TimeEntryForm({
   userSettings,
 }: TimeEntryFormProps) {
   const { toast } = useToast()
-  const { t, language } = useTranslation()
+  const t = useTranslations()
+  const format = useFormatter().dateTime
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const isMobile = useIsMobile()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
@@ -170,7 +169,6 @@ export default function TimeEntryForm({
     isDurationEntry && entry?.durationMinutes != null
       ? entry.durationMinutes
       : 15
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -180,11 +178,11 @@ export default function TimeEntryForm({
       date: entry?.startTime ?? selectedDate ?? new Date(),
       startTime:
         !isDurationEntry && entry && entry.startTime
-          ? formatAppTime(entry.startTime)
+          ? format(entry.startTime, 'shortTime')
           : defaultStartTime,
       endTime:
         !isDurationEntry && entry?.endTime
-          ? formatAppTime(entry.endTime)
+          ? format(entry.endTime, 'shortTime')
           : defaultEndTime,
       duration: defaultDuration,
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
@@ -498,6 +496,10 @@ export default function TimeEntryForm({
   // Use the generalized getLocationDisplayName for displaying location
   const displayLocation = getLocationDisplayName(getValues('location'), t)
 
+  const compensatedInfoTooltip = t('time_entry_form.compensatedInfo', {
+    driver: userSettings?.driverCompensationPercent ?? 100,
+    passenger: userSettings?.passengerCompensationPercent ?? 100,
+  })
   return (
     <>
       <SheetHeader className="px-6 pt-6">
@@ -564,7 +566,7 @@ export default function TimeEntryForm({
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {field.value ? (
-                              formatAppDate(field.value, language)
+                              format(field.value, 'long')
                             ) : (
                               <span>{t('time_entry_form.pickDate')}</span>
                             )}
@@ -960,12 +962,7 @@ export default function TimeEntryForm({
                           align="start"
                           className="max-w-xs text-xs"
                         >
-                          {t('time_entry_form.compensatedInfo', {
-                            driver:
-                              userSettings?.driverCompensationPercent ?? 100,
-                            passenger:
-                              userSettings?.passengerCompensationPercent ?? 100,
-                          })}
+                          {compensatedInfoTooltip}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

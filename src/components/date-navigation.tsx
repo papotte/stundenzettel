@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Plus,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -15,7 +16,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { useTranslation } from '@/context/i18n-context'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 
 import TimeEntryForm from './time-entry-form'
@@ -34,7 +34,7 @@ const DateNavigation: React.FC = () => {
     openNewEntryForm,
     formattedSelectedDate,
   } = useTimeTrackerContext()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   return (
     <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

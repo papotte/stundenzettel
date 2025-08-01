@@ -2,10 +2,10 @@
 
 import React from 'react'
 
-import { useTranslation } from '@/context/i18n-context'
+import { useTranslations } from 'next-intl'
 
 export default function PricingFAQ() {
-  const { t } = useTranslation()
+  const t = useTranslations('landing')
 
   return (
     <div className="mt-16 text-center">

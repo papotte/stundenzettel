@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
@@ -46,6 +46,11 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/services/user-settings-service')
 const mockedGetUserSettings = getUserSettings as jest.Mock
 const mockedSetUserSettings = setUserSettings as jest.Mock
+
+// Mock the locale service to avoid cookies() error in tests
+jest.mock('@/services/locale', () => ({
+  setUserLocale: jest.fn().mockResolvedValue(undefined),
+}))
 
 const mockSettings: UserSettings = {
   displayName: 'Test User',
@@ -252,7 +257,7 @@ describe('PreferencesPage', () => {
       await user.click(languageSelect)
 
       const germanOption = screen.getByRole('option', {
-        name: /settings\.languageGerman/i,
+        name: /settings\.languageDe/i,
       })
       await user.click(germanOption)
 

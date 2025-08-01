@@ -2,6 +2,8 @@
 
 import React from 'react'
 
+import { useTranslations } from 'next-intl'
+
 import TrialBanner from '@/components/trial-banner'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +14,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import LoadingIcon from '@/components/ui/loading-icon'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { subscriptionService } from '@/services/subscription-service'
@@ -89,7 +90,8 @@ export default function SubscriptionGuard({
   showTrialBanner = true,
 }: SubscriptionGuardProps) {
   const { user } = useAuth()
-  const { t } = useTranslation()
+  const t = useTranslations()
+
   const { hasValidSubscription, loading, subscription } =
     useSubscriptionStatus(user)
 

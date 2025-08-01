@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@jest-setup'
 
 import { useToast } from '@/hooks/use-toast'
 import type { TeamMember } from '@/lib/types'
@@ -62,6 +62,8 @@ const defaultProps = {
   members: mockMembers,
   currentUserRole: 'owner' as const,
   onMembersChange: jest.fn(),
+  subscription: null,
+  currentUserId: 'user-1',
 }
 
 describe('TeamMembersList', () => {
@@ -105,9 +107,9 @@ describe('TeamMembersList', () => {
       render(<TeamMembersList {...defaultProps} />)
 
       // Should display formatted dates
-      expect(screen.getByText(/January 1st, 2024/)).toBeInTheDocument()
-      expect(screen.getByText(/January 2nd, 2024/)).toBeInTheDocument()
-      expect(screen.getByText(/January 3rd, 2024/)).toBeInTheDocument()
+      expect(screen.getByText(/January 1, 2024/)).toBeInTheDocument()
+      expect(screen.getByText(/January 2, 2024/)).toBeInTheDocument()
+      expect(screen.getByText(/January 3, 2024/)).toBeInTheDocument()
     })
 
     it('shows empty table when no members', () => {

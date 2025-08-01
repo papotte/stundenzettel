@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { AuthProvider } from '@/context/auth-context'
@@ -115,7 +115,9 @@ describe('PricingSection', () => {
 
       renderWithProviders(<PricingSection />)
 
-      expect(screen.getByText('pricing.loadingPlans')).toBeInTheDocument()
+      expect(
+        screen.getByText('landing.pricing.loadingPlans'),
+      ).toBeInTheDocument()
       expect(screen.getByTestId('loading-icon')).toBeInTheDocument()
     })
 
@@ -137,7 +139,7 @@ describe('PricingSection', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText('pricing.loadingPlans'),
+          screen.queryByText('landing.pricing.loadingPlans'),
         ).not.toBeInTheDocument()
       })
     })
@@ -167,7 +169,7 @@ describe('PricingSection', () => {
 
       // Click yearly toggle
       const yearlyToggle = screen.getByRole('switch', {
-        name: 'pricing.monthly pricing.yearly',
+        name: 'landing.pricing.monthly landing.pricing.yearly',
       })
       await user.click(yearlyToggle)
 
@@ -178,7 +180,7 @@ describe('PricingSection', () => {
 
       // Click monthly toggle back
       const monthlyToggle = screen.getByRole('switch', {
-        name: 'pricing.monthly pricing.yearly',
+        name: 'landing.pricing.monthly landing.pricing.yearly',
       })
       await user.click(monthlyToggle)
 
@@ -198,12 +200,12 @@ describe('PricingSection', () => {
 
       // Click yearly toggle
       const yearlyToggle = screen.getByRole('switch', {
-        name: 'pricing.monthly pricing.yearly',
+        name: 'landing.pricing.monthly landing.pricing.yearly',
       })
       await user.click(yearlyToggle)
 
       await waitFor(() => {
-        expect(screen.getByText('pricing.save20')).toBeInTheDocument()
+        expect(screen.getByText('landing.pricing.save20')).toBeInTheDocument()
       })
     })
   })
@@ -224,7 +226,7 @@ describe('PricingSection', () => {
       })
 
       const subscribeButton = screen.getByRole('button', {
-        name: 'pricing.getStarted',
+        name: 'landing.pricing.getStarted',
       })
       await user.click(subscribeButton)
 
@@ -252,7 +254,7 @@ describe('PricingSection', () => {
       })
 
       const subscribeButton = screen.getByRole('button', {
-        name: 'pricing.getStarted',
+        name: 'landing.pricing.getStarted',
       })
       await user.click(subscribeButton)
 
@@ -286,7 +288,7 @@ describe('PricingSection', () => {
       })
 
       const subscribeButton = screen.getByRole('button', {
-        name: 'pricing.getStarted',
+        name: 'landing.pricing.getStarted',
       })
       await user.click(subscribeButton)
 
@@ -309,7 +311,7 @@ describe('PricingSection', () => {
       })
 
       const teamSubscribeButton = screen.getByRole('button', {
-        name: 'pricing.createTeam',
+        name: 'landing.pricing.createTeam',
       })
       await user.click(teamSubscribeButton)
 
@@ -329,9 +331,11 @@ describe('PricingSection', () => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
       })
 
-      expect(screen.queryByText('pricing.title')).not.toBeInTheDocument()
       expect(
-        screen.queryByText('landing.pricing.headerTitle'),
+        screen.queryByText('landing.pricing.title'),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('landing.pricing.landingTitle'),
       ).not.toBeInTheDocument()
     })
 
@@ -342,7 +346,9 @@ describe('PricingSection', () => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
       })
 
-      expect(screen.queryByText('pricing.faqTitle')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('landing.pricing.faqTitle'),
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -364,13 +370,15 @@ describe('PricingSection', () => {
       })
 
       const subscribeButton = screen.getByRole('button', {
-        name: 'pricing.getStarted',
+        name: 'landing.pricing.getStarted',
       })
       await user.click(subscribeButton)
 
       await waitFor(() => {
         expect(subscribeButton).toBeDisabled()
-        expect(screen.getByText('pricing.processing')).toBeInTheDocument()
+        expect(
+          screen.getByText('landing.pricing.processing'),
+        ).toBeInTheDocument()
       })
     })
 
@@ -388,7 +396,7 @@ describe('PricingSection', () => {
       })
 
       const teamSubscribeButton = screen.getByRole('button', {
-        name: 'pricing.createTeam',
+        name: 'landing.pricing.createTeam',
       })
       await user.click(teamSubscribeButton)
 
@@ -413,7 +421,7 @@ describe('PricingSection', () => {
       })
 
       const subscribeButton = screen.getByRole('button', {
-        name: 'pricing.getStarted',
+        name: 'landing.pricing.getStarted',
       })
       await user.click(subscribeButton)
 
@@ -443,7 +451,9 @@ describe('PricingSection', () => {
       const toggle = screen.getByRole('switch')
       expect(toggle).toHaveAttribute('id', 'billing-toggle')
 
-      const labels = screen.getAllByText(/pricing.monthly|pricing.yearly/i)
+      const labels = screen.getAllByText(
+        /landing.pricing.monthly|landing.pricing.yearly/i,
+      )
       labels.forEach((label) => {
         expect(label).toHaveAttribute('for', 'billing-toggle')
       })
@@ -457,8 +467,8 @@ describe('PricingSection', () => {
       })
 
       const subscribeButtons = [
-        screen.getByRole('button', { name: 'pricing.getStarted' }),
-        screen.getByRole('button', { name: 'pricing.createTeam' }),
+        screen.getByRole('button', { name: 'landing.pricing.getStarted' }),
+        screen.getByRole('button', { name: 'landing.pricing.createTeam' }),
       ]
       subscribeButtons.forEach((button) => {
         expect(button).toBeInTheDocument()

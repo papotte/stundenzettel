@@ -9,6 +9,7 @@ import {
   User,
   Users,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -29,7 +30,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useTranslation } from '@/context/i18n-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 
@@ -44,7 +44,7 @@ export default function UserMenu({
   size = 'icon',
   className = '',
 }: UserMenuProps) {
-  const { t } = useTranslation()
+  const t = useTranslations()
   const { signOut, user } = useAuth()
   const { hasPendingInvitations, invitations } = useUserInvitations()
 
@@ -62,7 +62,7 @@ export default function UserMenu({
         className={`w-auto px-2 ${className}`}
       >
         <Link href="/login" data-testid="login-link">
-          {t('topNav.login')}
+          {t('nav.top.login')}
         </Link>
       </Button>
     )

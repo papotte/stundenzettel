@@ -1,5 +1,5 @@
+import { render, screen } from '@jest-setup'
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
 
 import LandingPage from '../page'
 
@@ -17,7 +17,7 @@ describe('StartPage', () => {
 
   it('should render the pricing section', () => {
     render(<LandingPage />)
-    expect(screen.getByText('landing.pricing.headerTitle')).toBeInTheDocument()
+    expect(screen.getByText('landing.pricing.landingTitle')).toBeInTheDocument()
   })
 
   it('should render the FAQ section', () => {

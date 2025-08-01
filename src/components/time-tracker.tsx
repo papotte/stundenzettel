@@ -3,10 +3,8 @@
 import React from 'react'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { useTranslation } from '@/context/i18n-context'
 import { TimeTrackerProvider } from '@/context/time-tracker-context'
 import { useAuth } from '@/hooks/use-auth'
-import { useToast } from '@/hooks/use-toast'
 
 import DailyActionsCard from './daily-actions-card'
 import DateNavigation from './date-navigation'
@@ -17,11 +15,9 @@ import TimeTrackerLiveCard from './time-tracker-live-card'
 
 export default function TimeTracker() {
   const { user } = useAuth()
-  const { t, language } = useTranslation()
-  const { toast } = useToast()
 
   return (
-    <TimeTrackerProvider user={user} toast={toast} t={t} locale={language}>
+    <TimeTrackerProvider user={user}>
       <TooltipProvider>
         <TimeTrackerContent />
       </TooltipProvider>

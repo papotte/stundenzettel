@@ -1,0 +1,99 @@
+{
+  "heroTitle": "Mühelose Zeiterfassung für Ihr Unternehmen",
+  "heroDescription": "TimeWise Tracker hilft Ihnen und Ihrem Team, Arbeitszeiten nahtlos zu verwalten. Von der Live-Erfassung bis zu detaillierten Exporten – wir haben alles, was Sie brauchen.",
+  "getStarted": "Jetzt starten",
+  "learnMore": "Mehr erfahren",
+  "features": {
+    "keyFeatures": "Hauptfunktionen",
+    "headerTag": "Zeiterfassung, aber schlauer",
+    "headerTitle": "Alles, was Sie brauchen – nichts Überflüssiges.",
+    "headerDescription": "TimeWise Tracker ist vollgepackt mit Funktionen, die Ihre Zeiterfassung so einfach und effizient wie möglich machen.",
+    "list": {
+      "timeTracking": {
+        "title": "Live-Zeiterfassung",
+        "desc": "Starten und stoppen Sie einen Timer mit nur einem Klick. Ihre Arbeitszeit wird genau und ohne manuelle Berechnung erfasst."
+      },
+      "specialEntries": {
+        "title": "Manuelle & spezielle Einträge",
+        "desc": "Fügen Sie ganz einfach Einträge für vergangene Arbeiten hinzu oder erfassen Sie Kranktage, Urlaub und Feiertage mit speziellen Eintragstypen."
+      },
+      "location": {
+        "title": "Standort & Reisen",
+        "desc": "Ermitteln Sie Ihren aktuellen Standort automatisch oder geben Sie ihn manuell ein. Erfassen Sie Reisezeiten und Fahrerstatus für eine genaue Vergütung."
+      },
+      "export": {
+        "title": "Nahtloser Export",
+        "desc": "Erstellen Sie professionell aussehende Stundenzettel im Excel- und PDF-Format, bereit zum Versand für die Lohnabrechnung oder zur Ablage."
+      },
+      "smart": {
+        "title": "Intelligente Vorschläge",
+        "desc": "Die App lernt Ihre Gewohnheiten und schlägt basierend auf früheren Einträgen Orte und Zeiten vor, um Ihren Workflow zu beschleunigen."
+      },
+      "pauseCalculation": {
+        "title": "Automatische Pausenberechnung",
+        "desc": "Basierend auf Ihrer Arbeitszeit schlägt die App die gesetzlich vorgeschriebene Pause vor, die Sie mit einem Klick übernehmen können."
+      }
+    }
+  },
+  "pricing": {
+    "landingTitle": "Einfache, transparente Preise",
+    "landingDescription": "Ein Tarif, der alles enthält, was Sie brauchen. Keine Stufen, keine Zusatzpakete, keine Überraschungen.",
+    "title": "Wählen Sie Ihren Tarif",
+    "subtitle": "Wählen Sie den perfekten Tarif für Ihre Zeiterfassungsbedürfnisse",
+    "loadingPlans": "Tarife werden geladen...",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "save20": "20% sparen",
+    "tieredHint": "Angezeigte Preise sind für 10+ Nutzer",
+    "perUserPerMonth": "pro Nutzer pro Monat",
+    "month": "Monat",
+    "year": "Jahr",
+    "mostPopular": "Am beliebtesten",
+    "getStarted": "Jetzt starten",
+    "createTeam": "Team erstellen",
+    "processing": "Wird verarbeitet...",
+    "faqTitle": "Häufig gestellte Fragen",
+    "faq1Question": "Kann ich jederzeit kündigen?",
+    "faq1Answer": "Ja, Sie können Ihr Abonnement jederzeit kündigen. Sie haben weiterhin Zugang bis zum Ende Ihres Abrechnungszeitraums.",
+    "faq2Question": "Welche Zahlungsmethoden akzeptieren Sie?",
+    "faq2Answer": "Wir akzeptieren alle gängigen Kredit- und Debitkarten über unseren sicheren Zahlungsabwickler.",
+    "faq3Question": "Gibt es eine kostenlose Testphase?",
+    "faq3Answer": "Ja, wir bieten eine 14-tägige kostenlose Testphase für alle Tarife. Keine Kreditkarte erforderlich.",
+    "faq4Question": "Kann ich später den Tarif wechseln?",
+    "faq4Answer": "Absolut! Sie können Ihren Tarif jederzeit in Ihren Kontoeinstellungen upgraden oder downgraden.",
+    "loginRequiredTitle": "Anmeldung erforderlich",
+    "loginRequiredDescription": "Bitte melden Sie sich an, um einen Tarif zu abonnieren.",
+    "errorTitle": "Zahlungsfehler",
+    "errorDescription": "Bei der Verarbeitung Ihrer Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "tryForFree": "Kostenlos testen",
+    "freeTrial": "Kostenlose Testphase",
+    "noCreditCard": "Keine Kreditkarte erforderlich",
+    "successToast": "Abonnement erfolgreich!",
+    "cancelledToast": "Abonnement-Erstellung abgebrochen."
+  },
+  "faqTitle": "Häufig gestellte Fragen",
+  "faqs": [
+    {
+      "question": "Gibt es eine kostenlose Testphase?",
+      "answer": "Ja, Sie können sich anmelden und TimeWise Tracker mit allen Funktionen 14 Tage lang kostenlos nutzen. Es ist keine Kreditkarte erforderlich."
+    },
+    {
+      "question": "Kann ich Zeiten für mehrere Projekte oder Kunden erfassen?",
+      "answer": "Auf jeden Fall. Das Feld \"Einsatzort\" kann für verschiedene Projekte, Kunden oder Aufgaben genutzt werden. Zukünftige Funktionen werden ein eigenes Projekt- und Kundenmanagement bieten."
+    },
+    {
+      "question": "Wie funktioniert der Excel- und PDF-Export?",
+      "answer": "Auf der Seite \"Vorschau & Export\" können Sie jeden Monat auswählen und einen professionell formatierten Stundenzettel herunterladen. Die Excel-Datei ist für Berechnungen geeignet, das PDF perfekt zum Ausdrucken und Unterschreiben."
+    },
+    {
+      "question": "Sind meine Daten sicher?",
+      "answer": "Ja, Ihre Daten werden sicher mit Firebase, einer Plattform von Google, gespeichert. Wir verwenden branchenübliche Sicherheitsstandards, um Ihre Informationen zu schützen."
+    }
+  ],
+  "footer": {
+    "copyright": "© 2025 TimeWise Tracker. Alle Rechte vorbehalten.",
+    "terms": "Nutzungsbedingungen",
+    "privacy": "Datenschutz",
+    "imprint": "Impressum"
+  }
+}

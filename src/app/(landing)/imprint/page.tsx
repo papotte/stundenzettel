@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from 'react'
 
+import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
-
-import { useTranslation } from '@/context/i18n-context'
 
 const ImprintEn = dynamic(() => import('@/../content/legal/imprint.en.mdx'))
 const ImprintDe = dynamic(() => import('@/../content/legal/imprint.de.mdx'))
 
 export default function ImprintPage() {
-  const { language } = useTranslation()
+  const language = useLocale()
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)

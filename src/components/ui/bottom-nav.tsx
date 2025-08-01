@@ -1,29 +1,28 @@
 'use client'
 
 import { FileSpreadsheet, Home } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
-import { useTranslation } from '@/context/i18n-context'
 
 const navItems = [
   {
     href: '/tracker',
     icon: Home,
-    labelKey: 'bottomNav.home',
+    labelKey: 'nav.bottom.home',
     labelDefault: 'Home',
   },
   {
     href: '/export',
     icon: FileSpreadsheet,
-    labelKey: 'bottomNav.export',
+    labelKey: 'nav.bottom.export',
     labelDefault: 'Export',
   },
 ]
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const { t } = useTranslation()
+  const t = useTranslations()
 
   return (
     <nav
