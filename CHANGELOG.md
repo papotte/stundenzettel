@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/papotte/stundenzettel/compare/v1.9.2...v1.10.0) (2025-08-01)
+
+
+### Features
+
+* implement proper i18n using next-intl library ([#91](https://github.com/papotte/stundenzettel/issues/91)) ([c759f91](https://github.com/papotte/stundenzettel/commit/c759f913840f55e51acb059d151cd15334139d52))
+
 ## [1.9.2](https://github.com/papotte/stundenzettel/compare/v1.9.1...v1.9.2) (2025-07-29)
 
 
