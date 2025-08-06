@@ -101,7 +101,6 @@ export const AllTheProviders =
         locale={locale}
         messages={messages}
         formats={formattingProps}
-        timeZone={'UTC'}
         onError={(_) => {}}
         getMessageFallback={({ namespace, key }) =>
           `${namespace != null ? namespace + '.' : ''}${key}`

@@ -15,6 +15,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function normalizeDate(date: Date): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    12,
+    0,
+    0,
+    0,
+  )
+}
+
 export function formatDuration(seconds: number) {
   if (isNaN(seconds) || seconds < 0) {
     return '00:00:00'
@@ -26,8 +38,9 @@ export function formatDuration(seconds: number) {
 }
 
 export function getWeeksForMonth(date: Date) {
-  const firstDayOfMonth = startOfMonth(date)
-  const lastDayOfMonth = endOfMonth(date)
+  const normalizedDate = normalizeDate(date)
+  const firstDayOfMonth = startOfMonth(normalizedDate)
+  const lastDayOfMonth = endOfMonth(normalizedDate)
 
   const weeks = eachWeekOfInterval(
     {
@@ -39,7 +52,9 @@ export function getWeeksForMonth(date: Date) {
 
   return weeks.map((weekStart) => {
     const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 })
-    return eachDayOfInterval({ start: weekStart, end: weekEnd })
+    const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
+    // Ensure each day is timezone-independent by normalizing it
+    return days.map((day) => normalizeDate(day))
   })
 }
 

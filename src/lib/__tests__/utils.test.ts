@@ -7,6 +7,7 @@ import {
   formatHoursAndMinutes,
   formatMinutesToTimeInput,
   getUserId,
+  getWeeksForMonth,
   timeStringToMinutes,
 } from '../utils'
 
@@ -151,6 +152,78 @@ describe('utils', () => {
     })
     it('returns undefined if neither uid nor email is present', () => {
       expect(getUserId({})).toBeUndefined()
+    })
+  })
+
+  describe('getWeeksForMonth', () => {
+    it('returns correct weeks for a month starting on Monday', () => {
+      // January 2024 starts on Monday
+      const january2024 = new Date(2024, 0, 1) // January 1, 2024
+      const weeks = getWeeksForMonth(january2024)
+
+      expect(weeks).toHaveLength(5) // January 2024 has 5 weeks
+
+      // First week should start on Monday, January 1
+      expect(weeks[0][0].getDate()).toBe(1)
+      expect(weeks[0][0].getDay()).toBe(1) // Monday
+
+      // Last week should end on Sunday, February 4
+      expect(weeks[4][6].getDate()).toBe(4)
+      expect(weeks[4][6].getDay()).toBe(0) // Sunday
+    })
+
+    it('returns correct weeks for a month starting on Sunday', () => {
+      // December 2024 starts on Sunday
+      const december2024 = new Date(2024, 11, 1) // December 1, 2024
+      const weeks = getWeeksForMonth(december2024)
+
+      expect(weeks).toHaveLength(6) // December 2024 has 6 weeks (includes partial weeks)
+
+      // First week should start on Monday, November 25
+      expect(weeks[0][0].getDate()).toBe(25)
+      expect(weeks[0][0].getDay()).toBe(1) // Monday
+
+      // Last week should end on Sunday, January 5, 2025
+      expect(weeks[5][6].getDate()).toBe(5)
+      expect(weeks[5][6].getDay()).toBe(0) // Sunday
+    })
+
+    it('returns correct weeks for August 2025', () => {
+      // August 2025 - this was the problematic month mentioned
+      const august2025 = new Date(2025, 7, 1) // August 1, 2025
+      const weeks = getWeeksForMonth(august2025)
+
+      expect(weeks).toHaveLength(5) // August 2025 has 5 weeks in this timezone
+
+      // First week should start on Monday, July 28, 2025
+      expect(weeks[0][0].getDate()).toBe(28)
+      expect(weeks[0][0].getMonth()).toBe(6) // July
+      expect(weeks[0][0].getDay()).toBe(1) // Monday
+
+      // First week should end on Sunday, August 3, 2025
+      expect(weeks[0][6].getDate()).toBe(3)
+      expect(weeks[0][6].getMonth()).toBe(7) // August
+      expect(weeks[0][6].getDay()).toBe(0) // Sunday
+
+      // Last week should end on Sunday, August 31, 2025
+      expect(weeks[4][6].getDate()).toBe(31)
+      expect(weeks[4][6].getMonth()).toBe(7) // August
+      expect(weeks[4][6].getDay()).toBe(0) // Sunday
+    })
+
+    it('each week has exactly 7 days starting on Monday', () => {
+      const testDate = new Date(2025, 7, 1) // August 2025
+      const weeks = getWeeksForMonth(testDate)
+
+      weeks.forEach((week) => {
+        expect(week).toHaveLength(7)
+
+        // Each day should be the correct day of week
+        week.forEach((day, dayIndex) => {
+          const expectedDayOfWeek = dayIndex === 0 ? 1 : (dayIndex + 1) % 7 // Monday=1, Tuesday=2, ..., Sunday=0
+          expect(day.getDay()).toBe(expectedDayOfWeek)
+        })
+      })
     })
   })
 })

@@ -52,7 +52,7 @@ function NumberFormatTestComponent() {
 }
 
 describe('i18n dateTime formats', () => {
-  const testDate = new Date('2024-01-15T14:30:00Z') // Monday, January 15, 2024 at 2:30 PM
+  const testDate = new Date('2024-01-15T14:30:00') // Monday, January 15, 2024 at 2:30 PM
 
   describe('English formatting', () => {
     beforeEach(() => {
@@ -128,8 +128,8 @@ describe('i18n dateTime formats', () => {
 
   describe('Edge cases', () => {
     it('should handle different times of day correctly', () => {
-      const morning = new Date('2024-01-15T09:15:00Z')
-      const evening = new Date('2024-01-15T23:45:00Z')
+      const morning = new Date('2024-01-15T09:15:00')
+      const evening = new Date('2024-01-15T23:45:00')
 
       function TimeTestComponent() {
         const format = useFormatter()

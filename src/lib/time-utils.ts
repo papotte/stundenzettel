@@ -5,6 +5,30 @@ import { differenceInMinutes } from 'date-fns'
 import type { TimeEntry, UserSettings } from './types'
 
 /**
+ * Parses a time string (HH:mm) into a Date object using a fixed date to avoid timezone issues.
+ * This function is timezone-independent and should be used instead of date-fns parse for time strings.
+ */
+export function parseTimeString(
+  timeStr: string,
+  baseDate: Date = new Date(),
+): Date {
+  const [hours, minutes] = timeStr.split(':').map(Number)
+  if (isNaN(hours) || isNaN(minutes)) {
+    throw new Error('Invalid time format')
+  }
+
+  // Validate hours and minutes
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    throw new Error('Invalid time format')
+  }
+
+  // Create a new date object with the same year/month/day as baseDate but with the specified time
+  const result = new Date(baseDate)
+  result.setHours(hours, minutes, 0, 0)
+  return result
+}
+
+/**
  * Calculates the total compensated minutes for a list of entries, using compensation percentages for driver and passenger.
  * Used for daily, weekly, and monthly totals in the tracker.
  */

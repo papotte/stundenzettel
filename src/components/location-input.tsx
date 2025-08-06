@@ -120,7 +120,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
                 onClick={onGetCurrentLocation}
                 aria-label="Get current location"
                 disabled={isFetchingLocation}
-                className="absolute right-0 mr-1 h-8 w-8"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6"
               >
                 {isFetchingLocation ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

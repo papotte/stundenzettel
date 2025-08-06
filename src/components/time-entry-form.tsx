@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { differenceInMinutes, parse, set } from 'date-fns'
+import { differenceInMinutes, set } from 'date-fns'
 import {
   AlertTriangle,
   Calendar as CalendarIcon,
@@ -68,7 +68,10 @@ import {
   suggestPassengerTimes,
   suggestStartTimes,
 } from '@/lib/time-entry-suggestions'
-import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
+import {
+  calculateTotalCompensatedMinutes,
+  parseTimeString,
+} from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import {
   cn,
@@ -116,8 +119,8 @@ const formSchema = z
       if (data.mode === 'interval') {
         if (!data.startTime || !data.endTime) return false
         try {
-          const start = parse(data.startTime, 'HH:mm', new Date())
-          const end = parse(data.endTime, 'HH:mm', new Date())
+          const start = parseTimeString(data.startTime)
+          const end = parseTimeString(data.endTime)
           return end > start
         } catch {
           return false
@@ -250,8 +253,8 @@ export default function TimeEntryForm({
   const pauseSuggestion = useMemo(() => {
     if (isSpecialEntry) return null
     try {
-      const start = parse(startTimeValue || '00:00', 'HH:mm', new Date())
-      const end = parse(endTimeValue || '00:00', 'HH:mm', new Date())
+      const start = parseTimeString(startTimeValue || '00:00')
+      const end = parseTimeString(endTimeValue || '00:00')
       if (end <= start) return null
 
       const workDurationInMinutes = differenceInMinutes(end, start)
@@ -287,7 +290,7 @@ export default function TimeEntryForm({
         location: locationValue,
         startTime:
           modeValue === 'interval' && startTimeValue
-            ? parse(startTimeValue, 'HH:mm', new Date(getValues('date')))
+            ? parseTimeString(startTimeValue, new Date(getValues('date')))
             : set(getValues('date') || new Date(), {
                 hours: 12,
                 minutes: 0,
@@ -296,7 +299,7 @@ export default function TimeEntryForm({
               }),
         endTime:
           modeValue === 'interval' && endTimeValue
-            ? parse(endTimeValue, 'HH:mm', new Date(getValues('date')))
+            ? parseTimeString(endTimeValue, new Date(getValues('date')))
             : undefined,
         durationMinutes:
           modeValue === 'duration' ? Number(getValues('duration')) : undefined,
@@ -317,8 +320,8 @@ export default function TimeEntryForm({
       )
       let workDuration = 0
       if (modeValue === 'interval' && startTimeValue && endTimeValue) {
-        const start = parse(startTimeValue, 'HH:mm', new Date())
-        const end = parse(endTimeValue, 'HH:mm', new Date())
+        const start = parseTimeString(startTimeValue)
+        const end = parseTimeString(endTimeValue)
         workDuration = end > start ? differenceInMinutes(end, start) : 0
       } else if (modeValue === 'duration') {
         workDuration = Number(getValues('duration')) || 0

@@ -56,7 +56,7 @@ export default async function RootLayout({
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
         <AuthProvider>
-          <NextIntlClientProvider timeZone={'Europe/Berlin'}>
+          <NextIntlClientProvider>
             {children}
             <Toaster />
           </NextIntlClientProvider>

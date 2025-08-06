@@ -2,7 +2,57 @@ import { differenceInMinutes, set } from 'date-fns'
 
 import type { TimeEntry } from '@/lib/types'
 
-import { calculateTotalCompensatedMinutes } from '../time-utils'
+import {
+  calculateTotalCompensatedMinutes,
+  parseTimeString,
+} from '../time-utils'
+
+describe('parseTimeString', () => {
+  it('parses time strings correctly', () => {
+    const baseDate = new Date('2024-01-15T12:00:00Z')
+
+    const result1 = parseTimeString('09:30', baseDate)
+    expect(result1.getHours()).toBe(9)
+    expect(result1.getMinutes()).toBe(30)
+    expect(result1.getDate()).toBe(15)
+    expect(result1.getMonth()).toBe(0) // January is 0
+
+    const result2 = parseTimeString('23:45', baseDate)
+    expect(result2.getHours()).toBe(23)
+    expect(result2.getMinutes()).toBe(45)
+  })
+
+  it('is timezone-independent', () => {
+    // Test with different base dates to ensure timezone doesn't affect the result
+    const date1 = new Date('2024-01-15T00:00:00Z')
+    const date2 = new Date('2024-06-15T00:00:00Z')
+
+    const time1 = parseTimeString('14:30', date1)
+    const time2 = parseTimeString('14:30', date2)
+
+    expect(time1.getHours()).toBe(14)
+    expect(time1.getMinutes()).toBe(30)
+    expect(time2.getHours()).toBe(14)
+    expect(time2.getMinutes()).toBe(30)
+  })
+
+  it('throws error for invalid time format', () => {
+    expect(() => parseTimeString('invalid')).toThrow('Invalid time format')
+    expect(() => parseTimeString('25:00')).toThrow('Invalid time format')
+    expect(() => parseTimeString('12:60')).toThrow('Invalid time format')
+  })
+
+  it('uses current date when no base date provided', () => {
+    const now = new Date()
+    const result = parseTimeString('15:45')
+
+    expect(result.getHours()).toBe(15)
+    expect(result.getMinutes()).toBe(45)
+    expect(result.getDate()).toBe(now.getDate())
+    expect(result.getMonth()).toBe(now.getMonth())
+    expect(result.getFullYear()).toBe(now.getFullYear())
+  })
+})
 
 describe('calculateTotalCompensatedMinutes', () => {
   const baseEntry: Omit<TimeEntry, 'id' | 'userId'> = {

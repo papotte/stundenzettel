@@ -29,8 +29,8 @@ const mockEntries: TimeEntry[] = [
     id: '1',
     userId: 'test-user',
     location: 'Office',
-    startTime: new Date('2024-07-01T09:00:00Z'),
-    endTime: new Date('2024-07-01T17:00:00Z'),
+    startTime: new Date('2024-07-01T09:00:00'),
+    endTime: new Date('2024-07-01T17:00:00'),
     pauseDuration: 30, // 0.5 hours -> 0.50
     driverTimeHours: 0.5, // 0.5 hours as driver
     passengerTimeHours: 0,
@@ -39,8 +39,8 @@ const mockEntries: TimeEntry[] = [
     id: '2',
     userId: 'test-user',
     location: 'SICK_LEAVE',
-    startTime: new Date('2024-07-02T09:00:00Z'),
-    endTime: new Date('2024-07-02T17:00:00Z'), // 8 hours
+    startTime: new Date('2024-07-02T09:00:00'),
+    endTime: new Date('2024-07-02T17:00:00'), // 8 hours
     pauseDuration: 0,
     driverTimeHours: 0,
     passengerTimeHours: 0,
@@ -56,7 +56,7 @@ const mockOnEdit = jest.fn()
 const mockOnAdd = jest.fn()
 
 const defaultProps = {
-  selectedMonth: new Date('2024-07-15T00:00:00Z'),
+  selectedMonth: new Date('2024-07-15T00:00:00'),
   user: mockUser,
   entries: mockEntries,
   userSettings: mockUserSettings,
@@ -139,19 +139,10 @@ describe('TimesheetPreview', () => {
     expect(mockOnAdd).toHaveBeenCalledTimes(1)
     const calledDate = mockOnAdd.mock.calls[0][0] as Date
 
-    // The date should be July 3rd, 2024 in UTC
-    // Create the expected UTC date for comparison
-    const expectedDate = new Date('2024-07-03T00:00:00Z')
-
-    // Compare the dates by converting to UTC strings to avoid timezone issues
-    expect(calledDate.toISOString().split('T')[0]).toBe(
-      expectedDate.toISOString().split('T')[0],
-    )
-
-    // Also verify the individual components for clarity
-    expect(calledDate.getUTCFullYear()).toBe(2024)
-    expect(calledDate.getUTCMonth()).toBe(6) // 0-indexed, so 6 is July
-    expect(calledDate.getUTCDate()).toBe(3)
+    // Compare the dates using local date components to avoid timezone issues
+    expect(calledDate.getFullYear()).toBe(2024)
+    expect(calledDate.getMonth()).toBe(6) // 0-indexed, so 6 is July
+    expect(calledDate.getDate()).toBe(3)
   })
 
   it('displays correct converted totals with passenger hours', () => {
