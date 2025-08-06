@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/papotte/stundenzettel/compare/v1.10.0...v1.10.1) (2025-08-06)
+
+
+### Bug Fixes
+
+* use timezone insensitive functions ([b1c03e2](https://github.com/papotte/stundenzettel/commit/b1c03e29e98aa8899d744d65ef1b3e6f817e7be8))
+
 # [1.10.0](https://github.com/papotte/stundenzettel/compare/v1.9.2...v1.10.0) (2025-08-01)
 
 
