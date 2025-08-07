@@ -11,11 +11,12 @@ import {
   startOfWeek,
   subDays,
 } from 'date-fns'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
+import { useFormatter } from '@/lib/date-formatter'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'

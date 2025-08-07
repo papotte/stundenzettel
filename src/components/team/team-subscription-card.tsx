@@ -10,7 +10,7 @@ import {
   RefreshCw,
   Users,
 } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,7 @@ import {
 import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
 import { paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
@@ -274,9 +275,8 @@ export function TeamSubscriptionCard({
             <p className="text-sm text-muted-foreground">
               {t('teams.startedOn', {
                 date: format.dateTime(
-                  new Date(subscription.currentPeriodStart),
-                  'long',
-                  { weekday: undefined },
+                  subscription.currentPeriodStart,
+                  'longNoWeekday',
                 ),
               })}
               {subscription.cancelAt && (
@@ -285,9 +285,8 @@ export function TeamSubscriptionCard({
                   •{' '}
                   {t('teams.cancelsOn', {
                     date: format.dateTime(
-                      new Date(subscription.cancelAt),
-                      'long',
-                      { weekday: undefined },
+                      subscription.cancelAt,
+                      'longNoWeekday',
                     ),
                   })}
                 </span>

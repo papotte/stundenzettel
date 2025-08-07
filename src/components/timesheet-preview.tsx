@@ -4,7 +4,7 @@ import React, { useCallback, useMemo } from 'react'
 
 import { differenceInMinutes, getDay, isSameMonth } from 'date-fns'
 import { Plus } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useFormatter } from '@/lib/date-formatter'
 import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
@@ -213,7 +214,7 @@ export default function TimesheetPreview({
                       return null
                     }
 
-                    const dayTestId = `timesheet-day-${format.dateTime(day, 'short')}`
+                    const dayTestId = `timesheet-day-${format.dateTime(day, 'intl')}`
                     const dayEntries = getEntriesForDay(day)
                     const isSunday = getDay(day) === 0
 

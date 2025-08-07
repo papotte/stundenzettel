@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import { Clock, Mail, MoreHorizontal, X } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
+import { useFormatter } from '@/lib/date-formatter'
 import type { TeamInvitation } from '@/lib/types'
 import {
   createTeamInvitation,
@@ -171,9 +172,7 @@ export function TeamInvitationsList({
                   </div>
                 </TableCell>
                 <TableCell className={expired ? 'text-red-600' : ''}>
-                  {format.dateTime(new Date(invitation.expiresAt), 'long', {
-                    weekday: undefined,
-                  })}
+                  {format.dateTime(invitation.expiresAt, 'longNoWeekday')}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

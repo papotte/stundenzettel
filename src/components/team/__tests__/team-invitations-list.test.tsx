@@ -376,8 +376,8 @@ describe('TeamInvitationsList', () => {
       expect(screen.getByText('teams.roles.admin')).toBeInTheDocument()
 
       // Check that dates are displayed
-      expect(screen.getByText('January 8, 2024')).toBeInTheDocument()
-      expect(screen.getByText('January 9, 2024')).toBeInTheDocument()
+      expect(screen.getByText('January 8th, 2024')).toBeInTheDocument()
+      expect(screen.getByText('January 9th, 2024')).toBeInTheDocument()
     })
   })
 })

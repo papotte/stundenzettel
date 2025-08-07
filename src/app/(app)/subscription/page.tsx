@@ -10,7 +10,7 @@ import {
   Crown,
   ExternalLink,
 } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -27,6 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { useToast } from '@/hooks/use-toast'
+import { useFormatter } from '@/lib/date-formatter'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 

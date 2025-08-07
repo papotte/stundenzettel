@@ -10,7 +10,7 @@ import {
   UserX,
   Users,
 } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useToast } from '@/hooks/use-toast'
+import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, TeamMember } from '@/lib/types'
 import {
   getTeamMembers,
@@ -210,9 +211,7 @@ export function TeamMembersList({
                   </div>
                 </TableCell>
                 <TableCell>
-                  {format.dateTime(member.joinedAt, 'long', {
-                    weekday: undefined,
-                  })}
+                  {format.dateTime(member.joinedAt, 'longNoWeekday')}
                 </TableCell>
                 {canManageSeats && (
                   <TableCell>

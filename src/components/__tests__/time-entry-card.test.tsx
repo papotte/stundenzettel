@@ -41,7 +41,7 @@ describe('TimeEntryCard', () => {
 
     expect(screen.getByText('Office')).toBeInTheDocument()
     // Use regex to be resilient to locale time formatting
-    expect(screen.getByText(/9:00.*-.*5:00/i)).toBeInTheDocument()
+    expect(screen.getByText(/9:00.*-.*17:00/i)).toBeInTheDocument()
     expect(screen.getByText(/pause/i)).toBeInTheDocument()
     expect(screen.getByText('time_entry_card.drivingLabel')).toBeInTheDocument()
     expect(

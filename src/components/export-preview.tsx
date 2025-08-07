@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { addMonths, isSameDay, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight, Download, Printer } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
+import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'

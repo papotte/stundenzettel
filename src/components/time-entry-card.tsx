@@ -2,7 +2,6 @@
 
 import React from 'react'
 
-import { format } from 'date-fns'
 import {
   BedDouble,
   CarFront,
@@ -31,6 +30,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
+import { useFormatter } from '@/lib/date-formatter'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
 import { formatDuration, getLocationDisplayName } from '@/lib/utils'
@@ -58,6 +58,7 @@ export default function TimeEntryCard({
   passengerCompensationPercent = 100,
 }: TimeEntryCardProps) {
   const t = useTranslations()
+  const format = useFormatter().dateTime
 
   const isSpecial = SPECIAL_LOCATION_KEYS.includes(
     entry.location as SpecialLocationKey,
@@ -73,9 +74,9 @@ export default function TimeEntryCard({
       passengerCompensationPercent,
     ) * 60 // convert minutes to seconds for formatDuration
 
-  const formattedStartTime = format(entry.startTime, 'p')
+  const formattedStartTime = format(entry.startTime, 'shortTime')
   const formattedEndTime =
-    entry.endTime instanceof Date ? format(entry.endTime, 'p') : ''
+    entry.endTime instanceof Date ? format(entry.endTime, 'shortTime') : ''
 
   if (SpecialIcon) {
     return (

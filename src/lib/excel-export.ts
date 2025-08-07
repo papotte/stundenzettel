@@ -1,7 +1,8 @@
 import { differenceInMinutes, getDay, isSameMonth } from 'date-fns'
 import ExcelJS from 'exceljs'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 
+import { useFormatter } from '@/lib/date-formatter'
 import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'

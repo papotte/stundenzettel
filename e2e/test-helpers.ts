@@ -1,7 +1,5 @@
 import { type Page, expect } from '@playwright/test'
 
-export const GermanDateFormatString = 'd.M.yyyy'
-
 // Helper function to create a new manual entry for the currently selected day
 export const addManualEntry = async (
   page: Page,

@@ -1,5 +1,4 @@
-import { format } from 'date-fns'
-
+import { formatDateTime } from './date-formatter'
 import type { TimeEntry } from './types'
 
 /**
@@ -70,7 +69,7 @@ export function suggestStartTimes(
   }
   const timeMap = new Map<string, { count: number; lastUsed: number }>()
   filtered.forEach((e) => {
-    const timeStr = format(e.startTime, 'HH:mm')
+    const timeStr = formatDateTime(e.startTime, 'shortTime', 'en')
     const lastUsed = e.startTime.getTime()
     if (!timeMap.has(timeStr)) {
       timeMap.set(timeStr, { count: 1, lastUsed })
@@ -111,7 +110,7 @@ export function suggestEndTimes(
   }
   const timeMap = new Map<string, { count: number; lastUsed: number }>()
   filtered.forEach((e) => {
-    const timeStr = format(e.endTime!, 'HH:mm')
+    const timeStr = formatDateTime(e.endTime!, 'shortTime', 'en')
     const lastUsed = e.endTime!.getTime()
     if (!timeMap.has(timeStr)) {
       timeMap.set(timeStr, { count: 1, lastUsed })

@@ -12,7 +12,7 @@ import {
   Lightbulb,
   Save,
 } from 'lucide-react'
-import { useFormatter, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -61,6 +61,7 @@ import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
+import { useFormatter } from '@/lib/date-formatter'
 import {
   suggestDriverTimes,
   suggestEndTimes,

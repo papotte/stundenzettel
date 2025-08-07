@@ -128,7 +128,7 @@ describe('TimesheetPreview', () => {
 
     // Find the row for July 3rd, which is empty, and click its plus button
     // The row text is "7/3/2024" (month/day/year format in UTC).
-    const dateCell = screen.getByText('7/3/2024')
+    const dateCell = screen.getByText('07/03/2024')
     const row = dateCell.closest('tr')
     expect(row).not.toBeNull()
     const addButton = row!.querySelector('button')
