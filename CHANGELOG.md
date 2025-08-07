@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/papotte/stundenzettel/compare/v1.10.1...v1.10.2) (2025-08-07)
+
+
+### Bug Fixes
+
+* do not use next-intl for date parsing ([0f0d66d](https://github.com/papotte/stundenzettel/commit/0f0d66d500520a46df158ad45de0bcbf88ed1a88))
+
 ## [1.10.1](https://github.com/papotte/stundenzettel/compare/v1.10.0...v1.10.1) (2025-08-06)
 
 
