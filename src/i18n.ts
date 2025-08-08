@@ -3,7 +3,7 @@ import { getRequestConfig } from 'next-intl/server'
 import { formattingProps } from './lib/i18n/formats'
 import { getUserLocale } from './services/locale'
 
-export const locales: [string, ...string[]] = ['en', 'de']
+export const locales: [string, ...string[]] = ['en', 'de', 'es']
 export const defaultLocale: Locale = 'en'
 
 export type Locale = (typeof locales)[number]

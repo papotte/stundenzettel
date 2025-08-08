@@ -1,0 +1,22 @@
+{
+  "exportButton": "Exportar a Excel",
+  "exportPdfButton": "Descargar PDF",
+  "timesheetTitle": "Hoja de tiempo para el mes: {month}",
+  "headerCompany": "Nombre y Teléfono / Radio:",
+  "headerWeek": "Semana",
+  "headerDate": "Fecha",
+  "headerLocation": "Ubicación",
+  "headerWorkTime": "Tiempo de Trabajo Real",
+  "headerPauseDuration": "Pausa (hrs)",
+  "headerDriverTime": "Tiempo como Conductor (hrs)",
+  "headerPassengerTime": "Tiempo como Pasajero (hrs)",
+  "headerCompensatedTime": "Horas Compensadas",
+  "headerFrom": "Desde",
+  "headerTo": "Hasta",
+  "footerTotalPerWeek": "Total por semana:",
+  "footerTotalHours": "Total de horas:",
+  "footerTotalAfterConversion": "Total después de conversión:",
+  "headerMileage": "Kilometraje/Gastos",
+  "signatureLine": "Firma:",
+  "noDataHint": "No hay datos disponibles para exportar en este mes."
+}
