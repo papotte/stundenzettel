@@ -1,18 +1,18 @@
 {
   "testMode": "TimeWise Tracker (Modo de Prueba)",
-  "selectMockUser": "Seleccionar un Usuario de Prueba",
+  "selectMockUser": "Seleccionar un usuario de prueba",
   "mockUserDescription": "Elige un usuario para iniciar sesión para pruebas locales. Los datos se almacenan en memoria y se restablecerán al recargar la página.",
   "loginAs": "Iniciar sesión como {displayName}",
-  "signInTab": "Iniciar Sesión",
+  "signInTab": "Iniciar sesión",
   "signUpTab": "Registrarse",
-  "emailLabel": "Correo Electrónico",
+  "emailLabel": "Correo electrónico",
   "emailPlaceholder": "m@example.com",
   "passwordLabel": "Contraseña",
-  "signInButton": "Iniciar Sesión",
-  "signingInButton": "Iniciando Sesión...",
+  "signInButton": "Iniciar sesión",
+  "signingInButton": "Iniciando sesión...",
   "signUpButton": "Registrarse",
-  "creatingAccountButton": "Creando Cuenta...",
+  "creatingAccountButton": "Creando cuenta...",
   "continueWith": "O continúa con",
   "signInWithGoogle": "Iniciar sesión con Google",
-  "authFailedTitle": "Autenticación Fallida"
+  "authFailedTitle": "Autenticación fallida"
 }
