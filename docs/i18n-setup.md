@@ -189,7 +189,7 @@ To add support for a new language (e.g., French - 'fr'):
 
    ```json
    // In src/messages/en/settings.json, de/settings.json, es/settings.json, fr/settings.json
-   "languageFr": "French" 
+   "languageFr": "French"
    ```
 
 4. **Test the implementation** to ensure all translations load correctly

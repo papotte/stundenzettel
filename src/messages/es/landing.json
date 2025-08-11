@@ -5,7 +5,7 @@
   "learnMore": "Aprender más",
   "features": {
     "keyFeatures": "Características clave",
-    "headerTag": "Rastrea el tiempo de manera inteligente",
+    "headerTag": "Controla el tiempo de manera inteligente",
     "headerTitle": "Todo lo que necesitas, nada que no.",
     "headerDescription": "TimeWise Tracker está lleno de características diseñadas para hacer tu seguimiento de tiempo tan fácil y preciso como sea posible.",
     "list": {
@@ -19,7 +19,7 @@
       },
       "location": {
         "title": "Ubicación y viajes",
-        "desc": "Obtén automáticamente tu ubicación actual o ingrésala manualmente. Rastrea tiempo de viaje y estado de conductor para compensación precisa."
+        "desc": "Obtén automáticamente tu ubicación actual o ingrésala manualmente. Agrega el tiempo de viaje y estado de conductor para compensación precisa."
       },
       "export": {
         "title": "Exportación perfecta",
@@ -80,7 +80,7 @@
       "answer": "Sí, puedes registrarte y usar TimeWise Tracker con todas sus características gratis por 14 días. No se requiere tarjeta de crédito para comenzar tu prueba."
     },
     {
-      "question": "¿Puedo rastrear tiempo para múltiples proyectos o clientes?",
+      "question": "¿Puedo agregar tiempo para múltiples proyectos o clientes?",
       "answer": "Absolutamente. El campo 'Ubicación' puede usarse para especificar diferentes proyectos, clientes o tareas. Nuestras próximas características incluirán gestión dedicada de proyectos y clientes para una mejor organización."
     },
     {

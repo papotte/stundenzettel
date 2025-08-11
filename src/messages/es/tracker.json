@@ -1,6 +1,6 @@
 {
   "liveTrackingTitle": "Seguimiento de tiempo en vivo",
-  "liveTrackingDescription": "Inicia el cronómetro para rastrear tu trabajo mientras sucede.",
+  "liveTrackingDescription": "Inicia el cronómetro para guardar tu trabajo mientras sucede.",
   "runningTimerLocation": "Ubicación: {location}",
   "stopButton": "Detener",
   "locationPlaceholder": "¿Desde dónde estás trabajando?",
