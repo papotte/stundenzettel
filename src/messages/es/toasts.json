@@ -7,7 +7,7 @@
   "entryAddedDescription": "Nueva entrada para \"{location}\" creada.",
   "saveFailedTitle": "Error al guardar",
   "saveFailedDescription": "Hubo un problema guardando tu entrada.",
-  "entryDeletedTitle": "Entrada Eliminada",
+  "entryDeletedTitle": "Entrada eliminada",
   "deleteFailedTitle": "Error al Eliminar",
   "deleteFailedDescription": "Hubo un problema eliminando tu entrada.",
   "dataClearedTitle": "Datos Borrados",
