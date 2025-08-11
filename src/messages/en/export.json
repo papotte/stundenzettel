@@ -2,7 +2,7 @@
   "exportButton": "Export to Excel",
   "exportPdfButton": "Download PDF",
   "timesheetTitle": "Timesheet for the month: {month}",
-  "headerCompany": "Name and Phone / Radio:",
+  "headerCompany": "Name and Phone:",
   "headerWeek": "Week",
   "headerDate": "Date",
   "headerLocation": "Location",

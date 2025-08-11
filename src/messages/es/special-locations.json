@@ -1,6 +1,6 @@
 {
-  "SICK_LEAVE": "Baja por Enfermedad",
-  "PTO": "Tiempo Libre Pagado",
-  "BANK_HOLIDAY": "Día Feriado",
-  "TIME_OFF_IN_LIEU": "Tiempo Libre en Lugar de"
+  "SICK_LEAVE": "Baja por enfermedad",
+  "PTO": "Vacaciones",
+  "BANK_HOLIDAY": "Día festivo",
+  "TIME_OFF_IN_LIEU": "Descanso remunerado"
 }
