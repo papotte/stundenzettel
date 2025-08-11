@@ -3,7 +3,7 @@
   "locationRequiredDescription": "Por favor ingresa una ubicación para comenzar el seguimiento.",
   "entryUpdatedTitle": "Entrada actualizada",
   "entryUpdatedDescription": "Los cambios en \"{location}\" han sido guardados.",
-  "entryAddedTitle": "Entrada Agregada",
+  "entryAddedTitle": "Entrada agregada",
   "entryAddedDescription": "Nueva entrada para \"{location}\" creada.",
   "saveFailedTitle": "Error al Guardar",
   "saveFailedDescription": "Hubo un problema guardando tu entrada.",
