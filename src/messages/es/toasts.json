@@ -12,7 +12,7 @@
   "deleteFailedDescription": "Hubo un problema eliminando tu entrada.",
   "dataClearedTitle": "Datos borrados",
   "dataClearedDescription": "Todas tus entradas de tiempo han sido removidas de la base de datos.",
-  "clearFailedTitle": "Error al Borrar",
+  "clearFailedTitle": "Error al borrar",
   "clearFailedDescription": "Hubo un problema borrando tus datos.",
   "entryExistsTitle": "La entrada ya existe",
   "entryExistsDescription": "Ya existe una entrada para \"{location}\" en este día.",
