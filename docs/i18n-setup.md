@@ -6,6 +6,7 @@ This project uses [next-intl](https://next-intl-docs.vercel.app/) for comprehens
 
 - **English (en)** - Default language
 - **German (de)** - Secondary language
+- **Spanish (es)** - Third language
 
 ## Project Structure
 
@@ -27,6 +28,7 @@ src/
       time-entry-form.json   # Time entry form (48 keys)
       toasts.json    # Notification messages (24 keys)
     de/              # German translations (same structure)
+    es/              # Spanish translations (same structure)
   i18n.ts            # next-intl configuration
   components/
     language-switcher.tsx    # Language switching component
@@ -89,10 +91,11 @@ function LanguageSwitcher() {
   return (
     <select
       value={currentLanguage}
-      onChange={(e) => changeLanguage(e.target.value as 'en' | 'de')}
+      onChange={(e) => changeLanguage(e.target.value as 'en' | 'de' | 'es')}
     >
       <option value="en">English</option>
       <option value="de">Deutsch</option>
+      <option value="es">Español</option>
     </select>
   )
 }
@@ -161,9 +164,35 @@ Translation keys are organized by feature namespace using dot notation:
 
 ## Adding New Translations
 
-1. **Add the translation key** to the appropriate namespace file in both `en/` and `de/` folders
+1. **Add the translation key** to the appropriate namespace file in both `en/`, `de/`, and `es/` folders
 2. **Update the configuration** in `src/i18n.ts` if adding a new namespace
 3. **Use the new translation key** in your component: `t('namespace.key')`
+
+### Adding a New Language
+
+To add support for a new language (e.g., French - 'fr'):
+
+1. **Update the locales array** in `src/i18n.ts`:
+
+   ```typescript
+   export const locales: [string, ...string[]] = ['en', 'de', 'es', 'fr']
+   ```
+
+2. **Create the language directory** and translation files:
+
+   ```bash
+   mkdir src/messages/fr
+   # Copy and translate all 13 JSON files from src/messages/en/
+   ```
+
+3. **Add language option** to settings files:
+
+   ```json
+   // In src/messages/en/settings.json, de/settings.json, es/settings.json, fr/settings.json
+   "languageFr": "French"
+   ```
+
+4. **Test the implementation** to ensure all translations load correctly
 
 ### Example: Adding a New Translation
 
@@ -183,7 +212,15 @@ Translation keys are organized by feature namespace using dot notation:
 }
 ```
 
-3. Use in component:
+3. Add to `src/messages/es/common.json`:
+
+```json
+{
+  "newFeature": "Nueva Función"
+}
+```
+
+4. Use in component:
 
 ```tsx
 const t = useTranslations()

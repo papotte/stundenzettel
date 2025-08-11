@@ -1,5 +1,5 @@
 import { format as dateFnsFormat } from 'date-fns'
-import { de, enUS } from 'date-fns/locale'
+import { de, enUS, es } from 'date-fns/locale'
 import { useLocale } from 'next-intl'
 
 import type { Locale } from '@/i18n'
@@ -8,6 +8,7 @@ import type { Locale } from '@/i18n'
 const localeMap = {
   en: enUS,
   de: de,
+  es: es,
 } as const
 
 // Map next-intl format options to date-fns format strings

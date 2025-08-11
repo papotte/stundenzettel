@@ -1,0 +1,23 @@
+{
+  "locationRequiredTitle": "Ubicación requerida",
+  "locationRequiredDescription": "Por favor ingresa una ubicación para comenzar el seguimiento.",
+  "entryUpdatedTitle": "Entrada actualizada",
+  "entryUpdatedDescription": "Los cambios en \"{location}\" han sido guardados.",
+  "entryAddedTitle": "Entrada agregada",
+  "entryAddedDescription": "Nueva entrada para \"{location}\" creada.",
+  "saveFailedTitle": "Error al guardar",
+  "saveFailedDescription": "Hubo un problema guardando tu entrada.",
+  "entryDeletedTitle": "Entrada eliminada",
+  "deleteFailedTitle": "Error al eliminar",
+  "deleteFailedDescription": "Hubo un problema eliminando tu entrada.",
+  "dataClearedTitle": "Datos borrados",
+  "dataClearedDescription": "Todas tus entradas de tiempo han sido removidas de la base de datos.",
+  "clearFailedTitle": "Error al borrar",
+  "clearFailedDescription": "Hubo un problema borrando tus datos.",
+  "entryExistsTitle": "La entrada ya existe",
+  "entryExistsDescription": "Ya existe una entrada para \"{location}\" en este día.",
+  "configurationErrorTitle": "Error de configuración",
+  "configurationErrorDescription": "Firebase no está configurado correctamente. Por favor verifica tus variables de entorno.",
+  "databaseErrorTitle": "Error de conexión a base de datos",
+  "databaseConnectionError": "No se pudo conectar a la base de datos. Por favor consulta la sección 'Troubleshooting' en el archivo README.md."
+}
