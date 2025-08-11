@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/papotte/stundenzettel/compare/v1.10.2...v1.11.0) (2025-08-11)
+
+
+### Features
+
+* add Spanish translations ([#97](https://github.com/papotte/stundenzettel/issues/97)) ([0cd78a1](https://github.com/papotte/stundenzettel/commit/0cd78a1602a8135c0449425a53008f36e7edefb1))
+
 ## [1.10.2](https://github.com/papotte/stundenzettel/compare/v1.10.1...v1.10.2) (2025-08-07)
 
 
