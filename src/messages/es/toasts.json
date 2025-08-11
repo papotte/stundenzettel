@@ -1,7 +1,7 @@
 {
   "locationRequiredTitle": "Ubicación requerida",
   "locationRequiredDescription": "Por favor ingresa una ubicación para comenzar el seguimiento.",
-  "entryUpdatedTitle": "Entrada Actualizada",
+  "entryUpdatedTitle": "Entrada actualizada",
   "entryUpdatedDescription": "Los cambios en \"{location}\" han sido guardados.",
   "entryAddedTitle": "Entrada Agregada",
   "entryAddedDescription": "Nueva entrada para \"{location}\" creada.",
