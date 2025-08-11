@@ -8,7 +8,7 @@
   "saveFailedTitle": "Error al guardar",
   "saveFailedDescription": "Hubo un problema guardando tu entrada.",
   "entryDeletedTitle": "Entrada eliminada",
-  "deleteFailedTitle": "Error al Eliminar",
+  "deleteFailedTitle": "Error al eliminar",
   "deleteFailedDescription": "Hubo un problema eliminando tu entrada.",
   "dataClearedTitle": "Datos Borrados",
   "dataClearedDescription": "Todas tus entradas de tiempo han sido removidas de la base de datos.",
