@@ -173,20 +173,23 @@ Translation keys are organized by feature namespace using dot notation:
 To add support for a new language (e.g., French - 'fr'):
 
 1. **Update the locales array** in `src/i18n.ts`:
+
    ```typescript
    export const locales: [string, ...string[]] = ['en', 'de', 'es', 'fr']
    ```
 
 2. **Create the language directory** and translation files:
+
    ```bash
    mkdir src/messages/fr
    # Copy and translate all 13 JSON files from src/messages/en/
    ```
 
 3. **Add language option** to settings files:
+
    ```json
    // In src/messages/en/settings.json, de/settings.json, es/settings.json, fr/settings.json
-   "languageFr": "French" // or "Français", "Französisch", "Francés"
+   "languageFr": "French" 
    ```
 
 4. **Test the implementation** to ensure all translations load correctly
