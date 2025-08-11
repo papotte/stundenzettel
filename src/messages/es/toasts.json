@@ -5,7 +5,7 @@
   "entryUpdatedDescription": "Los cambios en \"{location}\" han sido guardados.",
   "entryAddedTitle": "Entrada agregada",
   "entryAddedDescription": "Nueva entrada para \"{location}\" creada.",
-  "saveFailedTitle": "Error al Guardar",
+  "saveFailedTitle": "Error al guardar",
   "saveFailedDescription": "Hubo un problema guardando tu entrada.",
   "entryDeletedTitle": "Entrada Eliminada",
   "deleteFailedTitle": "Error al Eliminar",
