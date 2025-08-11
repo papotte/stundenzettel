@@ -10,7 +10,7 @@
   "entryDeletedTitle": "Entrada eliminada",
   "deleteFailedTitle": "Error al eliminar",
   "deleteFailedDescription": "Hubo un problema eliminando tu entrada.",
-  "dataClearedTitle": "Datos Borrados",
+  "dataClearedTitle": "Datos borrados",
   "dataClearedDescription": "Todas tus entradas de tiempo han sido removidas de la base de datos.",
   "clearFailedTitle": "Error al Borrar",
   "clearFailedDescription": "Hubo un problema borrando tus datos.",
