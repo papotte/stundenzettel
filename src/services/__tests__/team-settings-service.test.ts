@@ -1,9 +1,10 @@
-import { getTeamSettings, setTeamSettings } from '../team-settings-service'
 import type { TeamSettings } from '@/lib/types'
+
+import { getTeamSettings, setTeamSettings } from '../team-settings-service'
 
 describe('TeamSettingsService', () => {
   const mockTeamId = 'test-team-id'
-  
+
   const sampleSettings: TeamSettings = {
     exportFormat: 'excel',
     exportFields: {
@@ -25,10 +26,10 @@ describe('TeamSettingsService', () => {
   it('should set and get team settings', async () => {
     // Set team settings
     await setTeamSettings(mockTeamId, sampleSettings)
-    
+
     // Get team settings
     const retrievedSettings = await getTeamSettings(mockTeamId)
-    
+
     // Verify settings were saved correctly
     expect(retrievedSettings.exportFormat).toBe('excel')
     expect(retrievedSettings.defaultDriverCompensationPercent).toBe(100)
@@ -45,15 +46,15 @@ describe('TeamSettingsService', () => {
   it('should handle partial settings updates', async () => {
     // Set initial settings
     await setTeamSettings(mockTeamId, sampleSettings)
-    
+
     // Update only some fields
     const partialUpdate: Partial<TeamSettings> = {
       defaultDriverCompensationPercent: 95,
       companyName: 'Updated Company Name',
     }
-    
+
     await setTeamSettings(mockTeamId, partialUpdate)
-    
+
     const updatedSettings = await getTeamSettings(mockTeamId)
     expect(updatedSettings.defaultDriverCompensationPercent).toBe(95)
     expect(updatedSettings.companyName).toBe('Updated Company Name')
