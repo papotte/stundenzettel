@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft, Building, Loader2, Save, Info } from 'lucide-react'
+import { ArrowLeft, Building, Info, Loader2, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -34,12 +34,12 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { getUserTeam } from '@/services/team-service'
+import { getEffectiveUserSettings } from '@/services/team-settings-service'
 import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
-import { getEffectiveUserSettings } from '@/services/team-settings-service'
-import { getUserTeam } from '@/services/team-service'
 
 const companyFormSchema = z.object({
   companyName: z.string().optional(),
@@ -98,20 +98,23 @@ export default function CompanyPage() {
         try {
           // Get user's team to check for team settings
           const userTeam = await getUserTeam(user.uid)
-          
+
           if (userTeam) {
             // User is part of a team, get effective settings with team overrides
-            const { settings: effectiveSettings, overrides } = await getEffectiveUserSettings(user.uid, userTeam.id)
+            const { settings: effectiveSettings, overrides } =
+              await getEffectiveUserSettings(user.uid, userTeam.id)
             setOverridePermissions(overrides)
-            
+
             form.reset({
               companyName: effectiveSettings.companyName || '',
               companyEmail: effectiveSettings.companyEmail || '',
               companyPhone1: effectiveSettings.companyPhone1 || '',
               companyPhone2: effectiveSettings.companyPhone2 || '',
               companyFax: effectiveSettings.companyFax || '',
-              driverCompensationPercent: effectiveSettings.driverCompensationPercent || 100,
-              passengerCompensationPercent: effectiveSettings.passengerCompensationPercent || 90,
+              driverCompensationPercent:
+                effectiveSettings.driverCompensationPercent || 100,
+              passengerCompensationPercent:
+                effectiveSettings.passengerCompensationPercent || 90,
             })
           } else {
             // User is not part of a team, get individual settings
@@ -122,8 +125,10 @@ export default function CompanyPage() {
               companyPhone1: settings.companyPhone1 || '',
               companyPhone2: settings.companyPhone2 || '',
               companyFax: settings.companyFax || '',
-              driverCompensationPercent: settings.driverCompensationPercent || 100,
-              passengerCompensationPercent: settings.passengerCompensationPercent || 90,
+              driverCompensationPercent:
+                settings.driverCompensationPercent || 100,
+              passengerCompensationPercent:
+                settings.passengerCompensationPercent || 90,
             })
           }
         } catch (error) {
@@ -330,7 +335,9 @@ export default function CompanyPage() {
                               min="0"
                               max="200"
                               step="0.1"
-                              disabled={!overridePermissions.canOverrideCompensation}
+                              disabled={
+                                !overridePermissions.canOverrideCompensation
+                              }
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -340,7 +347,9 @@ export default function CompanyPage() {
                           <FormDescription>
                             {!overridePermissions.canOverrideCompensation
                               ? t('teams.settingsOverriddenByTeam')
-                              : t('settings.driverCompensationPercentDescription')}
+                              : t(
+                                  'settings.driverCompensationPercentDescription',
+                                )}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -361,7 +370,9 @@ export default function CompanyPage() {
                               min="0"
                               max="200"
                               step="0.1"
-                              disabled={!overridePermissions.canOverrideCompensation}
+                              disabled={
+                                !overridePermissions.canOverrideCompensation
+                              }
                               {...field}
                               onChange={(e) =>
                                 field.onChange(Number(e.target.value))
@@ -371,7 +382,9 @@ export default function CompanyPage() {
                           <FormDescription>
                             {!overridePermissions.canOverrideCompensation
                               ? t('teams.settingsOverriddenByTeam')
-                              : t('settings.passengerCompensationPercentDescription')}
+                              : t(
+                                  'settings.passengerCompensationPercentDescription',
+                                )}
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
