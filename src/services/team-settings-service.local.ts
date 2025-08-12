@@ -1,9 +1,9 @@
-import type { TeamSettings } from '@/lib/types'
+import type { TeamSettings, EffectiveUserSettings } from '@/lib/types'
 
 import { getUserSettings } from './user-settings-service'
 
 // Mock team settings storage
-const mockTeamSettings: Record<string, TeamSettings> = {
+export const mockTeamSettings: Record<string, TeamSettings> = {
   'team-1': {
     exportFormat: 'excel',
     exportFields: {
@@ -38,17 +38,14 @@ export const setTeamSettings = async (
   mockTeamSettings[teamId] = { ...mockTeamSettings[teamId], ...settings }
 }
 
+export const clearTeamSettings = async (teamId: string): Promise<void> => {
+  delete mockTeamSettings[teamId]
+}
+
 export const getEffectiveUserSettings = async (
   userId: string,
   teamId?: string,
-): Promise<{
-  settings: any
-  overrides: {
-    canOverrideCompensation: boolean
-    canOverrideExportSettings: boolean
-    canOverrideWorkHours: boolean
-  }
-}> => {
+): Promise<EffectiveUserSettings> => {
   const userSettings = await getUserSettings(userId)
 
   if (!teamId) {

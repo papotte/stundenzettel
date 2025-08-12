@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 import { db } from '@/lib/firebase'
-import type { TeamSettings } from '@/lib/types'
+import type { TeamSettings, EffectiveUserSettings } from '@/lib/types'
 
 import { getUserSettings } from './user-settings-service'
 
@@ -32,14 +32,7 @@ export const setTeamSettings = async (
 export const getEffectiveUserSettings = async (
   userId: string,
   teamId?: string,
-): Promise<{
-  settings: any
-  overrides: {
-    canOverrideCompensation: boolean
-    canOverrideExportSettings: boolean
-    canOverrideWorkHours: boolean
-  }
-}> => {
+): Promise<EffectiveUserSettings> => {
   const userSettings = await getUserSettings(userId)
 
   if (!teamId) {

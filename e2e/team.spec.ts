@@ -400,4 +400,201 @@ test.describe('Team Page', () => {
       await page.waitForURL('/team')
     })
   })
+
+  test.describe('Team Settings Advanced Features', () => {
+    test.beforeEach(async ({ page }) => {
+      await loginWithMockUser(page)
+      await navigateToTeamPage(page)
+
+      // Create a team first
+      await page.getByRole('button', { name: 'Team erstellen' }).click()
+      await page.getByLabel('Team-Name').fill('Advanced Settings Team')
+      await page.getByRole('button', { name: 'Team erstellen' }).click()
+      await expect(page.getByTestId('create-team-dialog')).not.toBeVisible()
+    })
+
+    test('should open team settings and navigate between tabs', async ({ page }) => {
+      // Open team settings
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+
+      // Verify dialog is open with Basic tab active
+      await expect(page.getByRole('heading', { name: 'Einstellungen' })).toBeVisible()
+      await expect(page.getByLabel('Team-Name')).toHaveValue('Advanced Settings Team')
+
+      // Navigate to Team Settings tab
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Verify Team Settings tab content
+      await expect(page.getByText('Export-Format')).toBeVisible()
+      await expect(page.getByText('Kompensations-Split aktivieren')).toBeVisible()
+
+      // Navigate to Info tab
+      await page.getByRole('tab', { name: 'Info' }).click()
+
+      // Verify Info tab content (Team ID should be visible)
+      await expect(page.getByText('Team-ID')).toBeVisible()
+    })
+
+    test('should configure compensation split settings', async ({ page }) => {
+      // Open team settings and go to Team Settings tab
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Verify compensation split is enabled by default
+      const splitCheckbox = page.getByRole('checkbox', { name: /Kompensations-Split aktivieren/ })
+      await expect(splitCheckbox).toBeChecked()
+
+      // Should see driver and passenger fields
+      await expect(page.getByLabel('Fahrer-Kompensation (%)')).toBeVisible()
+      await expect(page.getByLabel('Beifahrer-Kompensation (%)')).toBeVisible()
+
+      // Set compensation percentages
+      await page.getByLabel('Fahrer-Kompensation (%)').fill('95')
+      await page.getByLabel('Beifahrer-Kompensation (%)').fill('85')
+
+      // Save settings
+      await page.getByRole('button', { name: 'Speichern' }).click()
+
+      // Verify settings are saved (dialog should close)
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+
+      // Verify success toast
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText('Gespeichert')
+    })
+
+    test('should toggle to unified compensation mode', async ({ page }) => {
+      // Open team settings and go to Team Settings tab
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Disable compensation split
+      const splitCheckbox = page.getByRole('checkbox', { name: /Kompensations-Split aktivieren/ })
+      await splitCheckbox.uncheck()
+
+      // Should now see unified compensation field
+      await expect(page.getByLabel('Kompensationsrate (%)')).toBeVisible()
+      await expect(page.getByLabel('Fahrer-Kompensation (%)')).not.toBeVisible()
+      await expect(page.getByLabel('Beifahrer-Kompensation (%)')).not.toBeVisible()
+
+      // Set unified compensation rate
+      await page.getByLabel('Kompensationsrate (%)').fill('90')
+
+      // Save settings
+      await page.getByRole('button', { name: 'Speichern' }).click()
+
+      // Verify settings are saved
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
+
+    test('should configure export format settings', async ({ page }) => {
+      // Open team settings and go to Team Settings tab
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Configure export format
+      await page.getByRole('combobox', { name: /Export-Format/ }).click()
+      await page.getByRole('option', { name: 'PDF' }).click()
+
+      // Configure export fields
+      await page.getByRole('checkbox', { name: /Standort einbeziehen/ }).check()
+      await page.getByRole('checkbox', { name: /Pausendauer einbeziehen/ }).check()
+
+      // Save settings
+      await page.getByRole('button', { name: 'Speichern' }).click()
+
+      // Verify settings are saved
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
+
+    test('should configure company details', async ({ page }) => {
+      // Open team settings and go to Team Settings tab
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Fill company details
+      await page.getByLabel('Firmenname').fill('Test Company GmbH')
+      await page.getByLabel('Firmen-E-Mail').fill('contact@testcompany.de')
+      await page.getByLabel('Telefon 1').fill('+49 123 456789')
+
+      // Save settings
+      await page.getByRole('button', { name: 'Speichern' }).click()
+
+      // Verify settings are saved
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
+
+    test('should configure override permissions', async ({ page }) => {
+      // Open team settings and go to Team Settings tab
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Configure override permissions
+      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Kompensation zu überschreiben/ }).uncheck()
+      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Export-Einstellungen zu überschreiben/ }).check()
+      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Arbeitszeiten zu überschreiben/ }).uncheck()
+
+      // Save settings
+      await page.getByRole('button', { name: 'Speichern' }).click()
+
+      // Verify settings are saved
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
+
+    test('should verify team settings affect company page', async ({ page }) => {
+      // Configure team settings first
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Disable compensation split and set unified rate
+      await page.getByRole('checkbox', { name: /Kompensations-Split aktivieren/ }).uncheck()
+      await page.getByLabel('Kompensationsrate (%)').fill('88')
+
+      // Disable compensation override permission
+      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Kompensation zu überschreiben/ }).uncheck()
+
+      // Set company details
+      await page.getByLabel('Firmenname').fill('Team Company Ltd')
+
+      // Save settings
+      await page.getByRole('button', { name: 'Speichern' }).click()
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+
+      // Navigate to company settings page
+      await page.goto('/company')
+
+      // Verify team settings are applied
+      await expect(page.getByDisplayValue('Team Company Ltd')).toBeVisible()
+      await expect(page.getByText('Kompensationsrate')).toBeVisible() // Unified field
+      await expect(page.getByDisplayValue('88')).toBeVisible()
+
+      // Verify compensation field is disabled (no override permission)
+      const compensationInput = page.getByRole('spinbutton', { name: /Kompensationsrate/ })
+      await expect(compensationInput).toBeDisabled()
+
+      // Verify team control message is shown
+      await expect(page.getByText('Diese Einstellung wird von Ihrem Team kontrolliert')).toBeVisible()
+    })
+
+    test('should handle team settings errors gracefully', async ({ page }) => {
+      // Open team settings
+      await page.getByRole('button', { name: 'Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+
+      // Try to save invalid data (this test assumes validation exists)
+      await page.getByLabel('Fahrer-Kompensation (%)').fill('-10') // Invalid negative value
+
+      // Attempt to save
+      await page.getByRole('button', { name: 'Speichern' }).click()
+
+      // Should still be in dialog (save failed due to validation)
+      await expect(page.getByRole('dialog')).toBeVisible()
+
+      // Fix the invalid value
+      await page.getByLabel('Fahrer-Kompensation (%)').fill('100')
+
+      // Save should now work
+      await page.getByRole('button', { name: 'Speichern' }).click()
+      await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
+  })
 })

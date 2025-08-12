@@ -1,4 +1,4 @@
-import type { TeamSettings } from '@/lib/types'
+import type { TeamSettings, EffectiveUserSettings } from '@/lib/types'
 
 import * as firestoreService from './team-settings-service.firestore'
 import * as localService from './team-settings-service.local'
@@ -29,14 +29,6 @@ export const setTeamSettings = (
 export const getEffectiveUserSettings = (
   userId: string,
   teamId?: string,
-): Promise<{
-  settings: any
-  overrides: {
-    canOverrideCompensation: boolean
-    canOverrideExportSettings: boolean
-    canOverrideWorkHours: boolean
-  }
-  compensationSplitEnabled: boolean
-}> => {
+): Promise<EffectiveUserSettings> => {
   return service.getEffectiveUserSettings(userId, teamId)
 }
