@@ -258,28 +258,48 @@ export function TeamSettingsDialog({
                   <CardDescription>{t('teams.compensationDefaultsDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="default-driver-compensation">{t('teams.defaultDriverCompensation')}</Label>
-                    <Input
-                      id="default-driver-compensation"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={teamSettings.defaultDriverCompensationPercent || 100}
-                      onChange={(e) => updateTeamSetting('defaultDriverCompensationPercent', parseInt(e.target.value) || 100)}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="enable-compensation-split"
+                      checked={teamSettings.enableCompensationSplit ?? true}
+                      onCheckedChange={(checked) => updateTeamSetting('enableCompensationSplit', checked as boolean)}
                     />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label htmlFor="enable-compensation-split" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        {t('teams.enableCompensationSplit')}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        {t('teams.enableCompensationSplitDescription')}
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="default-passenger-compensation">{t('teams.defaultPassengerCompensation')}</Label>
-                    <Input
-                      id="default-passenger-compensation"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={teamSettings.defaultPassengerCompensationPercent || 90}
-                      onChange={(e) => updateTeamSetting('defaultPassengerCompensationPercent', parseInt(e.target.value) || 90)}
-                    />
-                  </div>
+                  
+                  {(teamSettings.enableCompensationSplit ?? true) && (
+                    <>
+                      <div className="grid gap-2">
+                        <Label htmlFor="default-driver-compensation">{t('teams.defaultDriverCompensation')}</Label>
+                        <Input
+                          id="default-driver-compensation"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={teamSettings.defaultDriverCompensationPercent || 100}
+                          onChange={(e) => updateTeamSetting('defaultDriverCompensationPercent', parseInt(e.target.value) || 100)}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="default-passenger-compensation">{t('teams.defaultPassengerCompensation')}</Label>
+                        <Input
+                          id="default-passenger-compensation"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={teamSettings.defaultPassengerCompensationPercent || 90}
+                          onChange={(e) => updateTeamSetting('defaultPassengerCompensationPercent', parseInt(e.target.value) || 90)}
+                        />
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 

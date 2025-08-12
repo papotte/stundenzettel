@@ -163,6 +163,8 @@
   "includeMileage": "Include Mileage/Expenses",
   "compensationDefaults": "Compensation Defaults",
   "compensationDefaultsDescription": "Set default compensation rates for team members",
+  "enableCompensationSplit": "Enable Driver/Passenger Compensation Split",
+  "enableCompensationSplitDescription": "When enabled, allows different compensation rates for driver and passenger time. When disabled, uses a single compensation rate for all time.",
   "defaultDriverCompensation": "Default Driver Compensation (%)",
   "defaultPassengerCompensation": "Default Passenger Compensation (%)",
   "overridePermissions": "Override Permissions",

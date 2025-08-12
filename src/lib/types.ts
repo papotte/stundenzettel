@@ -104,6 +104,7 @@ export interface TeamSettings {
     includeMileage?: boolean
   }
   // Default compensation settings for all team members
+  enableCompensationSplit?: boolean // Whether to differentiate between driver and passenger compensation
   defaultDriverCompensationPercent?: number
   defaultPassengerCompensationPercent?: number
   // Override permissions

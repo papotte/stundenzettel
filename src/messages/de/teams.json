@@ -163,6 +163,8 @@
   "includeMileage": "Kilometerstand/Ausgaben einbeziehen",
   "compensationDefaults": "Vergütungsstandards",
   "compensationDefaultsDescription": "Standard-Vergütungssätze für Teammitglieder festlegen",
+  "enableCompensationSplit": "Fahrer-/Beifahrer-Vergütungsaufteilung aktivieren",
+  "enableCompensationSplitDescription": "Wenn aktiviert, ermöglicht unterschiedliche Vergütungssätze für Fahrer- und Beifahrerzeit. Wenn deaktiviert, wird ein einheitlicher Vergütungssatz für alle Zeit verwendet.",
   "defaultDriverCompensation": "Standard-Fahrer-Vergütung (%)",
   "defaultPassengerCompensation": "Standard-Beifahrer-Vergütung (%)",
   "overridePermissions": "Überschreibungsberechtigungen",

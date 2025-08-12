@@ -36,6 +36,7 @@ export const getEffectiveUserSettings = (
     canOverrideExportSettings: boolean
     canOverrideWorkHours: boolean
   }
+  compensationSplitEnabled: boolean
 }> => {
   return service.getEffectiveUserSettings(userId, teamId)
 }

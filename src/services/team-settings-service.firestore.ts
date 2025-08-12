@@ -47,6 +47,7 @@ export const getEffectiveUserSettings = async (
         canOverrideExportSettings: true,
         canOverrideWorkHours: true,
       },
+      compensationSplitEnabled: true,
     }
   }
   
@@ -56,16 +57,27 @@ export const getEffectiveUserSettings = async (
   const effectiveSettings = { ...userSettings }
   
   // Apply team defaults if user hasn't set their own values or doesn't have permission
-  if (teamSettings.defaultDriverCompensationPercent !== undefined && 
-      (userSettings.driverCompensationPercent === undefined || 
-       !teamSettings.allowMembersToOverrideCompensation)) {
-    effectiveSettings.driverCompensationPercent = teamSettings.defaultDriverCompensationPercent
-  }
-  
-  if (teamSettings.defaultPassengerCompensationPercent !== undefined && 
-      (userSettings.passengerCompensationPercent === undefined || 
-       !teamSettings.allowMembersToOverrideCompensation)) {
-    effectiveSettings.passengerCompensationPercent = teamSettings.defaultPassengerCompensationPercent
+  if (teamSettings.enableCompensationSplit === false) {
+    // When compensation split is disabled, use driver compensation for both
+    const singleCompensationRate = teamSettings.defaultDriverCompensationPercent ?? 100
+    if (userSettings.driverCompensationPercent === undefined || 
+        !teamSettings.allowMembersToOverrideCompensation) {
+      effectiveSettings.driverCompensationPercent = singleCompensationRate
+      effectiveSettings.passengerCompensationPercent = singleCompensationRate
+    }
+  } else {
+    // Normal split compensation logic
+    if (teamSettings.defaultDriverCompensationPercent !== undefined && 
+        (userSettings.driverCompensationPercent === undefined || 
+         !teamSettings.allowMembersToOverrideCompensation)) {
+      effectiveSettings.driverCompensationPercent = teamSettings.defaultDriverCompensationPercent
+    }
+    
+    if (teamSettings.defaultPassengerCompensationPercent !== undefined && 
+        (userSettings.passengerCompensationPercent === undefined || 
+         !teamSettings.allowMembersToOverrideCompensation)) {
+      effectiveSettings.passengerCompensationPercent = teamSettings.defaultPassengerCompensationPercent
+    }
   }
   
   // Apply team company details if available
@@ -92,5 +104,6 @@ export const getEffectiveUserSettings = async (
       canOverrideExportSettings: teamSettings.allowMembersToOverrideExportSettings ?? true,
       canOverrideWorkHours: teamSettings.allowMembersToOverrideWorkHours ?? true,
     },
+    compensationSplitEnabled: teamSettings.enableCompensationSplit ?? true,
   }
 }
