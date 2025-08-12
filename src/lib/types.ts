@@ -93,6 +93,16 @@ export interface PricingPlan {
 }
 
 // Team Management Types
+export interface EffectiveUserSettings {
+  settings: UserSettings
+  overrides: {
+    canOverrideCompensation: boolean
+    canOverrideExportSettings: boolean
+    canOverrideWorkHours: boolean
+  }
+  compensationSplitEnabled: boolean
+}
+
 export interface TeamSettings {
   // Export configuration
   exportFormat?: 'excel' | 'pdf' | 'both'
