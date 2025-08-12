@@ -1,12 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Copy } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -19,14 +25,22 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import type { Team, TeamSettings } from '@/lib/types'
 import { updateTeam } from '@/services/team-service'
-import { getTeamSettings, setTeamSettings } from '@/services/team-settings-service'
+import {
+  getTeamSettings,
+  setTeamSettings,
+} from '@/services/team-settings-service'
 
 interface TeamSettingsDialogProps {
   team: Team
@@ -137,13 +151,13 @@ export function TeamSettingsDialog({
 
   const updateTeamSetting = <K extends keyof TeamSettings>(
     key: K,
-    value: TeamSettings[K]
+    value: TeamSettings[K],
   ) => {
-    setTeamSettingsState(prev => ({ ...prev, [key]: value }))
+    setTeamSettingsState((prev) => ({ ...prev, [key]: value }))
   }
 
   const updateExportField = (field: string, value: boolean) => {
-    setTeamSettingsState(prev => ({
+    setTeamSettingsState((prev) => ({
       ...prev,
       exportFields: {
         ...prev.exportFields,
@@ -168,7 +182,9 @@ export function TeamSettingsDialog({
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="basic">{t('common.basic')}</TabsTrigger>
-            <TabsTrigger value="team-settings" disabled={!canEdit}>{t('teams.teamSettings')}</TabsTrigger>
+            <TabsTrigger value="team-settings" disabled={!canEdit}>
+              {t('teams.teamSettings')}
+            </TabsTrigger>
             <TabsTrigger value="info">{t('common.info')}</TabsTrigger>
           </TabsList>
 
@@ -186,7 +202,9 @@ export function TeamSettingsDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="team-description">{t('teams.description')}</Label>
+                <Label htmlFor="team-description">
+                  {t('teams.description')}
+                </Label>
                 <Textarea
                   id="team-description"
                   value={description}
@@ -204,23 +222,38 @@ export function TeamSettingsDialog({
               {/* Export Configuration */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">{t('teams.exportConfiguration')}</CardTitle>
-                  <CardDescription>{t('teams.exportConfigurationDescription')}</CardDescription>
+                  <CardTitle className="text-lg">
+                    {t('teams.exportConfiguration')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('teams.exportConfigurationDescription')}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-2">
                     <Label>{t('teams.exportFormat')}</Label>
                     <Select
                       value={teamSettings.exportFormat || 'excel'}
-                      onValueChange={(value) => updateTeamSetting('exportFormat', value as 'excel' | 'pdf' | 'both')}
+                      onValueChange={(value) =>
+                        updateTeamSetting(
+                          'exportFormat',
+                          value as 'excel' | 'pdf' | 'both',
+                        )
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="excel">{t('teams.exportFormatExcel')}</SelectItem>
-                        <SelectItem value="pdf">{t('teams.exportFormatPdf')}</SelectItem>
-                        <SelectItem value="both">{t('teams.exportFormatBoth')}</SelectItem>
+                        <SelectItem value="excel">
+                          {t('teams.exportFormatExcel')}
+                        </SelectItem>
+                        <SelectItem value="pdf">
+                          {t('teams.exportFormatPdf')}
+                        </SelectItem>
+                        <SelectItem value="both">
+                          {t('teams.exportFormatBoth')}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -229,17 +262,38 @@ export function TeamSettingsDialog({
                     <Label>{t('teams.exportFields')}</Label>
                     <div className="space-y-2">
                       {[
-                        { key: 'includeLocation', label: t('teams.includeLocation') },
-                        { key: 'includePauseDuration', label: t('teams.includePauseDuration') },
-                        { key: 'includeDriverTime', label: t('teams.includeDriverTime') },
-                        { key: 'includePassengerTime', label: t('teams.includePassengerTime') },
-                        { key: 'includeMileage', label: t('teams.includeMileage') },
+                        {
+                          key: 'includeLocation',
+                          label: t('teams.includeLocation'),
+                        },
+                        {
+                          key: 'includePauseDuration',
+                          label: t('teams.includePauseDuration'),
+                        },
+                        {
+                          key: 'includeDriverTime',
+                          label: t('teams.includeDriverTime'),
+                        },
+                        {
+                          key: 'includePassengerTime',
+                          label: t('teams.includePassengerTime'),
+                        },
+                        {
+                          key: 'includeMileage',
+                          label: t('teams.includeMileage'),
+                        },
                       ].map(({ key, label }) => (
                         <div key={key} className="flex items-center space-x-2">
                           <Checkbox
                             id={key}
-                            checked={teamSettings.exportFields?.[key as keyof typeof teamSettings.exportFields] ?? true}
-                            onCheckedChange={(checked) => updateExportField(key, checked as boolean)}
+                            checked={
+                              teamSettings.exportFields?.[
+                                key as keyof typeof teamSettings.exportFields
+                              ] ?? true
+                            }
+                            onCheckedChange={(checked) =>
+                              updateExportField(key, checked as boolean)
+                            }
                           />
                           <Label htmlFor={key} className="text-sm font-normal">
                             {label}
@@ -254,18 +308,30 @@ export function TeamSettingsDialog({
               {/* Compensation Defaults */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">{t('teams.compensationDefaults')}</CardTitle>
-                  <CardDescription>{t('teams.compensationDefaultsDescription')}</CardDescription>
+                  <CardTitle className="text-lg">
+                    {t('teams.compensationDefaults')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('teams.compensationDefaultsDescription')}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="enable-compensation-split"
                       checked={teamSettings.enableCompensationSplit ?? true}
-                      onCheckedChange={(checked) => updateTeamSetting('enableCompensationSplit', checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        updateTeamSetting(
+                          'enableCompensationSplit',
+                          checked as boolean,
+                        )
+                      }
                     />
                     <div className="grid gap-1.5 leading-none">
-                      <Label htmlFor="enable-compensation-split" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      <Label
+                        htmlFor="enable-compensation-split"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
                         {t('teams.enableCompensationSplit')}
                       </Label>
                       <p className="text-xs text-muted-foreground">
@@ -273,29 +339,48 @@ export function TeamSettingsDialog({
                       </p>
                     </div>
                   </div>
-                  
+
                   {(teamSettings.enableCompensationSplit ?? true) && (
                     <>
                       <div className="grid gap-2">
-                        <Label htmlFor="default-driver-compensation">{t('teams.defaultDriverCompensation')}</Label>
+                        <Label htmlFor="default-driver-compensation">
+                          {t('teams.defaultDriverCompensation')}
+                        </Label>
                         <Input
                           id="default-driver-compensation"
                           type="number"
                           min="0"
                           max="100"
-                          value={teamSettings.defaultDriverCompensationPercent || 100}
-                          onChange={(e) => updateTeamSetting('defaultDriverCompensationPercent', parseInt(e.target.value) || 100)}
+                          value={
+                            teamSettings.defaultDriverCompensationPercent || 100
+                          }
+                          onChange={(e) =>
+                            updateTeamSetting(
+                              'defaultDriverCompensationPercent',
+                              parseInt(e.target.value) || 100,
+                            )
+                          }
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label htmlFor="default-passenger-compensation">{t('teams.defaultPassengerCompensation')}</Label>
+                        <Label htmlFor="default-passenger-compensation">
+                          {t('teams.defaultPassengerCompensation')}
+                        </Label>
                         <Input
                           id="default-passenger-compensation"
                           type="number"
                           min="0"
                           max="100"
-                          value={teamSettings.defaultPassengerCompensationPercent || 90}
-                          onChange={(e) => updateTeamSetting('defaultPassengerCompensationPercent', parseInt(e.target.value) || 90)}
+                          value={
+                            teamSettings.defaultPassengerCompensationPercent ||
+                            90
+                          }
+                          onChange={(e) =>
+                            updateTeamSetting(
+                              'defaultPassengerCompensationPercent',
+                              parseInt(e.target.value) || 90,
+                            )
+                          }
                         />
                       </div>
                     </>
@@ -306,20 +391,41 @@ export function TeamSettingsDialog({
               {/* Override Permissions */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">{t('teams.overridePermissions')}</CardTitle>
-                  <CardDescription>{t('teams.overridePermissionsDescription')}</CardDescription>
+                  <CardTitle className="text-lg">
+                    {t('teams.overridePermissions')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('teams.overridePermissionsDescription')}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
-                    { key: 'allowMembersToOverrideCompensation', label: t('teams.allowOverrideCompensation') },
-                    { key: 'allowMembersToOverrideExportSettings', label: t('teams.allowOverrideExportSettings') },
-                    { key: 'allowMembersToOverrideWorkHours', label: t('teams.allowOverrideWorkHours') },
+                    {
+                      key: 'allowMembersToOverrideCompensation',
+                      label: t('teams.allowOverrideCompensation'),
+                    },
+                    {
+                      key: 'allowMembersToOverrideExportSettings',
+                      label: t('teams.allowOverrideExportSettings'),
+                    },
+                    {
+                      key: 'allowMembersToOverrideWorkHours',
+                      label: t('teams.allowOverrideWorkHours'),
+                    },
                   ].map(({ key, label }) => (
                     <div key={key} className="flex items-center space-x-2">
                       <Checkbox
                         id={key}
-                        checked={Boolean(teamSettings[key as keyof TeamSettings]) ?? true}
-                        onCheckedChange={(checked) => updateTeamSetting(key as keyof TeamSettings, checked as boolean)}
+                        checked={
+                          Boolean(teamSettings[key as keyof TeamSettings]) ??
+                          true
+                        }
+                        onCheckedChange={(checked) =>
+                          updateTeamSetting(
+                            key as keyof TeamSettings,
+                            checked as boolean,
+                          )
+                        }
                       />
                       <Label htmlFor={key} className="text-sm font-normal">
                         {label}
@@ -332,55 +438,79 @@ export function TeamSettingsDialog({
               {/* Team Company Details */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">{t('teams.teamCompanyDetails')}</CardTitle>
-                  <CardDescription>{t('teams.teamCompanyDetailsDescription')}</CardDescription>
+                  <CardTitle className="text-lg">
+                    {t('teams.teamCompanyDetails')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('teams.teamCompanyDetailsDescription')}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="team-company-name">{t('settings.companyName')}</Label>
+                    <Label htmlFor="team-company-name">
+                      {t('settings.companyName')}
+                    </Label>
                     <Input
                       id="team-company-name"
                       value={teamSettings.companyName || ''}
-                      onChange={(e) => updateTeamSetting('companyName', e.target.value)}
+                      onChange={(e) =>
+                        updateTeamSetting('companyName', e.target.value)
+                      }
                       placeholder={t('settings.companyNamePlaceholder')}
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="team-company-email">{t('settings.companyEmail')}</Label>
+                    <Label htmlFor="team-company-email">
+                      {t('settings.companyEmail')}
+                    </Label>
                     <Input
                       id="team-company-email"
                       type="email"
                       value={teamSettings.companyEmail || ''}
-                      onChange={(e) => updateTeamSetting('companyEmail', e.target.value)}
+                      onChange={(e) =>
+                        updateTeamSetting('companyEmail', e.target.value)
+                      }
                       placeholder={t('settings.companyEmailPlaceholder')}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="team-company-phone1">{t('settings.companyPhone1')}</Label>
+                      <Label htmlFor="team-company-phone1">
+                        {t('settings.companyPhone1')}
+                      </Label>
                       <Input
                         id="team-company-phone1"
                         value={teamSettings.companyPhone1 || ''}
-                        onChange={(e) => updateTeamSetting('companyPhone1', e.target.value)}
+                        onChange={(e) =>
+                          updateTeamSetting('companyPhone1', e.target.value)
+                        }
                         placeholder={t('settings.companyPhone1Placeholder')}
                       />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="team-company-phone2">{t('settings.companyPhone2')}</Label>
+                      <Label htmlFor="team-company-phone2">
+                        {t('settings.companyPhone2')}
+                      </Label>
                       <Input
                         id="team-company-phone2"
                         value={teamSettings.companyPhone2 || ''}
-                        onChange={(e) => updateTeamSetting('companyPhone2', e.target.value)}
+                        onChange={(e) =>
+                          updateTeamSetting('companyPhone2', e.target.value)
+                        }
                         placeholder={t('settings.companyPhone2Placeholder')}
                       />
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="team-company-fax">{t('settings.companyFax')}</Label>
+                    <Label htmlFor="team-company-fax">
+                      {t('settings.companyFax')}
+                    </Label>
                     <Input
                       id="team-company-fax"
                       value={teamSettings.companyFax || ''}
-                      onChange={(e) => updateTeamSetting('companyFax', e.target.value)}
+                      onChange={(e) =>
+                        updateTeamSetting('companyFax', e.target.value)
+                      }
                       placeholder={t('settings.companyFaxPlaceholder')}
                     />
                   </div>
