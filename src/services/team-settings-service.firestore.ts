@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 import { db } from '@/lib/firebase'
-import type { TeamSettings, EffectiveUserSettings } from '@/lib/types'
+import type { EffectiveUserSettings, TeamSettings } from '@/lib/types'
 
 import { getUserSettings } from './user-settings-service'
 
