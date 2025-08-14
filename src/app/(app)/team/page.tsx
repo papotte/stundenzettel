@@ -18,6 +18,7 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamPreferencesTab } from '@/components/team/team-preferences-tab'
 import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { UserInvitationsList } from '@/components/team/user-invitations-list'
@@ -362,6 +363,10 @@ export default function TeamPage() {
                     {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
+                <TabsTrigger value="preferences">
+                  <Settings className="h-4 w-4" />
+                  {t('teams.preferences')}
+                </TabsTrigger>
                 <TabsTrigger value="subscription">
                   <CreditCard className="h-4 w-4" />
                   {t('teams.subscription')}
@@ -407,6 +412,14 @@ export default function TeamPage() {
                   </Card>
                 </TabsContent>
               )}
+
+              <TabsContent value="preferences">
+                <TeamPreferencesTab
+                  team={team}
+                  currentUserRole={currentUserRole}
+                  onTeamUpdated={handleTeamUpdated}
+                />
+              </TabsContent>
 
               <TabsContent value="subscription">
                 <TeamSubscriptionCard
