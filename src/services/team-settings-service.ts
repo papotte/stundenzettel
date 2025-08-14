@@ -1,4 +1,4 @@
-import type { TeamSettings, EffectiveUserSettings } from '@/lib/types'
+import type { EffectiveUserSettings, TeamSettings } from '@/lib/types'
 
 import * as firestoreService from './team-settings-service.firestore'
 import * as localService from './team-settings-service.local'

@@ -7,7 +7,10 @@ import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 // Import mocked services
 import { updateTeam } from '@/services/team-service'
-import { getTeamSettings, setTeamSettings } from '@/services/team-settings-service'
+import {
+  getTeamSettings,
+  setTeamSettings,
+} from '@/services/team-settings-service'
 
 import { TeamSettingsDialog } from '../team-settings-dialog'
 
@@ -65,7 +68,7 @@ describe('TeamSettingsDialog', () => {
     ;(updateTeam as jest.Mock).mockImplementation(mockUpdateTeam)
     ;(getTeamSettings as jest.Mock).mockImplementation(mockGetTeamSettings)
     ;(setTeamSettings as jest.Mock).mockImplementation(mockSetTeamSettings)
-    
+
     // Default mock implementations
     mockGetTeamSettings.mockResolvedValue({})
     mockSetTeamSettings.mockResolvedValue(undefined)
@@ -461,7 +464,9 @@ describe('TeamSettingsDialog', () => {
       await user.click(settingsButton)
 
       // Members should see the tab but it should be disabled
-      const teamSettingsTab = screen.getByRole('tab', { name: /teams\.teamSettings/i })
+      const teamSettingsTab = screen.getByRole('tab', {
+        name: /teams\.teamSettings/i,
+      })
       expect(teamSettingsTab).toBeDisabled()
     })
 
@@ -472,7 +477,9 @@ describe('TeamSettingsDialog', () => {
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
 
-      const teamSettingsTab = screen.getByRole('tab', { name: /teams\.teamSettings/i })
+      const teamSettingsTab = screen.getByRole('tab', {
+        name: /teams\.teamSettings/i,
+      })
       expect(teamSettingsTab).not.toBeDisabled()
     })
 
@@ -483,7 +490,9 @@ describe('TeamSettingsDialog', () => {
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
 
-      const teamSettingsTab = screen.getByRole('tab', { name: /teams\.teamSettings/i })
+      const teamSettingsTab = screen.getByRole('tab', {
+        name: /teams\.teamSettings/i,
+      })
       expect(teamSettingsTab).not.toBeDisabled()
     })
   })
