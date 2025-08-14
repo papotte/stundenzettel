@@ -401,14 +401,14 @@ test.describe('Team Page', () => {
     })
   })
 
-  test.describe('Team Settings Advanced Features', () => {
+  test.describe('Team Preferences Advanced Features', () => {
     test.beforeEach(async ({ page }) => {
       await loginWithMockUser(page)
       await navigateToTeamPage(page)
 
       // Create a team first
       await page.getByRole('button', { name: 'Team erstellen' }).click()
-      await page.getByLabel('Team-Name').fill('Advanced Settings Team')
+      await page.getByLabel('Team-Name').fill('Advanced Preferences Team')
       await page.getByRole('button', { name: 'Team erstellen' }).click()
       await expect(page.getByTestId('create-team-dialog')).not.toBeVisible()
     })
@@ -439,34 +439,33 @@ test.describe('Team Page', () => {
     })
 
     test('should configure compensation split settings', async ({ page }) => {
-      // Open team settings and go to Team Settings tab
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+      // Navigate to team page and open preferences tab
+      await page.goto('/team')
+      await page.waitForURL('/team')
+
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
 
       // Verify compensation split is enabled by default
       const splitCheckbox = page.getByRole('checkbox', {
-        name: /Kompensations-Split aktivieren/,
+        name: /Compensation Split|Vergütungsaufteilung aktivieren/,
       })
       await expect(splitCheckbox).toBeChecked()
 
       // Should see driver and passenger fields
-      await expect(page.getByLabel('Fahrer-Kompensation (%)')).toBeVisible()
-      await expect(page.getByLabel('Beifahrer-Kompensation (%)')).toBeVisible()
+      await expect(page.getByLabel(/Default Driver Compensation|Standard-Fahrer-Vergütung/)).toBeVisible()
+      await expect(page.getByLabel(/Default Passenger Compensation|Standard-Beifahrer-Vergütung/)).toBeVisible()
 
       // Set compensation percentages
-      await page.getByLabel('Fahrer-Kompensation (%)').fill('95')
-      await page.getByLabel('Beifahrer-Kompensation (%)').fill('85')
+      await page.getByLabel(/Default Driver Compensation|Standard-Fahrer-Vergütung/).fill('95')
+      await page.getByLabel(/Default Passenger Compensation|Standard-Beifahrer-Vergütung/).fill('85')
 
-      // Save settings
-      await page.getByRole('button', { name: 'Speichern' }).click()
+      // Save compensation settings
+      const compensationCard = page.locator('div:has-text("Compensation Defaults")').first()
+      await compensationCard.getByRole('button', { name: 'Save|Speichern' }).click()
 
-      // Verify settings are saved (dialog should close)
-      await expect(page.getByRole('dialog')).not.toBeVisible()
-
-      // Verify success toast
-      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
-        'Gespeichert',
-      )
+      // Verify settings are saved (success message should appear)
+      await expect(page.getByText(/Settings saved|Einstellungen gespeichert/)).toBeVisible()
     })
 
     test('should toggle to unified compensation mode', async ({ page }) => {
@@ -567,7 +566,7 @@ test.describe('Team Page', () => {
     }) => {
       // Configure team settings first
       await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+      await page.getByRole('tab', { name: 'Konfiguration' }).click()
 
       // Disable compensation split and set unified rate
       await page
@@ -592,9 +591,11 @@ test.describe('Team Page', () => {
       await page.goto('/company')
 
       // Verify team settings are applied
-      await expect(page.getByDisplayValue('Team Company Ltd')).toBeVisible()
+      const companyNameInput = page.getByRole('textbox', { name: /Company name|Firmenname/ })
+      const compensationRateInput = page.getByRole('spinbutton', { name: /Kompensationsrate/ })
+      await expect(companyNameInput).toHaveValue('Team Company Ltd')
       await expect(page.getByText('Kompensationsrate')).toBeVisible() // Unified field
-      await expect(page.getByDisplayValue('88')).toBeVisible()
+      await expect(compensationRateInput).toHaveValue('88')
 
       // Verify compensation field is disabled (no override permission)
       const compensationInput = page.getByRole('spinbutton', {
@@ -628,6 +629,101 @@ test.describe('Team Page', () => {
       // Save should now work
       await page.getByRole('button', { name: 'Speichern' }).click()
       await expect(page.getByRole('dialog')).not.toBeVisible()
+    })
+
+    test('should persist team preferences settings after page reload', async ({ page }) => {
+      // Navigate to team page and open the preferences tab (not the settings dialog)
+      await page.goto('/team')
+      await page.waitForURL('/team')
+
+      // Wait for the page to load and look for tabs
+      await page.waitForSelector('[role="tab"]')
+
+      // Look for the preferences tab - handle both English and German
+      const preferencesTab = page.getByRole('tab', { name: /Preferences|Konfiguration/ })
+
+      // Debug: log what tabs are available
+      const allTabs = await page.locator('[role="tab"]').allTextContents()
+      console.log('Available tabs:', allTabs)
+
+      await preferencesTab.click()
+
+      // Make several changes to different settings sections
+
+      // 1. Change tracking configuration
+      await page
+        .getByRole('checkbox', { name: /Include location in export|Standort in Export einschließen/ })
+        .uncheck()
+      await page
+        .getByRole('checkbox', { name: /Include pause duration in export|Pausendauer in Export einschließen/ })
+        .check()
+
+      // Save tracking configuration
+      const trackingCard = page.locator('div:has-text("Tracking Configuration"):has-text("Tracking Options")').first()
+      await trackingCard.getByRole('button', { name: 'Save|Speichern' }).click()
+
+      // Wait for save to complete
+      await expect(page.getByText('Settings saved|Einstellungen gespeichert')).toBeVisible()
+
+      // 2. Change compensation settings (if driving time is enabled)
+      const compensationCard = page.locator('div:has-text("Compensation Defaults|Vergütungsstandards")').first()
+      if (await compensationCard.isVisible()) {
+        await page
+          .getByRole('checkbox', { name: /Enable compensation split|Kompensations-Split aktivieren/ })
+          .uncheck()
+
+        await page.getByLabel('Default driver compensation|Standard Fahrer-Kompensation').fill('95')
+        await page.getByLabel('Default passenger compensation|Standard Beifahrer-Kompensation').fill('85')
+
+        // Save compensation settings
+        await compensationCard.getByRole('button', { name: 'Save|Speichern' }).click()
+        await expect(page.getByText('Settings saved|Einstellungen gespeichert')).toBeVisible()
+      }
+
+      // 3. Change company details
+      const companyCard = page.locator('div:has-text("Team Company Details|Team-Firmendetails")').first()
+      await companyCard.getByLabel('Company name|Firmenname').fill('Test Company Updated')
+      await companyCard.getByLabel('Company email|Firmen-E-Mail').fill('updated@testcompany.com')
+
+      // Save company settings
+      await companyCard.getByRole('button', { name: 'Save|Speichern' }).click()
+      await expect(page.getByText('Settings saved|Einstellungen gespeichert')).toBeVisible()
+
+      // Now reload the page to test persistence
+      await page.reload()
+      await page.waitForURL('/team')
+
+      // Navigate back to the preferences tab
+      await preferencesTab.click()
+
+      // Verify all the changes we made are still there
+
+      // 1. Verify tracking configuration persisted
+      await expect(
+        page.getByRole('checkbox', { name: /Include location in export|Standort in Export einschließen/ })
+      ).not.toBeChecked()
+      await expect(
+        page.getByRole('checkbox', { name: /Include pause duration in export|Pausendauer in Export einschließen/ })
+      ).toBeChecked()
+
+      // 2. Verify compensation settings persisted (if visible)
+      if (await compensationCard.isVisible()) {
+        await expect(
+          page.getByRole('checkbox', { name: /Enable compensation split|Kompensations-Split aktivieren/ })
+        ).not.toBeChecked()
+
+        // Check input values using getByRole instead of getByDisplayValue
+        const driverInput = page.getByRole('spinbutton', { name: /Default driver compensation|Standard Fahrer-Kompensation/ })
+        const passengerInput = page.getByRole('spinbutton', { name: /Default passenger compensation|Standard Beifahrer-Kompensation/ })
+        await expect(driverInput).toHaveValue('95')
+        await expect(passengerInput).toHaveValue('85')
+      }
+
+      // 3. Verify company details persisted
+      const companyNameInput = page.getByRole('textbox', { name: /Company name|Firmenname/ })
+      const companyEmailInput = page.getByRole('textbox', { name: /Company email|Firmen-E-Mail/ })
+      await expect(companyNameInput).toHaveValue('Test Company Updated')
+      await expect(companyEmailInput).toHaveValue('updated@testcompany.com')
     })
   })
 })
