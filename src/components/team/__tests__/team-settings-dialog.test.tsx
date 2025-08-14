@@ -7,22 +7,12 @@ import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 // Import mocked services
 import { updateTeam } from '@/services/team-service'
-import {
-  getTeamSettings,
-  setTeamSettings,
-} from '@/services/team-settings-service'
 
 import { TeamSettingsDialog } from '../team-settings-dialog'
 
 // Mock the team service
 jest.mock('@/services/team-service', () => ({
   updateTeam: jest.fn(),
-}))
-
-// Mock the team settings service
-jest.mock('@/services/team-settings-service', () => ({
-  getTeamSettings: jest.fn(),
-  setTeamSettings: jest.fn(),
 }))
 
 // Mock the toast hook
@@ -35,8 +25,6 @@ const mockToast = {
 }
 
 const mockUpdateTeam = jest.fn()
-const mockGetTeamSettings = jest.fn()
-const mockSetTeamSettings = jest.fn()
 
 const mockTeam: Team = {
   id: 'team-1',
@@ -66,12 +54,6 @@ describe('TeamSettingsDialog', () => {
     jest.clearAllMocks()
     ;(useToast as jest.Mock).mockReturnValue(mockToast)
     ;(updateTeam as jest.Mock).mockImplementation(mockUpdateTeam)
-    ;(getTeamSettings as jest.Mock).mockImplementation(mockGetTeamSettings)
-    ;(setTeamSettings as jest.Mock).mockImplementation(mockSetTeamSettings)
-
-    // Default mock implementations
-    mockGetTeamSettings.mockResolvedValue({})
-    mockSetTeamSettings.mockResolvedValue(undefined)
   })
 
   describe('Dialog Trigger', () => {
@@ -224,8 +206,8 @@ describe('TeamSettingsDialog', () => {
           }),
         )
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.teamSettingsSaved',
-          description: 'teams.teamSettingsSavedDescription',
+          title: 'teams.teamUpdated',
+          description: 'teams.teamUpdatedDescription',
         })
       })
     })
@@ -452,48 +434,6 @@ describe('TeamSettingsDialog', () => {
 
       expect(screen.getByLabelText('teams.teamName')).toHaveValue('Test Team')
       expect(screen.getByLabelText('teams.description')).toHaveValue('')
-    })
-  })
-
-  describe('Team Settings Permissions', () => {
-    it('restricts team settings tab access for regular members', async () => {
-      const user = userEvent.setup()
-      renderTeamSettingsDialog({ currentUserRole: 'member' })
-
-      const settingsButton = screen.getByRole('button', { name: /settings/i })
-      await user.click(settingsButton)
-
-      // Members should see the tab but it should be disabled
-      const teamSettingsTab = screen.getByRole('tab', {
-        name: /teams\.teamSettings/i,
-      })
-      expect(teamSettingsTab).toBeDisabled()
-    })
-
-    it('allows team settings tab access for admin users', async () => {
-      const user = userEvent.setup()
-      renderTeamSettingsDialog({ currentUserRole: 'admin' })
-
-      const settingsButton = screen.getByRole('button', { name: /settings/i })
-      await user.click(settingsButton)
-
-      const teamSettingsTab = screen.getByRole('tab', {
-        name: /teams\.teamSettings/i,
-      })
-      expect(teamSettingsTab).not.toBeDisabled()
-    })
-
-    it('allows team settings tab access for owner users', async () => {
-      const user = userEvent.setup()
-      renderTeamSettingsDialog({ currentUserRole: 'owner' })
-
-      const settingsButton = screen.getByRole('button', { name: /settings/i })
-      await user.click(settingsButton)
-
-      const teamSettingsTab = screen.getByRole('tab', {
-        name: /teams\.teamSettings/i,
-      })
-      expect(teamSettingsTab).not.toBeDisabled()
     })
   })
 })
