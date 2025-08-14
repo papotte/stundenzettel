@@ -420,7 +420,7 @@ test.describe('Team Page', () => {
       // Verify dialog is open with Basic tab active
       await expect(
         page.getByRole('heading', { name: 'Einstellungen' }),
-      ).toBeVisible()
+).toBeVisible()
       await expect(page.getByLabel('Team-Name')).toHaveValue(
         'Advanced Settings Team',
 )
@@ -461,21 +461,22 @@ test.describe('Team Page', () => {
       await page.getByLabel(/Default Passenger Compensation|Standard-Beifahrer-Vergütung/).fill('85')
 
       // Save compensation settings
-      const compensationCard = page.locator('div:has-text("Compensation Defaults")').first()
-      await compensationCard.getByRole('button', { name: 'Save|Speichern' }).click()
+      const compensationCard = page.getByTestId('compensation-defaults-card')
+      await compensationCard.getByTestId('save-compensation-defaults').click()
 
       // Verify settings are saved (success message should appear)
-      await expect(page.getByText(/Settings saved|Einstellungen gespeichert/)).toBeVisible()
+      await expect(
+        page.getByTestId('toast-title').getByText(/Compensation settings saved|Vergütungseinstellungen gespeichert/),
+      ).toBeVisible()
     })
 
     test('should toggle to unified compensation mode', async ({ page }) => {
-      // Open team settings and go to Team Settings tab
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
 
       // Disable compensation split
       const splitCheckbox = page.getByRole('checkbox', {
-        name: /Kompensations-Split aktivieren/,
+        name: /Vergütungsaufteilung aktivieren/,
       })
       await splitCheckbox.uncheck()
 
@@ -489,59 +490,64 @@ test.describe('Team Page', () => {
       await page.getByLabel('Kompensationsrate (%)').fill('90')
 
       // Save settings
-      await page.getByRole('button', { name: 'Speichern' }).click()
+      const compensationCard = page.getByTestId('compensation-defaults-card')
+      await compensationCard.getByTestId('save-compensation-defaults').click()
 
-      // Verify settings are saved
-      await expect(page.getByRole('dialog')).not.toBeVisible()
+      // Verify settings are saved (success message should appear)
+      await expect(
+        page.getByTestId('toast-title').getByText(/Compensation settings saved|Vergütungseinstellungen gespeichert/),
+      ).toBeVisible()
     })
 
     test('should configure export format settings', async ({ page }) => {
-      // Open team settings and go to Team Settings tab
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
 
       // Configure export format
-      await page.getByRole('combobox', { name: /Export-Format/ }).click()
-      await page.getByRole('option', { name: 'PDF' }).click()
+      await page.getByTestId('export-format-select').click()
+      await page.getByRole('option', { name: 'Nur PDF' }).click()
 
       // Configure export fields
-      await page.getByRole('checkbox', { name: /Standort einbeziehen/ }).check()
+      await page.getByRole('checkbox', { name: /Standort in Export einbeziehen/ }).check()
       await page
-        .getByRole('checkbox', { name: /Pausendauer einbeziehen/ })
+        .getByRole('checkbox', { name: /Pausendauer in Export einbeziehen/ })
         .check()
       // Save settings
-      await page.getByRole('button', { name: 'Speichern' }).click()
+      const exportFormatCard = page.getByTestId('tracking-configuration-card')
+      await exportFormatCard.getByTestId('save-tracking-configuration').click()
 
-      // Verify settings are saved
-      await expect(page.getByRole('dialog')).not.toBeVisible()
+      // Verify settings are saved (success message should appear)
+      await expect(
+        page.getByTestId('toast-title').getByText(/Export settings saved|Export-Einstellungen gespeichert/),
+      ).toBeVisible()
     })
 
     test('should configure company details', async ({ page }) => {
-      // Open team settings and go to Team Settings tab
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
 
       // Fill company details
       await page.getByLabel('Firmenname').fill('Test Company GmbH')
       await page.getByLabel('Firmen-E-Mail').fill('contact@testcompany.de')
-      await page.getByLabel('Telefon 1').fill('+49 123 456789')
+      await page.getByLabel('Telefonnummer 1').fill('+49 123 456789')
 
       // Save settings
-      await page.getByRole('button', { name: 'Speichern' }).click()
+      const companyDetailsCard = page.getByTestId('team-company-details-card')
+      await companyDetailsCard.getByTestId('save-team-company-details').click()
 
       // Verify settings are saved
-      await expect(page.getByRole('dialog')).not.toBeVisible()
+      await expect(
+        page.getByTestId('toast-title').getByText(/Company details saved|Unternehmensdetails gespeichert/),
+      ).toBeVisible()
     })
 
     test('should configure override permissions', async ({ page }) => {
-      // Open team settings and go to Team Settings tab
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
-
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
       // Configure override permissions
       await page
         .getByRole('checkbox', {
-          name: /Mitgliedern erlauben, Kompensation zu überschreiben/,
+          name: /Mitgliedern erlauben, Vergütungseinstellungen zu überschreiben/,
         })
         .uncheck()
       await page
@@ -555,53 +561,56 @@ test.describe('Team Page', () => {
         })
         .uncheck()
       // Save settings
-      await page.getByRole('button', { name: 'Speichern' }).click()
+      const overridePermissionsCard = page.getByTestId('override-permissions-card')
+      await overridePermissionsCard.getByTestId('save-override-permissions').click()
 
       // Verify settings are saved
-      await expect(page.getByRole('dialog')).not.toBeVisible()
+      await expect(
+        page.getByTestId('toast-title').getByText(/Permissions settings saved|Berechtigungseinstellungen gespeichert/),
+      ).toBeVisible()
     })
 
     test('should verify team settings affect company page', async ({
       page,
     }) => {
-      // Configure team settings first
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Konfiguration' }).click()
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
 
       // Disable compensation split and set unified rate
       await page
-        .getByRole('checkbox', { name: /Kompensations-Split aktivieren/ })
+        .getByRole('checkbox', { name: /Vergütungsaufteilung aktivieren/ })
         .uncheck()
-      await page.getByLabel('Kompensationsrate (%)').fill('88')
+      // Save settings
+      const compensationCard = page.getByTestId('compensation-defaults-card')
+      await compensationCard.getByTestId('save-compensation-defaults').click()
 
       // Disable compensation override permission
       await page
         .getByRole('checkbox', {
-          name: /Mitgliedern erlauben, Kompensation zu überschreiben/,
+          name: /Mitgliedern erlauben, Vergütungseinstellungen zu überschreiben/,
         })
         .uncheck()
+      // Save settings
+      const overridePermissionsCard = page.getByTestId('override-permissions-card')
+      await overridePermissionsCard.getByTestId('save-override-permissions').click()
+
       // Set company details
       await page.getByLabel('Firmenname').fill('Team Company Ltd')
 
       // Save settings
-      await page.getByRole('button', { name: 'Speichern' }).click()
-      await expect(page.getByRole('dialog')).not.toBeVisible()
+      const companyDetailsCard = page.getByTestId('team-company-details-card')
+      await companyDetailsCard.getByTestId('save-team-company-details').click()
 
       // Navigate to company settings page
       await page.goto('/company')
 
       // Verify team settings are applied
       const companyNameInput = page.getByRole('textbox', { name: /Company name|Firmenname/ })
-      const compensationRateInput = page.getByRole('spinbutton', { name: /Kompensationsrate/ })
       await expect(companyNameInput).toHaveValue('Team Company Ltd')
-      await expect(page.getByText('Kompensationsrate')).toBeVisible() // Unified field
-      await expect(compensationRateInput).toHaveValue('88')
 
-      // Verify compensation field is disabled (no override permission)
-      const compensationInput = page.getByRole('spinbutton', {
-        name: /Kompensationsrate/,
-      })
-      await expect(compensationInput).toBeDisabled()
+      // Verify compensation fields are not visible
+      await expect(page.getByLabel(/Default Driver Compensation|Standard-Fahrer-Vergütung/)).not.toBeVisible()
+      await expect(page.getByLabel(/Default Passenger Compensation|Standard-Beifahrer-Vergütung/)).not.toBeVisible()
 
       // Verify team control message is shown
       await expect(
@@ -610,21 +619,23 @@ test.describe('Team Page', () => {
     })
 
     test('should handle team settings errors gracefully', async ({ page }) => {
-      // Open team settings
-      await page.getByRole('button', { name: 'Einstellungen' }).click()
-      await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
+      await preferencesTab.click()
 
       // Try to save invalid data (this test assumes validation exists)
-      await page.getByLabel('Fahrer-Kompensation (%)').fill('-10') // Invalid negative value
+      await page.getByLabel(/Default Driver Compensation|Standard-Fahrer-Vergütung/).fill('-10') // Invalid negative value
 
       // Attempt to save
-      await page.getByRole('button', { name: 'Speichern' }).click()
+      const compensationCard = page.getByTestId('compensation-defaults-card')
+      await compensationCard.getByTestId('save-compensation-defaults').click()
 
-      // Should still be in dialog (save failed due to validation)
-      await expect(page.getByRole('dialog')).toBeVisible()
+      // Verify error message is shown
+      await expect(
+        page.getByTestId('toast-title').getByText(/Failed to save compensation settings|Fehler beim Speichern der Vergütungseinstellungen/),
+      ).toBeVisible()
 
       // Fix the invalid value
-      await page.getByLabel('Fahrer-Kompensation (%)').fill('100')
+      await page.getByLabel(/Default Driver Compensation|Standard-Fahrer-Vergütung/).fill('100')
 
       // Save should now work
       await page.getByRole('button', { name: 'Speichern' }).click()
@@ -632,62 +643,56 @@ test.describe('Team Page', () => {
     })
 
     test('should persist team preferences settings after page reload', async ({ page }) => {
-      // Navigate to team page and open the preferences tab (not the settings dialog)
-      await page.goto('/team')
-      await page.waitForURL('/team')
-
-      // Wait for the page to load and look for tabs
-      await page.waitForSelector('[role="tab"]')
-
-      // Look for the preferences tab - handle both English and German
-      const preferencesTab = page.getByRole('tab', { name: /Preferences|Konfiguration/ })
-
-      // Debug: log what tabs are available
-      const allTabs = await page.locator('[role="tab"]').allTextContents()
-      console.log('Available tabs:', allTabs)
-
+      const preferencesTab = page.getByRole('tab', { name: 'Konfiguration' })
       await preferencesTab.click()
 
       // Make several changes to different settings sections
 
-      // 1. Change tracking configuration
+      // 1. Change tracking configuration - first enable driving time so compensation card is visible
       await page
-        .getByRole('checkbox', { name: /Include location in export|Standort in Export einschließen/ })
+        .getByRole('checkbox', { name: /Include driving time in export|Fahrzeit in Export einbeziehen/ })
+        .check()
+      await page
+        .getByRole('checkbox', { name: /Include location in export|Standort in Export einbeziehen/ })
         .uncheck()
       await page
-        .getByRole('checkbox', { name: /Include pause duration in export|Pausendauer in Export einschließen/ })
+        .getByRole('checkbox', { name: /Include pause duration in export|Pausendauer in Export einbeziehen/ })
         .check()
 
       // Save tracking configuration
-      const trackingCard = page.locator('div:has-text("Tracking Configuration"):has-text("Tracking Options")').first()
-      await trackingCard.getByRole('button', { name: 'Save|Speichern' }).click()
+      const trackingCard = page.getByTestId('tracking-configuration-card')
+      await trackingCard.getByTestId('save-tracking-configuration').click()
 
       // Wait for save to complete
-      await expect(page.getByText('Settings saved|Einstellungen gespeichert')).toBeVisible()
+      await expect(
+        page.getByTestId('toast-title').getByText(/Export settings saved|Export-Einstellungen gespeichert/),
+      ).toBeVisible()
 
       // 2. Change compensation settings (if driving time is enabled)
-      const compensationCard = page.locator('div:has-text("Compensation Defaults|Vergütungsstandards")').first()
-      if (await compensationCard.isVisible()) {
-        await page
-          .getByRole('checkbox', { name: /Enable compensation split|Kompensations-Split aktivieren/ })
-          .uncheck()
+      const compensationCard = page.getByTestId('compensation-defaults-card')
 
-        await page.getByLabel('Default driver compensation|Standard Fahrer-Kompensation').fill('95')
-        await page.getByLabel('Default passenger compensation|Standard Beifahrer-Kompensation').fill('85')
+      await page
+        .getByRole('checkbox', { name: /Vergütungsaufteilung aktivieren/ })
+        .check()
 
-        // Save compensation settings
-        await compensationCard.getByRole('button', { name: 'Save|Speichern' }).click()
-        await expect(page.getByText('Settings saved|Einstellungen gespeichert')).toBeVisible()
-      }
+      await page.getByLabel(/Default Driver Compensation|Standard-Fahrer-Vergütung/).fill('95')
+      await page.getByLabel(/Default Passenger Compensation|Standard-Beifahrer-Vergütung/).fill('85')
+
+      // Save compensation settings
+      await compensationCard.getByTestId('save-compensation-defaults').click()
+      await expect(
+        page.getByTestId('toast-title').getByText(/Compensation settings saved|Vergütungseinstellungen gespeichert/),
+      ).toBeVisible()
 
       // 3. Change company details
-      const companyCard = page.locator('div:has-text("Team Company Details|Team-Firmendetails")').first()
-      await companyCard.getByLabel('Company name|Firmenname').fill('Test Company Updated')
-      await companyCard.getByLabel('Company email|Firmen-E-Mail').fill('updated@testcompany.com')
-
+      const companyCard = page.getByTestId('team-company-details-card')
+      await companyCard.getByLabel(/Firmenname/).fill('Test Company Updated')
+      await companyCard.getByLabel(/Firmen-E-Mail/).fill('updated@testcompany.com')
       // Save company settings
-      await companyCard.getByRole('button', { name: 'Save|Speichern' }).click()
-      await expect(page.getByText('Settings saved|Einstellungen gespeichert')).toBeVisible()
+      await companyCard.getByTestId('save-team-company-details').click()
+      await expect(
+        page.getByTestId('toast-title').getByText(/Company details saved|Unternehmensdetails gespeichert/),
+      ).toBeVisible()
 
       // Now reload the page to test persistence
       await page.reload()
@@ -700,24 +705,25 @@ test.describe('Team Page', () => {
 
       // 1. Verify tracking configuration persisted
       await expect(
-        page.getByRole('checkbox', { name: /Include location in export|Standort in Export einschließen/ })
+        page.getByRole('checkbox', { name: /Include driving time in export|Fahrzeit in Export einbeziehen/ })
+      ).toBeChecked()
+      await expect(
+        page.getByRole('checkbox', { name: /Include location in export|Standort in Export einbeziehen/ })
       ).not.toBeChecked()
       await expect(
-        page.getByRole('checkbox', { name: /Include pause duration in export|Pausendauer in Export einschließen/ })
+        page.getByRole('checkbox', { name: /Include pause duration in export|Pausendauer in Export einbeziehen/ })
       ).toBeChecked()
 
       // 2. Verify compensation settings persisted (if visible)
-      if (await compensationCard.isVisible()) {
-        await expect(
-          page.getByRole('checkbox', { name: /Enable compensation split|Kompensations-Split aktivieren/ })
-        ).not.toBeChecked()
+      await expect(
+        page.getByRole('checkbox', { name: /Vergütungsaufteilung aktivieren/ })
+      ).toBeChecked()
 
-        // Check input values using getByRole instead of getByDisplayValue
-        const driverInput = page.getByRole('spinbutton', { name: /Default driver compensation|Standard Fahrer-Kompensation/ })
-        const passengerInput = page.getByRole('spinbutton', { name: /Default passenger compensation|Standard Beifahrer-Kompensation/ })
-        await expect(driverInput).toHaveValue('95')
-        await expect(passengerInput).toHaveValue('85')
-      }
+      // Check input values using getByRole instead of getByDisplayValue
+      const driverInput = page.getByRole('spinbutton', { name: /Default driver compensation|Standard-Fahrer-Vergütung/ })
+      const passengerInput = page.getByRole('spinbutton', { name: /Default passenger compensation|Standard-Beifahrer-Vergütung/ })
+      await expect(driverInput).toHaveValue('95')
+      await expect(passengerInput).toHaveValue('85')
 
       // 3. Verify company details persisted
       const companyNameInput = page.getByRole('textbox', { name: /Company name|Firmenname/ })

@@ -220,7 +220,7 @@ export function TeamPreferencesTab({
       </Card>
 
       {/* Tracking Configuration */}
-      <Card>
+      <Card data-testid="tracking-configuration-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -236,6 +236,7 @@ export function TeamPreferencesTab({
                 onClick={handleSaveExportSettings}
                 disabled={exportLoading}
                 size="sm"
+                data-testid="save-tracking-configuration"
               >
                 {exportLoading ? t('common.saving') : t('common.save')}
               </Button>
@@ -254,8 +255,9 @@ export function TeamPreferencesTab({
                 )
               }
               disabled={!canEdit}
+              aria-label={t('teams.exportFormat')}
             >
-              <SelectTrigger>
+              <SelectTrigger data-testid="export-format-select">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -321,7 +323,7 @@ export function TeamPreferencesTab({
 
       {/* Compensation Defaults */}
       {teamSettings.exportFields?.includeDrivingTime !== false && (
-        <Card>
+        <Card data-testid="compensation-defaults-card">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -337,6 +339,7 @@ export function TeamPreferencesTab({
                   onClick={handleSaveCompensationSettings}
                   disabled={compensationLoading}
                   size="sm"
+                  data-testid="save-compensation-defaults"
                 >
                   {compensationLoading ? t('common.saving') : t('common.save')}
                 </Button>
@@ -418,7 +421,7 @@ export function TeamPreferencesTab({
       )}
 
       {/* Override Permissions */}
-      <Card>
+      <Card data-testid="override-permissions-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -434,6 +437,7 @@ export function TeamPreferencesTab({
                 onClick={handleSavePermissionsSettings}
                 disabled={permissionsLoading}
                 size="sm"
+                data-testid="save-override-permissions"
               >
                 {permissionsLoading ? t('common.saving') : t('common.save')}
               </Button>
@@ -474,7 +478,7 @@ export function TeamPreferencesTab({
       </Card>
 
       {/* Team Company Details */}
-      <Card>
+      <Card data-testid="team-company-details-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -490,6 +494,7 @@ export function TeamPreferencesTab({
                 onClick={handleSaveCompanySettings}
                 disabled={companyLoading}
                 size="sm"
+                data-testid="save-team-company-details"
               >
                 {companyLoading ? t('common.saving') : t('common.save')}
               </Button>
