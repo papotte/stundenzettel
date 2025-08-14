@@ -2,8 +2,8 @@ import type { UserSettings } from '@/lib/types'
 
 import { getUserSettings, setUserSettings } from '../user-settings-service'
 
-// These tests will automatically use the local implementation due to the environment.
-describe('User Settings Service (Local Implementation)', () => {
+// These tests will now use the Firestore implementation with environment-specific databases.
+describe('User Settings Service (Firestore Implementation)', () => {
   const existingUserIdWithCustomSettings = 'mock-user-1'
   const newUserId = 'new-user-for-settings-test'
 

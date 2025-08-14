@@ -30,8 +30,7 @@ export async function verifyTeamAccess(
     if (requiredRole) {
       const hasRequiredRole =
         userMember.role === 'owner' ||
-        (requiredRole === 'admin' &&
-          (userMember.role === 'admin' || userMember.role === 'owner'))
+        (requiredRole === 'admin' && userMember.role === 'admin')
 
       if (!hasRequiredRole) {
         return {

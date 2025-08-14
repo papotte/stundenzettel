@@ -1,17 +1,13 @@
 import * as firestoreService from './user-deletion-service.firestore'
-import * as localService from './user-deletion-service.local'
 
-const useMockService =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+// Always use Firestore service - local service has been removed
+// The environment-specific database selection is handled in firebase.ts
+const service = firestoreService
 
-const service = useMockService ? localService : firestoreService
-
-if (useMockService) {
-  console.info(
-    `Using local user deletion service (NEXT_PUBLIC_ENVIRONMENT=${process.env.NEXT_PUBLIC_ENVIRONMENT}).`,
-  )
-}
+const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'production'
+console.info(
+  `Using Firestore user deletion service for environment '${environment}'`,
+)
 
 /**
  * Permanently deletes a user account and all associated data.

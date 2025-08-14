@@ -1,8 +1,9 @@
 {
   "testMode": "TimeWise Tracker (Test Mode)",
   "selectMockUser": "Select a Mock User",
-  "mockUserDescription": "Choose a user to log in as for local testing. Data is stored in-memory and will be reset on page reload.",
+  "mockUserDescription": "Choose a user to log in with Firebase authentication. These are seeded users for local development and testing.",
   "loginAs": "Log in as {displayName}",
+  "signingIn": "Signing In...",
   "signInTab": "Sign In",
   "signUpTab": "Sign Up",
   "emailLabel": "Email",
