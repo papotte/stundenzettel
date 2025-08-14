@@ -108,9 +108,8 @@ export interface TeamSettings {
   exportFields?: {
     includeLocation?: boolean
     includePauseDuration?: boolean
-    includeDriverTime?: boolean
-    includePassengerTime?: boolean
     includeMileage?: boolean
+    includeDrivingTime?: boolean
   }
   // Default compensation settings for all team members
   enableCompensationSplit?: boolean // Whether to differentiate between driver and passenger compensation
@@ -119,7 +118,6 @@ export interface TeamSettings {
   // Override permissions
   allowMembersToOverrideCompensation?: boolean
   allowMembersToOverrideExportSettings?: boolean
-  allowMembersToOverrideWorkHours?: boolean
   // Company details for exports
   companyName?: string
   companyEmail?: string
