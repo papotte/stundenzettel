@@ -350,28 +350,19 @@ export default function TeamPage() {
               onValueChange={setSelectedTab}
               className="space-y-6"
             >
-              <TabsList className="flex w-full flex-start bg-transparent p-0">
-                <TabsTrigger
-                  value="members"
-                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                >
+              <TabsList className="flex w-full flex-start">
+                <TabsTrigger value="members">
                   <Users className="h-4 w-4" />
                   {t('teams.teamMembers')} ({members.length})
                 </TabsTrigger>
                 {(currentUserRole === 'owner' ||
                   currentUserRole === 'admin') && (
-                  <TabsTrigger
-                    value="invitations"
-                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                  >
+                  <TabsTrigger value="invitations">
                     <UserPlus className="h-4 w-4" />
                     {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
-                <TabsTrigger
-                  value="subscription"
-                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                >
+                <TabsTrigger value="subscription">
                   <CreditCard className="h-4 w-4" />
                   {t('teams.subscription')}
                 </TabsTrigger>

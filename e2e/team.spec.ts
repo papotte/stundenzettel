@@ -418,9 +418,12 @@ test.describe('Team Page', () => {
       await page.getByRole('button', { name: 'Einstellungen' }).click()
 
       // Verify dialog is open with Basic tab active
-      await expect(page.getByRole('heading', { name: 'Einstellungen' })).toBeVisible()
-      await expect(page.getByLabel('Team-Name')).toHaveValue('Advanced Settings Team')
-
+      await expect(
+        page.getByRole('heading', { name: 'Einstellungen' }),
+      ).toBeVisible()
+      await expect(page.getByLabel('Team-Name')).toHaveValue(
+        'Advanced Settings Team',
+)
       // Navigate to Team Settings tab
       await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
 
@@ -441,7 +444,9 @@ test.describe('Team Page', () => {
       await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
 
       // Verify compensation split is enabled by default
-      const splitCheckbox = page.getByRole('checkbox', { name: /Kompensations-Split aktivieren/ })
+      const splitCheckbox = page.getByRole('checkbox', {
+        name: /Kompensations-Split aktivieren/,
+      })
       await expect(splitCheckbox).toBeChecked()
 
       // Should see driver and passenger fields
@@ -459,7 +464,9 @@ test.describe('Team Page', () => {
       await expect(page.getByRole('dialog')).not.toBeVisible()
 
       // Verify success toast
-      await expect(page.locator('[data-testid="toast-title"]')).toContainText('Gespeichert')
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Gespeichert',
+      )
     })
 
     test('should toggle to unified compensation mode', async ({ page }) => {
@@ -468,14 +475,17 @@ test.describe('Team Page', () => {
       await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
 
       // Disable compensation split
-      const splitCheckbox = page.getByRole('checkbox', { name: /Kompensations-Split aktivieren/ })
+      const splitCheckbox = page.getByRole('checkbox', {
+        name: /Kompensations-Split aktivieren/,
+      })
       await splitCheckbox.uncheck()
 
       // Should now see unified compensation field
       await expect(page.getByLabel('Kompensationsrate (%)')).toBeVisible()
       await expect(page.getByLabel('Fahrer-Kompensation (%)')).not.toBeVisible()
-      await expect(page.getByLabel('Beifahrer-Kompensation (%)')).not.toBeVisible()
-
+      await expect(
+        page.getByLabel('Beifahrer-Kompensation (%)'),
+      ).not.toBeVisible()
       // Set unified compensation rate
       await page.getByLabel('Kompensationsrate (%)').fill('90')
 
@@ -497,8 +507,9 @@ test.describe('Team Page', () => {
 
       // Configure export fields
       await page.getByRole('checkbox', { name: /Standort einbeziehen/ }).check()
-      await page.getByRole('checkbox', { name: /Pausendauer einbeziehen/ }).check()
-
+      await page
+        .getByRole('checkbox', { name: /Pausendauer einbeziehen/ })
+        .check()
       // Save settings
       await page.getByRole('button', { name: 'Speichern' }).click()
 
@@ -529,10 +540,21 @@ test.describe('Team Page', () => {
       await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
 
       // Configure override permissions
-      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Kompensation zu überschreiben/ }).uncheck()
-      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Export-Einstellungen zu überschreiben/ }).check()
-      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Arbeitszeiten zu überschreiben/ }).uncheck()
-
+      await page
+        .getByRole('checkbox', {
+          name: /Mitgliedern erlauben, Kompensation zu überschreiben/,
+        })
+        .uncheck()
+      await page
+        .getByRole('checkbox', {
+          name: /Mitgliedern erlauben, Export-Einstellungen zu überschreiben/,
+        })
+        .check()
+      await page
+        .getByRole('checkbox', {
+          name: /Mitgliedern erlauben, Arbeitszeiten zu überschreiben/,
+        })
+        .uncheck()
       // Save settings
       await page.getByRole('button', { name: 'Speichern' }).click()
 
@@ -540,18 +562,25 @@ test.describe('Team Page', () => {
       await expect(page.getByRole('dialog')).not.toBeVisible()
     })
 
-    test('should verify team settings affect company page', async ({ page }) => {
+    test('should verify team settings affect company page', async ({
+      page,
+    }) => {
       // Configure team settings first
       await page.getByRole('button', { name: 'Einstellungen' }).click()
       await page.getByRole('tab', { name: 'Team-Einstellungen' }).click()
 
       // Disable compensation split and set unified rate
-      await page.getByRole('checkbox', { name: /Kompensations-Split aktivieren/ }).uncheck()
+      await page
+        .getByRole('checkbox', { name: /Kompensations-Split aktivieren/ })
+        .uncheck()
       await page.getByLabel('Kompensationsrate (%)').fill('88')
 
       // Disable compensation override permission
-      await page.getByRole('checkbox', { name: /Mitgliedern erlauben, Kompensation zu überschreiben/ }).uncheck()
-
+      await page
+        .getByRole('checkbox', {
+          name: /Mitgliedern erlauben, Kompensation zu überschreiben/,
+        })
+        .uncheck()
       // Set company details
       await page.getByLabel('Firmenname').fill('Team Company Ltd')
 
@@ -568,11 +597,15 @@ test.describe('Team Page', () => {
       await expect(page.getByDisplayValue('88')).toBeVisible()
 
       // Verify compensation field is disabled (no override permission)
-      const compensationInput = page.getByRole('spinbutton', { name: /Kompensationsrate/ })
+      const compensationInput = page.getByRole('spinbutton', {
+        name: /Kompensationsrate/,
+      })
       await expect(compensationInput).toBeDisabled()
 
       // Verify team control message is shown
-      await expect(page.getByText('Diese Einstellung wird von Ihrem Team kontrolliert')).toBeVisible()
+      await expect(
+        page.getByText('Diese Einstellung wird von Ihrem Team kontrolliert'),
+      ).toBeVisible()
     })
 
     test('should handle team settings errors gracefully', async ({ page }) => {

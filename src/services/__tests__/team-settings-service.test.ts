@@ -1,9 +1,9 @@
 import type { TeamSettings } from '@/lib/types'
 
 import {
+  getEffectiveUserSettings,
   getTeamSettings,
   setTeamSettings,
-  getEffectiveUserSettings,
 } from '../team-settings-service'
 import { mockTeamSettings } from '../team-settings-service.local'
 

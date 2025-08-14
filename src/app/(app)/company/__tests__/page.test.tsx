@@ -4,11 +4,11 @@ import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { UserSettings } from '@/lib/types'
+import { getEffectiveUserSettings } from '@/services/team-settings-service'
 import {
   getUserSettings,
   setUserSettings,
 } from '@/services/user-settings-service'
-import { getEffectiveUserSettings } from '@/services/team-settings-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import CompanyPage from '../page'
@@ -422,7 +422,10 @@ describe('CompanyPage', () => {
       renderWithProviders(<CompanyPage />)
 
       await waitFor(() => {
-        expect(mockGetEffectiveUserSettings).toHaveBeenCalledWith('test-user-id', 'test-team')
+        expect(mockGetEffectiveUserSettings).toHaveBeenCalledWith(
+          'test-user-id',
+          'test-team',
+        )
       })
 
       await waitFor(() => {
@@ -489,9 +492,15 @@ describe('CompanyPage', () => {
       })
 
       // Should show unified compensation field instead of separate driver/passenger
-      expect(screen.getByText('settings.compensationPercent')).toBeInTheDocument()
-      expect(screen.queryByText('settings.driverCompensationPercent')).not.toBeInTheDocument()
-      expect(screen.queryByText('settings.passengerCompensationPercent')).not.toBeInTheDocument()
+      expect(
+        screen.getByText('settings.compensationPercent'),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText('settings.driverCompensationPercent'),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('settings.passengerCompensationPercent'),
+      ).not.toBeInTheDocument()
     })
 
     it('shows team override message for restricted fields', async () => {
@@ -515,7 +524,9 @@ describe('CompanyPage', () => {
         expect(screen.getByText('settings.company')).toBeInTheDocument()
       })
 
-      expect(screen.getByText('settings.teamControlledSetting')).toBeInTheDocument()
+      expect(
+        screen.getByText('settings.teamControlledSetting'),
+      ).toBeInTheDocument()
     })
 
     it('uses regular user settings when no team', async () => {
@@ -534,7 +545,10 @@ describe('CompanyPage', () => {
       renderWithProviders(<CompanyPage />)
 
       await waitFor(() => {
-        expect(mockGetEffectiveUserSettings).toHaveBeenCalledWith('test-user-id', undefined)
+        expect(mockGetEffectiveUserSettings).toHaveBeenCalledWith(
+          'test-user-id',
+          undefined,
+        )
       })
 
       const driverInput = screen.getByRole('spinbutton', {
@@ -553,7 +567,9 @@ describe('CompanyPage', () => {
       mockUser.teamId = 'test-team'
       mockAuthContext.user = mockUser
 
-      mockGetEffectiveUserSettings.mockRejectedValue(new Error('Team settings load failed'))
+      mockGetEffectiveUserSettings.mockRejectedValue(
+        new Error('Team settings load failed'),
+      )
 
       renderWithProviders(<CompanyPage />)
 

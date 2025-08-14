@@ -308,18 +308,8 @@ export default function LoginPage() {
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
-              <TabsTrigger
-                value="signin"
-                className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-gray-200"
-              >
-                {t('login.signInTab')}
-              </TabsTrigger>
-              <TabsTrigger
-                value="signup"
-                className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-gray-200"
-              >
-                {t('login.signUpTab')}
-              </TabsTrigger>
+              <TabsTrigger value="signin">{t('login.signInTab')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('login.signUpTab')}</TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="mt-6">
               {buildLoginForm()}
