@@ -3,6 +3,7 @@
   "selectMockUser": "Seleccionar un usuario de prueba",
   "mockUserDescription": "Elige un usuario para iniciar sesión para pruebas locales. Los datos se almacenan en memoria y se restablecerán al recargar la página.",
   "loginAs": "Iniciar sesión como {displayName}",
+  "signingIn": "Iniciando sesión...",
   "signInTab": "Iniciar sesión",
   "signUpTab": "Registrarse",
   "emailLabel": "Correo electrónico",

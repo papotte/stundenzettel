@@ -8,12 +8,11 @@ import {
   updateTimeEntry,
 } from '../time-entry-service'
 
-// Since the service module decides which implementation to use at load time,
-// our tests will automatically use the local service because NEXT_PUBLIC_ENVIRONMENT
-// is set to 'test' by Jest's config.
-// The tests are written to be independent of each other by creating the data they need.
+// Since the service module now always uses Firestore, this integration test
+// will use the Firestore implementation with environment-specific databases.
+// The tests create and clean up their own data.
 
-describe('Time Entry Service (Local Implementation)', () => {
+describe('Time Entry Service (Firestore Implementation)', () => {
   const mockUserId = 'test-user-for-entry-service'
 
   // Clear all data for the mock user before each test to ensure isolation

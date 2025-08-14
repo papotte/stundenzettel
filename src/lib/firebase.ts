@@ -1,6 +1,10 @@
 import { type FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app'
-import { type Auth, getAuth } from 'firebase/auth'
-import { type Firestore, getFirestore } from 'firebase/firestore'
+import { type Auth, connectAuthEmulator, getAuth } from 'firebase/auth'
+import {
+  type Firestore,
+  connectFirestoreEmulator,
+  getFirestore,
+} from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,17 +19,20 @@ let app: FirebaseApp
 let db: Firestore
 let auth: Auth
 
-const useMocks =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+// Determine database ID based on environment
+const getDatabaseId = (): string => {
+  const customDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID
 
-if (useMocks) {
-  // If in mock mode, create placeholder objects to avoid crashing on import.
-  // The app's logic prevents these from actually being used.
-  app = {} as FirebaseApp
-  db = {} as Firestore
-  auth = {} as Auth
-} else {
+  // If a custom database ID is explicitly set, use it
+  if (customDatabaseId) {
+    return customDatabaseId
+  }
+
+  return '' // Empty string means default database
+}
+
+// Always initialize Firebase (no more mock mode for database)
+{
   // In a non-mock environment, check if all Firebase config keys are present.
   const requiredConfigKeys = Object.keys(firebaseConfig) as Array<
     keyof typeof firebaseConfig
@@ -47,10 +54,29 @@ if (useMocks) {
     auth = {} as Auth
   } else {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
-    // Connect to a specific database if NEXT_PUBLIC_FIREBASE_DATABASE_ID is set,
-    // otherwise, it will connect to the default '(default)' database.
-    db = getFirestore(app, process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || '')
-    auth = getAuth(app)
+
+    // Check if we should connect to emulators (use development/test environment)
+    const useEmulators =
+      process.env.NEXT_PUBLIC_ENVIRONMENT === 'development' ||
+      process.env.NEXT_PUBLIC_ENVIRONMENT === 'test'
+
+    if (useEmulators) {
+      // Connect to emulators
+      const databaseId = getDatabaseId()
+      db = getFirestore(app, databaseId)
+      connectFirestoreEmulator(db, 'localhost', 8080)
+
+      // Connect Auth emulator
+      auth = getAuth(app)
+      connectAuthEmulator(auth, 'http://localhost:9099')
+    } else {
+      // Connect to real Firebase services
+      const databaseId = getDatabaseId()
+      db = getFirestore(app, databaseId)
+
+      // Auth remains the same for all environments
+      auth = getAuth(app)
+    }
   }
 }
 

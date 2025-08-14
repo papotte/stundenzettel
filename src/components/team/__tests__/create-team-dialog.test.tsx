@@ -377,10 +377,10 @@ describe('CreateTeamDialog', () => {
 
       // Should show loading state
       expect(
-        screen.getByRole('button', { name: /teams.creating/i }),
+        screen.getByRole('button', { name: /common.creating/i }),
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('button', { name: /teams.creating/i }),
+        screen.getByRole('button', { name: /common.creating/i }),
       ).toBeDisabled()
 
       // Resolve the promise
@@ -388,7 +388,7 @@ describe('CreateTeamDialog', () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByRole('button', { name: /teams.creating/i }),
+          screen.queryByRole('button', { name: /common.creating/i }),
         ).not.toBeInTheDocument()
       })
     })

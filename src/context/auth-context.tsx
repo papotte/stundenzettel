@@ -24,13 +24,7 @@ interface AuthContextType {
   user: AuthenticatedUser | null
   loading: boolean
   signOut: () => Promise<void>
-  loginAsMockUser?: (user: AuthenticatedUser | null) => void
 }
-
-const useMocks =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
-const MOCK_USER_STORAGE_KEY = 'mockUser'
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -86,47 +80,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const loginAsMockUser = async (user: AuthenticatedUser | null) => {
-    if (user) {
-      localStorage.setItem(MOCK_USER_STORAGE_KEY, JSON.stringify(user))
-      // Sync language on mock login
-      await syncLanguage(user.uid)
-    } else {
-      localStorage.removeItem(MOCK_USER_STORAGE_KEY)
-    }
-    setUser(user)
-    setLoading(false)
-  }
-
   const signOut = async () => {
     // Sync language on logout
     syncLanguage()
 
-    if (useMocks) {
-      loginAsMockUser(null)
-    } else if (
-      firebaseAuth &&
-      typeof firebaseAuth.onAuthStateChanged === 'function'
-    ) {
+    if (firebaseAuth && typeof firebaseAuth.onAuthStateChanged === 'function') {
       await firebaseSignOut(firebaseAuth)
     }
   }
 
   useEffect(() => {
-    if (useMocks) {
-      try {
-        const storedUser = localStorage.getItem(MOCK_USER_STORAGE_KEY)
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
-        }
-      } catch (error) {
-        console.error('Failed to parse mock user from localStorage', error)
-        localStorage.removeItem(MOCK_USER_STORAGE_KEY)
-      }
-      setLoading(false)
-      return
-    }
-
     // Guard against using a non-initialized auth object
     if (
       !firebaseAuth ||
@@ -166,7 +129,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     loading,
     signOut,
-    ...(useMocks && { loginAsMockUser }),
   }
 
   return (
