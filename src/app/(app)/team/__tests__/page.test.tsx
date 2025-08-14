@@ -307,6 +307,31 @@ describe('TeamPage', () => {
       })
     })
 
+    it('shows preferences tab content', async () => {
+      const user = userEvent.setup()
+      renderWithProviders(<TeamPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Test Team')).toBeInTheDocument()
+      })
+
+      // Click on preferences tab to show the content
+      const preferencesTab = screen.getByRole('tab', {
+        name: /teams.preferences/i,
+      })
+      await user.click(preferencesTab)
+
+      await waitFor(() => {
+        expect(screen.getByText('teams.teamPreferences')).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.trackingConfiguration'),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.compensationDefaults'),
+        ).toBeInTheDocument()
+      })
+    })
+
     it('handles tab switching', async () => {
       const user = userEvent.setup()
       renderWithProviders(<TeamPage />)
