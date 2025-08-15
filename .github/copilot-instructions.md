@@ -291,6 +291,32 @@ NEXT_PUBLIC_STRIPE_TEAM_YEARLY_PRICE_ID=price_...
 - `deploy.yml` - Deploys to Firebase App Hosting
 - `nightly.yml` - Nightly builds
 
+### Commit Message and PR Title Conventions
+
+**CRITICAL**: All commit messages and PR titles MUST start with one of these conventional commit prefixes:
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `docs:` - Documentation changes
+- `style:` - Code style changes (formatting, missing semicolons, etc.)
+- `refactor:` - Code refactoring without changing functionality
+- `perf:` - Performance improvements
+- `test:` - Adding or updating tests
+- `build:` - Changes to build system or dependencies
+- `ci:` - Changes to CI configuration
+- `chore:` - Other changes that don't modify src or test files
+- `revert:` - Reverts a previous commit
+
+**Examples:**
+```
+feat: add time entry validation with pause suggestions
+fix: resolve authentication redirect loop on login
+docs: update installation instructions for Node.js 22
+chore: update dependencies to latest versions
+```
+
+**NOTE**: This is required for the semantic-release workflow that automatically generates releases and changelogs based on commit messages.
+
 ### Before Committing
 **ALWAYS run these commands before committing to avoid CI failures:**
 ```bash
