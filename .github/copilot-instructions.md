@@ -112,7 +112,7 @@ npm run lint:fix
 # Run Functions linting
 npm run functions:lint
 ```
-**NOTE**: CI will fail if code is not properly formatted. Always run `npm run format` before committing.
+**NOTE**: CI will fail if code is not properly formatted or if the linter is not passing. Always run `npm run format` and `npm run lint` before committing.
 
 ### Firebase Commands
 
@@ -124,21 +124,14 @@ npm install -g firebase-tools
 
 #### Deploy Commands
 ```bash
-# Deploy everything
-npm run deploy
-firebase deploy
-
-# Deploy only app hosting
-npm run deploy:app
-firebase deploy --only apphosting
-
-# Deploy only Firestore rules
+# Deploy only Firestore rules (for development/testing)
 firebase deploy --only firestore:rules
 
-# Deploy only functions
+# Deploy only functions (for development/testing)
 npm run functions:deploy
 firebase deploy --only functions --debug
 ```
+**NOTE**: App hosting deployment happens automatically in the CI/CD pipeline upon release. Do not manually deploy app hosting changes.
 **TIMING**: Full deploy takes 5-10 minutes. NEVER CANCEL. Set timeout to 15+ minutes.
 
 #### Local Development with Emulators
@@ -241,6 +234,7 @@ npm run functions:shell
 - `src/services/` - API and Firebase service functions
 - `functions/` - Firebase Cloud Functions
 - `e2e/` - Playwright E2E tests
+- `docs/` - Project documentation
 
 ### Configuration Files
 - `package.json` - Dependencies and scripts
@@ -273,12 +267,6 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Stripe Price IDs (create these in Stripe Dashboard)
-NEXT_PUBLIC_STRIPE_INDIVIDUAL_MONTHLY_PRICE_ID=price_...
-NEXT_PUBLIC_STRIPE_INDIVIDUAL_YEARLY_PRICE_ID=price_...
-NEXT_PUBLIC_STRIPE_TEAM_MONTHLY_PRICE_ID=price_...
-NEXT_PUBLIC_STRIPE_TEAM_YEARLY_PRICE_ID=price_...
 ```
 
 **NOTE**: Application will work without Stripe configuration but payment features will be disabled.
