@@ -52,3 +52,6 @@ next-env.d.ts
 /.vscode/
 /*-debug.log
 /google-application-credentials.json
+
+# Firebase emulator data
+/emulator-data/
