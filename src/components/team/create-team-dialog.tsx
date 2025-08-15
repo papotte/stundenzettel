@@ -161,7 +161,7 @@ export function CreateTeamDialog({
                 {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isCreating}>
-                {isCreating ? t('teams.creating') : t('teams.createTeam')}
+                {isCreating ? t('common.creating') : t('teams.createTeam')}
               </Button>
             </DialogFooter>
           </form>

@@ -27,7 +27,6 @@ import ColorfulBackground from '@/components/ui/colorful-background'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
@@ -60,14 +59,19 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const mockUsers: AuthenticatedUser[] = [
   {
-    uid: 'mock-user-1',
-    email: 'user1@example.com',
-    displayName: 'Raquel Crespillo Andujar',
+    uid: '',
+    email: 'user@example.com',
+    displayName: 'User Example',
   },
   {
-    uid: 'mock-user-2',
-    email: 'user2@example.com',
-    displayName: 'Max Mustermann',
+    uid: '',
+    email: 'admin@example.com',
+    displayName: 'Admin Example',
+  },
+  {
+    uid: '',
+    email: 'test@example.com',
+    displayName: 'Test Example',
   },
 ]
 
@@ -80,7 +84,6 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
-  const { loginAsMockUser } = useAuth()
   const t = useTranslations()
 
   // Get return URL from query parameters
@@ -125,9 +128,9 @@ export default function LoginPage() {
   }
 
   const handleSignIn = () =>
-    handleAuthAction((email, password) =>
-      signInWithEmailAndPassword(auth, email, password),
-    )
+    handleAuthAction((email, password) => {
+      return signInWithEmailAndPassword(auth, email, password)
+    })
   const handleSignUp = () =>
     handleAuthAction((email, password) =>
       createUserWithEmailAndPassword(auth, email, password),
@@ -172,11 +175,14 @@ export default function LoginPage() {
     }
   }
 
-  const handleMockLogin = (user: AuthenticatedUser) => {
-    if (loginAsMockUser) {
-      loginAsMockUser(user)
-      router.push(returnUrl)
-    }
+  const handleMockLogin = async (user: AuthenticatedUser) => {
+    // Use the seeded user credentials to authenticate with Firebase
+    const password = 'password123' // All seeded users use the same password
+    // Temporarily set the email and password state, then call handleLogin
+    setEmail(user.email.trim())
+    setPassword(password)
+    // Use setTimeout to ensure state is updated before calling handleLogin
+    setTimeout(() => handleSignIn(), 2)
   }
 
   if (useMocks) {
@@ -196,7 +202,7 @@ export default function LoginPage() {
           <CardContent className="space-y-4">
             {mockUsers.map((user) => (
               <Button
-                key={user.uid}
+                key={user.email}
                 onClick={() => handleMockLogin(user)}
                 className="w-full"
                 data-testid={`login-as-${user.displayName}`}
