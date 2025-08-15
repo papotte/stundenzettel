@@ -9,48 +9,11 @@ const mockFirestoreService = firestoreService as jest.Mocked<
 >
 
 describe('TeamService', () => {
-  const originalEnv = process.env.NEXT_PUBLIC_ENVIRONMENT
-
   beforeEach(() => {
     jest.clearAllMocks()
-    // Reset environment
-    process.env.NEXT_PUBLIC_ENVIRONMENT = originalEnv
-  })
-
-  afterAll(() => {
-    process.env.NEXT_PUBLIC_ENVIRONMENT = originalEnv
   })
 
   describe('Service Selection Logic', () => {
-    it('uses Firestore service in all environments', async () => {
-      // Mock Firestore service response
-      mockFirestoreService.createTeam.mockResolvedValue('team-123')
-      mockFirestoreService.getTeam.mockResolvedValue({
-        id: 'team-123',
-        name: 'Test Team',
-        description: 'Test Description',
-        ownerId: 'user-123',
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01'),
-      })
-
-      // Test that Firestore service is called (regardless of environment)
-      const result = await teamService.createTeam(
-        'Test Team',
-        'Test Description',
-        'user-123',
-        'test@example.com',
-      )
-
-      expect(mockFirestoreService.createTeam).toHaveBeenCalledWith(
-        'Test Team',
-        'Test Description',
-        'user-123',
-        'test@example.com',
-      )
-      expect(result).toBe('team-123')
-    })
-
     it('delegates all operations to the Firestore service', async () => {
       // Test that all operations delegate to the Firestore service
       mockFirestoreService.getTeam.mockResolvedValue({
@@ -77,10 +40,6 @@ describe('TeamService', () => {
   })
 
   describe('Team CRUD Operations', () => {
-    beforeEach(() => {
-      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-    })
-
     it('createTeam delegates to Firestore service', async () => {
       mockFirestoreService.createTeam.mockResolvedValue('team-123')
 
@@ -141,10 +100,6 @@ describe('TeamService', () => {
   })
 
   describe('Team Member Operations', () => {
-    beforeEach(() => {
-      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-    })
-
     it('addTeamMember delegates to Firestore service', async () => {
       mockFirestoreService.addTeamMember.mockResolvedValue(undefined)
 
@@ -208,10 +163,6 @@ describe('TeamService', () => {
   })
 
   describe('Team Invitations', () => {
-    beforeEach(() => {
-      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-    })
-
     it('createTeamInvitation delegates to Firestore service', async () => {
       mockFirestoreService.createTeamInvitation.mockResolvedValue(
         'invitation-123',
@@ -307,10 +258,6 @@ describe('TeamService', () => {
   })
 
   describe('User Team Management', () => {
-    beforeEach(() => {
-      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-    })
-
     it('getUserTeam delegates to Firestore service', async () => {
       const mockTeam = {
         id: 'team-123',
@@ -330,10 +277,6 @@ describe('TeamService', () => {
   })
 
   describe('Team Subscription', () => {
-    beforeEach(() => {
-      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-    })
-
     it('getTeamSubscription delegates to Firestore service', async () => {
       const mockSubscription = {
         stripeSubscriptionId: 'sub_123',
@@ -361,10 +304,6 @@ describe('TeamService', () => {
   })
 
   describe('Real-time Listeners', () => {
-    beforeEach(() => {
-      process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'
-    })
-
     it('onTeamMembersChange delegates to Firestore service', () => {
       const mockUnsubscribe = jest.fn()
       mockFirestoreService.onTeamMembersChange.mockReturnValue(mockUnsubscribe)

@@ -42,11 +42,8 @@ jest.mock('firebase/auth', () => ({
   browserLocalPersistence: 'local',
 }))
 
-const mockLoginAsMockUser = jest.fn()
 // Use centralized auth mock
-const mockAuthContext = createMockAuthContext({
-  loginAsMockUser: mockLoginAsMockUser,
-})
+const mockAuthContext = createMockAuthContext({})
 jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
@@ -191,24 +188,24 @@ describe('LoginPage', () => {
     it('renders mock user selection screen', () => {
       render(<LoginPage />)
       expect(screen.getByText('login.selectMockUser')).toBeInTheDocument()
-      expect(
-        screen.getByTestId('login-as-Raquel Crespillo Andujar'),
-      ).toBeInTheDocument()
-      expect(screen.getByTestId('login-as-Max Mustermann')).toBeInTheDocument()
+      expect(screen.getByTestId('login-as-User Example')).toBeInTheDocument()
+      expect(screen.getByTestId('login-as-Admin Example')).toBeInTheDocument()
     })
 
     it('logs in a mock user and redirects', async () => {
       const user = userEvent.setup()
+      mockSignInWithEmailAndPassword.mockResolvedValue({})
+
       render(<LoginPage />)
 
-      await user.click(screen.getByTestId('login-as-Max Mustermann'))
+      await user.click(screen.getByTestId('login-as-Admin Example'))
 
       await waitFor(() => {
-        expect(mockLoginAsMockUser).toHaveBeenCalledWith({
-          uid: 'mock-user-2',
-          displayName: 'Max Mustermann',
-          email: 'user2@example.com',
-        })
+        expect(mockSignInWithEmailAndPassword).toHaveBeenCalledWith(
+          expect.any(Object),
+          'admin@example.com',
+          'password123',
+        )
         expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
     })
