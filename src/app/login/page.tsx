@@ -81,6 +81,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('signin')
   const [returnUrl, setReturnUrl] = useState('/tracker')
+  const [pendingAuth, setPendingAuth] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -93,6 +94,15 @@ export default function LoginPage() {
       setReturnUrl(decodeURIComponent(url))
     }
   }, [searchParams])
+
+  // Effect to handle pending authentication after state updates
+  useEffect(() => {
+    // Only trigger authentication if we're waiting for it and have both values
+    if (pendingAuth && email && password) {
+      setPendingAuth(false)
+      handleSignIn()
+    }
+  }, [pendingAuth, email, password])
 
   const useMocks =
     process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
@@ -127,10 +137,12 @@ export default function LoginPage() {
     }
   }
 
-  const handleSignIn = () =>
+  const handleSignIn = () => {
+    setPendingAuth(true)
     handleAuthAction((email, password) => {
       return signInWithEmailAndPassword(auth, email, password)
     })
+  }
   const handleSignUp = () =>
     handleAuthAction((email, password) =>
       createUserWithEmailAndPassword(auth, email, password),
@@ -178,11 +190,10 @@ export default function LoginPage() {
   const handleMockLogin = async (user: AuthenticatedUser) => {
     // Use the seeded user credentials to authenticate with Firebase
     const password = 'password123' // All seeded users use the same password
-    // Temporarily set the email and password state, then call handleLogin
+    // Set state and mark that we want to authenticate
     setEmail(user.email.trim())
     setPassword(password)
-    // Use setTimeout to ensure state is updated before calling handleLogin
-    setTimeout(() => handleSignIn(), 2)
+    setPendingAuth(true)
   }
 
   if (useMocks) {
