@@ -11,22 +11,25 @@ TimeWise Tracker is a Next.js 15 time tracking application with Firebase backend
 **CRITICAL**: This project requires Node.js 22. Do not attempt to build with older versions.
 
 1. **Install Node.js 22**:
+
    ```bash
    # On Ubuntu/Debian systems:
    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
    sudo apt-get install nodejs -y
-   
+
    # Update symlink if needed:
    sudo ln -sf /usr/bin/nodejs /usr/local/bin/node
-   
+
    # Verify installation
    node --version  # Should show v22.x.x
    ```
 
 2. **Install dependencies**:
+
    ```bash
    npm install
    ```
+
    **TIMING**: Takes 15-20 minutes. NEVER CANCEL. Set timeout to 30+ minutes.
    **NOTE**: Expect deprecation warnings - these are normal and do not affect functionality.
 
@@ -40,6 +43,7 @@ TimeWise Tracker is a Next.js 15 time tracking application with Firebase backend
 ### Development Commands
 
 #### Start Development Server
+
 ```bash
 # Production mode (port 9002)
 npm run dev
@@ -47,14 +51,17 @@ npm run dev
 # Test mode (port 9003) - use this for E2E testing
 npm run dev:test
 ```
+
 **TIMING**: Takes 30-60 seconds to start. NEVER CANCEL. Set timeout to 2+ minutes.
 **NOTE**: Development server uses turbopack for faster builds.
 
 #### Build Commands
+
 ```bash
 # Build Next.js application
 npm run build
 ```
+
 **TIMING**: Takes 3-5 minutes. NEVER CANCEL. Set timeout to 10+ minutes.
 **NOTE**: Requires environment variables for Stripe integration to build successfully.
 
@@ -62,31 +69,37 @@ npm run build
 # Build Firebase Functions
 npm run functions:build
 ```
+
 **TIMING**: Takes 1-2 minutes. NEVER CANCEL. Set timeout to 5+ minutes.
 
 ```bash
 # Type checking (runs during build but can be run separately)
 npm run typecheck
 ```
+
 **TIMING**: Takes 30-60 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
 
 #### Testing Commands
+
 ```bash
 # Run unit tests (Jest)
 npm test
 ```
+
 **TIMING**: Takes 2-3 minutes. NEVER CANCEL. Set timeout to 10+ minutes.
 
 ```bash
 # Run unit tests with coverage for CI
 npm run test:ci
 ```
+
 **TIMING**: Takes 3-4 minutes. NEVER CANCEL. Set timeout to 10+ minutes.
 
 ```bash
 # Run E2E tests (Playwright) - requires dev server running
 npm run test:e2e
 ```
+
 **TIMING**: Takes 5-10 minutes. NEVER CANCEL. Set timeout to 15+ minutes.
 **PREREQUISITE**: Development server must be running on port 9003 (`npm run dev:test`).
 
@@ -96,6 +109,7 @@ npm run test:e2e:debug
 ```
 
 #### Code Quality
+
 ```bash
 # Check formatting
 npm run format:check
@@ -112,17 +126,21 @@ npm run lint:fix
 # Run Functions linting
 npm run functions:lint
 ```
+
 **NOTE**: CI will fail if code is not properly formatted or if the linter is not passing. Always run `npm run format` and `npm run lint` before committing.
 
 ### Firebase Commands
 
 #### Prerequisites
+
 Install Firebase CLI if not already installed:
+
 ```bash
 npm install -g firebase-tools
 ```
 
 #### Deploy Commands
+
 ```bash
 # Deploy only Firestore rules (for development/testing)
 firebase deploy --only firestore:rules
@@ -131,10 +149,12 @@ firebase deploy --only firestore:rules
 npm run functions:deploy
 firebase deploy --only functions --debug
 ```
+
 **NOTE**: App hosting deployment happens automatically in the CI/CD pipeline upon release. Do not manually deploy app hosting changes.
 **TIMING**: Full deploy takes 5-10 minutes. NEVER CANCEL. Set timeout to 15+ minutes.
 
 #### Local Development with Emulators
+
 ```bash
 # Start Firebase emulators (all services)
 firebase emulators:start
@@ -145,9 +165,11 @@ npm run functions:serve
 # View functions logs
 npm run functions:logs
 ```
+
 **NOTE**: Emulators run on specific ports (see Port Configuration section).
 
 #### Firebase Functions Development
+
 ```bash
 # Watch mode for function development
 npm run functions:build:watch
@@ -161,6 +183,7 @@ npm run functions:shell
 **ALWAYS test these scenarios after making changes to ensure the application works correctly:**
 
 ### 1. Basic Application Startup
+
 1. Install dependencies: `npm install` (wait 15-20 minutes)
 2. Start development server: `npm run dev:test`
 3. Navigate to `http://localhost:9003`
@@ -168,6 +191,7 @@ npm run functions:shell
 5. Check browser console for any JavaScript errors
 
 ### 2. Time Entry Workflow
+
 1. Ensure development server is running on port 9003
 2. Navigate to the main time tracking page
 3. Create a new time entry:
@@ -182,6 +206,7 @@ npm run functions:shell
 7. Test validation errors (e.g., location too short, end time before start time)
 
 ### 3. Time Entry Validation Rules
+
 1. Test maximum duration limit (10 hours):
    - Try creating entry from 08:00 to 19:00 (11 hours) - should be rejected
    - Try creating entry from 08:00 to 18:00 (10 hours) - should be accepted
@@ -191,12 +216,14 @@ npm run functions:shell
 3. Test midnight spanning validation (should show error for end time before start time)
 
 ### 4. Authentication Flow
+
 1. Test user registration and login
 2. Verify navigation redirects work correctly for protected routes
 3. Test logout functionality
 4. Verify authentication state persists across page refreshes
 
 ### 5. Pricing and Subscription Flow (requires Stripe test setup)
+
 1. Navigate to `http://localhost:9003/pricing`
 2. Verify pricing plans display correctly
 3. Test "Choose Plan" buttons redirect appropriately
@@ -207,26 +234,31 @@ npm run functions:shell
    - Test "Manage Billing" button (customer portal)
 
 ### 6. Team Management (for team subscriptions)
+
 1. Navigate to `/team`
 2. Test team creation and management features
 3. Test team member invitation workflow
 4. Verify team subscription limits and features
 
 ### 7. End-to-End Test Validation
+
 1. Run complete E2E test suite:
+
    ```bash
    # Terminal 1: Start test server
    npm run dev:test
-   
+
    # Terminal 2: Run E2E tests
    npm run test:e2e
    ```
+
 2. Verify all tests pass
 3. Check test report in `playwright-report` directory
 
 ## Common File Locations
 
 ### Key Source Directories
+
 - `src/app/` - Next.js app router pages
 - `src/components/` - Reusable React components
 - `src/lib/` - Utility functions and configurations
@@ -237,6 +269,7 @@ npm run functions:shell
 - `docs/` - Project documentation
 
 ### Configuration Files
+
 - `package.json` - Dependencies and scripts
 - `next.config.ts` - Next.js configuration
 - `firebase.json` - Firebase project configuration
@@ -246,6 +279,7 @@ npm run functions:shell
 - `.env.local` - Environment variables (not in repo)
 
 ### Important Scripts
+
 - `scripts/` - Stripe integration debugging scripts (manual testing only)
   - Run with: `node scripts/verify-stripe-setup.js`
   - See `scripts/README.md` for details
@@ -274,6 +308,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 ## CI/CD Pipeline
 
 ### GitHub Actions Workflows
+
 - `ci.yml` - Runs on pull requests (lint, test, build)
 - `main.yml` - Runs on main branch (full checks + semantic release)
 - `deploy.yml` - Deploys to Firebase App Hosting
@@ -296,6 +331,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 - `revert:` - Reverts a previous commit
 
 **Examples:**
+
 ```
 feat: add time entry validation with pause suggestions
 fix: resolve authentication redirect loop on login
@@ -306,7 +342,9 @@ chore: update dependencies to latest versions
 **NOTE**: This is required for the semantic-release workflow that automatically generates releases and changelogs based on commit messages.
 
 ### Before Committing
+
 **ALWAYS run these commands before committing to avoid CI failures:**
+
 ```bash
 npm run format
 npm run lint
@@ -320,6 +358,7 @@ npm test
 ### Common Issues
 
 1. **"Firestore... 400 (Bad Request)" errors**:
+
    ```bash
    firebase deploy --only firestore:rules
    ```
@@ -346,6 +385,7 @@ npm test
    - See `scripts/SUBSCRIPTION_TESTING_GUIDE.md` for detailed flow
 
 ### Debug Commands
+
 ```bash
 # View Firebase Functions logs
 npm run functions:logs
@@ -358,6 +398,7 @@ curl http://localhost:9002/api/health  # if health endpoint exists
 ```
 
 ## Port Configuration
+
 - Development server: `9002` (production mode)
 - Test server: `9003` (test mode for E2E tests)
 - Firebase Functions emulator: `9001`
@@ -366,6 +407,7 @@ curl http://localhost:9002/api/health  # if health endpoint exists
 - Firebase UI: `4000`
 
 ## Additional Resources
+
 - See `README.md` for complete setup instructions
 - See `PAYMENT_SETUP.md` for Stripe integration setup
 - See `scripts/SUBSCRIPTION_TESTING_GUIDE.md` for subscription testing
