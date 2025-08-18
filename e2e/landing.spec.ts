@@ -5,7 +5,7 @@ test.describe('Landing Page Routing', () => {
     await page.goto('/')
     await expect(
       page.getByRole('heading', {
-        name: /Mühelose Zeiterfassung|Effortless Time Tracking/i,
+        name: /Effortless Time Tracking/i,
         level: 1,
       }),
     ).toBeVisible()
@@ -21,9 +21,7 @@ test.describe('Landing Page Routing', () => {
     // Check that the features container is present
     await expect(page.getByTestId('features-container')).toBeVisible()
     // Optionally, check that at least one feature is listed
-    await expect(
-      page.getByText(/Live Time Tracking|Live-Zeiterfassung/i),
-    ).toBeVisible()
+    await expect(page.getByText(/Live Time Tracking/i)).toBeVisible()
     await expect(page.getByTestId('footer')).toBeVisible()
     await expect(page.getByTestId('top-nav')).toBeVisible()
     await expect(page.getByTestId('login-link')).toBeVisible()
@@ -33,7 +31,7 @@ test.describe('Landing Page Routing', () => {
     await page.goto('/pricing')
     await expect(
       page.getByRole('heading', {
-        name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
+        name: /Choose Your Plan/i,
       }),
     ).toBeVisible()
     await expect(page.getByTestId('footer')).toBeVisible()
@@ -45,7 +43,7 @@ test.describe('Landing Page Routing', () => {
     await page.goto('/terms')
     await expect(
       page.getByRole('heading', {
-        name: /Terms and Conditions|Nutzungsbedingungen/i,
+        name: /Terms and Conditions/i,
         level: 1,
       }),
     ).toBeVisible()
@@ -57,7 +55,7 @@ test.describe('Landing Page Routing', () => {
   test('should load the privacy page', async ({ page }) => {
     await page.goto('/privacy')
     await expect(
-      page.getByRole('heading', { name: /Privacy|Datenschutz/i, level: 1 }),
+      page.getByRole('heading', { name: /Privacy/i, level: 1 }),
     ).toBeVisible()
     await expect(page.getByTestId('footer')).toBeVisible()
     await expect(page.getByTestId('top-nav')).toBeVisible()
@@ -67,7 +65,7 @@ test.describe('Landing Page Routing', () => {
   test('should load the imprint page', async ({ page }) => {
     await page.goto('/imprint')
     await expect(
-      page.getByRole('heading', { name: /Imprint|Impressum/i, level: 1 }),
+      page.getByRole('heading', { name: /Imprint/i, level: 1 }),
     ).toBeVisible()
     await expect(page.getByTestId('footer')).toBeVisible()
     await expect(page.getByTestId('top-nav')).toBeVisible()
@@ -78,7 +76,7 @@ test.describe('Landing Page Routing', () => {
     await page.goto('/cookies')
     await expect(
       page.getByRole('heading', {
-        name: /Cookie Policy|Cookie-Richtlinien/i,
+        name: /Cookie Policy/i,
         level: 1,
       }),
     ).toBeVisible()

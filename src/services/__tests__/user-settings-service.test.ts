@@ -1,67 +1,138 @@
 import type { UserSettings } from '@/lib/types'
 
-import { getUserSettings, setUserSettings } from '../user-settings-service'
+import * as userSettingsService from '../user-settings-service'
+import * as firestoreService from '../user-settings-service.firestore'
 
-// These tests will automatically use the local implementation due to the environment.
-describe('User Settings Service (Local Implementation)', () => {
-  const existingUserIdWithCustomSettings = 'mock-user-1'
-  const newUserId = 'new-user-for-settings-test'
+// Mock the Firestore service
+jest.mock('../user-settings-service.firestore')
 
-  const defaultSettings: UserSettings = {
-    defaultWorkHours: 7,
-    defaultStartTime: '09:00',
-    defaultEndTime: '17:00',
-    language: 'en',
-    displayName: '',
-    companyName: '',
-    companyEmail: '',
-    companyPhone1: '',
-    companyPhone2: '',
-    companyFax: '',
-    driverCompensationPercent: 100,
-    passengerCompensationPercent: 90,
-  }
+const mockFirestoreService = firestoreService as jest.Mocked<
+  typeof firestoreService
+>
 
-  it('should get custom settings for a pre-configured user', async () => {
-    const settings = await getUserSettings(existingUserIdWithCustomSettings)
-    expect(settings.language).toBe('de')
-    expect(settings.companyName).toBe('Acme Inc.')
-    expect(settings.defaultWorkHours).toBe(7)
-    expect(settings.displayName).toBe('')
-    expect(settings.driverCompensationPercent).toBe(100)
-    expect(settings.passengerCompensationPercent).toBe(90)
+describe('User Settings Service', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
   })
 
-  it('should return default settings for a new user', async () => {
-    const settings = await getUserSettings(newUserId)
-    expect(settings).toEqual(defaultSettings)
+  describe('Service Selection Logic', () => {
+    it('delegates all operations to the Firestore service', async () => {
+      const mockSettings: UserSettings = {
+        defaultWorkHours: 7,
+        defaultStartTime: '09:00',
+        defaultEndTime: '17:00',
+        language: 'de',
+        displayName: '',
+        companyName: 'Acme Inc.',
+        companyEmail: '',
+        companyPhone1: '',
+        companyPhone2: '',
+        companyFax: '',
+        driverCompensationPercent: 100,
+        passengerCompensationPercent: 90,
+      }
+
+      mockFirestoreService.getUserSettings.mockResolvedValue(mockSettings)
+
+      const result = await userSettingsService.getUserSettings('user-123')
+
+      expect(mockFirestoreService.getUserSettings).toHaveBeenCalledWith(
+        'user-123',
+      )
+      expect(result).toEqual(mockSettings)
+    })
   })
 
-  it('should set and update user settings correctly', async () => {
-    const settingsToSet: Partial<UserSettings> = {
+  describe('User Settings Operations', () => {
+    const defaultSettings: UserSettings = {
+      defaultWorkHours: 7,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
       language: 'en',
-      defaultWorkHours: 8.5,
-      companyName: 'Test Corp Inc.',
-      displayName: 'Export Name',
-      driverCompensationPercent: 80,
-      passengerCompensationPercent: 70,
+      displayName: '',
+      companyName: '',
+      companyEmail: '',
+      companyPhone1: '',
+      companyPhone2: '',
+      companyFax: '',
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 90,
     }
-    await setUserSettings(newUserId, settingsToSet as UserSettings)
-    const updatedSettings = await getUserSettings(newUserId)
-    expect(updatedSettings.language).toBe('en')
-    expect(updatedSettings.defaultWorkHours).toBe(8.5)
-    expect(updatedSettings.companyName).toBe('Test Corp Inc.')
-    expect(updatedSettings.defaultStartTime).toBe(
-      defaultSettings.defaultStartTime,
-    )
-    expect(updatedSettings.displayName).toBe('Export Name')
-    expect(updatedSettings.driverCompensationPercent).toBe(80)
-    expect(updatedSettings.passengerCompensationPercent).toBe(70)
-  })
 
-  it('should allow clearing displayName (blank fallback)', async () => {
-    await setUserSettings(newUserId, { displayName: '' } as UserSettings)
-    const updatedSettings = await getUserSettings(newUserId)
-    expect(updatedSettings.displayName).toBe('')
+    it('getUserSettings delegates to Firestore service', async () => {
+      mockFirestoreService.getUserSettings.mockResolvedValue(defaultSettings)
+
+      const result = await userSettingsService.getUserSettings('new-user')
+
+      expect(mockFirestoreService.getUserSettings).toHaveBeenCalledWith(
+        'new-user',
+      )
+      expect(result).toEqual(defaultSettings)
+    })
+
+    it('setUserSettings delegates to Firestore service', async () => {
+      const settingsToSet: Partial<UserSettings> = {
+        language: 'en',
+        defaultWorkHours: 8.5,
+        companyName: 'Test Corp Inc.',
+        displayName: 'Export Name',
+        driverCompensationPercent: 80,
+        passengerCompensationPercent: 70,
+      }
+
+      mockFirestoreService.setUserSettings.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings(
+        'user-123',
+        settingsToSet as UserSettings,
+      )
+
+      expect(mockFirestoreService.setUserSettings).toHaveBeenCalledWith(
+        'user-123',
+        settingsToSet as UserSettings,
+      )
+    })
+
+    it('should handle custom settings correctly', async () => {
+      const customSettings: UserSettings = {
+        ...defaultSettings,
+        language: 'de',
+        companyName: 'Acme Inc.',
+        defaultWorkHours: 7,
+      }
+
+      mockFirestoreService.getUserSettings.mockResolvedValue(customSettings)
+
+      const settings =
+        await userSettingsService.getUserSettings('existing-user')
+
+      expect(mockFirestoreService.getUserSettings).toHaveBeenCalledWith(
+        'existing-user',
+      )
+      expect(settings.language).toBe('de')
+      expect(settings.companyName).toBe('Acme Inc.')
+      expect(settings.defaultWorkHours).toBe(7)
+      expect(settings.driverCompensationPercent).toBe(100)
+      expect(settings.passengerCompensationPercent).toBe(90)
+    })
+
+    it('should handle partial settings updates', async () => {
+      const partialSettings: Partial<UserSettings> = {
+        language: 'en',
+        defaultWorkHours: 8.5,
+      }
+
+      mockFirestoreService.setUserSettings.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings(
+        'user-123',
+        partialSettings as UserSettings,
+      )
+
+      expect(mockFirestoreService.setUserSettings).toHaveBeenCalledWith(
+        'user-123',
+        partialSettings as UserSettings,
+      )
+    })
   })
 })

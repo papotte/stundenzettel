@@ -20,14 +20,12 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import ColorfulBackground from '@/components/ui/colorful-background'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { auth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
@@ -60,14 +58,19 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const mockUsers: AuthenticatedUser[] = [
   {
-    uid: 'mock-user-1',
-    email: 'user1@example.com',
-    displayName: 'Raquel Crespillo Andujar',
+    uid: '',
+    email: 'user@example.com',
+    displayName: 'User Example',
   },
   {
-    uid: 'mock-user-2',
-    email: 'user2@example.com',
-    displayName: 'Max Mustermann',
+    uid: '',
+    email: 'admin@example.com',
+    displayName: 'Admin Example',
+  },
+  {
+    uid: '',
+    email: 'test@example.com',
+    displayName: 'Test Example',
   },
 ]
 
@@ -77,10 +80,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('signin')
   const [returnUrl, setReturnUrl] = useState('/tracker')
+  const [pendingAuth, setPendingAuth] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
-  const { loginAsMockUser } = useAuth()
   const t = useTranslations()
 
   // Get return URL from query parameters
@@ -91,9 +94,16 @@ export default function LoginPage() {
     }
   }, [searchParams])
 
-  const useMocks =
-    process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-    process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+  // Effect to handle pending authentication after state updates
+  useEffect(() => {
+    // Only trigger authentication if we're waiting for it and have both values
+    if (pendingAuth && email && password) {
+      setPendingAuth(false)
+      handleSignIn()
+    }
+  }, [pendingAuth, email, password])
+
+  const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
 
   const handleAuthAction = async (
     action: (email: string, password: string) => Promise<UserCredential>,
@@ -120,14 +130,16 @@ export default function LoginPage() {
         variant: 'destructive',
       })
     } finally {
+      setPendingAuth(false)
       setLoading(false)
     }
   }
 
-  const handleSignIn = () =>
-    handleAuthAction((email, password) =>
-      signInWithEmailAndPassword(auth, email, password),
-    )
+  const handleSignIn = () => {
+    handleAuthAction((email, password) => {
+      return signInWithEmailAndPassword(auth, email, password)
+    })
+  }
   const handleSignUp = () =>
     handleAuthAction((email, password) =>
       createUserWithEmailAndPassword(auth, email, password),
@@ -172,43 +184,74 @@ export default function LoginPage() {
     }
   }
 
-  const handleMockLogin = (user: AuthenticatedUser) => {
-    if (loginAsMockUser) {
-      loginAsMockUser(user)
-      router.push(returnUrl)
-    }
+  const handleMockLogin = async (user: AuthenticatedUser) => {
+    // Use the seeded user credentials to authenticate with Firebase
+    const password = 'password123' // All seeded users use the same password
+    // Set state and mark that we want to authenticate
+    setEmail(user.email.trim())
+    setPassword(password)
+    setPendingAuth(true)
   }
 
-  if (useMocks) {
+  const buildLoginForm = () => {
     return (
-      <ColorfulBackground className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="mb-4 flex items-center gap-2">
-          <TimeWiseIcon className="h-8 w-8 text-primary" />
-          <h1 className="font-headline text-3xl font-bold tracking-tight">
-            {t('login.testMode')}
-          </h1>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email-signin">{t('login.emailLabel')}</Label>
+          <Input
+            id="email-signin"
+            type="email"
+            placeholder={t('login.emailPlaceholder')}
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
         </div>
-        <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle>{t('login.selectMockUser')}</CardTitle>
-            <CardDescription>{t('login.mockUserDescription')}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {mockUsers.map((user) => (
-              <Button
-                key={user.uid}
-                onClick={() => handleMockLogin(user)}
-                className="w-full"
-                data-testid={`login-as-${user.displayName}`}
-              >
-                {t('login.loginAs', {
-                  displayName: user.displayName || user.email!,
-                })}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-      </ColorfulBackground>
+        <div className="space-y-2">
+          <Label htmlFor="password-signin">{t('login.passwordLabel')}</Label>
+          <Input
+            id="password-signin"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        </div>
+        <Button
+          onClick={handleSignIn}
+          data-testid="login-signin-button"
+          disabled={loading}
+          className="w-full"
+        >
+          {loading ? t('login.signingInButton') : t('login.signInButton')}
+        </Button>
+      </div>
+    )
+  }
+  const buildMockLogin = () => {
+    return (
+      <div>
+        <div className={'flex flex-col pb-6'}>
+          <CardTitle>{t('login.selectMockUser')}</CardTitle>
+          <CardDescription>{t('login.mockUserDescription')}</CardDescription>
+        </div>
+        <div className="space-y-4">
+          {mockUsers.map((user) => (
+            <Button
+              key={user.email}
+              onClick={() => handleMockLogin(user)}
+              className="w-full"
+              data-testid={`login-as-${user.displayName}`}
+            >
+              {t('login.loginAs', {
+                displayName: user.displayName || user.email!,
+              })}
+            </Button>
+          ))}
+        </div>
+      </div>
     )
   }
 
@@ -217,7 +260,7 @@ export default function LoginPage() {
       <div className="mb-4 flex items-center gap-2">
         <TimeWiseIcon className="h-8 w-8 text-primary" />
         <h1 className="font-headline text-3xl font-bold tracking-tight">
-          {t('common.appName')}
+          {t('common.appName')} {useMocks ? ' (Test Mode)' : ''}
         </h1>
       </div>
       <Card className="w-full max-w-sm">
@@ -242,42 +285,7 @@ export default function LoginPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="mt-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-signin">{t('login.emailLabel')}</Label>
-                  <Input
-                    id="email-signin"
-                    type="email"
-                    placeholder={t('login.emailPlaceholder')}
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-signin">
-                    {t('login.passwordLabel')}
-                  </Label>
-                  <Input
-                    id="password-signin"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                  />
-                </div>
-                <Button
-                  onClick={handleSignIn}
-                  disabled={loading}
-                  className="w-full"
-                >
-                  {loading
-                    ? t('login.signingInButton')
-                    : t('login.signInButton')}
-                </Button>
-              </div>
+              {useMocks ? buildMockLogin() : buildLoginForm()}
             </TabsContent>
             <TabsContent value="signup" className="mt-6">
               <div className="space-y-4">

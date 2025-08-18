@@ -100,3 +100,6 @@ body {
   }
 }
 
+.firebase-emulator-warning {
+  position: relative !important;
+}

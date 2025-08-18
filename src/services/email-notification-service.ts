@@ -1,17 +1,13 @@
 import * as firestoreService from './email-notification-service.firestore'
-import * as localService from './email-notification-service.local'
 
-const useMockService =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+// Always use Firestore service - local service has been removed
+// The environment-specific database selection is handled in firebase.ts
+const service = firestoreService
 
-const service = useMockService ? localService : firestoreService
-
-if (useMockService) {
-  console.info(
-    `Using local email notification service (NEXT_PUBLIC_ENVIRONMENT=${process.env.NEXT_PUBLIC_ENVIRONMENT}).`,
-  )
-}
+const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'production'
+console.info(
+  `Using Firestore email notification service for environment '${environment}'`,
+)
 
 /**
  * Sends an email notification when a user changes their password.
