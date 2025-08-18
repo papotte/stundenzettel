@@ -14,8 +14,8 @@ async function navigateToCompanyPage(page: Page) {
 }
 
 test.describe('Company Page', () => {
-  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-    await loginOrRegisterTestUser(page)
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
 
     await page.waitForURL('/tracker')
   })

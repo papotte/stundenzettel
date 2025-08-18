@@ -1,9 +1,9 @@
 import { expect, test } from './fixtures'
 
 test.describe('Security Page - Change Password', () => {
-  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
+  test.beforeEach(async ({ page, loginUser }) => {
     // Use per-worker credentials to avoid cross-test interference
-    await loginOrRegisterTestUser(page)
+    await loginUser(page)
     await page.goto('/security')
     await expect(page.getByText('Security')).toBeVisible()
   })

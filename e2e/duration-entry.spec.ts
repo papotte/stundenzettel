@@ -2,8 +2,8 @@ import { expect, test } from './fixtures'
 import { addDurationEntry } from './test-helpers'
 
 test.describe('Duration Entry Form', () => {
-  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-    await loginOrRegisterTestUser(page)
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
     await page.waitForURL('/tracker')
   })
 

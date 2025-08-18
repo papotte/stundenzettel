@@ -5,8 +5,8 @@ import { addManualEntry } from './test-helpers'
 
 test.describe('Export Page', () => {
   let weekIndex: number = 0
-  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-    await loginOrRegisterTestUser(page)
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
     await page.waitForURL('/tracker')
 
     const week = getWeekOfMonth(new Date(), { weekStartsOn: 1 })

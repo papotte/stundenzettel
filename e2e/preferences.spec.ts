@@ -1,8 +1,8 @@
 import { expect, test } from './fixtures'
 
 test.describe('Preferences Page', () => {
-  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-    await loginOrRegisterTestUser(page)
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
     await page.waitForURL('/tracker')
 
     // Find the dropdown menu

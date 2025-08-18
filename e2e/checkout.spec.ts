@@ -7,8 +7,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Checkout Session Creation', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -103,8 +103,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Customer Portal', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -177,8 +177,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Team Checkout', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -221,8 +221,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Success and Cancel URLs', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -258,8 +258,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Subscription State Management', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -314,8 +314,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Webhook Integration', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -341,8 +341,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Payment Method Management', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 
@@ -365,8 +365,8 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Subscription Lifecycle', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
     })
 

@@ -46,9 +46,9 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
     test('should handle authenticated user flow', async ({
       page,
-      loginOrRegisterTestUser,
+      loginUser,
     }) => {
-      await loginOrRegisterTestUser(page)
+      await loginUser(page)
       await navigateToPricing(page)
 
       // Click plan button should show loading
@@ -59,11 +59,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await waitForLoadingState(page, choosePlanButton)
     })
 
-    test('should toggle billing periods', async ({
-      page,
-      loginOrRegisterTestUser,
-    }) => {
-      await loginOrRegisterTestUser(page)
+    test('should toggle billing periods', async ({ page, loginUser }) => {
+      await loginUser(page)
       await navigateToPricing(page)
 
       // Test monthly to yearly toggle
@@ -73,9 +70,9 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
     test('should handle team subscription flow', async ({
       page,
-      loginOrRegisterTestUser,
+      loginUser,
     }) => {
-      await loginOrRegisterTestUser(page)
+      await loginUser(page)
       await navigateToPricing(page)
 
       const success = await clickPricingPlan(page, 'team')
@@ -95,9 +92,9 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
     test('should display subscription page for authenticated users', async ({
       page,
-      loginOrRegisterTestUser,
+      loginUser,
     }) => {
-      await loginOrRegisterTestUser(page)
+      await loginUser(page)
       await navigateToSubscription(page)
 
       // Verify back button and management card
@@ -109,11 +106,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await expect(page.getByText(/Manage Subscription/)).toBeVisible()
     })
 
-    test('should show no subscription state', async ({
-      page,
-      loginOrRegisterTestUser,
-    }) => {
-      await loginOrRegisterTestUser(page)
+    test('should show no subscription state', async ({ page, loginUser }) => {
+      await loginUser(page)
       await navigateToSubscription(page)
 
       await verifySubscriptionState(page, 'none')
@@ -121,11 +115,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await page.waitForURL('/pricing')
     })
 
-    test('should handle manage billing', async ({
-      page,
-      loginOrRegisterTestUser,
-    }) => {
-      await loginOrRegisterTestUser(page)
+    test('should handle manage billing', async ({ page, loginUser }) => {
+      await loginUser(page)
       await navigateToSubscription(page)
 
       const success = await clickManageBilling(page)
@@ -139,8 +130,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Subscription Guard', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
     })
 
     test('should protect subscription-guarded pages', async ({ page }) => {
@@ -166,8 +157,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('API Integration', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
     })
 
     test('should create checkout session with correct parameters', async ({
@@ -231,11 +222,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Navigation and Mobile', () => {
-    test('should handle mobile layout', async ({
-      page,
-      loginOrRegisterTestUser,
-    }) => {
-      await loginOrRegisterTestUser(page)
+    test('should handle mobile layout', async ({ page, loginUser }) => {
+      await loginUser(page)
       await verifyMobileLayout(page)
       await navigateToSubscription(page)
       await verifyMobileLayout(page)
@@ -243,11 +231,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Success and Cancel URLs', () => {
-    test('should handle success redirect', async ({
-      page,
-      loginOrRegisterTestUser,
-    }) => {
-      await loginOrRegisterTestUser(page)
+    test('should handle success redirect', async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.goto('/subscription?success=true')
 
       await expect(
@@ -258,11 +243,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
       expect(page.url()).toContain('success=true')
     })
 
-    test('should handle cancel redirect', async ({
-      page,
-      loginOrRegisterTestUser,
-    }) => {
-      await loginOrRegisterTestUser(page)
+    test('should handle cancel redirect', async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.goto('/pricing?canceled=true')
 
       await expect(
@@ -275,8 +257,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Trial Flow', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
     })
 
     test('should display trial information on pricing page', async ({
