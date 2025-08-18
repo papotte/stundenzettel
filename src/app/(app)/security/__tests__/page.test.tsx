@@ -424,7 +424,7 @@ describe('SecurityPage', () => {
       await user.click(confirmDeleteButton)
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
-          title: 'settings.error',
+          title: 'common.error',
           description: 'settings.deleteAccountError',
           variant: 'destructive',
         })

@@ -21,6 +21,11 @@ let auth: Auth
 
 // Determine database ID based on environment
 const getDatabaseId = (): string => {
+  // For e2e tests, always use test-database
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'test') {
+    return 'test-database'
+  }
+
   const customDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID
 
   // If a custom database ID is explicitly set, use it
@@ -37,12 +42,15 @@ const getDatabaseId = (): string => {
   const requiredConfigKeys = Object.keys(firebaseConfig) as Array<
     keyof typeof firebaseConfig
   >
-  const missingConfigKeys = requiredConfigKeys
-    .filter((key) => !firebaseConfig[key])
-    .map(
-      (key) =>
-        `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`,
-    )
+  const missingConfigKeys =
+    process.env.NEXT_PUBLIC_ENVIRONMENT === 'test'
+      ? []
+      : requiredConfigKeys
+          .filter((key) => !firebaseConfig[key])
+          .map(
+            (key) =>
+              `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`,
+          )
 
   if (missingConfigKeys.length > 0) {
     console.error(
@@ -73,10 +81,72 @@ const getDatabaseId = (): string => {
       // Connect to real Firebase services
       const databaseId = getDatabaseId()
       db = getFirestore(app, databaseId)
-
+      console.log('Connected to Firestore with database ID:', databaseId)
       // Auth remains the same for all environments
       auth = getAuth(app)
     }
+  }
+}
+
+// Centralized list of collections used in tests. We cannot list collections from the client SDK.
+export const TEST_COLLECTIONS: string[] = [
+  'timeEntries',
+  'teams',
+  'teamMembers',
+  'teamInvitations',
+  'subscriptions',
+  'userSettings',
+  'notifications',
+  'users',
+]
+
+/**
+ * Delete all documents from known test collections.
+ * - Runs only against emulator or when NEXT_PUBLIC_ENVIRONMENT === 'test'.
+ * - No-ops in other environments to avoid accidental data loss.
+ */
+export async function cleanupTestDatabase(): Promise<void> {
+  // Check if we're in a test environment
+  const isTestEnv = process.env.NEXT_PUBLIC_ENVIRONMENT === 'test'
+
+  if (!isTestEnv) {
+    // Safety guard: never allow cleanup outside test/development env
+    console.warn(
+      'cleanupTestDatabase skipped: not running in test/development environment',
+    )
+    return
+  }
+
+  console.log('Cleaning up test database using emulator REST API...')
+
+  try {
+    // Use Firebase emulator REST API to clear all data
+    // This bypasses security rules entirely
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    const emulatorHost = 'localhost:8080'
+
+    const clearUrl = `http://${emulatorHost}/emulator/v1/projects/${projectId}/databases/test-database/documents`
+
+    const response = await fetch(clearUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      console.log('✅ Test database cleared successfully via emulator REST API')
+    } else {
+      const errorText = await response.text()
+      console.error(
+        `❌ Failed to clear emulator data: ${response.status} ${errorText}`,
+      )
+      throw new Error(`Failed to clear emulator data: ${response.status}`)
+    }
+  } catch (error) {
+    console.error('Error clearing test database:', error)
+    // Don't throw - this is just cleanup, not critical for test execution
+    console.warn('Database cleanup failed, but continuing with test...')
   }
 }
 

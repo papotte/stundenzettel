@@ -235,7 +235,7 @@ describe('PasswordChangeDialog', () => {
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
-        title: 'settings.error',
+        title: 'common.error',
         description: 'settings.passwordUpdateInvalidCurrent',
         variant: 'destructive',
       })

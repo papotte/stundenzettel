@@ -1,5 +1,4 @@
-import { expect, test } from '@playwright/test'
-
+import { expect, test } from './fixtures'
 import {
   clickManageBilling,
   clickPricingPlan,
@@ -22,7 +21,7 @@ import {
   verifyTrialExpirationWarning,
   waitForLoadingState,
 } from './subscription-helpers'
-import { loginWithMockUser, testAuthRedirect } from './test-helpers'
+import { testAuthRedirect } from './test-helpers'
 
 test.describe('Subscription Workflow (Simplified)', () => {
   test.beforeEach(async ({ page }) => {
@@ -45,20 +44,26 @@ test.describe('Subscription Workflow (Simplified)', () => {
       expect(currentUrl).toContain('pricing')
     })
 
-    test('should handle authenticated user flow', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should handle authenticated user flow', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await navigateToPricing(page)
 
       // Click plan button should show loading
       const choosePlanButton = page
-        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .getByRole('button', { name: /Get Started/ })
         .first()
       await clickPricingPlan(page)
       await waitForLoadingState(page, choosePlanButton)
     })
 
-    test('should toggle billing periods', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should toggle billing periods', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await navigateToPricing(page)
 
       // Test monthly to yearly toggle
@@ -66,15 +71,18 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await toggleBillingPeriod(page, 'monthly')
     })
 
-    test('should handle team subscription flow', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should handle team subscription flow', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await navigateToPricing(page)
 
       const success = await clickPricingPlan(page, 'team')
       if (success) {
         await page.waitForURL('/team?tab=subscription')
         await expect(
-          page.getByRole('heading', { name: /Manage Team|Team-Verwaltung/ }),
+          page.getByRole('heading', { name: /Team Management/ }),
         ).toBeVisible()
       }
     })
@@ -87,40 +95,43 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
     test('should display subscription page for authenticated users', async ({
       page,
+      loginOrRegisterTestUser,
     }) => {
-      await loginWithMockUser(page)
+      await loginOrRegisterTestUser(page)
       await navigateToSubscription(page)
 
       // Verify back button and management card
       await expect(
         page.getByRole('link', {
-          name: /Zurück zur Übersicht|Back to Tracker/,
+          name: /Back to Tracker/,
         }),
       ).toBeVisible()
-      await expect(
-        page.getByText(/Manage Subscription|Abonnement verwalten/),
-      ).toBeVisible()
+      await expect(page.getByText(/Manage Subscription/)).toBeVisible()
     })
 
-    test('should show no subscription state', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should show no subscription state', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await navigateToSubscription(page)
-      await page.waitForLoadState('networkidle')
 
       await verifySubscriptionState(page, 'none')
       await clickUpgrade(page)
       await page.waitForURL('/pricing')
     })
 
-    test('should handle manage billing', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should handle manage billing', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await navigateToSubscription(page)
-      await page.waitForLoadState('networkidle')
 
       const success = await clickManageBilling(page)
       if (success) {
         const manageBillingButton = page.getByRole('button', {
-          name: /Manage Billing|Abrechnung verwalten/,
+          name: /Manage Billing/,
         })
         await waitForLoadingState(page, manageBillingButton)
       }
@@ -128,8 +139,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Subscription Guard', () => {
-    test.beforeEach(async ({ page }) => {
-      await loginWithMockUser(page)
+    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
+      await loginOrRegisterTestUser(page)
     })
 
     test('should protect subscription-guarded pages', async ({ page }) => {
@@ -141,9 +152,7 @@ test.describe('Subscription Workflow (Simplified)', () => {
       page,
     }) => {
       await page.goto('/protected')
-      await page
-        .getByRole('button', { name: /Tarif wählen|Choose a Plan/ })
-        .click()
+      await page.getByRole('button', { name: /Choose a Plan/ }).click()
       await page.waitForURL('/pricing')
     })
 
@@ -151,21 +160,19 @@ test.describe('Subscription Workflow (Simplified)', () => {
       page,
     }) => {
       await page.goto('/protected')
-      await page
-        .getByRole('button', {
-          name: /Abonnement verwalten|Manage Subscription/,
-        })
-        .click()
+      await page.getByRole('button', { name: /Manage Subscription/ }).click()
       await page.waitForURL('/subscription')
     })
   })
 
   test.describe('API Integration', () => {
+    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
+      await loginOrRegisterTestUser(page)
+    })
+
     test('should create checkout session with correct parameters', async ({
       page,
     }) => {
-      await loginWithMockUser(page)
-
       const checkoutRequest = await interceptApiCall(
         page,
         '**/api/create-checkout-session',
@@ -183,18 +190,14 @@ test.describe('Subscription Workflow (Simplified)', () => {
     test('should create customer portal session with correct parameters', async ({
       page,
     }) => {
-      await loginWithMockUser(page)
-
       const portalRequest = await interceptApiCall(
         page,
         '**/api/create-customer-portal-session',
       )
       await navigateToSubscription(page)
-      await page.waitForLoadState('networkidle')
 
       const success = await clickManageBilling(page)
       if (success) {
-        await page.waitForTimeout(2000)
         if (portalRequest) {
           const postData = portalRequest.postDataJSON()
           verifyPortalParameters(postData)
@@ -203,8 +206,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
     })
 
     test('should handle API errors gracefully', async ({ page }) => {
-      await loginWithMockUser(page)
-
       await mockApiResponse(page, '**/api/subscriptions/**', {
         status: 500,
         body: { error: 'Failed to fetch subscription' },
@@ -215,8 +216,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
     })
 
     test('should handle checkout errors', async ({ page }) => {
-      await loginWithMockUser(page)
-
       await mockApiResponse(page, '**/api/create-checkout-session', {
         status: 500,
         body: { error: 'Failed to create checkout session' },
@@ -224,7 +223,7 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
       await navigateToPricing(page)
       const choosePlanButton = page
-        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .getByRole('button', { name: /Get Started/ })
         .first()
       await clickPricingPlan(page)
       await verifyErrorHandling(page, choosePlanButton)
@@ -232,8 +231,11 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Navigation and Mobile', () => {
-    test('should handle mobile layout', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should handle mobile layout', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await verifyMobileLayout(page)
       await navigateToSubscription(page)
       await verifyMobileLayout(page)
@@ -241,25 +243,31 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Success and Cancel URLs', () => {
-    test('should handle success redirect', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should handle success redirect', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await page.goto('/subscription?success=true')
 
       await expect(
         page.getByRole('heading', {
-          name: /Manage Subscription|Abonnement verwalten/,
+          name: /Manage Subscription/,
         }),
       ).toBeVisible()
       expect(page.url()).toContain('success=true')
     })
 
-    test('should handle cancel redirect', async ({ page }) => {
-      await loginWithMockUser(page)
+    test('should handle cancel redirect', async ({
+      page,
+      loginOrRegisterTestUser,
+    }) => {
+      await loginOrRegisterTestUser(page)
       await page.goto('/pricing?canceled=true')
 
       await expect(
         page.getByRole('heading', {
-          name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
+          name: /Choose Your Plan/,
         }),
       ).toBeVisible()
       expect(page.url()).toContain('canceled=true')
@@ -267,8 +275,8 @@ test.describe('Subscription Workflow (Simplified)', () => {
   })
 
   test.describe('Trial Flow', () => {
-    test.beforeEach(async ({ page }) => {
-      await loginWithMockUser(page)
+    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
+      await loginOrRegisterTestUser(page)
     })
 
     test('should display trial information on pricing page', async ({
@@ -278,14 +286,12 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
       // Verify trial badges are visible, might be more than one
       await expect(
-        page
-          .getByText(/No credit card required|Keine Kreditkarte erforderlich/)
-          .first(),
+        page.getByText(/No credit card required/).first(),
       ).toBeVisible()
 
       // Verify trial button
       await expect(
-        page.getByRole('button', { name: /Kostenlos testen|Try for Free/ }),
+        page.getByRole('button', { name: /Try for Free/ }),
       ).toBeVisible()
     })
 
@@ -298,7 +304,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
       )
       await navigateToPricing(page)
       await clickPricingPlan(page)
-      await page.waitForTimeout(2000)
 
       if (checkoutRequest) {
         const postData = checkoutRequest.postDataJSON()
@@ -329,7 +334,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
       // Should be able to access protected page
       await page.goto('/protected')
-      await page.waitForLoadState('networkidle')
 
       // Should see the protected content
       await expect(
@@ -340,26 +344,23 @@ test.describe('Subscription Workflow (Simplified)', () => {
       ).toBeVisible()
 
       // Should not see subscription guard
-      await expect(
-        page.getByText(/Choose a Plan|Tarif wählen/),
-      ).not.toBeVisible()
+      await expect(page.getByText(/Choose a Plan/)).not.toBeVisible()
     })
 
     test('should handle trial-to-paid conversion', async ({ page }) => {
       await mockTrialSubscription(page, { daysRemaining: 7 })
 
       await navigateToSubscription(page)
-      await page.waitForLoadState('networkidle')
 
       // Click add payment method button (for trial users)
       await page
         .getByRole('button', {
-          name: /Add Payment Method|Zahlungsmethode hinzufügen/,
+          name: /Add Payment Method/,
         })
         .click()
 
       // Should redirect to customer portal
-      await page.waitForTimeout(2000)
+      // TODO: Add test for redirect to customer portal
       // Note: In real scenario, this would redirect to Stripe customer portal
     })
 
@@ -367,7 +368,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await mockTrialSubscription(page, { isExpired: true, status: 'past_due' })
 
       await navigateToSubscription(page)
-      await page.waitForLoadState('networkidle')
 
       await verifyExpiredTrialState(page)
     })
@@ -379,10 +379,9 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
       // Should show subscription guard
       await page.goto('/protected')
-      await page.waitForLoadState('networkidle')
       await verifySubscriptionGuard(page)
       // Should show subscription required message since trial expired
-      await expect(page.getByText(/Choose a Plan|Tarif wählen/)).toBeVisible()
+      await expect(page.getByText(/Choose a Plan/)).toBeVisible()
     })
 
     test('should handle trial checkout with different billing periods', async ({
@@ -397,7 +396,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
         '**/api/create-checkout-session',
       )
       await clickPricingPlan(page)
-      await page.waitForTimeout(2000)
 
       if (monthlyCheckoutRequest) {
         const postData = monthlyCheckoutRequest.postDataJSON()
@@ -413,7 +411,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
         '**/api/create-checkout-session',
       )
       await clickPricingPlan(page)
-      await page.waitForTimeout(2000)
 
       if (yearlyCheckoutRequest) {
         const postData = yearlyCheckoutRequest.postDataJSON()
@@ -432,8 +429,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
       const success = await clickPricingPlan(page, 'team')
       if (success) {
-        await page.waitForTimeout(2000)
-
         if (teamCheckoutRequest) {
           const postData = teamCheckoutRequest.postDataJSON()
           expect(postData).toHaveProperty('trialEnabled', true)
@@ -451,7 +446,6 @@ test.describe('Subscription Workflow (Simplified)', () => {
       })
 
       await navigateToSubscription(page)
-      await page.waitForLoadState('networkidle')
 
       // Should fall back to no subscription state
       await verifySubscriptionState(page, 'none')
@@ -465,7 +459,7 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
       await navigateToPricing(page)
       const choosePlanButton = page
-        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .getByRole('button', { name: /Get Started/ })
         .first()
       await clickPricingPlan(page)
       await verifyErrorHandling(page, choosePlanButton)
