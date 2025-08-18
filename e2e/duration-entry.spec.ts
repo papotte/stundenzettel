@@ -1,15 +1,9 @@
-import { expect, test } from '@playwright/test'
-
+import { expect, test } from './fixtures'
 import { addDurationEntry } from './test-helpers'
 
 test.describe('Duration Entry Form', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/login')
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
+  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
+    await loginOrRegisterTestUser(page)
     await page.waitForURL('/tracker')
   })
 
@@ -21,11 +15,11 @@ test.describe('Duration Entry Form', () => {
     await addDurationEntry(page, location, duration)
     const entryCard = page.locator(`[data-location="${location}"]`)
     await expect(entryCard).toBeVisible()
-    await expect(entryCard.getByText(/Dauer: 90 min/)).toBeVisible()
+    await expect(entryCard.getByText(/Duration: 90 min/)).toBeVisible()
     await expect(entryCard.getByText('01:30:00')).toBeVisible()
     // Delete
-    await entryCard.getByRole('button', { name: 'Löschen' }).click()
-    await page.getByRole('button', { name: 'Löschen', exact: true }).click()
+    await entryCard.getByRole('button', { name: 'Delete' }).click()
+    await page.getByRole('button', { name: 'Delete', exact: true }).click()
     await expect(entryCard).not.toBeVisible()
   })
 
@@ -36,18 +30,20 @@ test.describe('Duration Entry Form', () => {
     await page.goto('/tracker')
 
     // Open the time entry form (adjust selector as needed)
-    await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
+    await page.getByRole('button', { name: /Add/i }).click()
     const form = page.locator(
-      'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+      'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
     )
     await expect(form).toBeVisible()
-    await form.getByLabel('Einsatzort').fill('Duration Stepper E2E')
+    await form
+      .getByRole('textbox', { name: 'Location' })
+      .fill('Duration Stepper E2E')
 
     // Switch to duration mode (Radix Switch)
     await form.getByTestId('mode-switch').click()
 
     // Find the duration input (adjust label if needed)
-    const durationInput = await page.getByLabel('Dauer (Minuten)')
+    const durationInput = await page.getByLabel('Duration (minutes)')
 
     // Set initial value
     await durationInput.fill('30')

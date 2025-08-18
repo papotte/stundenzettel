@@ -1,11 +1,16 @@
 import type { PlaywrightTestConfig } from '@playwright/test'
 import { devices } from '@playwright/test'
 
+import * as dotenv from 'dotenv'
+
+dotenv.config({ path: '.env.test' })
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
+  /* Global setup that runs before all tests */
+  globalSetup: require.resolve('./e2e/global-test-setup.ts'),
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {
@@ -51,7 +56,6 @@ const config: PlaywrightTestConfig = {
         ...devices['Desktop Firefox'],
       },
     },
-
     {
       name: 'webkit',
       use: {

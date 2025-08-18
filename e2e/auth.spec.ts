@@ -1,5 +1,10 @@
-import { expect, test } from '@playwright/test'
+import { Page, expect, test } from '@playwright/test'
 
+const loginAsMockUser = async (page: Page) => {
+  await page.getByLabel('Email').fill('user@example.com')
+  await page.getByLabel('Password').fill('password123')
+  await page.getByTestId('login-signin-button').click()
+}
 test.describe('Authentication', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the login page before each test
@@ -10,30 +15,23 @@ test.describe('Authentication', () => {
     // In test mode, we expect to see the mock user login screen.
     // The language is still English here, before a user is selected.
     await expect(
-      page.getByRole('heading', { name: 'TimeWise Tracker (Test Mode)' }),
+      page.getByRole('heading', { name: 'TimeWise Tracker' }),
     ).toBeVisible()
 
-    // Log in as the first mock user (Raquel, who uses German).
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
+    // Log in as the first mock user
+    await loginAsMockUser(page)
     await page.waitForURL('/tracker')
 
-    // Verify landing on the main tracker page by checking for key elements in German.
-    await expect(page.getByText('Live-Zeiterfassung')).toBeVisible()
+    // Verify landing on the main tracker page
+    await expect(page.getByText('Live Time Tracking')).toBeVisible()
     await expect(
-      page.getByRole('button', { name: 'Erfassung starten' }),
+      page.getByRole('button', { name: 'Start Tracking' }),
     ).toBeVisible()
-    await expect(page.getByText('Heute')).toBeVisible()
+    await expect(page.getByText('Today')).toBeVisible()
   })
 
   test('should log out and redirect to login page', async ({ page }) => {
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
-    await page.waitForURL('/tracker')
+    await loginAsMockUser(page)
 
     // Click the user menu button to open dropdown
     await page.getByTestId('user-menu-btn').click()
@@ -77,7 +75,7 @@ test.describe('Authentication', () => {
     // Verify pricing page is displayed
     await expect(
       page.getByRole('heading', {
-        name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
+        name: /Choose Your Plan/i,
       }),
     ).toBeVisible()
     // Find and click the first "Choose Plan" button
@@ -101,10 +99,7 @@ test.describe('Authentication', () => {
     expect(currentUrl).toContain('pricing')
 
     // Login with mock user
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
+    await loginAsMockUser(page)
 
     // Should be redirected back to pricing page
     await page.waitForURL(/\/pricing/)
@@ -112,7 +107,7 @@ test.describe('Authentication', () => {
     // Verify we're back on the pricing page
     await expect(
       page.getByRole('heading', {
-        name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
+        name: /Choose Your Plan/i,
       }),
     ).toBeVisible()
 
@@ -141,10 +136,7 @@ test.describe('Authentication', () => {
     expect(currentUrl).toContain('subscription')
 
     // Login with mock user
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
+    await loginAsMockUser(page)
 
     // Should be redirected back to subscription page
     await page.waitForURL(/\/subscription/)
@@ -152,7 +144,7 @@ test.describe('Authentication', () => {
     // Verify we're on the subscription page
     await expect(
       page.getByRole('heading', {
-        name: /Manage Subscription|Abonnement verwalten/,
+        name: /Manage Subscription/,
       }),
     ).toBeVisible()
   })
@@ -177,17 +169,14 @@ test.describe('Authentication', () => {
     expect(currentUrl).toContain('team')
 
     // Login with mock user
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
+    await loginAsMockUser(page)
 
     // Should be redirected back to team page
     await page.waitForURL(/\/team/)
 
     // Verify we're on the team page
     await expect(
-      page.getByRole('heading', { name: /Team-Verwaltung/ }),
+      page.getByRole('heading', { name: /Team Management/ }),
     ).toBeVisible()
   })
 })

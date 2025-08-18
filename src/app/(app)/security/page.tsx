@@ -341,7 +341,11 @@ export default function SecurityPage() {
                   onOpenChange={setIsDeleteDialogOpen}
                 >
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      data-testid="delete-user-button"
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       {t('settings.deleteAccount')}
                     </Button>

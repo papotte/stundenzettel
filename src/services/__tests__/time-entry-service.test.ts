@@ -1,5 +1,8 @@
 import {
+  type CollectionReference,
   type DocumentReference,
+  type Query,
+  type QueryOrderByConstraint,
   type QuerySnapshot,
   type WriteBatch,
   addDoc,
@@ -55,8 +58,8 @@ const mockWriteBatch = writeBatch as jest.MockedFunction<typeof writeBatch>
 describe('Time Entry Service Firestore Implementation', () => {
   const mockUserId = 'test-user-123'
   const mockEntryId = 'entry-123'
-  const mockCollectionRef = {} as any
-  const mockDocRef = {} as any
+  const mockCollectionRef = {} as CollectionReference
+  const mockDocRef = {} as DocumentReference
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -64,8 +67,8 @@ describe('Time Entry Service Firestore Implementation', () => {
     // Setup default mocks
     mockCollection.mockReturnValue(mockCollectionRef)
     mockDoc.mockReturnValue(mockDocRef)
-    mockQuery.mockReturnValue({} as any)
-    mockOrderBy.mockReturnValue({} as any)
+    mockQuery.mockReturnValue(mockCollectionRef as unknown as Query)
+    mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
   })
 
   describe('addTimeEntry', () => {

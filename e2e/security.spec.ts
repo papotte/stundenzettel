@@ -1,37 +1,42 @@
-import { Page, expect, test } from '@playwright/test'
-
-// Helper to login as the first mock user
-async function loginAsMockUser(page: Page) {
-  await page.goto('/login')
-  await page
-    .getByRole('button', { name: /Log in as/ })
-    .first()
-    .click()
-  await page.waitForURL('/tracker')
-}
+import { expect, test } from './fixtures'
 
 test.describe('Security Page - Change Password', () => {
-  test.beforeEach(async ({ page }) => {
-    await loginAsMockUser(page)
+  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
+    // Use per-worker credentials to avoid cross-test interference
+    await loginOrRegisterTestUser(page)
     await page.goto('/security')
-    await page.waitForLoadState('networkidle')
+    await expect(page.getByText('Security')).toBeVisible()
   })
 
-  test('should successfully change password', async ({ page }) => {
+  test('should successfully change password', async ({
+    page,
+    workerPassword,
+  }) => {
     // Open the change password dialog
     await page.getByTestId('change-password-trigger').click()
 
+    const newPassword = 'New_password123!'
     // Fill in the form
-    await page.getByTestId('current-password-input').fill('currentpass')
-    await page.getByTestId('new-password-input').fill('New_password123!')
-    await page.getByTestId('confirm-password-input').fill('New_password123!')
+    await page.getByTestId('current-password-input').fill(workerPassword)
+    await page.getByTestId('new-password-input').fill(newPassword)
+    await page.getByTestId('confirm-password-input').fill(newPassword)
 
     // Submit
     await page.getByTestId('change-password-button').click()
 
     // Expect a success toast
     await expect(page.locator('[data-testid="toast-title"]')).toContainText(
-      /Passwort.*aktualisiert|password.*updated/i,
+      /password.*updated/i,
+    )
+
+    // Change password back to original password
+    await page.getByTestId('change-password-trigger').click()
+    await page.getByTestId('current-password-input').fill(newPassword)
+    await page.getByTestId('new-password-input').fill(workerPassword)
+    await page.getByTestId('confirm-password-input').fill(workerPassword)
+    await page.getByTestId('change-password-button').click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      /password.*updated/i,
     )
   })
 
@@ -49,10 +54,10 @@ test.describe('Security Page - Change Password', () => {
 
     // Expect an error toast
     await expect(page.locator('[data-testid="toast-title"]')).toContainText(
-      /Fehler|Error/i,
+      /Error/i,
     )
     await expect(
       page.locator('[data-testid="toast-description"]'),
-    ).toContainText(/aktuell.*Passwort|current.*password|ungültig|invalid/i)
+    ).toContainText(/current.*password|invalid/i)
   })
 })
