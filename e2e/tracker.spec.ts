@@ -3,9 +3,8 @@ import { addManualEntry } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---
-  test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-    await loginOrRegisterTestUser(page)
-    await page.waitForURL('/tracker')
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
   })
 
   // --- LIVE TIME TRACKING ---

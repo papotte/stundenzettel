@@ -9,9 +9,9 @@ test.describe('Team Page', () => {
 
     test('should display team page for authenticated users', async ({
       page,
-      loginOrRegisterTestUser,
+      loginUser,
     }) => {
-      await loginOrRegisterTestUser(page)
+      await loginUser(page)
       await navigateToTeamPage(page)
 
       // Verify back button and team management card
@@ -26,8 +26,8 @@ test.describe('Team Page', () => {
   })
 
   test.describe('Team Creation', () => {
-    test.beforeEach(async ({ page, loginOrRegisterTestUser }) => {
-      await loginOrRegisterTestUser(page)
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await navigateToTeamPage(page)
     })
 
