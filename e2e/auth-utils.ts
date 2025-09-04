@@ -158,8 +158,57 @@ export async function deleteTestUser(user: TestUser): Promise<void> {
 }
 
 /**
+ * Cleans up only the data for a specific user using the emulator REST API
+ * This allows tests to run in parallel without interfering with each other
+ */
+export async function cleanupUserData(userId: string): Promise<void> {
+  try {
+    const projectId =
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'timewise-tracker-61lqb'
+    const emulatorHost = 'localhost:8080'
+    const databaseId = 'test-database'
+
+    // Delete user-specific collections
+    const userCollections = [
+      `users/${userId}/timeEntries`,
+      `users/${userId}/settings`,
+      `user-teams/${userId}`,
+    ]
+
+    for (const collectionPath of userCollections) {
+      const clearUrl = `http://${emulatorHost}/emulator/v1/projects/${projectId}/databases/${databaseId}/documents/${collectionPath}`
+
+      const response = await fetch(clearUrl, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        console.log(`✅ Cleared user collection: ${collectionPath}`)
+      } else if (response.status === 404) {
+        // Collection doesn't exist, which is fine
+        console.log(`ℹ️ Collection doesn't exist: ${collectionPath}`)
+      } else {
+        const errorText = await response.text()
+        console.warn(
+          `⚠️ Failed to clear ${collectionPath}: ${response.status} ${errorText}`,
+        )
+      }
+    }
+
+    console.log(`✅ User data cleanup completed for user: ${userId}`)
+  } catch (error) {
+    console.error('❌ User data cleanup failed:', error)
+    throw error
+  }
+}
+
+/**
  * Cleans up the test database using the emulator REST API
  * This bypasses security rules entirely by using the emulator REST API
+ * Used for global cleanup at the start of test runs
  */
 export async function cleanupTestDatabaseWithAdmin(): Promise<void> {
   try {

@@ -330,30 +330,67 @@ test.describe('Core Tracker Functionality', () => {
     }) => {
       const sickLeaveButtonText = 'Sick Leave'
 
-      // Add
-      await page.getByRole('button', { name: sickLeaveButtonText }).click()
+      // Wait for the daily actions card to be ready
+      await expect(page.getByTestId('daily-actions-card')).toBeVisible()
+
+      // Add - Wait for button to be enabled and clickable
+      const sickLeaveButton = page.getByRole('button', {
+        name: sickLeaveButtonText,
+      })
+      await expect(sickLeaveButton).toBeEnabled()
+      await sickLeaveButton.click()
+
+      // Wait for the card to appear with a more specific selector
       const sickCard = page.locator(
         `[data-testid="time-entry-card-sick_leave"]`,
       )
-      await expect(sickCard).toBeVisible()
-      // Default work hours for mock user 1 is 7 hours
-      await expect(sickCard.getByText('07:00:00')).toBeVisible()
+      await expect(sickCard).toBeVisible({ timeout: 10000 })
 
-      // Edit
-      await sickCard.getByRole('button', { name: 'Edit' }).click()
+      // Wait for the card content to be fully rendered
+      await expect(sickCard.getByText('07:00:00')).toBeVisible({
+        timeout: 5000,
+      })
+
+      // Wait a moment for any animations or state updates to complete
+      await page.waitForTimeout(500)
+
+      // Edit - Ensure the edit button is clickable
+      const editButton = sickCard.getByRole('button', { name: 'Edit' })
+      await expect(editButton).toBeEnabled()
+      await editButton.click()
+
       const form = page.locator(
         'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
       )
-      await expect(form).toBeVisible()
+      await expect(form).toBeVisible({ timeout: 5000 })
+
+      // Wait for form to be fully loaded
+      await expect(form.getByLabel('Duration (minutes)')).toBeVisible()
+
       // A special entry's start/end times can be changed.
       await form.getByLabel('Duration (minutes)').fill('360') // Originally 7h
       await form.getByRole('button', { name: 'Save Entry' }).click()
-      await expect(sickCard.getByText('06:00:00')).toBeVisible() // Now 6h
 
-      // Delete
-      await sickCard.getByRole('button', { name: 'Delete' }).click()
-      await page.getByRole('button', { name: 'Delete' }).click()
-      await expect(sickCard).not.toBeVisible()
+      // Wait for form to close and card to update
+      await expect(form).not.toBeVisible({ timeout: 5000 })
+
+      // Try to find the updated text with better error reporting
+      await expect(sickCard.getByText('06:00:00')).toBeVisible({
+        timeout: 5000,
+      })
+
+      // Delete - Ensure delete button is clickable
+      const deleteButton = sickCard.getByRole('button', { name: 'Delete' })
+      await expect(deleteButton).toBeEnabled()
+      await deleteButton.click()
+
+      // Wait for confirmation dialog
+      const confirmDeleteButton = page.getByRole('button', { name: 'Delete' })
+      await expect(confirmDeleteButton).toBeVisible({ timeout: 5000 })
+      await confirmDeleteButton.click()
+
+      // Wait for card to be removed
+      await expect(sickCard).not.toBeVisible({ timeout: 5000 })
     })
 
     test('should correctly calculate total for special entries (Vacation, Bank Holiday, Time Off in Lieu)', async ({

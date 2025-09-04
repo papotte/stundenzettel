@@ -5,7 +5,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
-    "dev:test": "NEXT_PUBLIC_ENVIRONMENT=test next dev --turbopack -p 9003",
+    "dev:test": "NODE_ENV=test NEXT_PUBLIC_ENVIRONMENT=test next dev --turbopack -p 9003",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -16,7 +16,8 @@
     "test": "jest --coverage",
     "test:ci": "jest --ci --json --coverage --testLocationInResults --outputFile=coverage/report.json",
     "test:watch": "jest --watch",
-    "test:e2e": "npm run emulators:start & sleep 15 && playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:ci": "npm run emulators:start & sleep 15 && playwright test",
     "test:e2e:debug": "npm run emulators:start & sleep 15 && playwright test --debug",
     "test:e2e:fresh": "npm run emulators:fresh & sleep 15 && playwright test",
     "deploy": "firebase deploy",

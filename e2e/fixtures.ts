@@ -2,7 +2,7 @@ import { type Page, type WorkerInfo, test as base } from '@playwright/test'
 
 import {
   TestUser,
-  cleanupTestDatabaseWithAdmin,
+  cleanupUserData,
   createTestUser,
   deleteTestUser,
 } from './auth-utils'
@@ -92,20 +92,23 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     })
   },
 
-  // Clean up database after each test (both CI and local)
+  // Clean up user-specific data after each test (both CI and local)
   autoCleanup: [
-    async ({}, use) => {
+    async ({ workerUser }, use) => {
       await use()
-      // Always run admin cleanup for e2e tests
-      console.log('🧹 Running admin cleanup after test...')
-      await cleanupTestDatabaseWithAdmin()
+      // Clean up only this user's data instead of the entire database
+      // This allows tests to run in parallel without interfering with each other
+      console.log(
+        `🧹 Running user-specific cleanup for user: ${workerUser.uid}`,
+      )
+      await cleanupUserData(workerUser.uid)
     },
     { auto: true },
   ],
 
   // Clean up test users after all tests in this worker complete
   workerCleanup: [
-    async ({ workerUser }, use, workerInfo: WorkerInfo) => {
+    async ({ workerUser }, use) => {
       await use()
       console.log('🧹 Deleting test user...')
       await deleteTestUser(workerUser)

@@ -94,6 +94,7 @@ export class PaymentService {
     })
 
     if (!response.ok) {
+      console.error('Failed to create checkout session', response.body)
       throw new Error('Failed to create checkout session')
     }
 
