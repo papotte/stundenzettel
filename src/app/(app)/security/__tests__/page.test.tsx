@@ -3,7 +3,6 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { AuthProvider } from '@/context/auth-context'
 import { hasPasswordAuthentication } from '@/services/password-update-service'
 import { deleteUserAccount } from '@/services/user-deletion-service'
 import { authScenarios } from '@/test-utils/auth-mocks'
@@ -54,7 +53,7 @@ jest.mock('next/navigation', () => ({
 }))
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<AuthProvider>{component}</AuthProvider>)
+  return render(component)
 }
 
 describe('SecurityPage', () => {

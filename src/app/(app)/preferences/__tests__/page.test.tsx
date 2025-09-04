@@ -3,7 +3,6 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { AuthProvider } from '@/context/auth-context'
 import type { UserSettings } from '@/lib/types'
 import {
   getUserSettings,
@@ -63,7 +62,7 @@ const mockSettings: UserSettings = {
 let currentSettings: UserSettings
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<AuthProvider>{component}</AuthProvider>)
+  return render(component)
 }
 
 describe('PreferencesPage', () => {

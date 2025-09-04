@@ -14,18 +14,6 @@ import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import PricingSection from '../pricing-section'
 
-// Mock AuthProvider to avoid loading state - must be before any imports that use it
-jest.mock('@/context/auth-context', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-  AuthContext: React.createContext({
-    user: null,
-    loading: false,
-    signOut: jest.fn(),
-  }),
-}))
-
 // Mock the payment service
 jest.mock('@/services/payment-service', () => ({
   getPricingPlans: jest.fn(),
