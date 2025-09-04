@@ -138,6 +138,7 @@ export default function PricingSection({
   const containerClasses =
     variant === 'landing' ? 'w-full py-12 md:py-24 lg:py-32' : 'py-24 sm:py-32'
 
+  console.log('isLoadingPlans', isLoadingPlans)
   return (
     <div className={`${containerClasses} ${className}`}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">

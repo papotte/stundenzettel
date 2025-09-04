@@ -7,15 +7,15 @@ export const addManualEntry = async (
   startTime: string,
   endTime: string,
 ) => {
-  await page.getByRole('button', { name: 'Hinzufügen' }).click()
+  await page.getByRole('button', { name: 'Add' }).first().click()
   const form = page.locator(
-    'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+    'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
   )
   await expect(form).toBeVisible()
-  await form.getByLabel('Einsatzort').fill(location)
-  await form.getByLabel('Startzeit').fill(startTime)
-  await form.getByLabel('Endzeit').fill(endTime)
-  await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+  await form.getByRole('textbox', { name: 'Location' }).fill(location)
+  await form.getByLabel('Start Time').fill(startTime)
+  await form.getByLabel('End Time').fill(endTime)
+  await form.getByRole('button', { name: 'Save Entry' }).click()
   await expect(form).not.toBeVisible()
 }
 
@@ -25,27 +25,17 @@ export const addDurationEntry = async (
   location: string,
   duration: number, // in minutes
 ) => {
-  await page.getByRole('button', { name: 'Hinzufügen' }).click()
+  await page.getByRole('button', { name: 'Add' }).first().click()
   const form = page.locator(
-    'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+    'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
   )
   await expect(form).toBeVisible()
-  await form.getByLabel('Einsatzort').fill(location)
+  await form.getByRole('textbox', { name: 'Location' }).fill(location)
   // Switch to duration mode (Radix Switch)
   await form.getByTestId('mode-switch').click()
-  await form.getByLabel('Dauer (Minuten)').fill(duration.toString())
-  await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+  await form.getByLabel('Duration (minutes)').fill(duration.toString())
+  await form.getByRole('button', { name: 'Save Entry' }).click()
   await expect(form).not.toBeVisible()
-}
-
-// Helper function to login with a mock user
-export const loginWithMockUser = async (page: Page) => {
-  await page.goto('/login')
-  await page
-    .getByRole('button', { name: /Log in as/ })
-    .first()
-    .click()
-  await page.waitForURL('/tracker')
 }
 
 // Helper function to navigate to team page and verify it loads
@@ -53,7 +43,7 @@ export const navigateToTeamPage = async (page: Page) => {
   await page.goto('/team')
   await page.waitForURL('/team')
   await expect(
-    page.getByRole('heading', { name: /Team-Verwaltung/ }),
+    page.getByRole('heading', { name: /Team Management/ }),
   ).toBeVisible()
 }
 

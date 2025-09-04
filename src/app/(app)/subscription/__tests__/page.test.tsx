@@ -5,7 +5,6 @@ import userEvent from '@testing-library/user-event'
 
 import { useRouter } from 'next/navigation'
 
-import { AuthProvider } from '@/context/auth-context'
 import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
@@ -57,7 +56,7 @@ jest.mock('@/hooks/use-auth', () => ({
 }))
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<AuthProvider>{component}</AuthProvider>)
+  return render(component)
 }
 
 describe('SubscriptionPage', () => {

@@ -9,6 +9,9 @@ import { NextIntlClientProvider } from 'next-intl'
 
 import { formattingProps } from '@/lib/i18n/formats'
 
+// Import Firebase mocks
+import './src/test-utils/firebase-mocks'
+
 // Set the environment to 'test' for all Jest tests.
 // This ensures that the application uses mock services instead of live ones.
 process.env.NEXT_PUBLIC_ENVIRONMENT = 'test'

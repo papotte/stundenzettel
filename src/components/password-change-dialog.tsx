@@ -139,7 +139,7 @@ export default function PasswordChangeDialog({
       }
 
       toast({
-        title: t('settings.error'),
+        title: t('common.error'),
         description: errorMessage,
         variant: 'destructive',
       })

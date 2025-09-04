@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test.describe('Checkout and Payment Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,16 +7,14 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Checkout Session Creation', () => {
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
+      await page.waitForURL('/tracker')
+    })
+
     test('should create checkout session for individual plan', async ({
       page,
     }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Navigate to pricing page
       await page.goto('/pricing')
 
@@ -25,7 +23,7 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Click on a plan button
       const choosePlanButton = page
-        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .getByRole('button', { name: /Get Started/ })
         .first()
       await expect(choosePlanButton).toBeVisible()
       await choosePlanButton.click()
@@ -43,13 +41,6 @@ test.describe('Checkout and Payment Flow', () => {
     })
 
     test('should handle checkout session creation errors', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Mock API failure
       await page.route('**/api/create-checkout-session', (route) => {
         route.fulfill({
@@ -64,13 +55,13 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Click on a plan button
       const choosePlanButton = page
-        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .getByRole('button', { name: /Get Started/ })
         .first()
       await choosePlanButton.click()
 
       // Should show error toast
       await expect(
-        page.getByTestId('toast-title').getByText(/Error|Zahlungsfehler/),
+        page.getByTestId('toast-title').getByText(/Error/),
       ).toBeVisible()
 
       // Button should be enabled again
@@ -80,13 +71,6 @@ test.describe('Checkout and Payment Flow', () => {
     test('should create checkout session with correct parameters', async ({
       page,
     }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Intercept the checkout session API call
       let checkoutRequest: any = null
       await page.route('**/api/create-checkout-session', (route) => {
@@ -99,7 +83,7 @@ test.describe('Checkout and Payment Flow', () => {
 
       // Click on a plan button
       const choosePlanButton = page
-        .getByRole('button', { name: /Get Started|Jetzt starten/ })
+        .getByRole('button', { name: /Get Started/ })
         .first()
       await choosePlanButton.click()
 
@@ -119,23 +103,19 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Customer Portal', () => {
-    test('should create customer portal session', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
+    })
 
+    test('should create customer portal session', async ({ page }) => {
+      // Create a subscription for the user
       // Navigate to subscription page
       await page.goto('/subscription')
 
-      // Wait for page to load
-      await page.waitForLoadState('networkidle')
-
       // Look for manage billing button
       const manageBillingButton = page.getByRole('button', {
-        name: /Manage Billing|Abrechnung verwalten/,
+        name: /Manage Billing/,
       })
 
       if (await manageBillingButton.isVisible()) {
@@ -165,13 +145,6 @@ test.describe('Checkout and Payment Flow', () => {
     })
 
     test('should handle customer portal errors', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Mock API failure
       await page.route('**/api/create-customer-portal-session', (route) => {
         route.fulfill({
@@ -184,12 +157,9 @@ test.describe('Checkout and Payment Flow', () => {
       // Navigate to subscription page
       await page.goto('/subscription')
 
-      // Wait for page to load
-      await page.waitForLoadState('networkidle')
-
       // Look for manage billing button
       const manageBillingButton = page.getByRole('button', {
-        name: /Manage Billing|Abrechnung verwalten/,
+        name: /Manage Billing/,
       })
 
       if (await manageBillingButton.isVisible()) {
@@ -207,20 +177,18 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Team Checkout', () => {
-    test('should handle team checkout flow', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
+    })
 
+    test('should handle team checkout flow', async ({ page }) => {
       // Navigate to pricing page
       await page.goto('/pricing')
 
       // Look for team plan button
       const teamPlanButton = page
-        .getByRole('button', { name: /Create Team|Team erstellen/ })
+        .getByRole('button', { name: /Create Team/ })
         .first()
       // Wait for the button to be visible. Add a timeout of 5 seconds to wait for stripe to load
       await expect(teamPlanButton).toBeVisible({ timeout: 5000 })
@@ -238,7 +206,7 @@ test.describe('Checkout and Payment Flow', () => {
         // Should redirect to team page
         await page.waitForURL('/team?tab=subscription')
         await expect(
-          page.getByRole('heading', { name: /Manage Team|Team-Verwaltung/ }),
+          page.getByRole('heading', { name: /Team Management/ }),
         ).toBeVisible()
 
         // Verify the request was made
@@ -253,21 +221,19 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Success and Cancel URLs', () => {
-    test('should handle successful subscription redirect', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
+    })
 
+    test('should handle successful subscription redirect', async ({ page }) => {
       // Navigate directly to success URL
       await page.goto('/subscription?success=true')
 
       // Should show success message or updated subscription state
       await expect(
         page.getByRole('heading', {
-          name: /Manage Subscription|Abonnement verwalten/,
+          name: /Manage Subscription/,
         }),
       ).toBeVisible()
 
@@ -276,20 +242,13 @@ test.describe('Checkout and Payment Flow', () => {
     })
 
     test('should handle canceled subscription redirect', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Navigate directly to canceled URL
       await page.goto('/pricing?canceled=true')
 
       // Should show pricing page with canceled parameter
       await expect(
         page.getByRole('heading', {
-          name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
+          name: /Choose Your Plan/i,
         }),
       ).toBeVisible()
 
@@ -299,14 +258,12 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Subscription State Management', () => {
-    test('should fetch and display subscription data', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
+    })
 
+    test('should fetch and display subscription data', async ({ page }) => {
       // Intercept subscription API call
       let subscriptionRequest: any = null
       await page.route('**/api/subscriptions/**', (route) => {
@@ -317,9 +274,6 @@ test.describe('Checkout and Payment Flow', () => {
       // Navigate to subscription page
       await page.goto('/subscription')
 
-      // Wait for page to load
-      await page.waitForLoadState('networkidle')
-
       // Verify the API call was made
       if (subscriptionRequest) {
         const url = subscriptionRequest.url()
@@ -329,19 +283,12 @@ test.describe('Checkout and Payment Flow', () => {
       // Should show subscription page content
       await expect(
         page.getByRole('heading', {
-          name: /Manage Subscription|Abonnement verwalten/,
+          name: /Manage Subscription/,
         }),
       ).toBeVisible()
     })
 
     test('should handle subscription API errors', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Mock subscription API failure
       await page.route('**/api/subscriptions/**', (route) => {
         route.fulfill({
@@ -357,39 +304,31 @@ test.describe('Checkout and Payment Flow', () => {
       // Should still show the page (with no subscription state)
       await expect(
         page.getByRole('heading', {
-          name: /Manage Subscription|Abonnement verwalten/,
+          name: /Manage Subscription/,
         }),
       ).toBeVisible()
 
       // Should show no subscription message
-      await expect(
-        page.getByText(/No active subscription|Kein aktives Abonnement/),
-      ).toBeVisible()
+      await expect(page.getByText(/No active subscription/)).toBeVisible()
     })
   })
 
   test.describe('Webhook Integration', () => {
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
+      await page.waitForURL('/tracker')
+    })
+
     test('should handle webhook events', async ({ page }) => {
       // This test would require a more complex setup with actual webhook simulation
       // For now, we'll test that the subscription service can handle webhook data
-
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
-      await page.waitForURL('/tracker')
-
       // Navigate to subscription page
       await page.goto('/subscription')
-
-      // Wait for page to load
-      await page.waitForLoadState('networkidle')
 
       // Verify the page loads correctly
       await expect(
         page.getByRole('heading', {
-          name: /Manage Subscription|Abonnement verwalten/,
+          name: /Manage Subscription/,
         }),
       ).toBeVisible()
 
@@ -402,23 +341,18 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Payment Method Management', () => {
-    test('should handle payment method updates', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
+    })
 
+    test('should handle payment method updates', async ({ page }) => {
       // Navigate to subscription page
       await page.goto('/subscription')
 
-      // Wait for page to load
-      await page.waitForLoadState('networkidle')
-
       // Look for manage billing button
       const manageBillingButton = page.getByRole('button', {
-        name: /Manage Billing|Abrechnung verwalten/,
+        name: /Manage Billing/,
       })
 
       if (await manageBillingButton.isVisible()) {
@@ -431,25 +365,20 @@ test.describe('Checkout and Payment Flow', () => {
   })
 
   test.describe('Subscription Lifecycle', () => {
-    test('should handle subscription status changes', async ({ page }) => {
-      // Login first
-      await page
-        .getByRole('button', { name: /Log in as/ })
-        .first()
-        .click()
+    test.beforeEach(async ({ page, loginUser }) => {
+      await loginUser(page)
       await page.waitForURL('/tracker')
+    })
 
+    test('should handle subscription status changes', async ({ page }) => {
       // Navigate to subscription page
       await page.goto('/subscription')
-
-      // Wait for page to load
-      await page.waitForLoadState('networkidle')
 
       // Verify the page handles different subscription states
       // This would typically be tested with different mock data
       await expect(
         page.getByRole('heading', {
-          name: /Manage Subscription|Abonnement verwalten/,
+          name: /Manage Subscription/,
         }),
       ).toBeVisible()
 

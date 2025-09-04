@@ -3,7 +3,6 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { AuthProvider } from '@/context/auth-context'
 import type { PricingPlan } from '@/lib/types'
 // Mock the services
 import {
@@ -63,7 +62,7 @@ jest.mock('@/hooks/use-toast', () => ({
 }))
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<AuthProvider>{component}</AuthProvider>)
+  return render(component)
 }
 
 describe('PricingSection', () => {

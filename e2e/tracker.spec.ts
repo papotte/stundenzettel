@@ -1,17 +1,10 @@
-import { expect, test } from '@playwright/test'
-
+import { expect, test } from './fixtures'
 import { addManualEntry } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/login')
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
-    await page.waitForURL('/tracker')
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
   })
 
   // --- LIVE TIME TRACKING ---
@@ -20,32 +13,34 @@ test.describe('Core Tracker Functionality', () => {
       page,
     }) => {
       const location = 'Live Test Location'
-      await page.getByPlaceholder('Wo arbeiten Sie gerade?').fill(location)
-      await page.getByRole('button', { name: 'Erfassung starten' }).click()
+      await page.getByPlaceholder('Where are you working from?').fill(location)
+      await page.getByRole('button', { name: 'Start Tracking' }).click()
 
       // Check if timer is running
-      await expect(page.getByText(`Ort: ${location}`)).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Stopp' })).toBeVisible()
+      await expect(page.getByText(`Location: ${location}`)).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Stop' })).toBeVisible()
       // Wait for a second for the timer to tick
       await page.waitForTimeout(1100)
       await expect(page.locator('.font-mono')).not.toHaveText('00:00:00')
 
       // Stop the timer
-      await page.getByRole('button', { name: 'Stopp' }).click()
+      await page.getByRole('button', { name: 'Stop' }).click()
 
       // The form should open automatically
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+        'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await expect(form.getByLabel('Einsatzort')).toHaveValue(location)
+      await expect(form.getByRole('textbox', { name: 'Location' })).toHaveValue(
+        location,
+      )
 
       // Manually set start and end times to be at least 1 minute apart
-      await form.getByLabel('Startzeit').fill('09:00')
-      await form.getByLabel('Endzeit').fill('09:01')
+      await form.getByLabel('Start Time').fill('09:00')
+      await form.getByLabel('End Time').fill('09:01')
 
       // Save the entry
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       await expect(form).not.toBeVisible()
 
       // Verify the new entry is on the page
@@ -56,9 +51,9 @@ test.describe('Core Tracker Functionality', () => {
     test('should show a toast if starting timer without a location', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Erfassung starten' }).click()
+      await page.getByRole('button', { name: 'Start Tracking' }).click()
       await expect(page.locator('[data-testid="toast-title"]')).toContainText(
-        'Standort erforderlich',
+        'Location required',
       )
     })
 
@@ -66,25 +61,23 @@ test.describe('Core Tracker Functionality', () => {
       page,
     }) => {
       await page
-        .getByPlaceholder('Wo arbeiten Sie gerade?')
+        .getByPlaceholder('Where are you working from?')
         .fill('Temporary Work')
-      await page.getByRole('button', { name: 'Erfassung starten' }).click()
-      await page.getByRole('button', { name: 'Stopp' }).click()
+      await page.getByRole('button', { name: 'Start Tracking' }).click()
+      await page.getByRole('button', { name: 'Stop' }).click()
 
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+        'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
       )
       await expect(form).toBeVisible()
 
       // Cancel instead of saving
-      await form.getByRole('button', { name: 'Abbrechen' }).click()
-      await page.getByRole('button', { name: 'Verwerfen' }).click()
+      await form.getByRole('button', { name: 'Cancel' }).click()
+      await page.getByRole('button', { name: 'Discard' }).click()
       await expect(form).not.toBeVisible()
 
       // Verify no entry was created
-      await expect(
-        page.getByText('Keine Einträge für diesen Tag.'),
-      ).toBeVisible()
+      await expect(page.getByText('No entries for this day.')).toBeVisible()
       await expect(
         page.locator('div:has-text("Temporary Work")'),
       ).not.toBeVisible()
@@ -103,14 +96,16 @@ test.describe('Core Tracker Functionality', () => {
       await expect(entryCard.getByText('02:00:00')).toBeVisible()
 
       // Edit
-      await entryCard.getByRole('button', { name: 'Bearbeiten' }).click()
+      await entryCard.getByRole('button', { name: 'Edit' }).click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+        'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Edited Manual Location')
-      await form.getByLabel('Endzeit').fill('11:30')
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form
+        .getByRole('textbox', { name: 'Location' })
+        .fill('Edited Manual Location')
+      await form.getByLabel('End Time').fill('11:30')
+      await form.getByRole('button', { name: 'Save Entry' }).click()
 
       const newLocation = 'Edited Manual Location'
       const editedCard = page.locator(`[data-location="${newLocation}"]`)
@@ -118,12 +113,10 @@ test.describe('Core Tracker Functionality', () => {
       await expect(editedCard.getByText('02:30:00')).toBeVisible()
 
       // Delete
-      await editedCard.getByRole('button', { name: 'Löschen' }).click()
-      await page.getByRole('button', { name: 'Löschen', exact: true }).click()
+      await editedCard.getByRole('button', { name: 'Delete' }).click()
+      await page.getByRole('button', { name: 'Delete', exact: true }).click()
       await expect(editedCard).not.toBeVisible()
-      await expect(
-        page.getByText('Keine Einträge für diesen Tag.'),
-      ).toBeVisible()
+      await expect(page.getByText('No entries for this day.')).toBeVisible()
     })
 
     test('should add an entry for a different day using date navigation', async ({
@@ -151,23 +144,21 @@ test.describe('Core Tracker Functionality', () => {
       await expect(
         page.locator(`[data-location="${location}"]`),
       ).not.toBeVisible()
-      await expect(
-        page.getByText('Keine Einträge für diesen Tag.'),
-      ).toBeVisible()
+      await expect(page.getByText('No entries for this day.')).toBeVisible()
     })
 
     test('should show validation error for invalid time range', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Invalid Time')
-      await form.getByLabel('Startzeit').fill('14:00')
-      await form.getByLabel('Endzeit').fill('13:00')
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByRole('textbox', { name: 'Location' }).fill('Invalid Time')
+      await form.getByLabel('Start Time').fill('14:00')
+      await form.getByLabel('End Time').fill('13:00')
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       await expect(
         form.getByText('End time must be after start time'),
       ).toBeVisible()
@@ -176,15 +167,15 @@ test.describe('Core Tracker Functionality', () => {
     test('should show validation error for missing required fields', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
       // Leave location empty
-      await form.getByLabel('Startzeit').fill('09:00')
-      await form.getByLabel('Endzeit').fill('11:00')
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByLabel('Start Time').fill('09:00')
+      await form.getByLabel('End Time').fill('11:00')
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       await expect(
         form.getByText('Location must be at least 2 characters.'),
       ).toBeVisible()
@@ -193,44 +184,44 @@ test.describe('Core Tracker Functionality', () => {
     test('should show pause suggestion for 6h and 9h activity and allow applying it', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Long Day')
-      await form.getByLabel('Startzeit').fill('08:00')
-      await form.getByLabel('Endzeit').fill('14:30') // 6.5h
+      await form.getByRole('textbox', { name: 'Location' }).fill('Long Day')
+      await form.getByLabel('Start Time').fill('08:00')
+      await form.getByLabel('End Time').fill('14:30') // 6.5h
       // Should suggest 30 min pause
-      await expect(form.getByText(/Vorschlag: 30 Min/)).toBeVisible()
+      await expect(form.getByText(/Suggestion: 30 min/)).toBeVisible()
       // Click the suggestion
-      await form.getByRole('button', { name: /Vorschlag: 30 Min/ }).click()
+      await form.getByRole('button', { name: /Suggestion: 30 min/ }).click()
       await expect(form.getByLabel('Pause')).toHaveValue('00:30')
       // Now test for 9h suggestion
-      await form.getByLabel('Endzeit').fill('17:30') // 9.5h
-      await expect(form.getByText(/Vorschlag: 45 Min/)).toBeVisible()
-      await form.getByRole('button', { name: /Vorschlag: 45 Min/ }).click()
+      await form.getByLabel('End Time').fill('17:30') // 9.5h
+      await expect(form.getByText(/Suggestion: 45 min/)).toBeVisible()
+      await form.getByRole('button', { name: /Suggestion: 45 min/ }).click()
       await expect(form.getByLabel('Pause')).toHaveValue('00:45')
     })
 
     test('should correctly calculate total worked time with pause and driving time', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Calc Test')
-      await form.getByLabel('Startzeit').fill('08:00')
-      await form.getByLabel('Endzeit').fill('12:00') // 4h
+      await form.getByRole('textbox', { name: 'Location' }).fill('Calc Test')
+      await form.getByLabel('Start Time').fill('08:00')
+      await form.getByLabel('End Time').fill('12:00') // 4h
       await form.getByLabel('Pause').fill('00:30') // 30 min pause
-      await form.getByLabel('Fahrzeit (als Fahrer)').fill('1.5') // 1.5h driver
+      await form.getByLabel('Driving Time (as Driver)').fill('1.5') // 1.5h driver
       // Should show total compensated time: 4h - 0.5h + 1.5h = 5h
-      await expect(form.getByText('Vergütete Gesamtzeit:')).toBeVisible()
+      await expect(form.getByText('Total Compensated Time:')).toBeVisible()
       await expect(form.getByText('5h 0m')).toBeVisible()
       // Save and check card
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       const entryCard = page.locator('[data-location="Calc Test"]')
       await expect(entryCard).toBeVisible()
       await expect(entryCard.getByText('05:00:00')).toBeVisible()
@@ -239,22 +230,22 @@ test.describe('Core Tracker Functionality', () => {
     test('should correctly calculate total worked time with pause, driving, and passenger time', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Calc Test 2')
-      await form.getByLabel('Startzeit').fill('08:00')
-      await form.getByLabel('Endzeit').fill('12:00') // 4h
+      await form.getByRole('textbox', { name: 'Location' }).fill('Calc Test 2')
+      await form.getByLabel('Start Time').fill('08:00')
+      await form.getByLabel('End Time').fill('12:00') // 4h
       await form.getByLabel('Pause').fill('00:30') // 30 min pause
-      await form.getByLabel('Fahrzeit (als Fahrer)').fill('1') // 1h driver
-      await form.getByLabel('Fahrzeit (als Beifahrer)').fill('0.5') // 0.5h passenger
+      await form.getByLabel('Driving Time (as Driver)').fill('1') // 1h driver
+      await form.getByLabel('Driving Time (as Passenger)').fill('0.5') // 0.5h passenger
       // Should show total compensated time: 4h - 0.5h + 1h + 0.5h*0.9 = 4.95h => 4h 57m
-      await expect(form.getByText('Vergütete Gesamtzeit:')).toBeVisible()
+      await expect(form.getByText('Total Compensated Time:')).toBeVisible()
       await expect(form.getByText('4h 57m')).toBeVisible()
       // Save and check card
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       const entryCard = page.locator('[data-location="Calc Test 2"]')
       await expect(entryCard).toBeVisible()
       await expect(entryCard.getByText('04:57:00')).toBeVisible()
@@ -263,15 +254,17 @@ test.describe('Core Tracker Functionality', () => {
     test('should allow entry starting and/or ending at midnight', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Midnight Start')
-      await form.getByLabel('Startzeit').fill('00:00')
-      await form.getByLabel('Endzeit').fill('01:00')
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form
+        .getByRole('textbox', { name: 'Location' })
+        .fill('Midnight Start')
+      await form.getByLabel('Start Time').fill('00:00')
+      await form.getByLabel('End Time').fill('01:00')
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       const entryCard = page.locator('[data-location="Midnight Start"]')
       await expect(entryCard).toBeVisible()
       await expect(entryCard.getByText('01:00:00')).toBeVisible()
@@ -280,15 +273,17 @@ test.describe('Core Tracker Functionality', () => {
     test('should not allow entry spanning midnight (end before start)', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Spanning Midnight')
-      await form.getByLabel('Startzeit').fill('23:00')
-      await form.getByLabel('Endzeit').fill('01:00')
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form
+        .getByRole('textbox', { name: 'Location' })
+        .fill('Spanning Midnight')
+      await form.getByLabel('Start Time').fill('23:00')
+      await form.getByLabel('End Time').fill('01:00')
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       await expect(
         form.getByText('End time must be after start time'),
       ).toBeVisible()
@@ -297,15 +292,15 @@ test.describe('Core Tracker Functionality', () => {
     test('should allow entry with maximum allowed duration (10 hours)', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Max Duration')
-      await form.getByLabel('Startzeit').fill('08:00')
-      await form.getByLabel('Endzeit').fill('18:00')
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByRole('textbox', { name: 'Location' }).fill('Max Duration')
+      await form.getByLabel('Start Time').fill('08:00')
+      await form.getByLabel('End Time').fill('18:00')
+      await form.getByRole('button', { name: 'Save Entry' }).click()
       const entryCard = page.locator('[data-location="Max Duration"]')
       await expect(entryCard).toBeVisible()
       await expect(entryCard.getByText('10:00:00')).toBeVisible()
@@ -314,17 +309,17 @@ test.describe('Core Tracker Functionality', () => {
     test('should not allow entry with duration greater than 10 hours', async ({
       page,
     }) => {
-      await page.getByRole('button', { name: 'Hinzufügen' }).click()
+      await page.getByRole('button', { name: 'Add' }).first().click()
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+        'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
       )
       await expect(form).toBeVisible()
-      await form.getByLabel('Einsatzort').fill('Too Long')
-      await form.getByLabel('Startzeit').fill('08:00')
-      await form.getByLabel('Endzeit').fill('19:00')
-      // Should show a validation error (if enforced by your app)
-      await expect(form.getByText(/Warnung/i)).toBeVisible()
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+      await form.getByRole('textbox', { name: 'Location' }).fill('Too Long')
+      await form.getByLabel('Start Time').fill('08:00')
+      await form.getByLabel('End Time').fill('19:00')
+      // Should show a validation error
+      await expect(form.getByText(/Warning/i)).toBeVisible()
+      await form.getByRole('button', { name: 'Save Entry' }).click()
     })
   })
 
@@ -333,53 +328,90 @@ test.describe('Core Tracker Functionality', () => {
     test('should add, edit, and delete a Sick Leave entry', async ({
       page,
     }) => {
-      const sickLeaveButtonText = 'Krankschreibung'
+      const sickLeaveButtonText = 'Sick Leave'
 
-      // Add
-      await page.getByRole('button', { name: sickLeaveButtonText }).click()
+      // Wait for the daily actions card to be ready
+      await expect(page.getByTestId('daily-actions-card')).toBeVisible()
+
+      // Add - Wait for button to be enabled and clickable
+      const sickLeaveButton = page.getByRole('button', {
+        name: sickLeaveButtonText,
+      })
+      await expect(sickLeaveButton).toBeEnabled()
+      await sickLeaveButton.click()
+
+      // Wait for the card to appear with a more specific selector
       const sickCard = page.locator(
         `[data-testid="time-entry-card-sick_leave"]`,
       )
-      await expect(sickCard).toBeVisible()
-      // Default work hours for mock user 1 is 7 hours
-      await expect(sickCard.getByText('07:00:00')).toBeVisible()
+      await expect(sickCard).toBeVisible({ timeout: 10000 })
 
-      // Edit
-      await sickCard.getByRole('button', { name: 'Bearbeiten' }).click()
+      // Wait for the card content to be fully rendered
+      await expect(sickCard.getByText('07:00:00')).toBeVisible({
+        timeout: 5000,
+      })
+
+      // Wait a moment for any animations or state updates to complete
+      await page.waitForTimeout(500)
+
+      // Edit - Ensure the edit button is clickable
+      const editButton = sickCard.getByRole('button', { name: 'Edit' })
+      await expect(editButton).toBeEnabled()
+      await editButton.click()
+
       const form = page.locator(
-        'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+        'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
       )
-      await expect(form).toBeVisible()
-      // A special entry's start/end times can be changed.
-      await form.getByLabel('Dauer (Minuten)').fill('360') // Originally 7h
-      await form.getByRole('button', { name: 'Eintrag speichern' }).click()
-      await expect(sickCard.getByText('06:00:00')).toBeVisible() // Now 6h
+      await expect(form).toBeVisible({ timeout: 5000 })
 
-      // Delete
-      await sickCard.getByRole('button', { name: 'Löschen' }).click()
-      await page.getByRole('button', { name: 'Löschen' }).click()
-      await expect(sickCard).not.toBeVisible()
+      // Wait for form to be fully loaded
+      await expect(form.getByLabel('Duration (minutes)')).toBeVisible()
+
+      // A special entry's start/end times can be changed.
+      await form.getByLabel('Duration (minutes)').fill('360') // Originally 7h
+      await form.getByRole('button', { name: 'Save Entry' }).click()
+
+      // Wait for form to close and card to update
+      await expect(form).not.toBeVisible({ timeout: 5000 })
+
+      // Try to find the updated text with better error reporting
+      await expect(sickCard.getByText('06:00:00')).toBeVisible({
+        timeout: 5000,
+      })
+
+      // Delete - Ensure delete button is clickable
+      const deleteButton = sickCard.getByRole('button', { name: 'Delete' })
+      await expect(deleteButton).toBeEnabled()
+      await deleteButton.click()
+
+      // Wait for confirmation dialog
+      const confirmDeleteButton = page.getByRole('button', { name: 'Delete' })
+      await expect(confirmDeleteButton).toBeVisible({ timeout: 5000 })
+      await confirmDeleteButton.click()
+
+      // Wait for card to be removed
+      await expect(sickCard).not.toBeVisible({ timeout: 5000 })
     })
 
-    test('should correctly calculate total for special entries (Urlaub, Feiertag, Stundenabbau)', async ({
+    test('should correctly calculate total for special entries (Vacation, Bank Holiday, Time Off in Lieu)', async ({
       page,
     }) => {
-      // Urlaub (PTO)
-      await page.getByRole('button', { name: 'Urlaub' }).click()
+      // Vacation (PTO)
+      await page.getByRole('button', { name: 'Paid Time Off' }).click()
       const ptoCard = page.locator('[data-testid="time-entry-card-pto"]')
       await expect(ptoCard).toBeVisible()
       await expect(ptoCard.getByText('07:00:00')).toBeVisible()
 
-      // Feiertag (Bank Holiday)
-      await page.getByRole('button', { name: 'Feiertag' }).click()
+      // Bank Holiday
+      await page.getByRole('button', { name: 'Bank Holiday' }).click()
       const holidayCard = page.locator(
         '[data-testid="time-entry-card-bank_holiday"]',
       )
       await expect(holidayCard).toBeVisible()
       await expect(holidayCard.getByText('07:00:00')).toBeVisible()
 
-      // Stundenabbau (Time Off in Lieu)
-      await page.getByRole('button', { name: 'Stundenabbau' }).click()
+      // Time Off in Lieu
+      await page.getByRole('button', { name: 'Time Off in Lieu' }).click()
       const toilCard = page.locator(
         '[data-testid="time-entry-card-time_off_in_lieu"]',
       )
@@ -390,10 +422,10 @@ test.describe('Core Tracker Functionality', () => {
     test('should prevent adding a duplicate special entry', async ({
       page,
     }) => {
-      const ptoButtonText = 'Urlaub'
-      const entryAddedToastText = 'Eintrag hinzugefügt'
+      const ptoButtonText = 'Paid Time Off'
+      const entryAddedToastText = 'Entry Added'
       const entryExistsToastText =
-        'Ein Eintrag für "Urlaub" an diesem Tag existiert bereits.'
+        'An entry for "Paid Time Off" on this day already exists.'
 
       await page.getByRole('button', { name: ptoButtonText }).click()
       const entryAddedToast = page.locator(`[data-testid="toast-title"]`)
@@ -415,21 +447,19 @@ test.describe('Core Tracker Functionality', () => {
       // Manual entry: 2 hours
       await addManualEntry(page, 'Morning Work', '09:00', '11:00')
 
-      // Special entry: 7 hours (default for mock user 1), which is "Krankschreibung"
-      await page.getByRole('button', { name: 'Krankschreibung' }).click()
+      // Special entry: 7 hours (default for mock user 1), which is "Sick Leave"
+      await page.getByRole('button', { name: 'Sick Leave' }).click()
 
       // The summary total should be 2 + 7 = 9 hours.
       const summaryCard = page.locator('[data-testid="summary-card"]')
-      const dailyTotal = summaryCard.locator(
-        'p:has-text("Ausgewählter Tag") + p',
-      )
+      const dailyTotal = summaryCard.locator('p:has-text("Selected Day") + p')
       await expect(dailyTotal).toHaveText('9h 0m')
     })
   })
 
   test.describe('Accessibility', () => {
     test('should trap focus in dialogs', async ({ page }) => {
-      await page.getByRole('button', { name: /Hinzufügen|Add/i }).click()
+      await page.getByRole('button', { name: /Add/i }).click()
       const dialog = page.locator('div[role="dialog"]')
       await expect(dialog).toBeVisible()
       // Press Tab and check focus stays within dialog
@@ -461,18 +491,16 @@ test.describe('Core Tracker Functionality', () => {
       // Home should be active
       const homeLink = page
         .getByRole('navigation', { name: 'Bottom navigation' })
-        .getByRole('link', { name: /Home|Übersicht/ })
+        .getByRole('link', { name: /Home/ })
       await expect(homeLink).toHaveAttribute('aria-current', 'page')
 
       // Go to export page
-      await page
-        .getByRole('link', { name: /Preview & Export|Vorschau & Export/ })
-        .click()
+      await page.getByRole('link', { name: /Preview & Export/ }).click()
       await page.waitForURL('/export')
       const exportLink = page
         .getByRole('navigation', { name: 'Bottom navigation' })
         .getByRole('link', {
-          name: /Export|Preview & Export|Vorschau & Export/,
+          name: /Export|Preview & Export/,
         })
       await expect(exportLink).toHaveAttribute('aria-current', 'page')
     })

@@ -4,10 +4,6 @@ import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { updateUserPassword } from '@/services/password-update-service'
-import {
-  clearMockUsers,
-  setMockUserAuth,
-} from '@/services/password-update-service.local'
 import { authScenarios } from '@/test-utils/auth-mocks'
 
 import PasswordChangeDialog from '../password-change-dialog'
@@ -45,11 +41,10 @@ describe('PasswordChangeDialog', () => {
       email: 'test@example.com',
       displayName: 'Test User',
     }
-    setMockUserAuth('test-user-id', 'test@example.com', true)
   })
 
   afterEach(() => {
-    clearMockUsers()
+    // No cleanup needed for Firestore-based services in tests
   })
 
   const renderDialog = () => {
@@ -240,7 +235,7 @@ describe('PasswordChangeDialog', () => {
 
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
-        title: 'settings.error',
+        title: 'common.error',
         description: 'settings.passwordUpdateInvalidCurrent',
         variant: 'destructive',
       })

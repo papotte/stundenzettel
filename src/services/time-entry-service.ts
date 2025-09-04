@@ -1,19 +1,15 @@
 import type { TimeEntry } from '@/lib/types'
 
 import * as firestoreService from './time-entry-service.firestore'
-import * as localService from './time-entry-service.local'
 
-const useMockService =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
+// Always use Firestore service - local service has been removed
+// The environment-specific database selection is handled in firebase.ts
+const service = firestoreService
 
-const service = useMockService ? localService : firestoreService
-
-if (useMockService) {
-  console.info(
-    `Using local time entry service (NEXT_PUBLIC_ENVIRONMENT=${process.env.NEXT_PUBLIC_ENVIRONMENT}).`,
-  )
-}
+const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'production'
+console.info(
+  `Using Firestore time entry service for environment '${environment}'`,
+)
 
 export const addTimeEntry = (entry: Omit<TimeEntry, 'id'>): Promise<string> => {
   return service.addTimeEntry(entry)

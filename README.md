@@ -103,54 +103,67 @@ npm install
 
 ### 2. Environment Configuration
 
-The application can run in two modes: **Local Mode** (using mock data) or **Firebase Mode** (connecting to your Firebase project). You switch between them using an environment variable in a `.env.local` file.
+The application uses Firestore for all environments but connects to different databases based on the environment setting. You configure this using environment variables in a `.env.local` file.
 
-#### Local Mode (for Test & Development)
+#### Test & Development Mode
 
-For local development and testing, you can use mock data without connecting to any external services. This is the recommended mode for UI development.
+For testing and development, the application uses separate Firestore databases (`test-database` and `dev-database`) to avoid affecting production data. Authentication remains mocked for easier development.
 
-Create a `.env.local` file in the root of your project and set the environment to `test` or `development`:
+Create a `.env.local` file in the root of your project and set the environment:
 
 ```env
-# For local testing and development with mock data
-NEXT_PUBLIC_ENVIRONMENT=development
+# For testing with separate Firestore database
+NEXT_PUBLIC_ENVIRONMENT=test
 ```
 
 or
 
 ```env
-NEXT_PUBLIC_ENVIRONMENT=test
+# For development with separate Firestore database
+NEXT_PUBLIC_ENVIRONMENT=development
 ```
 
-This will automatically load pre-populated sample data and let you select a mock user on the login screen, bypassing the Firebase authentication.
+**Important**: You'll still need to configure Firebase credentials (see below) as all environments now use real Firestore databases. The difference is:
 
-#### Firebase Mode (for Production)
+- **Test/Development**: Uses separate Firestore databases with mocked authentication
+- **Production**: Uses the default Firestore database with real authentication
 
-To connect to a live Firebase backend, you'll need your project credentials.
+#### Production Mode
 
-1.  **Create a `.env.local` file** in the root of your project.
-2.  **Set the environment** to `production` (or any value other than `test` or `development`).
-    ```env
-    # For a production environment connecting to Firebase
-    NEXT_PUBLIC_ENVIRONMENT=production
-    ```
-3.  **Add Firebase Credentials:**
+For production deployment, the application uses the default Firestore database.
+
+```env
+# For production environment
+NEXT_PUBLIC_ENVIRONMENT=production
+```
+
+#### Firebase Configuration (Required for All Environments)
+
+All environments now require Firebase credentials since they all use Firestore databases:
+
+1.  **Create a `.env.local` file** in the root of your project with your environment setting.
+2.  **Add Firebase Credentials:**
     - Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
     - In your project, go to Project Settings and add a new Web App.
     - Copy the Firebase configuration credentials into your `.env.local` file.
+3.  **Create Multiple Firestore Databases** (for test/dev environments):
+    - In the Firebase Console, go to Firestore Database
+    - Create additional databases named `test-database` and `dev-database`
+    - Set appropriate security rules for each database
 4.  **Add Google Maps API Key:**
     - Go to the [Google Cloud Console](https://console.cloud.google.com/).
     - In the same project used for Firebase, navigate to "APIs & Services" > "Library" and enable the **Geocoding API**.
     - Navigate to "APIs & Services" > "Credentials" and create a new API Key.
     - Add this API key to your `.env.local` file.
 
-Your final `.env.local` file for Firebase Mode should look like this:
+Your final `.env.local` file should look like this:
 
 ```env
-# Set to 'production' to use Firebase
-NEXT_PUBLIC_ENVIRONMENT=production
+# Environment setting - determines which Firestore database to use
+# Options: test, development, production
+NEXT_PUBLIC_ENVIRONMENT=development
 
-# Firebase Configuration
+# Firebase Configuration (required for all environments)
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
@@ -158,15 +171,26 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
-# (Optional) Firestore Database ID
-# Only needed if you are NOT using the "(default)" database in Firestore.
-# Most projects can leave this line out.
-NEXT_PUBLIC_FIREBASE_DATABASE_ID=your_custom_database_id
+# (Optional) Custom Firestore Database ID
+# Leave empty to use environment-specific defaults:
+# - test: uses "test-database"
+# - development: uses "dev-database"
+# - production: uses "(default)" database
+# NEXT_PUBLIC_FIREBASE_DATABASE_ID=custom_database_id
 
 # Google Maps Geocoding API Key
 # Used for the "Get current location" feature
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
+
+#### Database Selection by Environment
+
+The application automatically selects the appropriate Firestore database based on the `NEXT_PUBLIC_ENVIRONMENT` setting:
+
+- **`test`**: Uses `test-database`
+- **`development`**: Uses `dev-database`
+- **`production`**: Uses the default `(default)` database
+- **Custom**: Set `NEXT_PUBLIC_FIREBASE_DATABASE_ID` to override the automatic selection
 
 ### 3. Run the Development Server
 

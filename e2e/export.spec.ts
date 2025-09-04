@@ -1,18 +1,12 @@
-import { expect, test } from '@playwright/test'
-
 import { format, getWeekOfMonth } from 'date-fns'
 
+import { expect, test } from './fixtures'
 import { addManualEntry } from './test-helpers'
 
 test.describe('Export Page', () => {
   let weekIndex: number = 0
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the app and log in as the first mock user (language is German)
-    await page.goto('/login')
-    await page
-      .getByRole('button', { name: /Log in as/ })
-      .first()
-      .click()
+  test.beforeEach(async ({ page, loginUser }) => {
+    await loginUser(page)
     await page.waitForURL('/tracker')
 
     const week = getWeekOfMonth(new Date(), { weekStartsOn: 1 })
@@ -20,19 +14,24 @@ test.describe('Export Page', () => {
   })
 
   test('should display entries on the export preview', async ({ page }) => {
+    // Generate a random location name
+    const locationName = `Export Test Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '10:00'
+    const endTime = '14:00'
     // Add an entry to make sure the export page has data
-    await addManualEntry(page, 'Export Test Entry', '10:00', '14:00')
+    await addManualEntry(page, locationName, startTime, endTime)
 
     // Navigate to export page
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
     // Check for the entry in the preview table
     const preview = page.locator('.printable-area')
     await expect(preview).toBeVisible()
-    await expect(preview.getByText('Export Test Entry')).toBeVisible()
-    await expect(preview.getByText('10:00')).toBeVisible()
-    await expect(preview.getByText('14:00')).toBeVisible()
+
+    await expect(preview.getByText(locationName)).toBeVisible()
+    await expect(preview.getByText(startTime)).toBeVisible()
+    await expect(preview.getByText(endTime)).toBeVisible()
     // 4 hours = 4.00
     await expect(
       preview.getByTestId(`timesheet-week-${weekIndex}-total`),
@@ -63,16 +62,19 @@ test.describe('Export Page', () => {
     )
     await tooltipTrigger.hover()
     await expect(
-      page.getByText('Keine Daten für den Export in diesem Monat verfügbar.'),
+      page.getByText('No data available for export in this month.'),
     ).toBeVisible()
   })
 
   test('should download Excel export file', async ({ page }) => {
+    const locationName = `Export Test Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '11:00'
+    const endTime = '15:00'
     // Add an entry to make sure the export page has data
-    await addManualEntry(page, 'Export Test Entry', '10:00', '14:00')
+    await addManualEntry(page, locationName, startTime, endTime)
 
     // Navigate to export page
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
     const [download] = await Promise.all([
       page.waitForEvent('download'),
@@ -84,11 +86,14 @@ test.describe('Export Page', () => {
   })
 
   test('should have a working PDF export button', async ({ page }) => {
+    const locationName = `Export Test Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '12:00'
+    const endTime = '16:00'
     // Add an entry to make sure the export page has data
-    await addManualEntry(page, 'Export Test Entry', '10:00', '14:00')
+    await addManualEntry(page, locationName, startTime, endTime)
 
     // Navigate to export page
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
     const pdfButton = page.getByRole('button', { name: /PDF/i })
@@ -100,10 +105,13 @@ test.describe('Export Page', () => {
     page,
   }) => {
     // Add an entry
-    await addManualEntry(page, 'Export Edit Entry', '09:00', '12:00')
+    const locationName = `Export Edit Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '09:00'
+    const endTime = '12:00'
+    await addManualEntry(page, locationName, startTime, endTime)
 
     // Navigate to export page
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
     // Click the entry row to open the edit dialog
@@ -114,14 +122,16 @@ test.describe('Export Page', () => {
 
     // The edit form should appear
     const form = page.locator(
-      'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+      'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
     )
     await expect(form).toBeVisible()
 
     // Edit the location and end time
-    await form.getByLabel('Einsatzort').fill('Edited Location')
-    await form.getByLabel('Endzeit').fill('13:00')
-    await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+    await form
+      .getByRole('textbox', { name: 'Location' })
+      .fill('Edited Location')
+    await form.getByLabel('End Time').fill('13:00')
+    await form.getByRole('button', { name: 'Save Entry' }).click()
     await expect(form).not.toBeVisible()
 
     // Verify the changes are reflected in the export preview
@@ -142,10 +152,13 @@ test.describe('Export Page', () => {
     page,
   }) => {
     // Add an entry
-    await addManualEntry(page, 'Export Cancel Edit', '08:00', '10:00')
+    const locationName = `Export Cancel Edit ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '08:00'
+    const endTime = '10:00'
+    await addManualEntry(page, locationName, startTime, endTime)
 
     // Navigate to export page
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
     // Click the entry row to open the edit dialog
@@ -156,21 +169,23 @@ test.describe('Export Page', () => {
 
     // The edit form should appear
     const form = page.locator(
-      'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+      'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
     )
     await expect(form).toBeVisible()
 
     // Edit the location but cancel
-    await form.getByLabel('Einsatzort').fill('Should Not Save')
-    await form.getByRole('button', { name: 'Abbrechen' }).click()
-    await page.getByRole('button', { name: 'Verwerfen' }).click()
+    await form
+      .getByRole('textbox', { name: 'Location' })
+      .fill('Should Not Save')
+    await form.getByRole('button', { name: 'Cancel' }).click()
+    await page.getByRole('button', { name: 'Discard' }).click()
     await expect(form).not.toBeVisible()
 
     // Verify the original entry is unchanged in the export preview
     const preview = page.locator('.printable-area')
-    await expect(preview.getByText('Export Cancel Edit')).toBeVisible()
-    await expect(preview.getByText('08:00')).toBeVisible()
-    await expect(preview.getByText('10:00')).toBeVisible()
+    await expect(preview.getByText(locationName)).toBeVisible()
+    await expect(preview.getByText(startTime)).toBeVisible()
+    await expect(preview.getByText(endTime)).toBeVisible()
     await expect(preview.getByText('Should Not Save')).not.toBeVisible()
   })
 
@@ -178,10 +193,13 @@ test.describe('Export Page', () => {
     page,
   }) => {
     // Add an entry
-    await addManualEntry(page, 'Export Prevent Outside Close', '08:00', '10:00')
+    const locationName = `Export Prevent Outside Close ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '08:00'
+    const endTime = '10:00'
+    await addManualEntry(page, locationName, startTime, endTime)
 
     // Navigate to export page
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
     // Click the entry row to open the edit dialog
@@ -192,7 +210,7 @@ test.describe('Export Page', () => {
 
     // The edit form should appear
     const form = page.locator(
-      'div[role="dialog"]:has(h2:has-text("Zeiteintrag bearbeiten"))',
+      'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
     )
     await expect(form).toBeVisible()
 
@@ -208,7 +226,7 @@ test.describe('Export Page', () => {
   test('should allow adding a new entry to a day from the export page', async ({
     page,
   }) => {
-    await page.getByRole('link', { name: 'Vorschau & Export' }).click()
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
     // Find today's date in local time
@@ -221,25 +239,28 @@ test.describe('Export Page', () => {
     // Find the empty row for today and click the add button
     const dayRow = page.getByTestId(todayId)
     const addButton = dayRow.getByRole('button', {
-      name: /Add entry|Hinzufügen/,
+      name: /Add entry|Add/,
     })
     await addButton.click()
 
     // Fill out the form
     const form = page.locator(
-      'div[role="dialog"]:has(h2:has-text("Zeiteintrag hinzufügen"))',
+      'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
     )
     await expect(form).toBeVisible()
-    await form.getByLabel('Einsatzort').fill('Export Add Entry')
-    await form.getByLabel('Startzeit').fill('10:00')
-    await form.getByLabel('Endzeit').fill('12:00')
-    await form.getByRole('button', { name: 'Eintrag speichern' }).click()
+    const locationName = `Export Add Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '10:00'
+    const endTime = '12:00'
+    await form.getByRole('textbox', { name: 'Location' }).fill(locationName)
+    await form.getByLabel('Start Time').fill(startTime)
+    await form.getByLabel('End Time').fill(endTime)
+    await form.getByRole('button', { name: 'Save Entry' }).click()
     await expect(form).not.toBeVisible()
 
     // Verify the new entry appears in the export preview for today
     const preview = page.locator('.printable-area')
-    await expect(preview.getByText('Export Add Entry')).toBeVisible()
-    await expect(preview.getByText('10:00')).toBeVisible()
-    await expect(preview.getByText('12:00')).toBeVisible()
+    await expect(preview.getByText(locationName)).toBeVisible()
+    await expect(preview.getByText(startTime)).toBeVisible()
+    await expect(preview.getByText(endTime)).toBeVisible()
   })
 })

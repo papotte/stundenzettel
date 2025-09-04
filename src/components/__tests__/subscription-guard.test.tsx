@@ -3,7 +3,6 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { AuthProvider } from '@/context/auth-context'
 import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
@@ -38,7 +37,7 @@ jest.mock('@/hooks/use-auth', () => ({
 }))
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<AuthProvider>{component}</AuthProvider>)
+  return render(component)
 }
 
 describe('SubscriptionGuard', () => {
