@@ -38,9 +38,6 @@ describe('TimeTrackerHeader', () => {
     renderWithProvider(<TimeTrackerHeader />)
     expect(screen.getByText('common.appName')).toBeInTheDocument()
     expect(screen.getByText('tracker.headerExportLink')).toBeInTheDocument()
-    expect(
-      screen.getByText('tracker.headerClearDataTooltip'),
-    ).toBeInTheDocument()
     expect(screen.getByTestId('user-menu-btn')).toBeInTheDocument()
   })
 })

@@ -3,7 +3,6 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { AuthProvider } from '@/context/auth-context'
 import type { PricingPlan } from '@/lib/types'
 // Mock the services
 import {
@@ -14,6 +13,18 @@ import {
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import PricingSection from '../pricing-section'
+
+// Mock AuthProvider to avoid loading state - must be before any imports that use it
+jest.mock('@/context/auth-context', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  AuthContext: React.createContext({
+    user: null,
+    loading: false,
+    signOut: jest.fn(),
+  }),
+}))
 
 // Mock the payment service
 jest.mock('@/services/payment-service', () => ({
@@ -63,7 +74,7 @@ jest.mock('@/hooks/use-toast', () => ({
 }))
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(<AuthProvider>{component}</AuthProvider>)
+  return render(component)
 }
 
 describe('PricingSection', () => {
