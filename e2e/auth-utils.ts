@@ -36,25 +36,33 @@ let db: Firestore
 if (!getApps().length) {
   app = initializeApp(firebaseConfig)
   auth = getAuth(app)
-  db = getFirestore(app)
-
-  // Connect to emulators for e2e tests
-  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'test') {
-    try {
-      connectAuthEmulator(auth, 'http://localhost:9099')
-      connectFirestoreEmulator(db, 'localhost', 8080)
-      console.log('✅ Connected to Firebase emulators')
-    } catch (error) {
-      console.warn(
-        '⚠️ Could not connect to emulators:',
-        error instanceof Error ? error.message : String(error),
-      )
-    }
+  try {
+    // Always use test-database and emulators for e2e helpers
+    db = getFirestore(app, 'test-database')
+    connectAuthEmulator(auth, 'http://localhost:9099')
+    connectFirestoreEmulator(db, 'localhost', 8080)
+    // connected to emulators
+  } catch (error) {
+    console.warn(
+      '⚠️ Could not connect to emulators:',
+      error instanceof Error ? error.message : String(error),
+    )
   }
 } else {
   app = getApps()[0]
   auth = getAuth(app)
-  db = getFirestore(app)
+  // Ensure we're using test-database and emulator connections
+  db = getFirestore(app, 'test-database')
+  try {
+    connectAuthEmulator(auth, 'http://localhost:9099')
+    connectFirestoreEmulator(db, 'localhost', 8080)
+    // connected to emulators (existing app)
+  } catch (error) {
+    console.warn(
+      '⚠️ Could not connect to emulators for existing app:',
+      error instanceof Error ? error.message : String(error),
+    )
+  }
 }
 
 export interface TestUser {
@@ -93,7 +101,7 @@ export async function createTestUser(
           email,
           password,
         )
-        console.log(`Reusing existing test user: ${email}`)
+        // reuse existing test user
         return {
           uid: existingUser.user.uid,
           email,
@@ -132,7 +140,7 @@ export async function deleteTestUser(user: TestUser): Promise<void> {
 
     // Delete user from Firebase Auth
     await deleteUser(signedInUser.user)
-    console.log(`Successfully deleted test user: ${user.email}`)
+    // deleted test user
   } catch (error: any) {
     if (error.code === 'auth/user-not-found') {
       console.log(`User ${user.email} was already deleted or never existed`)
@@ -146,5 +154,44 @@ export async function deleteTestUser(user: TestUser): Promise<void> {
         error.message || error,
       )
     }
+  }
+}
+
+/**
+ * Cleans up the test database using the emulator REST API
+ * This bypasses security rules entirely by using the emulator REST API
+ */
+export async function cleanupTestDatabaseWithAdmin(): Promise<void> {
+  try {
+    const projectId =
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'timewise-tracker-61lqb'
+    const emulatorHost = 'localhost:8080'
+    const databaseId = 'test-database'
+
+    const clearUrl = `http://${emulatorHost}/emulator/v1/projects/${projectId}/databases/${databaseId}/documents`
+    // Shell alternative…
+    // curl -v -X DELETE "http://localhost:8080/emulator/v1/projects/timewise-tracker-61lqb/databases/test-database/documents"
+
+    const response = await fetch(clearUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      console.log('✅ Test database cleared successfully')
+    } else {
+      const errorText = await response.text()
+      console.error(
+        `❌ Failed to clear emulator data: ${response.status} ${errorText}`,
+      )
+      throw new Error(
+        `Failed to clear emulator data: ${response.status} - ${errorText}`,
+      )
+    }
+  } catch (error) {
+    console.error('❌ Database cleanup failed:', error)
+    throw error
   }
 }

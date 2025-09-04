@@ -1,4 +1,4 @@
-import { cleanupTestDatabase } from '@/lib/firebase'
+import { cleanupTestDatabaseWithAdmin } from './auth-utils'
 
 // Global setup function that runs once before all tests
 async function globalSetup() {
@@ -8,7 +8,7 @@ async function globalSetup() {
       process.env.E2E_RUN_ID = `${Date.now()}`
     }
     // Clean up the test database before running tests
-    await cleanupTestDatabase()
+    await cleanupTestDatabaseWithAdmin()
   } catch (error) {
     throw error
   }

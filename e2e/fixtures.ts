@@ -1,8 +1,11 @@
 import { type Page, type WorkerInfo, test as base } from '@playwright/test'
 
-import { cleanupTestDatabase } from '@/lib/firebase'
-
-import { TestUser, createTestUser, deleteTestUser } from './auth-utils'
+import {
+  TestUser,
+  cleanupTestDatabaseWithAdmin,
+  createTestUser,
+  deleteTestUser,
+} from './auth-utils'
 
 type TestFixtures = {
   autoCleanup: void
@@ -37,11 +40,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
   // Create the user once per worker (much more efficient)
   workerUser: [
-    async ({ workerEmail, workerPassword }, use, workerInfo: WorkerInfo) => {
-      console.log(
-        `Creating test user for worker ${workerInfo.workerIndex}: ${workerEmail}`,
-      )
-
+    async ({ workerEmail, workerPassword }, use) => {
       // Create user once per worker using Admin SDK
       const user = await createTestUser(workerEmail, workerPassword)
 
@@ -93,13 +92,13 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     })
   },
 
-  // Clean up database in CI after each test
+  // Clean up database after each test (both CI and local)
   autoCleanup: [
     async ({}, use) => {
-      if (process.env.CI) {
-        await cleanupTestDatabase()
-      }
       await use()
+      // Always run admin cleanup for e2e tests
+      console.log('🧹 Running admin cleanup after test...')
+      await cleanupTestDatabaseWithAdmin()
     },
     { auto: true },
   ],
@@ -108,10 +107,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   workerCleanup: [
     async ({ workerUser }, use, workerInfo: WorkerInfo) => {
       await use()
-
-      console.log(
-        `Cleaning up test user for worker ${workerInfo.workerIndex}: ${workerUser.email}`,
-      )
+      console.log('🧹 Deleting test user...')
       await deleteTestUser(workerUser)
     },
     { scope: 'worker', auto: true },
