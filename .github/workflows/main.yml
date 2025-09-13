@@ -65,10 +65,9 @@ jobs:
 
       - name: Run E2E tests
         run: npm run test:e2e:ci
+        environment: test
         env:
           NEXT_PUBLIC_ENVIRONMENT: test
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
       - name: Build project
         run: npm run build
