@@ -1,9 +1,10 @@
 import { differenceInMinutes, set } from 'date-fns'
 
-import type { TimeEntry } from '@/lib/types'
+import type { TimeEntry, UserSettings } from '@/lib/types'
 
 import {
   calculateTotalCompensatedMinutes,
+  calculateWeekCompensatedTime,
   parseTimeString,
 } from '../time-utils'
 
@@ -159,5 +160,250 @@ describe('calculateTotalCompensatedMinutes', () => {
       durationMinutes: undefined,
     }
     expect(calculateTotalCompensatedMinutes([entry])).toBe(0)
+  })
+})
+
+describe('calculateWeekCompensatedTime', () => {
+  const mockUserSettings: UserSettings = {
+    driverCompensationPercent: 100,
+    passengerCompensationPercent: 90,
+    language: 'en',
+  }
+
+  const createMockGetEntriesForDay = (
+    entriesByDay: Record<string, TimeEntry[]>,
+  ) => {
+    return (day: Date) => {
+      const dayKey = day.toISOString().split('T')[0]
+      return entriesByDay[dayKey] || []
+    }
+  }
+
+  it('calculates total for a week with entries', () => {
+    const week = [
+      new Date('2025-08-01'), // Friday
+      new Date('2025-08-02'), // Saturday
+      new Date('2025-08-03'), // Sunday
+    ]
+
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          pauseDuration: 30,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          pauseDuration: 0,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    const result = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+    )
+
+    // Friday: 8 hours - 0.5 hours pause = 7.5 hours
+    // Saturday: 4 hours - 0 hours pause = 4 hours
+    // Sunday: 0 hours
+    // Total: 11.5 hours
+    expect(result).toBe(11.5)
+  })
+
+  it('filters by selected month when provided', () => {
+    // Week spanning July 28 - August 3, 2025
+    const week = [
+      new Date('2025-07-28'), // Monday (July)
+      new Date('2025-07-29'), // Tuesday (July)
+      new Date('2025-07-30'), // Wednesday (July)
+      new Date('2025-07-31'), // Thursday (July)
+      new Date('2025-08-01'), // Friday (August)
+      new Date('2025-08-02'), // Saturday (August)
+      new Date('2025-08-03'), // Sunday (August)
+    ]
+
+    const august2025 = new Date('2025-08-01')
+
+    const entriesByDay = {
+      '2025-07-31': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-07-31'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-07-31'), { hours: 17, minutes: 0 }),
+          pauseDuration: 30,
+        } as TimeEntry,
+      ],
+      '2025-08-01': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          pauseDuration: 30,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '3',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          pauseDuration: 0,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+
+    // Without month filter - should include all days
+    const resultWithoutFilter = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+    )
+    // July 31: 8 hours - 0.5 hours = 7.5 hours
+    // August 1: 8 hours - 0.5 hours = 7.5 hours
+    // August 2: 4 hours - 0 hours = 4 hours
+    // Total: 19 hours
+    expect(resultWithoutFilter).toBe(19)
+
+    // With August filter - should only include August days
+    const resultWithFilter = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+      august2025,
+    )
+    // August 1: 8 hours - 0.5 hours = 7.5 hours
+    // August 2: 4 hours - 0 hours = 4 hours
+    // Total: 11.5 hours
+    expect(resultWithFilter).toBe(11.5)
+  })
+
+  it('handles special day entries correctly', () => {
+    const week = [new Date('2025-08-01'), new Date('2025-08-02')]
+
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'SICK_LEAVE',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          pauseDuration: 30, // Should be ignored for special days
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'PTO',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          pauseDuration: 60, // Should be ignored for special days
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    const result = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+    )
+
+    // SICK_LEAVE: 8 hours (pause ignored)
+    // PTO: 4 hours (pause ignored)
+    // Total: 12 hours
+    expect(result).toBe(12)
+  })
+
+  it('ignores TIME_OFF_IN_LIEU entries', () => {
+    const week = [new Date('2025-08-01'), new Date('2025-08-02')]
+
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'TIME_OFF_IN_LIEU',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          pauseDuration: 30,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          pauseDuration: 0,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    const result = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+    )
+
+    // TIME_OFF_IN_LIEU: 0 hours (ignored)
+    // Test: 4 hours - 0 hours = 4 hours
+    // Total: 4 hours
+    expect(result).toBe(4)
+  })
+
+  it('returns 0 when userSettings is null', () => {
+    const week = [new Date('2025-08-01')]
+    const getEntriesForDay = () => []
+
+    const result = calculateWeekCompensatedTime(week, getEntriesForDay, null)
+    expect(result).toBe(0)
+  })
+
+  it('handles empty week', () => {
+    const week: Date[] = []
+    const getEntriesForDay = () => []
+
+    const result = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+    )
+    expect(result).toBe(0)
+  })
+
+  it('handles week with no entries', () => {
+    const week = [new Date('2025-08-01'), new Date('2025-08-02')]
+    const getEntriesForDay = () => []
+
+    const result = calculateWeekCompensatedTime(
+      week,
+      getEntriesForDay,
+      mockUserSettings,
+    )
+    expect(result).toBe(0)
   })
 })

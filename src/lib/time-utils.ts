@@ -1,6 +1,6 @@
 // time-utils.ts
 // Utilities for time and compensation calculations shared across preview, export, and time tracking logic.
-import { differenceInMinutes } from 'date-fns'
+import { differenceInMinutes, isSameMonth } from 'date-fns'
 
 import type { TimeEntry, UserSettings } from './types'
 
@@ -71,15 +71,22 @@ export function calculateTotalCompensatedMinutes(
  * @param week Array of Date objects representing the days in the week
  * @param getEntriesForDay Function to get all TimeEntry objects for a given day
  * @param userSettings UserSettings object (for compensation percentages)
+ * @param selectedMonth Optional month to filter by - only days in this month will be included
  * @returns Total compensated time in hours (number, may be fractional)
  */
 export function calculateWeekCompensatedTime(
   week: Date[],
   getEntriesForDay: (day: Date) => TimeEntry[],
   userSettings: UserSettings | null,
+  selectedMonth?: Date,
 ): number {
   if (!userSettings) return 0
   return week.reduce((weekTotal, day) => {
+    // If selectedMonth is provided, only include days from that month
+    if (selectedMonth && !isSameMonth(day, selectedMonth)) {
+      return weekTotal
+    }
+
     const entries = getEntriesForDay(day)
     return (
       weekTotal +
