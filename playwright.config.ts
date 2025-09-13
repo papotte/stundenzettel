@@ -2,9 +2,12 @@ import type { PlaywrightTestConfig } from '@playwright/test'
 import { devices } from '@playwright/test'
 
 import * as dotenv from 'dotenv'
+import * as fs from 'fs'
 
-// Load test environment variables
-dotenv.config({ path: '.env.test' })
+// Load test environment variables (only if .env.test exists)
+if (fs.existsSync('.env.test')) {
+  dotenv.config({ path: '.env.test' })
+}
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
