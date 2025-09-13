@@ -2,9 +2,12 @@ import type { PlaywrightTestConfig } from '@playwright/test'
 import { devices } from '@playwright/test'
 
 import * as dotenv from 'dotenv'
+import * as fs from 'fs'
 
-// Load test environment variables
-dotenv.config({ path: '.env.test' })
+// Load test environment variables (only if .env.test exists)
+if (fs.existsSync('.env.test')) {
+  dotenv.config({ path: '.env.test', quiet: true })
+}
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -27,19 +30,30 @@ const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Stop after first failure in CI, run all tests locally */
+  maxFailures: process.env.CI ? 1 : 0,
+  /* Optimize workers for better performance - use more workers in CI */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['list', { printSteps: true }], // Shows test progress in console with steps
+    ['html'], // Generates HTML report
+    // Add line reporter for better test identification
+    ['line'],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
+    actionTimeout: 10000,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:9003',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Optimize for faster test execution */
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
@@ -51,18 +65,23 @@ const config: PlaywrightTestConfig = {
       },
     },
 
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-    },
+    // Only run Firefox and WebKit when explicitly requested
+    ...(process.env.RUN_ALL_BROWSERS
+      ? [
+          {
+            name: 'firefox',
+            use: {
+              ...devices['Desktop Firefox'],
+            },
+          },
+          {
+            name: 'webkit',
+            use: {
+              ...devices['Desktop Safari'],
+            },
+          },
+        ]
+      : []),
   ],
 
   /* Run your local dev server before starting the tests */
@@ -71,11 +90,6 @@ const config: PlaywrightTestConfig = {
     url: 'http://localhost:9003',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    // Explicitly pass all required environment variables
-    env: {
-      NODE_ENV: 'test',
-      NEXT_PUBLIC_ENVIRONMENT: 'test',
-    },
   },
 }
 

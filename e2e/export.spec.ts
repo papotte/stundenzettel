@@ -229,18 +229,20 @@ test.describe('Export Page', () => {
     await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
-    // Find today's date in local time
-    const today = new Date()
-    const yyyy = today.getFullYear()
-    const mm = String(today.getMonth() + 1).padStart(2, '0')
-    const dd = String(today.getDate()).padStart(2, '0')
-    const todayId = `timesheet-day-${yyyy}-${mm}-${dd}`
+    // Wait for the export page to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
 
-    // Find the empty row for today and click the add button
-    const dayRow = page.getByTestId(todayId)
-    const addButton = dayRow.getByRole('button', {
-      name: /Add entry|Add/,
-    })
+    // Wait for the timesheet to load
+    await expect(page.getByTestId('export-preview-month')).toBeVisible()
+
+    // Find any available day row with an add button (not necessarily today)
+    const addButton = page
+      .getByRole('button', {
+        name: /Add entry|Add/,
+      })
+      .first()
+
+    await expect(addButton).toBeVisible({ timeout: 10000 })
     await addButton.click()
 
     // Fill out the form

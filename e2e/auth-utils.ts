@@ -134,7 +134,7 @@ export async function deleteTestUser(user: TestUser): Promise<void> {
     )
 
     if (!signedInUser.user) {
-      console.log(`User ${user.email} not found or already deleted`)
+      // User not found or already deleted
       return
     }
 
@@ -143,11 +143,9 @@ export async function deleteTestUser(user: TestUser): Promise<void> {
     // deleted test user
   } catch (error: any) {
     if (error.code === 'auth/user-not-found') {
-      console.log(`User ${user.email} was already deleted or never existed`)
+      // User was already deleted or never existed
     } else if (error.code === 'auth/invalid-credential') {
-      console.log(
-        `Invalid credentials for user ${user.email}, user may have been modified`,
-      )
+      // Invalid credentials for user, may have been modified
     } else {
       console.warn(
         `Failed to cleanup test user ${user.email}:`,
@@ -185,12 +183,7 @@ export async function cleanupUserData(userId: string): Promise<void> {
         },
       })
 
-      if (response.ok) {
-        console.log(`✅ Cleared user collection: ${collectionPath}`)
-      } else if (response.status === 404) {
-        // Collection doesn't exist, which is fine
-        console.log(`ℹ️ Collection doesn't exist: ${collectionPath}`)
-      } else {
+      if (!response.ok && response.status !== 404) {
         const errorText = await response.text()
         console.warn(
           `⚠️ Failed to clear ${collectionPath}: ${response.status} ${errorText}`,
@@ -198,7 +191,7 @@ export async function cleanupUserData(userId: string): Promise<void> {
       }
     }
 
-    console.log(`✅ User data cleanup completed for user: ${userId}`)
+    // User data cleanup completed silently
   } catch (error) {
     console.error('❌ User data cleanup failed:', error)
     throw error
@@ -228,9 +221,7 @@ export async function cleanupTestDatabaseWithAdmin(): Promise<void> {
       },
     })
 
-    if (response.ok) {
-      console.log('✅ Test database cleared successfully')
-    } else {
+    if (!response.ok) {
       const errorText = await response.text()
       console.error(
         `❌ Failed to clear emulator data: ${response.status} ${errorText}`,

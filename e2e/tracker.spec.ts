@@ -459,7 +459,7 @@ test.describe('Core Tracker Functionality', () => {
 
   test.describe('Accessibility', () => {
     test('should trap focus in dialogs', async ({ page }) => {
-      await page.getByRole('button', { name: /Add/i }).click()
+      await page.getByRole('button', { name: /Add/i }).first().click()
       const dialog = page.locator('div[role="dialog"]')
       await expect(dialog).toBeVisible()
       // Press Tab and check focus stays within dialog

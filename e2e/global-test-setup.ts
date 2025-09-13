@@ -7,8 +7,17 @@ async function globalSetup() {
     if (!process.env.E2E_RUN_ID) {
       process.env.E2E_RUN_ID = `${Date.now()}`
     }
-    // Clean up the test database before running tests
-    await cleanupTestDatabaseWithAdmin()
+
+    // Only clean up the test database in local development
+    // In CI, the emulator starts fresh every time
+    if (!process.env.CI) {
+      console.log('🏠 Local environment: Cleaning up test database...')
+      await cleanupTestDatabaseWithAdmin()
+    } else {
+      console.log(
+        '🤖 CI environment: Skipping database cleanup (emulator starts fresh)',
+      )
+    }
   } catch (error) {
     throw error
   }

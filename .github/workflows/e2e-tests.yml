@@ -1,0 +1,80 @@
+name: E2E Tests
+
+on:
+  workflow_call:
+
+jobs:
+  e2e-tests:
+    name: E2E Tests (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium] #, firefox, webkit]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/.cache/playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}-${{ matrix.browser }}
+          restore-keys: |
+            playwright-${{ matrix.browser }}-
+            playwright-
+
+      - name: Install Playwright Browsers
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Verify Playwright browsers
+        run: npx playwright install --dry-run ${{ matrix.browser }}
+
+      - name: Create .env.test file
+        run: |
+          cat > .env.test << 'EOF'
+          # Test environment variables for E2E tests
+          NODE_ENV=test
+          NEXT_PUBLIC_ENVIRONMENT=test
+
+          # Firebase (Test config - using real project ID from secret)
+          NEXT_PUBLIC_FIREBASE_API_KEY=dummy-api-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_PROJECT_ID }}.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_PROJECT_ID }}.firebasestorage.app
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+          NEXT_PUBLIC_FIREBASE_APP_ID=test-app-id
+          NEXT_PUBLIC_FIREBASE_DATABASE_ID=test-database
+
+          # Stripe (Test config - using real secrets)
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+
+          # Other secrets
+          GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
+          EOF
+
+      - name: Run E2E tests (${{ matrix.browser }})
+        run: npm run test:e2e:ci -- --project=${{ matrix.browser }}
+
+      - name: Save Playwright browsers cache
+        if: always() && steps.cache-playwright.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+            ~/.cache/playwright
+          key: playwright-${{ hashFiles('package-lock.json') }}-${{ matrix.browser }}

@@ -1,4 +1,4 @@
-import { type Page, type WorkerInfo, test as base } from '@playwright/test'
+import { type Page, test as base } from '@playwright/test'
 
 import {
   TestUser,
@@ -10,7 +10,7 @@ import {
 type TestFixtures = {
   autoCleanup: void
   loginOrRegisterTestUser: (page: Page) => Promise<void>
-  loginUser: (page: Page) => Promise<void>
+  loginUser: (page: Page, redirectToTracker?: boolean) => Promise<void>
 }
 
 type WorkerFixtures = {
@@ -53,16 +53,23 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
   // Login existing user
   loginUser: async ({ workerUser, workerPassword }, use) => {
-    await use(async (page: Page) => {
-      // Sign in programmatically (much faster than UI)
-      await page.goto('/login')
+    await use(async (page: Page, redirectToTracker: boolean = true) => {
+      // Only navigate to login if we're not already on the login page
+      const currentUrl = page.url()
+      if (!currentUrl.includes('/login')) {
+        await page.goto('/login')
+      }
+
       await page.getByRole('tab', { name: 'Sign In' }).click()
       await page.getByRole('textbox', { name: 'Email' }).fill(workerUser.email)
       await page.getByRole('textbox', { name: 'Password' }).fill(workerPassword)
       await page.getByTestId('login-signin-button').click()
-      // Navigate to tracker to complete the flow
-      await page.goto('/tracker')
-      await page.waitForURL('/tracker')
+
+      // Only redirect to tracker if explicitly requested (default behavior)
+      if (redirectToTracker) {
+        await page.goto('/tracker')
+        await page.waitForURL('/tracker')
+      }
     })
   },
 
@@ -98,9 +105,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
       await use()
       // Clean up only this user's data instead of the entire database
       // This allows tests to run in parallel without interfering with each other
-      console.log(
-        `🧹 Running user-specific cleanup for user: ${workerUser.uid}`,
-      )
+      // Running user-specific cleanup
       await cleanupUserData(workerUser.uid)
     },
     { auto: true },
@@ -110,7 +115,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   workerCleanup: [
     async ({ workerUser }, use) => {
       await use()
-      console.log('🧹 Deleting test user...')
+      // Deleting test user
       await deleteTestUser(workerUser)
     },
     { scope: 'worker', auto: true },

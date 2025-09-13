@@ -1,25 +1,23 @@
-import { Page, expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
-const loginAsMockUser = async (page: Page) => {
-  await page.getByLabel('Email').fill('user@example.com')
-  await page.getByLabel('Password').fill('password123')
-  await page.getByTestId('login-signin-button').click()
-}
 test.describe('Authentication', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the login page before each test
     await page.goto('/login')
   })
 
-  test('should log in and display the main tracker page', async ({ page }) => {
+  test('should log in and display the main tracker page', async ({
+    page,
+    loginUser,
+  }) => {
     // In test mode, we expect to see the mock user login screen.
     // The language is still English here, before a user is selected.
     await expect(
       page.getByRole('heading', { name: 'TimeWise Tracker' }),
     ).toBeVisible()
 
-    // Log in as the first mock user
-    await loginAsMockUser(page)
+    // Log in as the test user
+    await loginUser(page)
     await page.waitForURL('/tracker')
 
     // Verify landing on the main tracker page
@@ -30,8 +28,11 @@ test.describe('Authentication', () => {
     await expect(page.getByText('Today')).toBeVisible()
   })
 
-  test('should log out and redirect to login page', async ({ page }) => {
-    await loginAsMockUser(page)
+  test('should log out and redirect to login page', async ({
+    page,
+    loginUser,
+  }) => {
+    await loginUser(page)
 
     // Click the user menu button to open dropdown
     await page.getByTestId('user-menu-btn').click()
@@ -61,6 +62,10 @@ test.describe('Authentication', () => {
 
     // Try to access export page
     await page.goto('/export')
+
+    // Wait for navigation to complete
+    await page.waitForURL(/\/login/)
+
     await expect(
       page.getByRole('heading', { name: /TimeWise Tracker/ }),
     ).toBeVisible()
@@ -68,6 +73,7 @@ test.describe('Authentication', () => {
 
   test('should handle pricing page redirection flow correctly', async ({
     page,
+    loginUser,
   }) => {
     // Navigate to pricing page
     await page.goto('/pricing')
@@ -98,8 +104,8 @@ test.describe('Authentication', () => {
     expect(currentUrl).toContain('returnUrl=')
     expect(currentUrl).toContain('pricing')
 
-    // Login with mock user
-    await loginAsMockUser(page)
+    // Login with test user (preserving return URL by not redirecting to tracker)
+    await loginUser(page, false)
 
     // Should be redirected back to pricing page
     await page.waitForURL(/\/pricing/)
@@ -109,7 +115,7 @@ test.describe('Authentication', () => {
       page.getByRole('heading', {
         name: /Choose Your Plan/i,
       }),
-    ).toBeVisible()
+    ).toBeVisible({ timeout: 10000 })
 
     // Verify the plan parameter is preserved in the URL
     const finalUrl = page.url()
@@ -118,6 +124,7 @@ test.describe('Authentication', () => {
 
   test('should handle subscription page redirection flow correctly', async ({
     page,
+    loginUser,
   }) => {
     // Navigate to subscription page
     await page.goto('/subscription')
@@ -135,8 +142,8 @@ test.describe('Authentication', () => {
     expect(currentUrl).toContain('returnUrl=')
     expect(currentUrl).toContain('subscription')
 
-    // Login with mock user
-    await loginAsMockUser(page)
+    // Login with test user (preserving return URL by not redirecting to tracker)
+    await loginUser(page, false)
 
     // Should be redirected back to subscription page
     await page.waitForURL(/\/subscription/)
@@ -146,11 +153,12 @@ test.describe('Authentication', () => {
       page.getByRole('heading', {
         name: /Manage Subscription/,
       }),
-    ).toBeVisible()
+    ).toBeVisible({ timeout: 10000 })
   })
 
   test('should handle team page redirection flow correctly', async ({
     page,
+    loginUser,
   }) => {
     // Navigate to team page
     await page.goto('/team')
@@ -168,8 +176,8 @@ test.describe('Authentication', () => {
     expect(currentUrl).toContain('returnUrl=')
     expect(currentUrl).toContain('team')
 
-    // Login with mock user
-    await loginAsMockUser(page)
+    // Login with test user (preserving return URL by not redirecting to tracker)
+    await loginUser(page, false)
 
     // Should be redirected back to team page
     await page.waitForURL(/\/team/)
@@ -177,6 +185,6 @@ test.describe('Authentication', () => {
     // Verify we're on the team page
     await expect(
       page.getByRole('heading', { name: /Team Management/ }),
-    ).toBeVisible()
+    ).toBeVisible({ timeout: 10000 })
   })
 })

@@ -3,6 +3,16 @@
 // Load environment variables from .env.local
 require('dotenv').config({ path: '.env.local' })
 
+// Check if running in CI mode (less verbose logging)
+const isCI = process.env.CI === 'true' || process.argv.includes('--ci')
+
+// Helper function for conditional logging
+const log = (message, force = false) => {
+  if (force || !isCI) {
+    console.log(message)
+  }
+}
+
 // Fallback to dummy values if env vars are not loaded
 if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
   console.log(
@@ -55,13 +65,13 @@ const db = getFirestore(app)
 const auth = getAuth(app)
 
 // Connect to emulators BEFORE any Firebase operations
-console.log('🔌 Connecting to Firebase emulators...')
+log('🔌 Connecting to Firebase emulators...')
 connectFirestoreEmulator(db, 'localhost', 8080)
 connectAuthEmulator(auth, 'http://localhost:9099')
-console.log('✅ Connected to emulators')
+log('✅ Connected to emulators')
 
 // Note: Emulators bypass Firestore security rules by default
-console.log('🔓 Firestore security rules are bypassed in emulator mode')
+log('🔓 Firestore security rules are bypassed in emulator mode')
 
 // Sample data
 const sampleUsers = [
@@ -86,10 +96,10 @@ const sampleUsers = [
 
 async function seedData() {
   try {
-    console.log('Starting to seed Firebase emulator...')
+    log('Starting to seed Firebase emulator...')
 
     // Create users
-    console.log('Creating sample users...')
+    log('Creating sample users...')
     for (const userData of sampleUsers) {
       try {
         // Create auth user
@@ -99,7 +109,7 @@ async function seedData() {
           userData.password,
         )
 
-        console.log(`Created auth user: ${userData.email}`)
+        log(`Created auth user: ${userData.email}`)
 
         // Sign in as this user to get proper auth context for Firestore writes
         await signInWithEmailAndPassword(
@@ -116,13 +126,13 @@ async function seedData() {
           updatedAt: new Date(),
         })
 
-        console.log(`Created user document: ${userData.email}`)
+        log(`Created user document: ${userData.email}`)
 
         // Sign out to create next user
         await auth.signOut()
       } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-          console.log(`User ${userData.email} already exists`)
+          log(`User ${userData.email} already exists`)
         } else {
           console.error(`Error creating user ${userData.email}:`, error.message)
         }
@@ -132,16 +142,16 @@ async function seedData() {
     // Note: Time entries and teams can be created manually in the app
     // or imported from production data using the export/import scripts
 
-    console.log('Seeding completed successfully!')
-    console.log('\nSample data created:')
-    console.log(`   - ${sampleUsers.length} users`)
-    console.log('\nSample login credentials:')
+    log('Seeding completed successfully!')
+    log('\nSample data created:')
+    log(`   - ${sampleUsers.length} users`)
+    log('\nSample login credentials:')
     sampleUsers.forEach((user) => {
-      console.log(`   ${user.email} / ${user.password}`)
+      log(`   ${user.email} / ${user.password}`)
     })
-    console.log('\nTo preserve this data between emulator sessions:')
-    console.log('   1. Run: npm run emulators:export')
-    console.log('   2. Restore with: npm run emulators:restore')
+    log('\nTo preserve this data between emulator sessions:')
+    log('   1. Run: npm run emulators:export')
+    log('   2. Restore with: npm run emulators:restore')
   } catch (error) {
     console.error('Error seeding data:', error)
     process.exit(1)
