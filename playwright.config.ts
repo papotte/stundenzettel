@@ -32,6 +32,8 @@ const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
+  /* Stop after first failure in CI, run all tests locally */
+  maxFailures: process.env.CI ? 1 : 0,
   /* Optimize workers for better performance - use more workers in CI */
   workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -90,11 +92,6 @@ const config: PlaywrightTestConfig = {
     url: 'http://localhost:9003',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
-    // Explicitly pass all required environment variables
-    env: {
-      NODE_ENV: 'test',
-      NEXT_PUBLIC_ENVIRONMENT: 'test',
-    },
   },
 }
 
