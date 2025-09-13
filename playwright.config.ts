@@ -15,6 +15,8 @@ const config: PlaywrightTestConfig = {
   testDir: './e2e',
   /* Global setup that runs before all tests */
   globalSetup: require.resolve('./e2e/global-test-setup.ts'),
+  /* Global teardown that runs after all tests */
+  globalTeardown: require.resolve('./e2e/global-test-teardown.ts'),
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {
@@ -30,19 +32,23 @@ const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Optimize workers for better performance - use more workers in CI */
+  workers: process.env.CI ? 4 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
+    actionTimeout: 10000,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:9003',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Optimize for faster test execution */
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */
