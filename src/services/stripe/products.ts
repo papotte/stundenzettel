@@ -1,5 +1,12 @@
 import Stripe from 'stripe'
 
+// Debug environment variable loading - this will show in CI test runs
+console.error('🔍 STRIPE DEBUG - STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY)
+console.error('🔍 STRIPE DEBUG - STRIPE_SECRET_KEY length:', process.env.STRIPE_SECRET_KEY?.length || 0)
+console.error('🔍 STRIPE DEBUG - STRIPE_SECRET_KEY starts with sk_:', process.env.STRIPE_SECRET_KEY?.startsWith('sk_') || false)
+console.error('🔍 STRIPE DEBUG - NODE_ENV:', process.env.NODE_ENV)
+console.error('🔍 STRIPE DEBUG - All env vars with STRIPE:', Object.keys(process.env).filter(key => key.includes('STRIPE')))
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
 })

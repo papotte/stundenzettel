@@ -1,5 +1,11 @@
 // Global teardown function that runs once after all tests
 async function globalTeardown() {
+  // Only run teardown in CI environments
+  if (!process.env.CI) {
+    console.log('🏠 Local environment: Skipping Firebase emulator teardown')
+    return
+  }
+
   try {
     console.log('🧹 Global teardown: Stopping Firebase emulators...')
 
