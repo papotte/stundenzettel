@@ -20,10 +20,10 @@ export interface TimeEntry {
 }
 
 export interface UserSettings {
-  defaultWorkHours: number
-  defaultStartTime: string
-  defaultEndTime: string
-  language: Locale
+  defaultWorkHours?: number
+  defaultStartTime?: string
+  defaultEndTime?: string
+  language?: Locale
   displayName?: string
   companyName?: string
   companyEmail?: string

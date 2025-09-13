@@ -84,10 +84,15 @@ export default function TimesheetPreview({
       relevantWeeks.reduce(
         (acc: number, week: Date[]) =>
           acc +
-          calculateWeekCompensatedTime(week, getEntriesForDay, userSettings),
+          calculateWeekCompensatedTime(
+            week,
+            getEntriesForDay,
+            userSettings,
+            selectedMonth,
+          ),
         0,
       ),
-    [relevantWeeks, getEntriesForDay, userSettings],
+    [relevantWeeks, getEntriesForDay, userSettings, selectedMonth],
   )
   const monthPassengerTotal = useMemo(
     () => sumPassengerTime(monthEntries),
@@ -133,6 +138,7 @@ export default function TimesheetPreview({
             week,
             getEntriesForDay,
             userSettings,
+            selectedMonth,
           )
           const weekPassengerTotal = sumPassengerTime(weekEntries)
           return (
