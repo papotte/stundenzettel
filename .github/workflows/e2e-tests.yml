@@ -5,8 +5,11 @@ on:
 
 jobs:
   e2e-tests:
-    name: E2E Tests
+    name: E2E Tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,7 +24,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Create .env.test file
         run: |
@@ -48,5 +51,5 @@ jobs:
           GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}
           EOF
 
-      - name: Run E2E tests
-        run: npm run test:e2e:ci
+      - name: Run E2E tests (${{ matrix.browser }})
+        run: npm run test:e2e:ci -- --project=${{ matrix.browser }}

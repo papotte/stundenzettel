@@ -60,18 +60,23 @@ const config: PlaywrightTestConfig = {
       },
     },
 
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-    },
+    // Only run Firefox and WebKit in CI or when explicitly requested
+    ...(process.env.CI || process.env.RUN_ALL_BROWSERS
+      ? [
+          {
+            name: 'firefox',
+            use: {
+              ...devices['Desktop Firefox'],
+            },
+          },
+          {
+            name: 'webkit',
+            use: {
+              ...devices['Desktop Safari'],
+            },
+          },
+        ]
+      : []),
   ],
 
   /* Run your local dev server before starting the tests */
