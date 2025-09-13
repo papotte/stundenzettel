@@ -1,7 +1,7 @@
 import { format, getWeekOfMonth } from 'date-fns'
 
 import { expect, test } from './fixtures'
-import { addManualEntry } from './test-helpers'
+import { addExportEntry, addManualEntry, navigateToMonth } from './test-helpers'
 
 test.describe('Export Page', () => {
   let weekIndex: number = 0
@@ -229,40 +229,90 @@ test.describe('Export Page', () => {
     await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
-    // Wait for the export page to load
-    await expect(page.getByTestId('export-preview-card')).toBeVisible()
-
-    // Wait for the timesheet to load
-    await expect(page.getByTestId('export-preview-month')).toBeVisible()
-
-    // Find any available day row with an add button (not necessarily today)
-    const addButton = page
-      .getByRole('button', {
-        name: /Add entry|Add/,
-      })
-      .first()
-
-    await expect(addButton).toBeVisible({ timeout: 10000 })
-    await addButton.click()
-
-    // Fill out the form
-    const form = page.locator(
-      'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
-    )
-    await expect(form).toBeVisible()
+    const today = new Date()
     const locationName = `Export Add Entry ${Math.random().toString(36).substring(2, 15)}`
     const startTime = '10:00'
     const endTime = '12:00'
-    await form.getByRole('textbox', { name: 'Location' }).fill(locationName)
-    await form.getByLabel('Start Time').fill(startTime)
-    await form.getByLabel('End Time').fill(endTime)
-    await form.getByRole('button', { name: 'Save Entry' }).click()
-    await expect(form).not.toBeVisible()
+
+    // Use the helper to add an entry for today
+    await addExportEntry(page, today, locationName, startTime, endTime)
 
     // Verify the new entry appears in the export preview for today
     const preview = page.locator('.printable-area')
     await expect(preview.getByText(locationName)).toBeVisible()
     await expect(preview.getByText(startTime)).toBeVisible()
     await expect(preview.getByText(endTime)).toBeVisible()
+  })
+
+  test('should exclude previous month hours from weekly totals when week spans months', async ({
+    page,
+  }) => {
+    // Navigate to August 2025 where the first week spans July 28 - August 3
+    // This is a perfect test case because August 1st is a Friday
+
+    // First, navigate to the export page
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
+    await page.waitForURL('/export')
+
+    // Navigate to July 2025 to add an entry for July 31st
+    await navigateToMonth(page, new Date('2025-07-01'))
+
+    // Add entry for July 31st (Thursday - should be excluded from August weekly total)
+    const julyLocationName = `July Entry ${Math.random().toString(36).substring(2, 15)}`
+    await addExportEntry(
+      page,
+      new Date('2025-07-31'),
+      julyLocationName,
+      '09:00',
+      '17:00',
+    )
+
+    // Navigate to August 2025
+    await navigateToMonth(page, new Date('2025-08-01'))
+
+    // Add an entry for August 1st, 2025 (Friday - should be included in August weekly total)
+    const augustLocationName = `August Entry ${Math.random().toString(36).substring(2, 15)}`
+    await addExportEntry(
+      page,
+      new Date('2025-08-01'),
+      augustLocationName,
+      '10:00',
+      '14:00',
+    )
+
+    // Add another entry for August 2nd, 2025 (Saturday - should be included in August weekly total)
+    const augustLocationName2 = `August Entry 2 ${Math.random().toString(36).substring(2, 15)}`
+    await addExportEntry(
+      page,
+      new Date('2025-08-02'),
+      augustLocationName2,
+      '08:00',
+      '12:00',
+    )
+
+    // Now verify the weekly totals
+    const preview = page.locator('.printable-area')
+
+    // The first week of August should only include August hours, not July hours
+    // July 31st: 8 hours (should be excluded)
+    // August 1st: 4 hours (should be included)
+    // August 2nd: 4 hours (should be included)
+    // Total for first week should be 8 hours (4 + 4), not 16 hours (8 + 4 + 4)
+
+    await expect(preview.getByTestId('timesheet-week-0-total')).toContainText(
+      '8.00',
+    ) // Only August hours
+
+    // Verify that July entry is not visible in August export
+    await expect(preview.getByText(julyLocationName)).not.toBeVisible()
+
+    // Verify that August entries are visible
+    await expect(preview.getByText(augustLocationName)).toBeVisible()
+    await expect(preview.getByText(augustLocationName2)).toBeVisible()
+
+    // Verify month total includes all August entries
+    await expect(preview.getByTestId('timesheet-month-total')).toContainText(
+      '8.00',
+    )
   })
 })
