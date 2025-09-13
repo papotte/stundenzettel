@@ -154,7 +154,7 @@ describe('TeamSubscriptionCard', () => {
     it('displays manage billing button', () => {
       render(<TeamSubscriptionCard {...defaultProps} />)
 
-      expect(screen.getByText('teams.manageBilling')).toBeInTheDocument()
+      expect(screen.getByText('subscription.manageBilling')).toBeInTheDocument()
     })
   })
 
@@ -225,7 +225,7 @@ describe('TeamSubscriptionCard', () => {
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
-      const manageButton = screen.getByText('teams.manageBilling')
+      const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
 
       await waitFor(() => {
@@ -286,7 +286,7 @@ describe('TeamSubscriptionCard', () => {
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
-      const manageButton = screen.getByText('teams.manageBilling')
+      const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
 
       await waitFor(() => {
@@ -352,7 +352,7 @@ describe('TeamSubscriptionCard', () => {
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
-      const manageButton = screen.getByText('teams.manageBilling')
+      const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
 
       await waitFor(() => {
@@ -374,7 +374,7 @@ describe('TeamSubscriptionCard', () => {
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
-      const manageButton = screen.getByText('teams.manageBilling')
+      const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
 
       await waitFor(() => {
@@ -431,7 +431,7 @@ describe('TeamSubscriptionCard', () => {
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
-      const manageButton = screen.getByText('teams.manageBilling')
+      const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
 
       // Wait for the loading state to appear
