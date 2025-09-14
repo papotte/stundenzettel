@@ -360,6 +360,7 @@ export const exportToExcel = async ({
       week,
       getEntriesForDay,
       userSettings,
+      selectedMonth,
     )
     const weekPassengerTotal = weekEntries.reduce(
       (acc, entry) => acc + (entry.passengerTimeHours || 0),
