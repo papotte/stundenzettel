@@ -1,3 +1,11 @@
+## [1.11.2](https://github.com/papotte/stundenzettel/compare/v1.11.1...v1.11.2) (2025-09-14)
+
+
+### Bug Fixes
+
+* loading label ([ee405ca](https://github.com/papotte/stundenzettel/commit/ee405ca7351c70a3f038ecaaf0cadc29c80a5996))
+* split workflows and add PR template ([#106](https://github.com/papotte/stundenzettel/issues/106)) ([0548273](https://github.com/papotte/stundenzettel/commit/054827339e471ef670c8b41eb971f81b29d8c87e))
+
 ## [1.11.1](https://github.com/papotte/stundenzettel/compare/v1.11.0...v1.11.1) (2025-09-04)
 
 
