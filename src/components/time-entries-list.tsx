@@ -3,6 +3,7 @@ import React from 'react'
 import { isSameDay } from 'date-fns'
 import { useTranslations } from 'next-intl'
 
+import PaywallWrapper from '@/components/paywall-wrapper'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -71,9 +72,19 @@ const TimeEntriesList: React.FC = () => {
         ) : (
           <div className="py-12 text-center">
             <p className="text-muted-foreground">{t('tracker.noEntries')}</p>
-            <Button variant="link" onClick={openNewEntryForm} className="mt-2">
-              {t('tracker.addFirstEntryLink')}
-            </Button>
+            <PaywallWrapper 
+              feature="manualTimeEntry"
+              showUpgradePrompt={false}
+              fallback={
+                <Button variant="link" disabled className="mt-2">
+                  {t('tracker.addFirstEntryLink')} (Premium)
+                </Button>
+              }
+            >
+              <Button variant="link" onClick={openNewEntryForm} className="mt-2">
+                {t('tracker.addFirstEntryLink')}
+              </Button>
+            </PaywallWrapper>
           </div>
         )}
       </CardContent>

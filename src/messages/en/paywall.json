@@ -1,0 +1,44 @@
+{
+  "premiumFeature": "Premium Feature",
+  "upgradeRequired": "Upgrade your account to access this feature",
+  "currentPlan": "Current Plan",
+  "freePlan": "Free",
+  "upgradeToPremium": "Upgrade to Premium",
+  "trialAvailable": "Start with a free trial",
+  "companySettings": {
+    "title": "Company Settings",
+    "description": "Manage your company information, compensation settings, and business details with a Premium subscription."
+  },
+  "exportFunctionality": {
+    "title": "Export & Reports", 
+    "description": "Export your timesheets to PDF and Excel formats with Premium. Download professional reports for accounting and client billing."
+  },
+  "manualTimeEntry": {
+    "title": "Manual Time Entry",
+    "description": "Add and edit time entries manually with Premium. Free users can only use live time tracking."
+  },
+  "editTimeEntry": {
+    "title": "Edit Time Entries",
+    "description": "Modify and update your time entries with Premium. Keep your records accurate and up-to-date."
+  },
+  "deleteTimeEntry": {
+    "title": "Delete Time Entries",
+    "description": "Remove time entries and maintain clean records with Premium subscription."
+  },
+  "specialEntries": {
+    "title": "Special Entries",
+    "description": "Track sick leave, vacation, holidays, and time off in lieu with Premium. Professional time tracking for all work situations."
+  },
+  "advancedReporting": {
+    "title": "Advanced Reporting",
+    "description": "Generate detailed analytics and custom reports with Premium subscription."
+  },
+  "bulkActions": {
+    "title": "Bulk Actions",
+    "description": "Edit multiple entries at once and perform mass operations with Premium."
+  },
+  "apiAccess": {
+    "title": "API Access",
+    "description": "Integrate with third-party tools and automate your workflow with Premium API access."
+  }
+}

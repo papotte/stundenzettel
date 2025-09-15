@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
+import PaywallWrapper from '@/components/paywall-wrapper'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -84,24 +85,34 @@ const DateNavigation: React.FC = () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <SheetTrigger asChild>
-            <Button onClick={openNewEntryForm}>
-              <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')}
+        <PaywallWrapper 
+          feature="manualTimeEntry"
+          showUpgradePrompt={false}
+          fallback={
+            <Button disabled>
+              <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')} (Premium)
             </Button>
-          </SheetTrigger>
-          <SheetContent className="flex w-full max-w-none flex-col sm:max-w-md">
-            {selectedDate && (
-              <TimeEntryForm
-                entry={editingEntry}
-                onSave={handleSaveEntry}
-                selectedDate={selectedDate}
-                onClose={() => setIsFormOpen(false)}
-                userSettings={userSettings}
-              />
-            )}
-          </SheetContent>
-        </Sheet>
+          }
+        >
+          <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <SheetTrigger asChild>
+              <Button onClick={openNewEntryForm}>
+                <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="flex w-full max-w-none flex-col sm:max-w-md">
+              {selectedDate && (
+                <TimeEntryForm
+                  entry={editingEntry}
+                  onSave={handleSaveEntry}
+                  selectedDate={selectedDate}
+                  onClose={() => setIsFormOpen(false)}
+                  userSettings={userSettings}
+                />
+              )}
+            </SheetContent>
+          </Sheet>
+        </PaywallWrapper>
       </div>
     </div>
   )

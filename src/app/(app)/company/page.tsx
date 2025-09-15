@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import PaywallWrapper from '@/components/paywall-wrapper'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -168,73 +169,40 @@ export default function CompanyPage() {
             {t('settings.backToTracker')}
           </Link>
         </Button>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building className="h-5 w-5" />
-                  {t('settings.company')}
-                </CardTitle>
-                <CardDescription>
-                  {t('settings.companyDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={form.control}
-                  name="companyName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('settings.companyName')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t('settings.companyNamePlaceholder')}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t('settings.companyNameDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="companyEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('settings.companyEmail')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder={t('settings.companyEmailPlaceholder')}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        {t('settings.companyEmailDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <PaywallWrapper 
+          feature="companySettings"
+          title={t('paywall.companySettings.title')}
+          description={t('paywall.companySettings.description')}
+        >
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building className="h-5 w-5" />
+                    {t('settings.company')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('settings.companyDescription')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <FormField
                     control={form.control}
-                    name="companyPhone1"
+                    name="companyName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('settings.companyPhone1')}</FormLabel>
+                        <FormLabel>{t('settings.companyName')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t('settings.companyPhone1Placeholder')}
+                            placeholder={t('settings.companyNamePlaceholder')}
                             {...field}
                           />
                         </FormControl>
+                        <FormDescription>
+                          {t('settings.companyNameDescription')}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -242,68 +210,38 @@ export default function CompanyPage() {
 
                   <FormField
                     control={form.control}
-                    name="companyPhone2"
+                    name="companyEmail"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('settings.companyPhone2')}</FormLabel>
+                        <FormLabel>{t('settings.companyEmail')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder={t('settings.companyPhone2Placeholder')}
+                            type="email"
+                            placeholder={t('settings.companyEmailPlaceholder')}
                             {...field}
                           />
                         </FormControl>
+                        <FormDescription>
+                          {t('settings.companyEmailDescription')}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="companyFax"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('settings.companyFax')}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t('settings.companyFaxPlaceholder')}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">
-                    {t('settings.compensationSettings')}
-                  </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="driverCompensationPercent"
+                      name="companyPhone1"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>
-                            {t('settings.driverCompensationPercent')}
-                          </FormLabel>
+                          <FormLabel>{t('settings.companyPhone1')}</FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              min="0"
-                              max="200"
-                              step="0.1"
+                              placeholder={t('settings.companyPhone1Placeholder')}
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
                             />
                           </FormControl>
-                          <FormDescription>
-                            {t('settings.driverCompensationPercentDescription')}
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -311,57 +249,127 @@ export default function CompanyPage() {
 
                     <FormField
                       control={form.control}
-                      name="passengerCompensationPercent"
+                      name="companyPhone2"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>
-                            {t('settings.passengerCompensationPercent')}
-                          </FormLabel>
+                          <FormLabel>{t('settings.companyPhone2')}</FormLabel>
                           <FormControl>
                             <Input
-                              type="number"
-                              min="0"
-                              max="200"
-                              step="0.1"
+                              placeholder={t('settings.companyPhone2Placeholder')}
                               {...field}
-                              onChange={(e) =>
-                                field.onChange(Number(e.target.value))
-                              }
                             />
                           </FormControl>
-                          <FormDescription>
-                            {t(
-                              'settings.passengerCompensationPercentDescription',
-                            )}
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full"
-                  data-testid="saveButton"
-                >
-                  {isSaving ? (
-                    <Loader2
-                      className="mr-2 h-4 w-4 animate-spin"
-                      data-testid="loader-icon"
-                    />
-                  ) : (
-                    <Save className="mr-2 h-4 w-4" />
-                  )}
-                  {isSaving ? t('common.saving') : t('common.save')}
-                </Button>
-              </CardFooter>
-            </Card>
-          </form>
-        </Form>
+
+                  <FormField
+                    control={form.control}
+                    name="companyFax"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('settings.companyFax')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t('settings.companyFaxPlaceholder')}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="border-t pt-6">
+                    <h3 className="text-lg font-semibold mb-4">
+                      {t('settings.compensationSettings')}
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="driverCompensationPercent"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t('settings.driverCompensationPercent')}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="200"
+                                step="0.1"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {t('settings.driverCompensationPercentDescription')}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="passengerCompensationPercent"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t('settings.passengerCompensationPercent')}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="200"
+                                step="0.1"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {t(
+                                'settings.passengerCompensationPercentDescription',
+                              )}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full"
+                    data-testid="saveButton"
+                  >
+                    {isSaving ? (
+                      <Loader2
+                        className="mr-2 h-4 w-4 animate-spin"
+                        data-testid="loader-icon"
+                      />
+                    ) : (
+                      <Save className="mr-2 h-4 w-4" />
+                    )}
+                    {isSaving ? t('common.saving') : t('common.save')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </form>
+          </Form>
+        </PaywallWrapper>
       </div>
     </div>
   )

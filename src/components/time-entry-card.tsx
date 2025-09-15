@@ -10,6 +10,7 @@ import {
   Edit,
   Hourglass,
   Landmark,
+  Lock,
   Plane,
   Trash2,
   UserPlus,
@@ -29,6 +30,12 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { usePaywall } from '@/hooks/use-paywall'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
@@ -58,7 +65,11 @@ export default function TimeEntryCard({
   passengerCompensationPercent = 100,
 }: TimeEntryCardProps) {
   const t = useTranslations()
-  const format = useFormatter().dateTime
+  const format = useFormatter()
+  const { canAccess } = usePaywall()
+
+  const canEditEntries = canAccess('editTimeEntry')
+  const canDeleteEntries = canAccess('deleteTimeEntry').dateTime
 
   const isSpecial = SPECIAL_LOCATION_KEYS.includes(
     entry.location as SpecialLocationKey,
@@ -99,47 +110,61 @@ export default function TimeEntryCard({
                   ? formatDuration(totalCompensatedSeconds)
                   : '—'}
               </p>
-              <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
+              <Button variant="ghost" size="icon" onClick={() => onEdit(entry)} disabled={!canEditEntries}>
                 <Edit className="h-4 w-4" />
                 <span className="sr-only">
                   {t('time_entry_card.editLabel')}
                 </span>
               </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">
-                      {t('time_entry_card.deleteLabel')}
-                    </span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      {t('time_entry_card.deleteAlertTitle')}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {t('time_entry_card.deleteAlertDescription', {
-                        location: getLocationDisplayName(entry.location, t),
-                      })}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => onDelete(entry.id)}
-                      className="bg-destructive hover:bg-destructive/90"
+              {!canEditEntries ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" disabled>
+                      <Lock className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('paywall.editTimeEntry.description')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive"
+                      disabled={!canDeleteEntries}
                     >
-                      {t('time_entry_card.deleteAlertConfirm')}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">
+                        {t('time_entry_card.deleteLabel')}
+                      </span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {t('time_entry_card.deleteAlertTitle')}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t('time_entry_card.deleteAlertDescription', {
+                          location: getLocationDisplayName(entry.location, t),
+                        })}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => onDelete(entry.id)}
+                        className="bg-destructive hover:bg-destructive/90"
+                      >
+                        {t('time_entry_card.deleteAlertConfirm')}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           </div>
         </CardContent>
@@ -210,45 +235,59 @@ export default function TimeEntryCard({
             <p className="font-mono text-lg font-medium tabular-nums text-primary">
               {formatDuration(totalCompensatedSeconds)}
             </p>
-            <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(entry)} disabled={!canEditEntries}>
               <Edit className="h-4 w-4" />
               <span className="sr-only">{t('time_entry_card.editLabel')}</span>
             </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">
-                    {t('time_entry_card.deleteLabel')}
-                  </span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {t('time_entry_card.deleteAlertTitle')}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('time_entry_card.deleteAlertDescription', {
-                      location: entry.location,
-                    })}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => onDelete(entry.id)}
-                    className="bg-destructive hover:bg-destructive/90"
+            {!canEditEntries ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled>
+                    <Lock className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t('paywall.editTimeEntry.description')}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    disabled={!canDeleteEntries}
                   >
-                    {t('time_entry_card.deleteAlertConfirm')}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t('time_entry_card.deleteLabel')}
+                    </span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {t('time_entry_card.deleteAlertTitle')}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t('time_entry_card.deleteAlertDescription', {
+                        location: entry.location,
+                      })}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDelete(entry.id)}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      {t('time_entry_card.deleteAlertConfirm')}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
       </CardContent>

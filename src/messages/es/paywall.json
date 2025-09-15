@@ -1,0 +1,44 @@
+{
+  "premiumFeature": "Función Premium",
+  "upgradeRequired": "Actualiza tu cuenta para acceder a esta función",
+  "currentPlan": "Plan Actual",
+  "freePlan": "Gratuito",
+  "upgradeToPremium": "Actualizar a Premium",
+  "trialAvailable": "Comienza con una prueba gratuita",
+  "companySettings": {
+    "title": "Configuración de Empresa",
+    "description": "Gestiona la información de tu empresa, configuración de compensación y detalles comerciales con una suscripción Premium."
+  },
+  "exportFunctionality": {
+    "title": "Exportar y Reportes",
+    "description": "Exporta tus hojas de tiempo a formatos PDF y Excel con Premium. Descarga reportes profesionales para contabilidad y facturación de clientes."
+  },
+  "manualTimeEntry": {
+    "title": "Entrada Manual de Tiempo",
+    "description": "Agrega y edita entradas de tiempo manualmente con Premium. Los usuarios gratuitos solo pueden usar el seguimiento de tiempo en vivo."
+  },
+  "editTimeEntry": {
+    "title": "Editar Entradas de Tiempo",
+    "description": "Modifica y actualiza tus entradas de tiempo con Premium. Mantén tus registros precisos y actualizados."
+  },
+  "deleteTimeEntry": {
+    "title": "Eliminar Entradas de Tiempo",
+    "description": "Elimina entradas de tiempo y mantén registros limpios con la suscripción Premium."
+  },
+  "specialEntries": {
+    "title": "Entradas Especiales",
+    "description": "Rastrea baja por enfermedad, vacaciones, días festivos y tiempo libre en lugar con Premium. Seguimiento profesional de tiempo para todas las situaciones laborales."
+  },
+  "advancedReporting": {
+    "title": "Reportes Avanzados",
+    "description": "Genera análisis detallados y reportes personalizados con la suscripción Premium."
+  },
+  "bulkActions": {
+    "title": "Acciones en Lote",
+    "description": "Edita múltiples entradas a la vez y realiza operaciones masivas con Premium."
+  },
+  "apiAccess": {
+    "title": "Acceso API",
+    "description": "Integra con herramientas de terceros y automatiza tu flujo de trabajo con acceso API Premium."
+  }
+}
