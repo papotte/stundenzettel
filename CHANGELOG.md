@@ -1,10 +1,11 @@
-## [1.11.2](https://github.com/papotte/stundenzettel/compare/v1.11.1...v1.11.2) (2025-09-14)
+## [1.11.2](https://github.com/papotte/stundenzettel/compare/v1.11.1...v1.11.2) (2025-09-15)
 
 
 ### Bug Fixes
 
+* filter hours by month in export ([#105](https://github.com/papotte/stundenzettel/issues/105)) ([3273c17](https://github.com/papotte/stundenzettel/commit/3273c17d1c82194231ccf9dc17833fbd104a0514))
 * loading label ([ee405ca](https://github.com/papotte/stundenzettel/commit/ee405ca7351c70a3f038ecaaf0cadc29c80a5996))
-* split workflows and add PR template ([#106](https://github.com/papotte/stundenzettel/issues/106)) ([0548273](https://github.com/papotte/stundenzettel/commit/054827339e471ef670c8b41eb971f81b29d8c87e))
+* split workflows and add PR template ([#106](https://github.com/papotte/stundenzettel/issues/106)) ([2fd089e](https://github.com/papotte/stundenzettel/commit/2fd089ee2dd95e55d86bea94e012996959658282))
 
 ## [1.11.1](https://github.com/papotte/stundenzettel/compare/v1.11.0...v1.11.1) (2025-09-04)
 
