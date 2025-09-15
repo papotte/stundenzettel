@@ -303,7 +303,9 @@ export function TeamSubscriptionCard({
               className="flex-1"
             >
               <CreditCard className="mr-2 h-4 w-4" />
-              {isLoading ? t('common.loading') : t('teams.manageBilling')}
+              {isLoading
+                ? t('common.loading')
+                : t('subscription.manageBilling')}
             </Button>
             {seatsUsed >= totalSeats && (
               <Button onClick={handleUpgradeSubscription} className="flex-1">

@@ -28,6 +28,8 @@ import {
   updateTimeEntry,
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
+import { getUserTeam } from '@/services/team-service'
+import { getEffectiveUserSettings } from '@/services/team-settings-service'
 
 export function useTimeTracker(user: { uid: string } | null) {
   const { toast } = useToast()
@@ -50,12 +52,20 @@ export function useTimeTracker(user: { uid: string } | null) {
     const fetchInitialData = async () => {
       setIsLoading(true)
       try {
-        const [fetchedEntries, settings] = await Promise.all([
-          getTimeEntries(user.uid),
-          getUserSettings(user.uid),
-        ])
+        const fetchedEntries = await getTimeEntries(user.uid)
         setEntries(fetchedEntries)
-        setUserSettings(settings)
+
+        const team = await getUserTeam(user.uid)
+        if (team) {
+          const { settings: effectiveSettings } = await getEffectiveUserSettings(
+            user.uid,
+            team.id,
+          )
+          setUserSettings(effectiveSettings)
+        } else {
+          const settings = await getUserSettings(user.uid)
+          setUserSettings(settings)
+        }
       } catch (error) {
         console.error('Error fetching initial data:', error)
         toast({
