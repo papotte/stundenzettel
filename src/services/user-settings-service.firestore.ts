@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase'
 import type { UserSettings } from '@/lib/types'
 
 const defaultSettings: UserSettings = {
-  defaultWorkHours: 7,
+  defaultWorkHours: 8,
   defaultStartTime: '09:00',
   defaultEndTime: '17:00',
   language: 'en',
