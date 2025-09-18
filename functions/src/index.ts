@@ -16,6 +16,7 @@ import {
   onDocumentUpdated,
 } from 'firebase-functions/v2/firestore'
 import { onRequest } from 'firebase-functions/v2/https'
+import { Resend } from 'resend'
 import Stripe from 'stripe'
 
 dotenv.config({ path: '.env.local' })
@@ -38,6 +39,9 @@ export const sendInvitationEmail = onDocumentCreated(
   {
     document: 'team-invitations/{invitationId}',
     region: 'europe-west1',
+    ...(process.env.NODE_ENV === 'production' && {
+      secrets: ['RESEND_API_KEY'],
+    }),
   },
   async (event: FirestoreEvent<any>) => {
     const invitationData = event.data?.data()
@@ -80,35 +84,72 @@ export const sendInvitationEmail = onDocumentCreated(
         expiresAt,
       })
 
-      // In a real implementation, you would:
-      // 1. Use Firebase Extensions for sending emails (like SendGrid, Mailgun)
-      // 2. Or integrate with an email service directly
-      // 3. Handle different languages based on user preferences
-      // 4. Use email templates
+      // Initialize Resend client
+      const resendApiKey = process.env.RESEND_API_KEY
+      if (!resendApiKey) {
+        throw new Error('RESEND_API_KEY environment variable is not set')
+      }
 
-      // For now, we log the email that would be sent
-      console.info('Email would be sent:', {
-        to: invitationData.email,
-        subject: `Invitation to join team "${teamData.name}"`,
-        body: `
-          ${inviterName} has invited you to join the team "${teamData.name}" as a ${invitationData.role}.
-          
-          Click the link below to accept or decline this invitation:
-          ${invitationLink}
-          
-          This invitation expires on ${expiresAt.toLocaleDateString()}.
-          
+      const resend = new Resend(resendApiKey)
+
+      // Send email using Resend
+      const emailSubject = `Invitation to join team "${teamData.name}"`
+      const emailHtml = `
+        <h2>Team Invitation</h2>
+        <p><strong>${inviterName}</strong> has invited you to join the team <strong>"${teamData.name}"</strong> as a <strong>${invitationData.role}</strong>.</p>
+        
+        <p>
+          <a href="${invitationLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Accept or Decline Invitation
+          </a>
+        </p>
+        
+        <p><strong>Important:</strong> This invitation expires on ${expiresAt.toLocaleDateString()}.</p>
+        
+        <hr>
+        <p style="color: #666; font-size: 12px;">
           If you did not expect this invitation, you can safely ignore this email.
-        `,
+        </p>
+      `
+
+      const emailText = `
+${inviterName} has invited you to join the team "${teamData.name}" as a ${invitationData.role}.
+
+Click the link below to accept or decline this invitation:
+${invitationLink}
+
+This invitation expires on ${expiresAt.toLocaleDateString()}.
+
+If you did not expect this invitation, you can safely ignore this email.
+      `
+
+      const { data, error } = await resend.emails.send({
+        from: 'TimeWise Tracker <noreply@timewise.app>', // You'll need to configure this domain
+        to: [invitationData.email],
+        subject: emailSubject,
+        html: emailHtml,
+        text: emailText,
       })
 
-      // Update invitation status to indicate email was processed
+      if (error) {
+        throw new Error(`Resend API error: ${error.message}`)
+      }
+
+      console.info('Email sent successfully via Resend', {
+        invitationId,
+        email: invitationData.email,
+        resendId: data?.id,
+      })
+
+      // Update invitation status to indicate email was sent successfully
       await db
         .collection('team-invitations')
         .doc(invitationId)
         .update({
           emailSent: true,
           emailSentAt: new Date(),
+          emailProvider: 'resend',
+          emailId: data?.id,
         })
 
     } catch (error) {
@@ -122,6 +163,7 @@ export const sendInvitationEmail = onDocumentCreated(
           emailSent: false,
           emailError: error instanceof Error ? error.message : 'Unknown error',
           emailAttemptedAt: new Date(),
+          emailProvider: 'resend',
         })
     }
   },

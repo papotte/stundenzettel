@@ -1,7 +1,6 @@
 /**
  * Firebase implementation of email notification service.
- * This would typically integrate with Firebase Functions to send emails.
- * For now, this is a placeholder implementation.
+ * This integrates with Firebase Functions and Resend to send actual emails.
  */
 
 import type { TeamInvitation } from '@/lib/types'
@@ -36,7 +35,7 @@ export const sendPasswordChangeNotification = async (
 
 /**
  * Sends an email invitation when a user is invited to join a team.
- * This integrates with Firebase Functions to send actual emails.
+ * This integrates with Firebase Functions and Resend to send actual emails.
  */
 export const sendTeamInvitationEmail = async (
   invitation: TeamInvitation,
@@ -52,17 +51,14 @@ export const sendTeamInvitationEmail = async (
     throw new Error('Team ID and invitation ID are required')
   }
 
-  // In a real implementation, this would:
-  // 1. Call a Firebase Function to send the email
-  // 2. Use a service like SendGrid, Mailgun, or Firebase Extensions
-  // 3. Send a properly formatted email with invitation details
-  // 4. Include a link to accept/decline the invitation
-  // 5. Use localized email templates based on language
+  // Email sending is handled automatically by Firebase Function 'sendInvitationEmail'
+  // which triggers when the invitation document is created in Firestore.
+  // The function uses Resend API to send professional email invitations.
 
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitation.id}`
 
   console.info(
-    `Team invitation email will be sent to ${invitation.email} via Firebase Function`,
+    `Team invitation email will be sent to ${invitation.email} via Resend`,
     {
       invitationId: invitation.id,
       teamId: invitation.teamId,
@@ -75,6 +71,6 @@ export const sendTeamInvitationEmail = async (
     },
   )
 
-  // Simulate async operation - Firebase Function handles the actual email sending
+  // Firebase Function handles the actual email sending via Resend
   await new Promise((resolve) => setTimeout(resolve, 50))
 }
