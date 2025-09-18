@@ -24,6 +24,7 @@ import type {
   TeamInvitation,
   TeamMember,
 } from '@/lib/types'
+import { sendTeamInvitationEmail } from './email-notification-service'
 
 // Utility type for Firestore document data based on TeamMember
 type TeamMemberFirestoreData = Omit<
@@ -347,6 +348,58 @@ export async function createTeamInvitation(
       collection(db, 'team-invitations'),
       invitationData,
     )
+
+    // Send email invitation
+    try {
+      // Get team information for the email
+      const team = await getTeam(teamId)
+      if (!team) {
+        console.warn('Team not found for email invitation:', teamId)
+        return docRef.id
+      }
+
+      // Get inviter information
+      let inviterName = invitedBy
+      try {
+        const inviterDoc = await getDoc(doc(db, 'teams', teamId, 'members', invitedBy))
+        if (inviterDoc.exists()) {
+          const inviterData = inviterDoc.data()
+          inviterName = inviterData.email || invitedBy
+        }
+      } catch (error) {
+        console.warn('Could not get inviter information:', error)
+        // Continue with invitation ID as fallback
+      }
+
+      // Create invitation object for email
+      const invitation: TeamInvitation = {
+        id: docRef.id,
+        teamId,
+        email,
+        role,
+        invitedBy,
+        invitedAt: new Date(),
+        expiresAt: expiresAt,
+        status: 'pending',
+      }
+
+      // Send the email invitation
+      await sendTeamInvitationEmail(invitation, team.name, inviterName)
+      
+      console.info('Team invitation email sent successfully', {
+        invitationId: docRef.id,
+        email,
+        teamName: team.name,
+      })
+    } catch (emailError) {
+      // Log email error but don't fail the invitation creation
+      console.error('Failed to send team invitation email:', emailError)
+      // TODO: In a production system, you might want to:
+      // 1. Store the email failure in the database
+      // 2. Retry email sending
+      // 3. Notify the inviter about the email failure
+    }
+
     return docRef.id
   } catch (error: unknown) {
     return handleFirebaseError(error, 'create team invitation')
