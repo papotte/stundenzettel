@@ -33,6 +33,100 @@ interface Payment {
   failedAt?: Date
 }
 
+// Email notification handler for team invitations
+export const sendInvitationEmail = onDocumentCreated(
+  {
+    document: 'team-invitations/{invitationId}',
+    region: 'europe-west1',
+  },
+  async (event: FirestoreEvent<any>) => {
+    const invitationData = event.data?.data()
+    if (!invitationData) return
+
+    const invitationId = event.params.invitationId
+
+    try {
+      // Get team information
+      const teamDoc = await db.collection('teams').doc(invitationData.teamId).get()
+      if (!teamDoc.exists) {
+        console.error('Team not found for invitation:', invitationData.teamId)
+        return
+      }
+      const teamData = teamDoc.data()!
+
+      // Get inviter information
+      const inviterDoc = await db
+        .collection('teams')
+        .doc(invitationData.teamId)
+        .collection('members')
+        .doc(invitationData.invitedBy)
+        .get()
+
+      const inviterName = inviterDoc.exists ? 
+        inviterDoc.data()?.email || invitationData.invitedBy : 
+        invitationData.invitedBy
+
+      // Create email content
+      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitationId}`
+      const expiresAt = invitationData.expiresAt.toDate()
+
+      console.info('Team invitation email triggered', {
+        invitationId,
+        email: invitationData.email,
+        teamName: teamData.name,
+        inviterName,
+        role: invitationData.role,
+        invitationLink,
+        expiresAt,
+      })
+
+      // In a real implementation, you would:
+      // 1. Use Firebase Extensions for sending emails (like SendGrid, Mailgun)
+      // 2. Or integrate with an email service directly
+      // 3. Handle different languages based on user preferences
+      // 4. Use email templates
+
+      // For now, we log the email that would be sent
+      console.info('Email would be sent:', {
+        to: invitationData.email,
+        subject: `Invitation to join team "${teamData.name}"`,
+        body: `
+          ${inviterName} has invited you to join the team "${teamData.name}" as a ${invitationData.role}.
+          
+          Click the link below to accept or decline this invitation:
+          ${invitationLink}
+          
+          This invitation expires on ${expiresAt.toLocaleDateString()}.
+          
+          If you did not expect this invitation, you can safely ignore this email.
+        `,
+      })
+
+      // Update invitation status to indicate email was processed
+      await db
+        .collection('team-invitations')
+        .doc(invitationId)
+        .update({
+          emailSent: true,
+          emailSentAt: new Date(),
+        })
+
+    } catch (error) {
+      console.error('Failed to send invitation email:', error)
+      
+      // Update invitation to indicate email failed
+      await db
+        .collection('team-invitations')
+        .doc(invitationId)
+        .update({
+          emailSent: false,
+          emailError: error instanceof Error ? error.message : 'Unknown error',
+          emailAttemptedAt: new Date(),
+        })
+    }
+  },
+)
+
 // Stripe webhook handler
 export const stripeWebhook = onRequest(
   {
