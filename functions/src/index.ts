@@ -16,6 +16,7 @@ import {
   onDocumentUpdated,
 } from 'firebase-functions/v2/firestore'
 import { onRequest } from 'firebase-functions/v2/https'
+import { Resend } from 'resend'
 import Stripe from 'stripe'
 
 dotenv.config({ path: '.env.local' })
@@ -32,6 +33,141 @@ interface Payment {
   paidAt?: Date
   failedAt?: Date
 }
+
+// Email notification handler for team invitations
+export const sendInvitationEmail = onDocumentCreated(
+  {
+    document: 'team-invitations/{invitationId}',
+    region: 'europe-west1',
+    ...(process.env.NODE_ENV === 'production' && {
+      secrets: ['RESEND_API_KEY'],
+    }),
+  },
+  async (event: FirestoreEvent<any>) => {
+    const invitationData = event.data?.data()
+    if (!invitationData) return
+
+    const invitationId = event.params.invitationId
+
+    try {
+      // Get team information
+      const teamDoc = await db.collection('teams').doc(invitationData.teamId).get()
+      if (!teamDoc.exists) {
+        console.error('Team not found for invitation:', invitationData.teamId)
+        return
+      }
+      const teamData = teamDoc.data()!
+
+      // Get inviter information
+      const inviterDoc = await db
+        .collection('teams')
+        .doc(invitationData.teamId)
+        .collection('members')
+        .doc(invitationData.invitedBy)
+        .get()
+
+      const inviterName = inviterDoc.exists ? 
+        inviterDoc.data()?.email || invitationData.invitedBy : 
+        invitationData.invitedBy
+
+      // Create email content
+      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitationId}`
+      const expiresAt = invitationData.expiresAt.toDate()
+
+      console.info('Team invitation email triggered', {
+        invitationId,
+        email: invitationData.email,
+        teamName: teamData.name,
+        inviterName,
+        role: invitationData.role,
+        invitationLink,
+        expiresAt,
+      })
+
+      // Initialize Resend client
+      const resendApiKey = process.env.RESEND_API_KEY
+      if (!resendApiKey) {
+        throw new Error('RESEND_API_KEY environment variable is not set')
+      }
+
+      const resend = new Resend(resendApiKey)
+
+      // Send email using Resend
+      const emailSubject = `Invitation to join team "${teamData.name}"`
+      const emailHtml = `
+        <h2>Team Invitation</h2>
+        <p><strong>${inviterName}</strong> has invited you to join the team <strong>"${teamData.name}"</strong> as a <strong>${invitationData.role}</strong>.</p>
+        
+        <p>
+          <a href="${invitationLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Accept or Decline Invitation
+          </a>
+        </p>
+        
+        <p><strong>Important:</strong> This invitation expires on ${expiresAt.toLocaleDateString()}.</p>
+        
+        <hr>
+        <p style="color: #666; font-size: 12px;">
+          If you did not expect this invitation, you can safely ignore this email.
+        </p>
+      `
+
+      const emailText = `
+${inviterName} has invited you to join the team "${teamData.name}" as a ${invitationData.role}.
+
+Click the link below to accept or decline this invitation:
+${invitationLink}
+
+This invitation expires on ${expiresAt.toLocaleDateString()}.
+
+If you did not expect this invitation, you can safely ignore this email.
+      `
+
+      const { data, error } = await resend.emails.send({
+        from: 'TimeWise Tracker <noreply@timewise.app>', // You'll need to configure this domain
+        to: [invitationData.email],
+        subject: emailSubject,
+        html: emailHtml,
+        text: emailText,
+      })
+
+      if (error) {
+        throw new Error(`Resend API error: ${error.message}`)
+      }
+
+      console.info('Email sent successfully via Resend', {
+        invitationId,
+        email: invitationData.email,
+        resendId: data?.id,
+      })
+
+      // Update invitation status to indicate email was sent successfully
+      await db
+        .collection('team-invitations')
+        .doc(invitationId)
+        .update({
+          emailSent: true,
+          emailSentAt: new Date(),
+          emailProvider: 'resend',
+          emailId: data?.id,
+        })
+
+    } catch (error) {
+      console.error('Failed to send invitation email:', error)
+      
+      // Update invitation to indicate email failed
+      await db
+        .collection('team-invitations')
+        .doc(invitationId)
+        .update({
+          emailSent: false,
+          emailError: error instanceof Error ? error.message : 'Unknown error',
+          emailAttemptedAt: new Date(),
+          emailProvider: 'resend',
+        })
+    }
+  },
+)
 
 // Stripe webhook handler
 export const stripeWebhook = onRequest(
