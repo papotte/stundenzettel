@@ -1,0 +1,44 @@
+{
+  "premiumFeature": "Premium Funktion",
+  "upgradeRequired": "Upgrade Ihr Konto, um auf diese Funktion zuzugreifen",
+  "currentPlan": "Aktueller Plan",
+  "freePlan": "Kostenlos",
+  "upgradeToPremium": "Auf Premium upgraden",
+  "trialAvailable": "Mit kostenloser Testversion starten",
+  "companySettings": {
+    "title": "Firmeneinstellungen",
+    "description": "Verwalten Sie Ihre Firmeninformationen, Vergütungseinstellungen und Geschäftsdetails mit einem Premium-Abonnement."
+  },
+  "exportFunctionality": {
+    "title": "Export & Berichte",
+    "description": "Exportieren Sie Ihre Stundenzettel in PDF- und Excel-Formate mit Premium. Laden Sie professionelle Berichte für Buchhaltung und Kundenabrechnung herunter."
+  },
+  "manualTimeEntry": {
+    "title": "Manuelle Zeiteingabe",
+    "description": "Fügen Sie Zeiteinträge manuell hinzu und bearbeiten Sie sie mit Premium. Kostenlose Benutzer können nur die Live-Zeiterfassung verwenden."
+  },
+  "editTimeEntry": {
+    "title": "Zeiteinträge bearbeiten",
+    "description": "Ändern und aktualisieren Sie Ihre Zeiteinträge mit Premium. Halten Sie Ihre Aufzeichnungen genau und aktuell."
+  },
+  "deleteTimeEntry": {
+    "title": "Zeiteinträge löschen",
+    "description": "Entfernen Sie Zeiteinträge und pflegen Sie saubere Aufzeichnungen mit Premium-Abonnement."
+  },
+  "specialEntries": {
+    "title": "Sondereinträge",
+    "description": "Verfolgen Sie Krankheit, Urlaub, Feiertage und Freizeitausgleich mit Premium. Professionelle Zeiterfassung für alle Arbeitssituationen."
+  },
+  "advancedReporting": {
+    "title": "Erweiterte Berichte",
+    "description": "Erstellen Sie detaillierte Analysen und benutzerdefinierte Berichte mit Premium-Abonnement."
+  },
+  "bulkActions": {
+    "title": "Massenaktionen",
+    "description": "Bearbeiten Sie mehrere Einträge auf einmal und führen Sie Massenoperationen mit Premium durch."
+  },
+  "apiAccess": {
+    "title": "API-Zugang",
+    "description": "Integrieren Sie mit Drittanbieter-Tools und automatisieren Sie Ihren Workflow mit Premium-API-Zugang."
+  }
+}
