@@ -10,5 +10,7 @@
   "error": "Error",
   "updating": "Updating...",
   "change": "Change",
-  "creating": "Creating..."
+  "creating": "Creating...",
+  "basic": "Basic",
+  "info": "Info"
 }
