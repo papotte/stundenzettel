@@ -23,3 +23,22 @@ export const sendPasswordChangeNotification = (
 ): Promise<void> => {
   return service.sendPasswordChangeNotification(userEmail, userDisplayName)
 }
+
+/**
+ * Sends an email invitation when a user is invited to join a team.
+ * This provides detailed invitation information to the invitee.
+ *
+ * @param invitation - The team invitation object
+ * @param teamName - The name of the team
+ * @param inviterName - The name of the person who sent the invitation
+ * @param language - The preferred language for the email (default: 'en')
+ * @returns Promise that resolves when email is sent
+ */
+export const sendTeamInvitationEmail = (
+  invitation: import('@/lib/types').TeamInvitation,
+  teamName: string,
+  inviterName: string,
+  language?: string,
+): Promise<void> => {
+  return service.sendTeamInvitationEmail(invitation, teamName, inviterName, language)
+}
