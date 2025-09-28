@@ -29,21 +29,22 @@ firebase functions:secrets:set NEXT_PUBLIC_RESEND_API_KEY
 ```
 
 Alternatively, you can use the Firebase Console:
+
 1. Go to Firebase Console → Functions → Environment Variables
 2. Add a new secret named `NEXT_PUBLIC_RESEND_API_KEY`
 3. Set the value to your Resend API key
 
 ### 2. Email From Address
 
-The current implementation uses `noreply@timewise.app` as the sender email. You need to:
+The current implementation uses `noreply@papotte.dev` as the sender email. You need to:
 
 1. **Verify your domain in Resend**:
    - Go to Resend Dashboard → Domains
-   - Add your domain (e.g., `timewise.app`)
+   - Add your domain (e.g., `papotte.dev`)
    - Follow DNS verification steps
 
 2. **Update the sender email** (if needed):
-   - The sender is currently set to `TimeWise Tracker <noreply@timewise.app>`
+   - The sender is currently set to `TimeWise Tracker <noreply@papotte.dev>`
    - You can modify this in `functions/src/index.ts` line ~87
 
 ### 3. App URL Configuration
@@ -51,12 +52,14 @@ The current implementation uses `noreply@timewise.app` as the sender email. You 
 Make sure `NEXT_PUBLIC_APP_URL` is set correctly:
 
 #### Development
+
 ```bash
 # In .env.local
 NEXT_PUBLIC_APP_URL=http://localhost:9002
 ```
 
 #### Production
+
 ```bash
 # In .env.local or Firebase hosting config
 NEXT_PUBLIC_APP_URL=https://your-domain.com

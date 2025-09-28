@@ -60,7 +60,7 @@ export function TeamSubscriptionDialog({
     } catch (error) {
       console.error('Error loading pricing plans:', error)
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.failedToLoadPricingPlans'),
         variant: 'destructive',
       })

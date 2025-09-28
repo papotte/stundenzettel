@@ -40,5 +40,10 @@ export const sendTeamInvitationEmail = (
   inviterName: string,
   language?: string,
 ): Promise<void> => {
-  return service.sendTeamInvitationEmail(invitation, teamName, inviterName, language)
+  return service.sendTeamInvitationEmail(
+    invitation,
+    teamName,
+    inviterName,
+    language,
+  )
 }

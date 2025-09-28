@@ -24,6 +24,7 @@ import type {
   TeamInvitation,
   TeamMember,
 } from '@/lib/types'
+
 import { sendTeamInvitationEmail } from './email-notification-service'
 
 // Utility type for Firestore document data based on TeamMember
@@ -361,7 +362,9 @@ export async function createTeamInvitation(
       // Get inviter information
       let inviterName = invitedBy
       try {
-        const inviterDoc = await getDoc(doc(db, 'teams', teamId, 'members', invitedBy))
+        const inviterDoc = await getDoc(
+          doc(db, 'teams', teamId, 'members', invitedBy),
+        )
         if (inviterDoc.exists()) {
           const inviterData = inviterDoc.data()
           inviterName = inviterData.email || invitedBy
@@ -385,7 +388,7 @@ export async function createTeamInvitation(
 
       // Send the email invitation
       await sendTeamInvitationEmail(invitation, team.name, inviterName)
-      
+
       console.info('Team invitation email sent successfully', {
         invitationId: docRef.id,
         email,

@@ -2,7 +2,6 @@
  * Firebase implementation of email notification service.
  * This integrates with Firebase Functions and Resend to send actual emails.
  */
-
 import type { TeamInvitation } from '@/lib/types'
 
 /**

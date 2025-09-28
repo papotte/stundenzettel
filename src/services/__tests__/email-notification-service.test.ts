@@ -1,5 +1,6 @@
-import { sendTeamInvitationEmail } from '../email-notification-service.firestore'
 import type { TeamInvitation } from '@/lib/types'
+
+import { sendTeamInvitationEmail } from '../email-notification-service.firestore'
 
 // Mock console.info to avoid test noise
 const mockConsoleInfo = jest.spyOn(console, 'info').mockImplementation()
@@ -27,12 +28,7 @@ describe('Email Notification Service', () => {
 
     it('should successfully send team invitation email with all required information', async () => {
       await expect(
-        sendTeamInvitationEmail(
-          mockInvitation,
-          'Test Team',
-          'John Doe',
-          'en'
-        )
+        sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe', 'en'),
       ).resolves.not.toThrow()
 
       // Verify that the email information was logged
@@ -45,9 +41,11 @@ describe('Email Notification Service', () => {
           inviterName: 'John Doe',
           role: 'member',
           language: 'en',
-          invitationLink: expect.stringContaining('/team/invitation/test-invitation-id'),
+          invitationLink: expect.stringContaining(
+            '/team/invitation/test-invitation-id',
+          ),
           expiresAt: mockInvitation.expiresAt,
-        })
+        }),
       )
 
       // Verify email content was logged
@@ -57,7 +55,7 @@ describe('Email Notification Service', () => {
           to: 'test@example.com',
           subject: 'Invitation to join team "Test Team"',
           body: expect.stringContaining('John Doe has invited you'),
-        })
+        }),
       )
     })
 
@@ -65,7 +63,7 @@ describe('Email Notification Service', () => {
       const invalidInvitation = { ...mockInvitation, email: '' }
 
       await expect(
-        sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe')
+        sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Invitation email is required')
     })
 
@@ -73,7 +71,7 @@ describe('Email Notification Service', () => {
       const invalidInvitation = { ...mockInvitation, teamId: '' }
 
       await expect(
-        sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe')
+        sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Team ID and invitation ID are required')
     })
 
@@ -81,7 +79,7 @@ describe('Email Notification Service', () => {
       const invalidInvitation = { ...mockInvitation, id: '' }
 
       await expect(
-        sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe')
+        sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Team ID and invitation ID are required')
     })
 
@@ -92,7 +90,7 @@ describe('Email Notification Service', () => {
         'Team invitation email would be sent to test@example.com',
         expect.objectContaining({
           language: 'en',
-        })
+        }),
       )
     })
 
@@ -105,8 +103,9 @@ describe('Email Notification Service', () => {
       expect(mockConsoleInfo).toHaveBeenCalledWith(
         'Team invitation email would be sent to test@example.com',
         expect.objectContaining({
-          invitationLink: 'https://timewise.example.com/team/invitation/test-invitation-id',
-        })
+          invitationLink:
+            'https://timewise.example.com/team/invitation/test-invitation-id',
+        }),
       )
 
       // Restore original environment
@@ -126,7 +125,7 @@ describe('Email Notification Service', () => {
         'Team invitation email would be sent to test@example.com',
         expect.objectContaining({
           role: 'admin',
-        })
+        }),
       )
     })
   })
