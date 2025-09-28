@@ -23,8 +23,26 @@ dotenv.config({ path: '.env.local' })
 
 // Initialize Firebase Admin
 initializeApp()
+// Determine database ID based on environment
+const getDatabaseId = (): string => {
+  // For e2e tests, always use test-database
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'test') {
+    return 'test-database'
+  }
 
-const db = getFirestore('timewise')
+  const customDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID
+
+  // If a custom database ID is explicitly set, use it
+  if (customDatabaseId) {
+    return customDatabaseId
+  }
+
+  return '' // Empty string means default database
+}
+
+const databaseId = getDatabaseId()
+
+const db = getFirestore(databaseId)
 
 interface Payment {
   invoiceId: string
@@ -51,7 +69,11 @@ export const sendInvitationEmail = onDocumentCreated(
 
     try {
       // Get team information
-      const teamDoc = await db.collection('teams').doc(invitationData.teamId).get()
+      const teamDoc = await db
+        .collection('teams')
+        .doc(invitationData.teamId)
+        .get()
+
       if (!teamDoc.exists) {
         console.error('Team not found for invitation:', invitationData.teamId)
         return
@@ -66,12 +88,12 @@ export const sendInvitationEmail = onDocumentCreated(
         .doc(invitationData.invitedBy)
         .get()
 
-      const inviterName = inviterDoc.exists ? 
-        inviterDoc.data()?.email || invitationData.invitedBy : 
-        invitationData.invitedBy
+      const inviterName = inviterDoc.exists
+        ? inviterDoc.data()?.email || invitationData.invitedBy
+        : invitationData.invitedBy
 
       // Create email content
-      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitationId}`
+      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team`
       const expiresAt = invitationData.expiresAt.toDate()
 
       console.info('Team invitation email triggered', {
@@ -142,19 +164,15 @@ If you did not expect this invitation, you can safely ignore this email.
       })
 
       // Update invitation status to indicate email was sent successfully
-      await db
-        .collection('team-invitations')
-        .doc(invitationId)
-        .update({
-          emailSent: true,
-          emailSentAt: new Date(),
-          emailProvider: 'resend',
-          emailId: data?.id,
-        })
-
+      await db.collection('team-invitations').doc(invitationId).update({
+        emailSent: true,
+        emailSentAt: new Date(),
+        emailProvider: 'resend',
+        emailId: data?.id,
+      })
     } catch (error) {
       console.error('Failed to send invitation email:', error)
-      
+
       // Update invitation to indicate email failed
       await db
         .collection('team-invitations')
