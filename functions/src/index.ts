@@ -40,7 +40,7 @@ export const sendInvitationEmail = onDocumentCreated(
     document: 'team-invitations/{invitationId}',
     region: 'europe-west1',
     ...(process.env.NODE_ENV === 'production' && {
-      secrets: ['RESEND_API_KEY'],
+      secrets: ['NEXT_PUBLIC_RESEND_API_KEY'],
     }),
   },
   async (event: FirestoreEvent<any>) => {
@@ -85,7 +85,7 @@ export const sendInvitationEmail = onDocumentCreated(
       })
 
       // Initialize Resend client
-      const resendApiKey = process.env.RESEND_API_KEY
+      const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY
       if (!resendApiKey) {
         throw new Error('RESEND_API_KEY environment variable is not set')
       }
@@ -124,7 +124,7 @@ If you did not expect this invitation, you can safely ignore this email.
       `
 
       const { data, error } = await resend.emails.send({
-        from: 'TimeWise Tracker <noreply@timewise.app>', // You'll need to configure this domain
+        from: 'TimeWise Tracker <noreply@papotte.dev>',
         to: [invitationData.email],
         subject: emailSubject,
         html: emailHtml,

@@ -14,7 +14,7 @@ Create or update `.env.local` in the root directory:
 
 ```bash
 # Add this to .env.local
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 #### For Production (Firebase Functions)
@@ -23,14 +23,14 @@ You need to set the secret in Firebase Functions using the Firebase CLI:
 
 ```bash
 # Set the Resend API key as a Firebase secret
-firebase functions:secrets:set RESEND_API_KEY
+firebase functions:secrets:set NEXT_PUBLIC_RESEND_API_KEY
 
 # When prompted, enter your Resend API key
 ```
 
 Alternatively, you can use the Firebase Console:
 1. Go to Firebase Console → Functions → Environment Variables
-2. Add a new secret named `RESEND_API_KEY`
+2. Add a new secret named `NEXT_PUBLIC_RESEND_API_KEY`
 3. Set the value to your Resend API key
 
 ### 2. Email From Address
@@ -97,7 +97,7 @@ The email template is defined in `functions/src/index.ts` around line 80-110. Yo
 
 ### Common Issues
 
-1. **"RESEND_API_KEY environment variable is not set"**
+1. **"NEXT_PUBLIC_RESEND_API_KEY environment variable is not set"**
    - Make sure you've set the secret in Firebase Functions
    - Redeploy functions after setting secrets
 
