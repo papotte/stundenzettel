@@ -31,8 +31,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const apiKey =
-      process.env.RESEND_API_KEY || process.env.NEXT_PUBLIC_RESEND_API_KEY
+    const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
       return NextResponse.json(
         { message: 'RESEND_API_KEY is not configured' },

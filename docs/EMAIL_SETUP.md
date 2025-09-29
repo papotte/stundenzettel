@@ -1,274 +1,90 @@
-# Email Configuration with Resend
+## Email setup (Resend) – API route based
 
-This document explains how to configure Resend for sending transactional emails in the TimeWise Tracker application.
+This project now sends emails through Next.js API routes using the official Resend SDK. The frontend calls our own endpoints, and those endpoints send the email with Resend on the server side.
 
-## Architecture Overview
+### Overview
 
-The email system uses the **official Resend library** for type safety and better error handling:
+- Frontend service: `src/services/email-notification-service.ts`
+  - `sendTeamInvitationEmail(invitation, teamName, inviterName)` → POST `/api/emails/team-invitation`
+  - `sendPasswordChangeNotification(email, displayName?)` → POST `/api/emails/password-changed`
+- API routes: handled in Next.js
+  - `src/app/api/emails/team-invitation/route.ts`
+  - `src/app/api/emails/password-changed/route.ts`
+- Resend SDK runs server-side inside the API route. No client SDK calls.
 
-1. **Frontend**: Calls `sendTeamInvitationEmail` from the email service
-2. **Email Service**: Uses the Resend library to send emails with proper TypeScript support
-3. **Resend API**: Sends actual emails with professional templates
-4. **Result**: Success/failure is returned immediately to the frontend
+### Environment variables
 
-This architecture provides **immediate feedback**, **type safety**, and **simplified error handling** with the official Resend SDK.
-
-## Environment Variables Setup
-
-### 1. Resend API Key
-
-You need to add the Resend API key as an environment variable for the frontend application.
-
-#### For Development (Local Environment)
-
-Create or update `.env.local` in the root directory:
+Set the Resend key on the server environment:
 
 ```bash
-# Add this to .env.local
-NEXT_PUBLIC_RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_API_KEY=re_XXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-#### For Production (Vercel/Hosting Platform)
-
-Set the environment variable in your hosting platform:
-
-1. **Vercel**: Go to Project Settings → Environment Variables
-2. **Netlify**: Go to Site Settings → Environment Variables
-3. **Firebase Hosting**: Configure in firebase.json or hosting configuration
-
-Add:
-
-- **Variable Name**: `NEXT_PUBLIC_RESEND_API_KEY`
-- **Value**: Your Resend API key (starts with `re_`)
-
-### 2. Email From Address
-
-The current implementation uses `noreply@papotte.dev` as the sender email. You need to:
-
-1. **Verify your domain in Resend**:
-   - Go to Resend Dashboard → Domains
-   - Add your domain (e.g., `papotte.dev`)
-   - Follow DNS verification steps
-
-2. **Update the sender email** (if needed):
-   - The sender is currently set to `TimeWise Tracker <noreply@papotte.dev>`
-   - You can modify this in `src/services/email-notification-service.firestore.ts`
-
-### 3. App URL Configuration
-
-Make sure `NEXT_PUBLIC_APP_URL` is set correctly:
-
-#### Development
+Also configure the public app URL used to build invitation links:
 
 ```bash
-# In .env.local
-NEXT_PUBLIC_APP_URL=http://localhost:9002
+NEXT_PUBLIC_APP_URL=http://localhost:9002   # dev
+# NEXT_PUBLIC_APP_URL=https://your-domain.com   # prod
 ```
 
-#### Production
+Add these to `.env.local` for local development and to your hosting provider’s environment for production. Do not use `NEXT_PUBLIC_RESEND_API_KEY` anymore; the API routes only read the server-side `RESEND_API_KEY`.
 
-```bash
-# In .env.local or hosting platform environment variables
-NEXT_PUBLIC_APP_URL=https://your-domain.com
-```
+### Sender and subjects
 
-## Getting Your Resend API Key
+- Default sender: `TimeWise Tracker <noreply@papotte.dev>`
+- Team invitation subject (default): `Invitation to join team "{teamName}"`
+- Password changed subject: `Your password was changed`
 
-1. Sign up at [resend.com](https://resend.com)
-2. Go to Dashboard → API Keys
-3. Create a new API key with "Sending access"
-4. Copy the key (it starts with `re_`)
+You can override `from` and `subject` by passing them in the POST body (team invitation route supports `subject`; both routes support `from`).
 
-## Testing the Integration
+### Templates
 
-### Local Testing
+- Team invitation email uses a React template: `src/components/emails/team-invitation-email.tsx`.
+- Password changed email uses simple inline HTML in `src/app/api/emails/password-changed/route.ts`.
 
-1. Set up environment variables in `.env.local`
-2. Start development server: `npm run dev`
-3. Create a team invitation through the UI
-4. **Check the UI for success/error messages** - you'll get immediate feedback
-5. Check browser console for detailed logs
+To customize:
 
-### Production Testing
+- Edit the React component for the invitation email.
+- Adjust the inline HTML or switch it to a React component similarly to the invitation.
 
-1. Deploy your application with environment variables configured
-2. Create a team invitation through the production UI
-3. **Immediate feedback** will show in the UI whether email was sent successfully
-4. Check Resend Dashboard → Logs for delivery confirmation
+### How it works
 
-## Email Template Customization
+The frontend calls the service functions which POST JSON to our API routes. The API routes:
 
-The email template is defined in `src/services/email-notification-service.firestore.ts`. You can customize:
+1. Validate required fields.
+2. Read `RESEND_API_KEY` (or `NEXT_PUBLIC_RESEND_API_KEY` fallback).
+3. Instantiate `Resend` and call `resend.emails.send(...)`.
+4. Return either `{ data }` on success or `{ message | name | type }` with 4xx/5xx on failure.
 
-- **HTML template**: Modify the `emailHtml` variable for rich formatting
-- **Text template**: Modify the `emailText` variable for plain text fallback
-- **Subject line**: Modify the `emailSubject` variable
-- **Sender name**: Modify the `from` field in the `resend.emails.send()` call
+### Local testing
 
-## User Experience Improvements
+1. Add `.env.local` with the variables above.
+2. Start the app: `npm run dev`.
+3. Trigger emails from the UI (e.g., invite a team member or change password).
+4. Inspect responses in the browser DevTools Network tab; also see logs in your terminal.
 
-With the Resend library architecture, users get **immediate feedback**:
+### Production setup
 
-- ✅ **Success**: "Invitation sent successfully" with confirmation
-- ❌ **Error**: Specific error message from Resend (e.g., "Invalid API key", "Domain not verified")
-- 🔄 **Loading**: Loading state while email is being sent
-- 📧 **Real emails**: Actual emails sent through Resend's infrastructure
-- 🛡️ **Type Safety**: Full TypeScript support with the official Resend library
+1. Set `RESEND_API_KEY` in your hosting provider (Vercel/Netlify/etc.).
+2. Set `NEXT_PUBLIC_APP_URL` to your public site URL.
+3. Verify your domain in Resend and ensure the `from` address uses a verified domain.
 
-The invitation is still created in the database even if email fails, but users are clearly informed about the email status.
+### Troubleshooting
 
-## Troubleshooting
+- Missing key: API responds with `RESEND_API_KEY is not configured` (500). Ensure the key is set.
+- Missing fields: API responds with `Missing required fields` (400).
+- Resend errors: API responds with Resend error payload (typically 400). Frontend surfaces the `message | name | type` in thrown errors.
 
-### Common Issues
+### Security notes
 
-1. **"NEXT_PUBLIC_RESEND_API_KEY environment variable is not set"**
-   - Make sure you've set the environment variable in `.env.local` or your hosting platform
-   - Restart your development server after adding environment variables
+- Prefer `RESEND_API_KEY` on the server. Avoid exposing keys; the API route runs server-side.
+- Keep domains verified in Resend and limit the sender to your domain.
 
-2. **Domain verification errors**
-   - Verify your domain in Resend Dashboard
-   - Update the `from` email address to use your verified domain
+### Files to review/edit
 
-3. **Rate limiting**
-   - Resend has rate limits on the free plan
-   - Consider upgrading if you're sending many invitations
+- `src/services/email-notification-service.ts` – client-side helpers to call the API routes
+- `src/app/api/emails/team-invitation/route.ts` – sends the invitation with React template
+- `src/app/api/emails/password-changed/route.ts` – sends the password-changed confirmation
+- `src/components/emails/team-invitation-email.tsx` – invitation template markup
 
-4. **CORS errors** (should not occur with Resend library approach)
-   - The Resend library handles API communication internally
-   - No CORS issues since it's designed for frontend use
-
-### Monitoring
-
-- **Frontend feedback**: Users see immediate success/failure messages
-- **Browser console**: Check for detailed API call logs
-- **Resend Dashboard → Logs**: Monitor delivery status and bounces
-- **Network tab**: Inspect actual API calls to Resend
-
-## Security Notes
-
-- API key is exposed to the frontend (hence the `NEXT_PUBLIC_` prefix)
-- Resend API keys can be restricted by domain for security
-- Consider rate limiting on your application side
-- Monitor usage to prevent abuse
-- The API key should be restricted to sending only
-
-## Cost Considerations
-
-- Resend free plan: 3,000 emails/month
-- No Firebase Functions costs
-- Direct API calls are more cost-effective
-- Check pricing at [resend.com/pricing](https://resend.com/pricing)
-- Monitor usage in Resend Dashboard
-
-## Migration Notes
-
-If upgrading from the Firebase Functions approach:
-
-- Email sending now provides immediate feedback to users
-- No need to deploy Firebase Functions
-- Simpler architecture and deployment
-- Environment variable changed from `RESEND_API_KEY` to `NEXT_PUBLIC_RESEND_API_KEY`
-- No changes needed to the frontend invitation flow
-
-Alternatively, you can use the Firebase Console:
-
-1. Go to Firebase Console → Functions → Environment Variables
-2. Add a new secret named `NEXT_PUBLIC_RESEND_API_KEY`
-3. Set the value to your Resend API key
-
-### 2. Email From Address
-
-The current implementation uses `noreply@papotte.dev` as the sender email. You need to:
-
-1. **Verify your domain in Resend**:
-   - Go to Resend Dashboard → Domains
-   - Add your domain (e.g., `papotte.dev`)
-   - Follow DNS verification steps
-
-2. **Update the sender email** (if needed):
-   - The sender is currently set to `TimeWise Tracker <noreply@papotte.dev>`
-   - You can modify this in `functions/src/index.ts` line ~87
-
-### 3. App URL Configuration
-
-Make sure `NEXT_PUBLIC_APP_URL` is set correctly:
-
-#### Development
-
-```bash
-# In .env.local
-NEXT_PUBLIC_APP_URL=http://localhost:9002
-```
-
-#### Production
-
-```bash
-# In .env.local or Firebase hosting config
-NEXT_PUBLIC_APP_URL=https://your-domain.com
-```
-
-## Getting Your Resend API Key
-
-1. Sign up at [resend.com](https://resend.com)
-2. Go to Dashboard → API Keys
-3. Create a new API key with "Sending access"
-4. Copy the key (it starts with `re_`)
-
-## Testing the Integration
-
-### Local Testing
-
-1. Set up environment variables in `.env.local`
-2. Start Firebase emulators: `npm run emulators:start`
-3. Create a team invitation through the UI
-4. Check the Functions logs for email sending confirmation
-
-### Production Testing
-
-1. Deploy functions: `npm run functions:deploy`
-2. Create a team invitation through the production UI
-3. Check Firebase Functions logs in the Firebase Console
-
-## Email Template Customization
-
-The email template is defined in `functions/src/index.ts` around line 80-110. You can customize:
-
-- **HTML template**: Modify the `emailHtml` variable for rich formatting
-- **Text template**: Modify the `emailText` variable for plain text fallback
-- **Subject line**: Modify the `emailSubject` variable
-- **Sender name**: Modify the `from` field in the Resend configuration
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"NEXT_PUBLIC_RESEND_API_KEY environment variable is not set"**
-   - Make sure you've set the secret in Firebase Functions
-   - Redeploy functions after setting secrets
-
-2. **Domain verification errors**
-   - Verify your domain in Resend Dashboard
-   - Update the `from` email address to use your verified domain
-
-3. **Rate limiting**
-   - Resend has rate limits on the free plan
-   - Consider upgrading if you're sending many invitations
-
-### Monitoring
-
-- Check Firebase Functions logs for email sending status
-- Check Resend Dashboard → Logs for delivery status
-- Email tracking data is stored in Firestore invitation documents
-
-## Security Notes
-
-- Never commit API keys to version control
-- Use Firebase secrets for production environment variables
-- Regularly rotate API keys
-- Monitor email sending patterns for abuse
-
-## Cost Considerations
-
-- Resend free plan: 3,000 emails/month
-- Check pricing at [resend.com/pricing](https://resend.com/pricing)
-- Monitor usage in Resend Dashboard
+This document reflects the current API-route based setup and replaces the previous Firebase Functions-based approach.
