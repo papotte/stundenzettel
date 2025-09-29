@@ -53,7 +53,8 @@ export const sendTeamInvitationEmail = async (
   }
 
   // Call the Firebase Function to send the email
-  const functions = getFunctions()
+  // Configure functions to use the correct region (europe-west1)
+  const functions = getFunctions(undefined, 'europe-west1')
   const sendEmailFunction = httpsCallable(functions, 'sendTeamInvitationEmail')
 
   console.info(

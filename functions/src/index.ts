@@ -56,6 +56,7 @@ interface Payment {
 export const sendTeamInvitationEmail = onCall(
   {
     region: 'europe-west1',
+    cors: true, // Enable CORS for web clients
     ...(process.env.NODE_ENV === 'production' && {
       secrets: ['NEXT_PUBLIC_RESEND_API_KEY'],
     }),
