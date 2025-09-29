@@ -2,6 +2,17 @@
 
 This document explains how to configure Resend for sending transactional emails in the TimeWise Tracker application.
 
+## Architecture Overview
+
+The email system uses a **callable Firebase Function** approach to ensure proper error handling and user feedback:
+
+1. **Frontend**: Calls `sendTeamInvitationEmail` from the email service
+2. **Email Service**: Calls the Firebase Function `sendTeamInvitationEmail` 
+3. **Firebase Function**: Uses Resend API to send actual emails
+4. **Result**: Success/failure is returned to the frontend for user feedback
+
+This architecture provides **async email sending with synchronous feedback** - the best of both worlds.
+
 ## Environment Variables Setup
 
 ### 1. Resend API Key
@@ -14,7 +25,7 @@ Create or update `.env.local` in the root directory:
 
 ```bash
 # Add this to .env.local
-NEXT_PUBLIC_RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 #### For Production (Firebase Functions)
@@ -23,7 +34,7 @@ You need to set the secret in Firebase Functions using the Firebase CLI:
 
 ```bash
 # Set the Resend API key as a Firebase secret
-firebase functions:secrets:set NEXT_PUBLIC_RESEND_API_KEY
+firebase functions:secrets:set RESEND_API_KEY
 
 # When prompted, enter your Resend API key
 ```

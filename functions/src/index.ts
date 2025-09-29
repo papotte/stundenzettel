@@ -15,7 +15,7 @@ import {
   onDocumentCreated,
   onDocumentUpdated,
 } from 'firebase-functions/v2/firestore'
-import { onRequest } from 'firebase-functions/v2/https'
+import { onCall, onRequest } from 'firebase-functions/v2/https'
 import { Resend } from 'resend'
 import Stripe from 'stripe'
 
@@ -52,63 +52,56 @@ interface Payment {
   failedAt?: Date
 }
 
-// Email notification handler for team invitations
-export const sendInvitationEmail = onDocumentCreated(
+// Callable function for sending team invitation emails
+export const sendTeamInvitationEmail = onCall(
   {
-    document: 'team-invitations/{invitationId}',
     region: 'europe-west1',
     ...(process.env.NODE_ENV === 'production' && {
-      secrets: ['NEXT_PUBLIC_RESEND_API_KEY'],
+      secrets: ['RESEND_API_KEY'],
     }),
   },
-  async (event: FirestoreEvent<any>) => {
-    const invitationData = event.data?.data()
-    if (!invitationData) return
+  async (request) => {
+    const { invitationId, teamId, email, role, invitedBy } = request.data
 
-    const invitationId = event.params.invitationId
+    if (!invitationId || !teamId || !email || !role || !invitedBy) {
+      throw new Error('Missing required parameters for email sending')
+    }
 
     try {
       // Get team information
-      const teamDoc = await db
-        .collection('teams')
-        .doc(invitationData.teamId)
-        .get()
+      const teamDoc = await db.collection('teams').doc(teamId).get()
 
       if (!teamDoc.exists) {
-        const errorMessage = 'Team not found for invitation'
-        console.error(errorMessage, invitationData.teamId)
-        throw new Error(errorMessage)
+        throw new Error('Team not found for invitation')
       }
       const teamData = teamDoc.data()!
 
       // Get inviter information
       const inviterDoc = await db
         .collection('teams')
-        .doc(invitationData.teamId)
+        .doc(teamId)
         .collection('members')
-        .doc(invitationData.invitedBy)
+        .doc(invitedBy)
         .get()
 
-      const inviterName = inviterDoc.exists
-        ? inviterDoc.data()?.email || invitationData.invitedBy
-        : invitationData.invitedBy
+      const inviterName = inviterDoc.exists 
+        ? inviterDoc.data()?.email || invitedBy 
+        : invitedBy
 
       // Create email content
-      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team`
-      const expiresAt = invitationData.expiresAt.toDate()
+      const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitationId}`
 
-      console.info('Team invitation email triggered', {
+      console.info('Sending team invitation email', {
         invitationId,
-        email: invitationData.email,
+        email,
         teamName: teamData.name,
         inviterName,
-        role: invitationData.role,
+        role,
         invitationLink,
-        expiresAt,
       })
 
       // Initialize Resend client
-      const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY
+      const resendApiKey = process.env.RESEND_API_KEY
       if (!resendApiKey) {
         throw new Error('RESEND_API_KEY environment variable is not set')
       }
@@ -119,7 +112,7 @@ export const sendInvitationEmail = onDocumentCreated(
       const emailSubject = `Invitation to join team "${teamData.name}"`
       const emailHtml = `
         <h2>Team Invitation</h2>
-        <p><strong>${inviterName}</strong> has invited you to join the team <strong>"${teamData.name}"</strong> as a <strong>${invitationData.role}</strong>.</p>
+        <p><strong>${inviterName}</strong> has invited you to join the team <strong>"${teamData.name}"</strong> as a <strong>${role}</strong>.</p>
         
         <p>
           <a href="${invitationLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
@@ -127,7 +120,7 @@ export const sendInvitationEmail = onDocumentCreated(
           </a>
         </p>
         
-        <p><strong>Important:</strong> This invitation expires on ${expiresAt.toLocaleDateString()}.</p>
+        <p><strong>Important:</strong> This invitation will expire in 7 days.</p>
         
         <hr>
         <p style="color: #666; font-size: 12px;">
@@ -136,19 +129,19 @@ export const sendInvitationEmail = onDocumentCreated(
       `
 
       const emailText = `
-${inviterName} has invited you to join the team "${teamData.name}" as a ${invitationData.role}.
+${inviterName} has invited you to join the team "${teamData.name}" as a ${role}.
 
 Click the link below to accept or decline this invitation:
 ${invitationLink}
 
-This invitation expires on ${expiresAt.toLocaleDateString()}.
+This invitation will expire in 7 days.
 
 If you did not expect this invitation, you can safely ignore this email.
       `
 
       const { data, error } = await resend.emails.send({
         from: 'TimeWise Tracker <noreply@papotte.dev>',
-        to: [invitationData.email],
+        to: [email],
         subject: emailSubject,
         html: emailHtml,
         text: emailText,
@@ -160,30 +153,46 @@ If you did not expect this invitation, you can safely ignore this email.
 
       console.info('Email sent successfully via Resend', {
         invitationId,
-        email: invitationData.email,
+        email,
         resendId: data?.id,
       })
 
       // Update invitation status to indicate email was sent successfully
-      await db.collection('team-invitations').doc(invitationId).update({
-        emailSent: true,
-        emailSentAt: new Date(),
-        emailProvider: 'resend',
-        emailId: data?.id,
-      })
-    } catch (error) {
-      console.error('Failed to send invitation email:', error)
-
-      // Update invitation to indicate email failed
       await db
         .collection('team-invitations')
         .doc(invitationId)
         .update({
-          emailSent: false,
-          emailError: error instanceof Error ? error.message : 'Unknown error',
-          emailAttemptedAt: new Date(),
+          emailSent: true,
+          emailSentAt: new Date(),
           emailProvider: 'resend',
+          emailId: data?.id,
         })
+
+      return { 
+        success: true, 
+        emailId: data?.id,
+        message: 'Email sent successfully'
+      }
+
+    } catch (error) {
+      console.error('Failed to send invitation email:', error)
+      
+      // Update invitation to indicate email failed
+      try {
+        await db
+          .collection('team-invitations')
+          .doc(invitationId)
+          .update({
+            emailSent: false,
+            emailError: error instanceof Error ? error.message : 'Unknown error',
+            emailAttemptedAt: new Date(),
+            emailProvider: 'resend',
+          })
+      } catch (updateError) {
+        console.error('Failed to update invitation status:', updateError)
+      }
+
+      throw error // Re-throw to let the client know about the failure
     }
   },
 )

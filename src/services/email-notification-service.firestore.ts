@@ -2,6 +2,8 @@
  * Firebase implementation of email notification service.
  * This integrates with Firebase Functions and Resend to send actual emails.
  */
+
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import type { TeamInvitation } from '@/lib/types'
 
 /**
@@ -34,7 +36,7 @@ export const sendPasswordChangeNotification = async (
 
 /**
  * Sends an email invitation when a user is invited to join a team.
- * This integrates with Firebase Functions and Resend to send actual emails.
+ * This calls a Firebase Function that uses Resend to send actual emails.
  */
 export const sendTeamInvitationEmail = async (
   invitation: TeamInvitation,
@@ -50,14 +52,12 @@ export const sendTeamInvitationEmail = async (
     throw new Error('Team ID and invitation ID are required')
   }
 
-  // Email sending is handled automatically by Firebase Function 'sendInvitationEmail'
-  // which triggers when the invitation document is created in Firestore.
-  // The function uses Resend API to send professional email invitations.
-
-  const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitation.id}`
+  // Call the Firebase Function to send the email
+  const functions = getFunctions()
+  const sendEmailFunction = httpsCallable(functions, 'sendTeamInvitationEmail')
 
   console.info(
-    `Team invitation email will be sent to ${invitation.email} via Resend`,
+    `Calling Firebase Function to send invitation email to ${invitation.email}`,
     {
       invitationId: invitation.id,
       teamId: invitation.teamId,
@@ -65,11 +65,21 @@ export const sendTeamInvitationEmail = async (
       inviterName,
       role: invitation.role,
       language,
-      invitationLink,
-      expiresAt: invitation.expiresAt,
     },
   )
 
-  // Firebase Function handles the actual email sending via Resend
-  await new Promise((resolve) => setTimeout(resolve, 50))
+  try {
+    const result = await sendEmailFunction({
+      invitationId: invitation.id,
+      teamId: invitation.teamId,
+      email: invitation.email,
+      role: invitation.role,
+      invitedBy: invitation.invitedBy,
+    })
+
+    console.info('Firebase Function call successful', result.data)
+  } catch (error) {
+    console.error('Firebase Function call failed', error)
+    throw error // Re-throw to let the calling code handle the error
+  }
 }
