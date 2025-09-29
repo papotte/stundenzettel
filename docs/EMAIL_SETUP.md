@@ -33,10 +33,11 @@ NEXT_PUBLIC_RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Set the environment variable in your hosting platform:
 
 1. **Vercel**: Go to Project Settings → Environment Variables
-2. **Netlify**: Go to Site Settings → Environment Variables  
+2. **Netlify**: Go to Site Settings → Environment Variables
 3. **Firebase Hosting**: Configure in firebase.json or hosting configuration
 
 Add:
+
 - **Variable Name**: `NEXT_PUBLIC_RESEND_API_KEY`
 - **Value**: Your Resend API key (starts with `re_`)
 
@@ -58,12 +59,14 @@ The current implementation uses `noreply@papotte.dev` as the sender email. You n
 Make sure `NEXT_PUBLIC_APP_URL` is set correctly:
 
 #### Development
+
 ```bash
 # In .env.local
 NEXT_PUBLIC_APP_URL=http://localhost:9002
 ```
 
 #### Production
+
 ```bash
 # In .env.local or hosting platform environment variables
 NEXT_PUBLIC_APP_URL=https://your-domain.com
@@ -160,6 +163,7 @@ The invitation is still created in the database even if email fails, but users a
 ## Migration Notes
 
 If upgrading from the Firebase Functions approach:
+
 - Email sending now provides immediate feedback to users
 - No need to deploy Firebase Functions
 - Simpler architecture and deployment

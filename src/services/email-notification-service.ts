@@ -29,7 +29,7 @@ export const sendPasswordChangeNotification = async (
         data?.name ||
         data?.type ||
         'Unexpected error') as string
-    } catch (_) {
+    } catch {
       // ignore, keep default simpleMessage
     }
     throw new Error('Failed to send password change email: ' + simpleMessage)
@@ -43,14 +43,12 @@ export const sendPasswordChangeNotification = async (
  * @param invitation - The team invitation object
  * @param teamName - The name of the team
  * @param inviterName - The name of the person who sent the invitation
- * @param _language - The preferred language for the email (default: 'en')
  * @returns Promise that resolves when email is sent
  */
 export const sendTeamInvitationEmail = async (
   invitation: import('@/lib/types').TeamInvitation,
   teamName: string,
   inviterName: string,
-  _language?: string,
 ): Promise<void> => {
   if (!invitation.email) {
     throw new Error('Invitation email is required')
@@ -83,7 +81,7 @@ export const sendTeamInvitationEmail = async (
         data?.name ||
         data?.type ||
         'Unexpected error') as string
-    } catch (_) {
+    } catch {
       // ignore, keep default simpleMessage
     }
     throw new Error('Failed to send team invitation email: ' + simpleMessage)

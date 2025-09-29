@@ -19,7 +19,7 @@ export function TeamInvitationEmail({
       <h2>Team Invitation</h2>
       <p>
         <strong>{inviterName}</strong> has invited you to join the team{' '}
-        <strong>"{teamName}"</strong> as a <strong>{role}</strong>.
+        <strong>&quot;{teamName}&quot;</strong> as a <strong>{role}</strong>.
       </p>
       <p>
         <a
