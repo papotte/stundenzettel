@@ -57,7 +57,7 @@ export const sendTeamInvitationEmail = onCall(
   {
     region: 'europe-west1',
     ...(process.env.NODE_ENV === 'production' && {
-      secrets: ['RESEND_API_KEY'],
+      secrets: ['NEXT_PUBLIC_RESEND_API_KEY'],
     }),
   },
   async (request) => {
@@ -101,9 +101,9 @@ export const sendTeamInvitationEmail = onCall(
       })
 
       // Initialize Resend client
-      const resendApiKey = process.env.RESEND_API_KEY
+      const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY
       if (!resendApiKey) {
-        throw new Error('RESEND_API_KEY environment variable is not set')
+        throw new Error('NEXT_PUBLIC_RESEND_API_KEY environment variable is not set')
       }
 
       const resend = new Resend(resendApiKey)

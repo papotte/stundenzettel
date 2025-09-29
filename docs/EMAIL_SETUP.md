@@ -25,7 +25,7 @@ Create or update `.env.local` in the root directory:
 
 ```bash
 # Add this to .env.local
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 #### For Production (Firebase Functions)
@@ -34,7 +34,7 @@ You need to set the secret in Firebase Functions using the Firebase CLI:
 
 ```bash
 # Set the Resend API key as a Firebase secret
-firebase functions:secrets:set RESEND_API_KEY
+firebase functions:secrets:set NEXT_PUBLIC_RESEND_API_KEY
 
 # When prompted, enter your Resend API key
 ```

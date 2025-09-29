@@ -1,17 +1,32 @@
+import { getFunctions, httpsCallable } from 'firebase/functions'
 import type { TeamInvitation } from '@/lib/types'
 
 import { sendTeamInvitationEmail } from '../email-notification-service.firestore'
 
-// Mock console.info to avoid test noise
+// Mock Firebase Functions
+jest.mock('firebase/functions', () => ({
+  getFunctions: jest.fn(),
+  httpsCallable: jest.fn(),
+}))
+
+// Mock console methods to avoid test noise
 const mockConsoleInfo = jest.spyOn(console, 'info').mockImplementation()
+const mockConsoleError = jest.spyOn(console, 'error').mockImplementation()
 
 describe('Email Notification Service', () => {
-  afterEach(() => {
+  const mockHttpsCallable = httpsCallable as jest.MockedFunction<typeof httpsCallable>
+  const mockGetFunctions = getFunctions as jest.MockedFunction<typeof getFunctions>
+  
+  beforeEach(() => {
     jest.clearAllMocks()
+    
+    // Setup default mocks
+    mockGetFunctions.mockReturnValue({} as any)
   })
 
   afterAll(() => {
     mockConsoleInfo.mockRestore()
+    mockConsoleError.mockRestore()
   })
 
   describe('sendTeamInvitationEmail', () => {
@@ -26,14 +41,30 @@ describe('Email Notification Service', () => {
       status: 'pending',
     }
 
-    it('should successfully send team invitation email with all required information', async () => {
+    it('should successfully call Firebase Function to send team invitation email', async () => {
+      // Mock the Firebase Function call
+      const mockFunction = jest.fn().mockResolvedValue({
+        data: { success: true, emailId: 'resend-email-id', message: 'Email sent successfully' }
+      })
+      mockHttpsCallable.mockReturnValue(mockFunction)
+
       await expect(
         sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe', 'en'),
       ).resolves.not.toThrow()
 
-      // Verify that the email information was logged
+      // Verify Firebase Function was called with correct parameters
+      expect(mockHttpsCallable).toHaveBeenCalledWith({}, 'sendTeamInvitationEmail')
+      expect(mockFunction).toHaveBeenCalledWith({
+        invitationId: 'test-invitation-id',
+        teamId: 'test-team-id',
+        email: 'test@example.com',
+        role: 'member',
+        invitedBy: 'inviter-id',
+      })
+
+      // Verify logging
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Team invitation email would be sent to test@example.com',
+        'Calling Firebase Function to send invitation email to test@example.com',
         expect.objectContaining({
           invitationId: 'test-invitation-id',
           teamId: 'test-team-id',
@@ -41,22 +72,27 @@ describe('Email Notification Service', () => {
           inviterName: 'John Doe',
           role: 'member',
           language: 'en',
-          invitationLink: expect.stringContaining(
-            '/team/invitation/test-invitation-id',
-          ),
-          expiresAt: mockInvitation.expiresAt,
         }),
       )
 
-      // Verify email content was logged
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Email content:',
-        expect.objectContaining({
-          to: 'test@example.com',
-          subject: 'Invitation to join team "Test Team"',
-          body: expect.stringContaining('John Doe has invited you'),
-        }),
+        'Firebase Function call successful',
+        { success: true, emailId: 'resend-email-id', message: 'Email sent successfully' }
       )
+    })
+
+    it('should handle Firebase Function errors and re-throw them', async () => {
+      // Mock the Firebase Function to throw an error
+      const mockError = new Error('Firebase Function failed')
+      const mockFunction = jest.fn().mockRejectedValue(mockError)
+      mockHttpsCallable.mockReturnValue(mockFunction)
+
+      await expect(
+        sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe'),
+      ).rejects.toThrow('Firebase Function failed')
+
+      // Verify error was logged
+      expect(mockConsoleError).toHaveBeenCalledWith('Firebase Function call failed', mockError)
     })
 
     it('should throw error when invitation email is missing', async () => {
@@ -65,6 +101,9 @@ describe('Email Notification Service', () => {
       await expect(
         sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Invitation email is required')
+
+      // Should not call Firebase Function for invalid input
+      expect(mockHttpsCallable).not.toHaveBeenCalled()
     })
 
     it('should throw error when team ID is missing', async () => {
@@ -73,6 +112,9 @@ describe('Email Notification Service', () => {
       await expect(
         sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Team ID and invitation ID are required')
+
+      // Should not call Firebase Function for invalid input
+      expect(mockHttpsCallable).not.toHaveBeenCalled()
     })
 
     it('should throw error when invitation ID is missing', async () => {
@@ -81,52 +123,59 @@ describe('Email Notification Service', () => {
       await expect(
         sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Team ID and invitation ID are required')
+
+      // Should not call Firebase Function for invalid input
+      expect(mockHttpsCallable).not.toHaveBeenCalled()
     })
 
     it('should use default language when not specified', async () => {
+      const mockFunction = jest.fn().mockResolvedValue({
+        data: { success: true }
+      })
+      mockHttpsCallable.mockReturnValue(mockFunction)
+
       await sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe')
 
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Team invitation email would be sent to test@example.com',
+        'Calling Firebase Function to send invitation email to test@example.com',
         expect.objectContaining({
           language: 'en',
         }),
       )
     })
 
-    it('should include correct invitation link with environment URL', async () => {
-      const originalEnv = process.env.NEXT_PUBLIC_APP_URL
-      process.env.NEXT_PUBLIC_APP_URL = 'https://timewise.example.com'
-
-      await sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe')
-
-      expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Team invitation email would be sent to test@example.com',
-        expect.objectContaining({
-          invitationLink:
-            'https://timewise.example.com/team/invitation/test-invitation-id',
-        }),
-      )
-
-      // Restore original environment
-      if (originalEnv) {
-        process.env.NEXT_PUBLIC_APP_URL = originalEnv
-      } else {
-        delete process.env.NEXT_PUBLIC_APP_URL
-      }
-    })
-
     it('should handle admin role invitations', async () => {
       const adminInvitation = { ...mockInvitation, role: 'admin' as const }
+      const mockFunction = jest.fn().mockResolvedValue({
+        data: { success: true }
+      })
+      mockHttpsCallable.mockReturnValue(mockFunction)
 
       await sendTeamInvitationEmail(adminInvitation, 'Test Team', 'John Doe')
 
+      expect(mockFunction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: 'admin',
+        })
+      )
+
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Team invitation email would be sent to test@example.com',
+        'Calling Firebase Function to send invitation email to test@example.com',
         expect.objectContaining({
           role: 'admin',
         }),
       )
+    })
+
+    it('should call getFunctions to initialize Firebase Functions', async () => {
+      const mockFunction = jest.fn().mockResolvedValue({
+        data: { success: true }
+      })
+      mockHttpsCallable.mockReturnValue(mockFunction)
+
+      await sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe')
+
+      expect(mockGetFunctions).toHaveBeenCalled()
     })
   })
 })
