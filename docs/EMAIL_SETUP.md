@@ -4,14 +4,14 @@ This document explains how to configure Resend for sending transactional emails 
 
 ## Architecture Overview
 
-The email system uses a **direct API approach** for simplicity and reliability:
+The email system uses the **official Resend library** for type safety and better error handling:
 
 1. **Frontend**: Calls `sendTeamInvitationEmail` from the email service
-2. **Email Service**: Makes direct API calls to Resend using fetch API
+2. **Email Service**: Uses the Resend library to send emails with proper TypeScript support
 3. **Resend API**: Sends actual emails with professional templates
 4. **Result**: Success/failure is returned immediately to the frontend
 
-This architecture provides **immediate feedback** and **simplified deployment** without Firebase Functions complexity.
+This architecture provides **immediate feedback**, **type safety**, and **simplified error handling** with the official Resend SDK.
 
 ## Environment Variables Setup
 
@@ -100,16 +100,17 @@ The email template is defined in `src/services/email-notification-service.firest
 - **HTML template**: Modify the `emailHtml` variable for rich formatting
 - **Text template**: Modify the `emailText` variable for plain text fallback
 - **Subject line**: Modify the `emailSubject` variable
-- **Sender name**: Modify the `from` field in the fetch request
+- **Sender name**: Modify the `from` field in the `resend.emails.send()` call
 
 ## User Experience Improvements
 
-With the direct API architecture, users get **immediate feedback**:
+With the Resend library architecture, users get **immediate feedback**:
 
 - ✅ **Success**: "Invitation sent successfully" with confirmation
-- ❌ **Error**: Specific error message (e.g., "Invalid API key", "Domain not verified")
+- ❌ **Error**: Specific error message from Resend (e.g., "Invalid API key", "Domain not verified")
 - 🔄 **Loading**: Loading state while email is being sent
 - 📧 **Real emails**: Actual emails sent through Resend's infrastructure
+- 🛡️ **Type Safety**: Full TypeScript support with the official Resend library
 
 The invitation is still created in the database even if email fails, but users are clearly informed about the email status.
 
@@ -129,8 +130,9 @@ The invitation is still created in the database even if email fails, but users a
    - Resend has rate limits on the free plan
    - Consider upgrading if you're sending many invitations
 
-4. **CORS errors** (should not occur with direct API approach)
-   - This approach eliminates CORS issues since calls are made from the same origin
+4. **CORS errors** (should not occur with Resend library approach)
+   - The Resend library handles API communication internally
+   - No CORS issues since it's designed for frontend use
 
 ### Monitoring
 

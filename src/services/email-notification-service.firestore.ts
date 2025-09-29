@@ -1,8 +1,9 @@
 /**
  * Firebase implementation of email notification service.
- * This sends emails directly from the client-side service using secure patterns.
+ * This sends emails directly using the Resend library for better type safety and error handling.
  */
 
+import { Resend } from 'resend'
 import type { TeamInvitation } from '@/lib/types'
 
 /**
@@ -35,7 +36,7 @@ export const sendPasswordChangeNotification = async (
 
 /**
  * Sends an email invitation when a user is invited to join a team.
- * This uses a direct API approach to send emails without Firebase Functions.
+ * This uses the Resend library for better type safety and error handling.
  */
 export const sendTeamInvitationEmail = async (
   invitation: TeamInvitation,
@@ -55,7 +56,7 @@ export const sendTeamInvitationEmail = async (
   const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitation.id}`
 
   console.info(
-    `Sending invitation email directly to ${invitation.email}`,
+    `Sending invitation email using Resend library to ${invitation.email}`,
     {
       invitationId: invitation.id,
       teamId: invitation.teamId,
@@ -68,6 +69,15 @@ export const sendTeamInvitationEmail = async (
   )
 
   try {
+    // Get the Resend API key from environment
+    const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY
+    if (!resendApiKey) {
+      throw new Error('NEXT_PUBLIC_RESEND_API_KEY environment variable is not set')
+    }
+
+    // Initialize Resend client
+    const resend = new Resend(resendApiKey)
+
     // Create email content
     const emailSubject = `Invitation to join team "${teamName}"`
     const emailHtml = `
@@ -99,39 +109,23 @@ This invitation will expire in 7 days.
 If you did not expect this invitation, you can safely ignore this email.
     `
 
-    // Get the Resend API key from environment
-    const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY
-    if (!resendApiKey) {
-      throw new Error('NEXT_PUBLIC_RESEND_API_KEY environment variable is not set')
-    }
-
-    // Send email using direct Resend API call
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'TimeWise Tracker <noreply@papotte.dev>',
-        to: [invitation.email],
-        subject: emailSubject,
-        html: emailHtml,
-        text: emailText,
-      }),
+    // Send email using Resend library
+    const { data, error } = await resend.emails.send({
+      from: 'TimeWise Tracker <noreply@papotte.dev>',
+      to: [invitation.email],
+      subject: emailSubject,
+      html: emailHtml,
+      text: emailText,
     })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(`Resend API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`)
+    if (error) {
+      throw new Error(`Resend API error: ${error.message}`)
     }
 
-    const result = await response.json()
-
-    console.info('Email sent successfully via Resend API', {
+    console.info('Email sent successfully via Resend library', {
       invitationId: invitation.id,
       email: invitation.email,
-      resendId: result.id,
+      resendId: data?.id,
     })
 
   } catch (error) {

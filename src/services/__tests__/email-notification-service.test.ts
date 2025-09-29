@@ -2,24 +2,43 @@ import type { TeamInvitation } from '@/lib/types'
 
 import { sendTeamInvitationEmail } from '../email-notification-service.firestore'
 
-// Mock fetch for Resend API calls
-global.fetch = jest.fn()
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>
+// Mock Resend library
+jest.mock('resend', () => ({
+  Resend: jest.fn().mockImplementation(() => ({
+    emails: {
+      send: jest.fn(),
+    },
+  })),
+}))
+
+// Import the mocked Resend class
+import { Resend } from 'resend'
 
 // Mock console methods to avoid test noise
 const mockConsoleInfo = jest.spyOn(console, 'info').mockImplementation()
 const mockConsoleError = jest.spyOn(console, 'error').mockImplementation()
 
 describe('Email Notification Service', () => {
+  // Get the mocked Resend constructor
+  const MockedResend = Resend as jest.MockedClass<typeof Resend>
+  let mockEmailsSend: jest.MockedFunction<any>
+
   beforeEach(() => {
     jest.clearAllMocks()
     
-    // Default successful fetch mock
-    mockFetch.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ id: 'resend-email-id' }),
-    } as Response)
+    // Create a fresh mock for emails.send
+    mockEmailsSend = jest.fn()
+    MockedResend.mockImplementation(() => ({
+      emails: {
+        send: mockEmailsSend,
+      },
+    } as any))
+
+    // Default successful response
+    mockEmailsSend.mockResolvedValue({
+      data: { id: 'resend-email-id' },
+      error: null,
+    })
   })
 
   afterAll(() => {
@@ -54,30 +73,26 @@ describe('Email Notification Service', () => {
       }
     })
 
-    it('should successfully send team invitation email via Resend API', async () => {
+    it('should successfully send team invitation email via Resend library', async () => {
       await expect(
         sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe', 'en'),
       ).resolves.not.toThrow()
 
-      // Verify Resend API was called with correct parameters
-      expect(mockFetch).toHaveBeenCalledWith('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer test-resend-key',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'TimeWise Tracker <noreply@papotte.dev>',
-          to: ['test@example.com'],
-          subject: 'Invitation to join team "Test Team"',
-          html: expect.stringContaining('John Doe has invited you'),
-          text: expect.stringContaining('John Doe has invited you'),
-        }),
+      // Verify Resend was initialized with correct API key
+      expect(MockedResend).toHaveBeenCalledWith('test-resend-key')
+
+      // Verify Resend emails.send was called with correct parameters
+      expect(mockEmailsSend).toHaveBeenCalledWith({
+        from: 'TimeWise Tracker <noreply@papotte.dev>',
+        to: ['test@example.com'],
+        subject: 'Invitation to join team "Test Team"',
+        html: expect.stringContaining('John Doe has invited you'),
+        text: expect.stringContaining('John Doe has invited you'),
       })
 
       // Verify logging
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Sending invitation email directly to test@example.com',
+        'Sending invitation email using Resend library to test@example.com',
         expect.objectContaining({
           invitationId: 'test-invitation-id',
           teamId: 'test-team-id',
@@ -90,7 +105,7 @@ describe('Email Notification Service', () => {
       )
 
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Email sent successfully via Resend API',
+        'Email sent successfully via Resend library',
         {
           invitationId: 'test-invitation-id',
           email: 'test@example.com',
@@ -100,16 +115,14 @@ describe('Email Notification Service', () => {
     })
 
     it('should handle Resend API errors and re-throw them', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 400,
-        statusText: 'Bad Request',
-        json: async () => ({ error: 'Invalid API key' }),
-      } as Response)
+      mockEmailsSend.mockResolvedValue({
+        data: null,
+        error: { message: 'Invalid API key' },
+      })
 
       await expect(
         sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe'),
-      ).rejects.toThrow('Resend API error: 400 Bad Request')
+      ).rejects.toThrow('Resend API error: Invalid API key')
 
       // Verify error was logged
       expect(mockConsoleError).toHaveBeenCalledWith(
@@ -125,8 +138,8 @@ describe('Email Notification Service', () => {
         sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('NEXT_PUBLIC_RESEND_API_KEY environment variable is not set')
 
-      // Should not call Resend API for invalid environment
-      expect(mockFetch).not.toHaveBeenCalled()
+      // Should not initialize Resend for invalid environment
+      expect(MockedResend).not.toHaveBeenCalled()
     })
 
     it('should throw error when invitation email is missing', async () => {
@@ -136,8 +149,8 @@ describe('Email Notification Service', () => {
         sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Invitation email is required')
 
-      // Should not call Resend API for invalid input
-      expect(mockFetch).not.toHaveBeenCalled()
+      // Should not initialize Resend for invalid input
+      expect(MockedResend).not.toHaveBeenCalled()
     })
 
     it('should throw error when team ID is missing', async () => {
@@ -147,8 +160,8 @@ describe('Email Notification Service', () => {
         sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Team ID and invitation ID are required')
 
-      // Should not call Resend API for invalid input
-      expect(mockFetch).not.toHaveBeenCalled()
+      // Should not initialize Resend for invalid input
+      expect(MockedResend).not.toHaveBeenCalled()
     })
 
     it('should throw error when invitation ID is missing', async () => {
@@ -158,15 +171,15 @@ describe('Email Notification Service', () => {
         sendTeamInvitationEmail(invalidInvitation, 'Test Team', 'John Doe'),
       ).rejects.toThrow('Team ID and invitation ID are required')
 
-      // Should not call Resend API for invalid input
-      expect(mockFetch).not.toHaveBeenCalled()
+      // Should not initialize Resend for invalid input
+      expect(MockedResend).not.toHaveBeenCalled()
     })
 
     it('should use default language when not specified', async () => {
       await sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe')
 
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Sending invitation email directly to test@example.com',
+        'Sending invitation email using Resend library to test@example.com',
         expect.objectContaining({
           language: 'en',
         }),
@@ -178,23 +191,16 @@ describe('Email Notification Service', () => {
 
       await sendTeamInvitationEmail(adminInvitation, 'Test Team', 'John Doe')
 
-      expect(mockFetch).toHaveBeenCalledWith('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer test-resend-key',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'TimeWise Tracker <noreply@papotte.dev>',
-          to: ['test@example.com'],
-          subject: 'Invitation to join team "Test Team"',
-          html: expect.stringContaining('as a <strong>admin</strong>'),
-          text: expect.stringContaining('as a admin'),
-        }),
+      expect(mockEmailsSend).toHaveBeenCalledWith({
+        from: 'TimeWise Tracker <noreply@papotte.dev>',
+        to: ['test@example.com'],
+        subject: 'Invitation to join team "Test Team"',
+        html: expect.stringContaining('as a <strong>admin</strong>'),
+        text: expect.stringContaining('as a admin'),
       })
 
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Sending invitation email directly to test@example.com',
+        'Sending invitation email using Resend library to test@example.com',
         expect.objectContaining({
           role: 'admin',
         }),
@@ -208,7 +214,7 @@ describe('Email Notification Service', () => {
       await sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe')
 
       expect(mockConsoleInfo).toHaveBeenCalledWith(
-        'Sending invitation email directly to test@example.com',
+        'Sending invitation email using Resend library to test@example.com',
         expect.objectContaining({
           invitationLink: 'https://timewise.example.com/team/invitation/test-invitation-id',
         }),
@@ -222,9 +228,9 @@ describe('Email Notification Service', () => {
       }
     })
 
-    it('should handle network errors gracefully', async () => {
-      const networkError = new Error('Network error')
-      mockFetch.mockRejectedValue(networkError)
+    it('should handle Resend library exceptions gracefully', async () => {
+      const resendError = new Error('Network error')
+      mockEmailsSend.mockRejectedValue(resendError)
 
       await expect(
         sendTeamInvitationEmail(mockInvitation, 'Test Team', 'John Doe'),
@@ -232,7 +238,7 @@ describe('Email Notification Service', () => {
 
       expect(mockConsoleError).toHaveBeenCalledWith(
         'Failed to send invitation email:',
-        networkError
+        resendError
       )
     })
   })
