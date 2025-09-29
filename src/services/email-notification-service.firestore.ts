@@ -1,9 +1,8 @@
 /**
  * Firebase implementation of email notification service.
- * This integrates with Firebase Functions and Resend to send actual emails.
+ * This sends emails directly from the client-side service using secure patterns.
  */
 
-import { getFunctions, httpsCallable } from 'firebase/functions'
 import type { TeamInvitation } from '@/lib/types'
 
 /**
@@ -36,7 +35,7 @@ export const sendPasswordChangeNotification = async (
 
 /**
  * Sends an email invitation when a user is invited to join a team.
- * This calls a Firebase Function that uses Resend to send actual emails.
+ * This uses a direct API approach to send emails without Firebase Functions.
  */
 export const sendTeamInvitationEmail = async (
   invitation: TeamInvitation,
@@ -52,13 +51,11 @@ export const sendTeamInvitationEmail = async (
     throw new Error('Team ID and invitation ID are required')
   }
 
-  // Call the Firebase Function to send the email
-  // Configure functions to use the correct region (europe-west1)
-  const functions = getFunctions(undefined, 'europe-west1')
-  const sendEmailFunction = httpsCallable(functions, 'sendTeamInvitationEmail')
+  // Create invitation link
+  const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/team/invitation/${invitation.id}`
 
   console.info(
-    `Calling Firebase Function to send invitation email to ${invitation.email}`,
+    `Sending invitation email directly to ${invitation.email}`,
     {
       invitationId: invitation.id,
       teamId: invitation.teamId,
@@ -66,21 +63,79 @@ export const sendTeamInvitationEmail = async (
       inviterName,
       role: invitation.role,
       language,
+      invitationLink,
     },
   )
 
   try {
-    const result = await sendEmailFunction({
-      invitationId: invitation.id,
-      teamId: invitation.teamId,
-      email: invitation.email,
-      role: invitation.role,
-      invitedBy: invitation.invitedBy,
+    // Create email content
+    const emailSubject = `Invitation to join team "${teamName}"`
+    const emailHtml = `
+      <h2>Team Invitation</h2>
+      <p><strong>${inviterName}</strong> has invited you to join the team <strong>"${teamName}"</strong> as a <strong>${invitation.role}</strong>.</p>
+      
+      <p>
+        <a href="${invitationLink}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+          Accept or Decline Invitation
+        </a>
+      </p>
+      
+      <p><strong>Important:</strong> This invitation will expire in 7 days.</p>
+      
+      <hr>
+      <p style="color: #666; font-size: 12px;">
+        If you did not expect this invitation, you can safely ignore this email.
+      </p>
+    `
+
+    const emailText = `
+${inviterName} has invited you to join the team "${teamName}" as a ${invitation.role}.
+
+Click the link below to accept or decline this invitation:
+${invitationLink}
+
+This invitation will expire in 7 days.
+
+If you did not expect this invitation, you can safely ignore this email.
+    `
+
+    // Get the Resend API key from environment
+    const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY
+    if (!resendApiKey) {
+      throw new Error('NEXT_PUBLIC_RESEND_API_KEY environment variable is not set')
+    }
+
+    // Send email using direct Resend API call
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'TimeWise Tracker <noreply@papotte.dev>',
+        to: [invitation.email],
+        subject: emailSubject,
+        html: emailHtml,
+        text: emailText,
+      }),
     })
 
-    console.info('Firebase Function call successful', result.data)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`Resend API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`)
+    }
+
+    const result = await response.json()
+
+    console.info('Email sent successfully via Resend API', {
+      invitationId: invitation.id,
+      email: invitation.email,
+      resendId: result.id,
+    })
+
   } catch (error) {
-    console.error('Firebase Function call failed', error)
+    console.error('Failed to send invitation email:', error)
     throw error // Re-throw to let the calling code handle the error
   }
 }
