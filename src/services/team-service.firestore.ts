@@ -395,13 +395,17 @@ export async function createTeamInvitation(
         teamName: team.name,
       })
     } catch (emailError) {
-      // Log email error but don't fail the invitation creation
-      console.error('Failed to send team invitation email:', emailError)
+      // Log email error and propagate so UI can show failure state
+      throw emailError
     }
 
     return docRef.id
   } catch (error: unknown) {
-    return handleFirebaseError(error, 'create team invitation')
+    // If it's a Firestore error, format it; otherwise, propagate (e.g., email send failure)
+    if (error instanceof FirestoreError) {
+      return handleFirebaseError(error, 'create team invitation')
+    }
+    throw error
   }
 }
 
