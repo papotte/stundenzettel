@@ -10,5 +10,7 @@
   "error": "Fehler",
   "updating": "Wird aktualisiert...",
   "change": "Ändern",
-  "creating": "Wird erstellt..."
+  "creating": "Wird erstellt...",
+  "basic": "Grundlagen",
+  "info": "Info"
 }
