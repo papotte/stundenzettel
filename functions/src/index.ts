@@ -75,8 +75,9 @@ export const sendInvitationEmail = onDocumentCreated(
         .get()
 
       if (!teamDoc.exists) {
-        console.error('Team not found for invitation:', invitationData.teamId)
-        return
+        const errorMessage = 'Team not found for invitation'
+        console.error(errorMessage, invitationData.teamId)
+        throw new Error(errorMessage)
       }
       const teamData = teamDoc.data()!
 

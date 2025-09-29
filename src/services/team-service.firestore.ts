@@ -397,10 +397,6 @@ export async function createTeamInvitation(
     } catch (emailError) {
       // Log email error but don't fail the invitation creation
       console.error('Failed to send team invitation email:', emailError)
-      // TODO: In a production system, you might want to:
-      // 1. Store the email failure in the database
-      // 2. Retry email sending
-      // 3. Notify the inviter about the email failure
     }
 
     return docRef.id
