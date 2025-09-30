@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         inviterName,
         invitationLink,
         role,
-      }) as React.ReactElement,
+      }),
     })
 
     if (error) {
