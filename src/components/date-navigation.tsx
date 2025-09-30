@@ -8,7 +8,6 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import PaywallWrapper from '@/components/paywall-wrapper'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -18,6 +17,7 @@ import {
 } from '@/components/ui/popover'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
+import { usePaywall } from '@/hooks/use-paywall'
 
 import TimeEntryForm from './time-entry-form'
 
@@ -36,6 +36,7 @@ const DateNavigation: React.FC = () => {
     formattedSelectedDate,
   } = useTimeTrackerContext()
   const t = useTranslations()
+  const { canAccess } = usePaywall()
 
   return (
     <div className="mb-4 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -85,15 +86,7 @@ const DateNavigation: React.FC = () => {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <PaywallWrapper 
-          feature="manualTimeEntry"
-          showUpgradePrompt={false}
-          fallback={
-            <Button disabled>
-              <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')} (Premium)
-            </Button>
-          }
-        >
+        {canAccess('manualTimeEntry') ? (
           <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
             <SheetTrigger asChild>
               <Button onClick={openNewEntryForm}>
@@ -112,7 +105,11 @@ const DateNavigation: React.FC = () => {
               )}
             </SheetContent>
           </Sheet>
-        </PaywallWrapper>
+        ) : (
+          <Button disabled>
+            <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')} (Premium)
+          </Button>
+        )}
       </div>
     </div>
   )

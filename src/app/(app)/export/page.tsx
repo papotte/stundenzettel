@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import ExportPreview from '@/components/export-preview'
-import PaywallWrapper from '@/components/paywall-wrapper'
+import SubscriptionGuard from '@/components/subscription-guard'
 import { Button } from '@/components/ui/button'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { TimeTrackerProvider } from '@/context/time-tracker-context'
@@ -30,31 +30,27 @@ export default function ExportPage() {
   }
 
   return (
-    <TooltipProvider>
-      <TimeTrackerProvider user={user}>
-        <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8 print:bg-white print:p-0">
-          <div className="mx-auto max-w-7xl print:mx-0 print:max-w-none">
-            <Button
-              asChild
-              variant="outline"
-              className="mb-4 hidden md:inline-flex print:hidden"
-            >
-              <Link href="/tracker">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                {t('settings.backToTracker')}
-              </Link>
-            </Button>
-            
-            <PaywallWrapper 
-              feature="exportFunctionality"
-              title={t('paywall.exportFunctionality.title')}
-              description={t('paywall.exportFunctionality.description')}
-            >
+    <SubscriptionGuard>
+      <TooltipProvider>
+        <TimeTrackerProvider user={user}>
+          <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8 print:bg-white print:p-0">
+            <div className="mx-auto max-w-7xl print:mx-0 print:max-w-none">
+              <Button
+                asChild
+                variant="outline"
+                className="mb-4 hidden md:inline-flex print:hidden"
+              >
+                <Link href="/tracker">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {t('settings.backToTracker')}
+                </Link>
+              </Button>
+              
               <ExportPreview />
-            </PaywallWrapper>
+            </div>
           </div>
-        </div>
-      </TimeTrackerProvider>
-    </TooltipProvider>
+        </TimeTrackerProvider>
+      </TooltipProvider>
+    </SubscriptionGuard>
   )
 }

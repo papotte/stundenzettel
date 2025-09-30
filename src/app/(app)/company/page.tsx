@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import PaywallWrapper from '@/components/paywall-wrapper'
+import SubscriptionGuard from '@/components/subscription-guard'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -161,20 +161,16 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
-      <div className="mx-auto max-w-2xl">
-        <Button asChild variant="outline" className="mb-8">
-          <Link href="/tracker">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('settings.backToTracker')}
-          </Link>
-        </Button>
-        
-        <PaywallWrapper 
-          feature="companySettings"
-          title={t('paywall.companySettings.title')}
-          description={t('paywall.companySettings.description')}
-        >
+    <SubscriptionGuard>
+      <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+        <div className="mx-auto max-w-2xl">
+          <Button asChild variant="outline" className="mb-8">
+            <Link href="/tracker">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('settings.backToTracker')}
+            </Link>
+          </Button>
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Card>
@@ -369,8 +365,8 @@ export default function CompanyPage() {
               </Card>
             </form>
           </Form>
-        </PaywallWrapper>
+        </div>
       </div>
-    </div>
+    </SubscriptionGuard>
   )
 }
