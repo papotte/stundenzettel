@@ -179,7 +179,7 @@ describe('UserInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -198,7 +198,7 @@ describe('UserInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -216,7 +216,7 @@ describe('UserInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToAcceptInvitation',
           variant: 'destructive',
         })

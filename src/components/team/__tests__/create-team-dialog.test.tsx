@@ -296,7 +296,7 @@ describe('CreateTeamDialog', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -318,7 +318,7 @@ describe('CreateTeamDialog', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'Failed to get team',
           variant: 'destructive',
         })
@@ -339,7 +339,7 @@ describe('CreateTeamDialog', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToCreateTeam',
           variant: 'destructive',
         })

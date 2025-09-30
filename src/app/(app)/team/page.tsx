@@ -144,7 +144,7 @@ export default function TeamPage() {
     } catch (error) {
       console.error('Error loading team data:', error)
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description: t('teams.failedToLoadTeamData'),
         variant: 'destructive',
       })

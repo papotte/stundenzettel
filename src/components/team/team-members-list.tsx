@@ -88,7 +88,7 @@ export function TeamMembersList({
       })
     } catch (error) {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description:
           error instanceof Error
             ? error.message
@@ -113,7 +113,7 @@ export function TeamMembersList({
       })
     } catch (error) {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description:
           error instanceof Error
             ? error.message

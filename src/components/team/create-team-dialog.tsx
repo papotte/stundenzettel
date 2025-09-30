@@ -90,7 +90,7 @@ export function CreateTeamDialog({
       }
     } catch (error) {
       toast({
-        title: t('teams.error'),
+        title: t('common.error'),
         description:
           error instanceof Error
             ? error.message

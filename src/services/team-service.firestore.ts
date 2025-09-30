@@ -1,5 +1,6 @@
 import {
   FirestoreError,
+  type QueryDocumentSnapshot,
   Timestamp,
   type Unsubscribe,
   addDoc,
@@ -24,6 +25,41 @@ import type {
   TeamInvitation,
   TeamMember,
 } from '@/lib/types'
+
+import { sendTeamInvitationEmail } from './email-notification-service'
+
+// Helper function to map Firestore document to TeamMember
+function mapDocToTeamMember(doc: QueryDocumentSnapshot): TeamMember {
+  return {
+    id: doc.id,
+    email: doc.data().email,
+    role: doc.data().role,
+    joinedAt: doc.data().joinedAt?.toDate() || new Date(),
+    invitedBy: doc.data().invitedBy,
+    seatAssignment: doc.data().seatAssignment
+      ? {
+          assignedAt:
+            doc.data().seatAssignment.assignedAt?.toDate() || new Date(),
+          assignedBy: doc.data().seatAssignment.assignedBy,
+          isActive: doc.data().seatAssignment.isActive,
+        }
+      : undefined,
+  }
+}
+
+// Helper function to map Firestore document to TeamInvitation
+function mapDocToTeamInvitation(doc: QueryDocumentSnapshot): TeamInvitation {
+  return {
+    id: doc.id,
+    teamId: doc.data().teamId,
+    email: doc.data().email,
+    role: doc.data().role,
+    invitedBy: doc.data().invitedBy,
+    invitedAt: doc.data().invitedAt?.toDate() || new Date(),
+    expiresAt: doc.data().expiresAt?.toDate() || new Date(),
+    status: doc.data().status,
+  }
+}
 
 // Utility type for Firestore document data based on TeamMember
 type TeamMemberFirestoreData = Omit<
@@ -221,21 +257,7 @@ export async function getTeamMembers(teamId: string): Promise<TeamMember[]> {
     ),
   )
 
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    email: doc.data().email,
-    role: doc.data().role,
-    joinedAt: doc.data().joinedAt?.toDate() || new Date(),
-    invitedBy: doc.data().invitedBy,
-    seatAssignment: doc.data().seatAssignment
-      ? {
-          assignedAt:
-            doc.data().seatAssignment.assignedAt?.toDate() || new Date(),
-          assignedBy: doc.data().seatAssignment.assignedBy,
-          isActive: doc.data().seatAssignment.isActive,
-        }
-      : undefined,
-  }))
+  return querySnapshot.docs.map(mapDocToTeamMember)
 }
 
 export async function updateTeamMemberRole(
@@ -305,21 +327,7 @@ export async function getAssignedSeats(teamId: string): Promise<TeamMember[]> {
     ),
   )
 
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    email: doc.data().email,
-    role: doc.data().role,
-    joinedAt: doc.data().joinedAt?.toDate() || new Date(),
-    invitedBy: doc.data().invitedBy,
-    seatAssignment: doc.data().seatAssignment
-      ? {
-          assignedAt:
-            doc.data().seatAssignment.assignedAt?.toDate() || new Date(),
-          assignedBy: doc.data().seatAssignment.assignedBy,
-          isActive: doc.data().seatAssignment.isActive,
-        }
-      : undefined,
-  }))
+  return querySnapshot.docs.map(mapDocToTeamMember)
 }
 
 // Team invitations
@@ -347,9 +355,63 @@ export async function createTeamInvitation(
       collection(db, 'team-invitations'),
       invitationData,
     )
+
+    // Send email invitation
+    try {
+      // Get team information for the email
+      const team = await getTeam(teamId)
+      if (!team) {
+        console.warn('Team not found for email invitation:', teamId)
+        return docRef.id
+      }
+
+      // Get inviter information
+      let inviterName = invitedBy
+      try {
+        const inviterDoc = await getDoc(
+          doc(db, 'teams', teamId, 'members', invitedBy),
+        )
+        if (inviterDoc.exists()) {
+          const inviterData = inviterDoc.data()
+          inviterName = inviterData.email || invitedBy
+        }
+      } catch (error) {
+        console.warn('Could not get inviter information:', error)
+        // Continue with invitation ID as fallback
+      }
+
+      // Create invitation object for email
+      const invitation: TeamInvitation = {
+        id: docRef.id,
+        teamId,
+        email,
+        role,
+        invitedBy,
+        invitedAt: new Date(),
+        expiresAt: expiresAt,
+        status: 'pending',
+      }
+
+      // Send the email invitation
+      await sendTeamInvitationEmail(invitation, team.name, inviterName)
+
+      console.info('Team invitation email sent successfully', {
+        invitationId: docRef.id,
+        email,
+        teamName: team.name,
+      })
+    } catch (emailError) {
+      // Log email error and propagate so UI can show failure state
+      throw emailError
+    }
+
     return docRef.id
   } catch (error: unknown) {
-    return handleFirebaseError(error, 'create team invitation')
+    // If it's a Firestore error, format it; otherwise, propagate (e.g., email send failure)
+    if (error instanceof FirestoreError) {
+      handleFirebaseError(error, 'create team invitation')
+    }
+    throw error
   }
 }
 
@@ -365,16 +427,7 @@ export async function getTeamInvitations(
     ),
   )
 
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    teamId: doc.data().teamId,
-    email: doc.data().email,
-    role: doc.data().role,
-    invitedBy: doc.data().invitedBy,
-    invitedAt: doc.data().invitedAt?.toDate() || new Date(),
-    expiresAt: doc.data().expiresAt?.toDate() || new Date(),
-    status: doc.data().status,
-  }))
+  return querySnapshot.docs.map(mapDocToTeamInvitation)
 }
 
 export async function getUserInvitations(
@@ -389,16 +442,7 @@ export async function getUserInvitations(
     ),
   )
 
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    teamId: doc.data().teamId,
-    email: doc.data().email,
-    role: doc.data().role,
-    invitedBy: doc.data().invitedBy,
-    invitedAt: doc.data().invitedAt?.toDate() || new Date(),
-    expiresAt: doc.data().expiresAt?.toDate() || new Date(),
-    status: doc.data().status,
-  }))
+  return querySnapshot.docs.map(mapDocToTeamInvitation)
 }
 
 export async function acceptTeamInvitation(
@@ -539,13 +583,7 @@ export function onTeamMembersChange(
       orderBy('joinedAt', 'desc'),
     ),
     (snapshot) => {
-      const members = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        email: doc.data().email,
-        role: doc.data().role,
-        joinedAt: doc.data().joinedAt?.toDate() || new Date(),
-        invitedBy: doc.data().invitedBy,
-      }))
+      const members = snapshot.docs.map(mapDocToTeamMember)
       callback(members)
     },
   )

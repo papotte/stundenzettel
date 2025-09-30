@@ -299,7 +299,7 @@ describe('InviteMemberDialog', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: errorMessage,
           variant: 'destructive',
         })
@@ -320,7 +320,7 @@ describe('InviteMemberDialog', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'teams.error',
+          title: 'common.error',
           description: 'teams.failedToSendInvitation',
           variant: 'destructive',
         })

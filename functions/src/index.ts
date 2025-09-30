@@ -1,7 +1,7 @@
 /**
  * Import function triggers from their respective submodules:
  *
- * import {onCall} from "firebase-functions/v2/https";
+ * import {onRequest} from "firebase-functions/v2/https";
  * import {onDocumentWritten} from "firebase-functions/v2/firestore";
  *
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
@@ -22,8 +22,26 @@ dotenv.config({ path: '.env.local' })
 
 // Initialize Firebase Admin
 initializeApp()
+// Determine database ID based on environment
+const getDatabaseId = (): string => {
+  // For e2e tests, always use test-database
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT === 'test') {
+    return 'test-database'
+  }
 
-const db = getFirestore('timewise')
+  const customDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID
+
+  // If a custom database ID is explicitly set, use it
+  if (customDatabaseId) {
+    return customDatabaseId
+  }
+
+  return '' // Empty string means default database
+}
+
+const databaseId = getDatabaseId()
+
+const db = getFirestore(databaseId)
 
 interface Payment {
   invoiceId: string

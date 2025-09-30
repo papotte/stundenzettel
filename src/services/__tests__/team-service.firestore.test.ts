@@ -23,7 +23,13 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 
+import { sendTeamInvitationEmail } from '../email-notification-service'
 import * as firestoreService from '../team-service.firestore'
+
+// Mock email notification service
+jest.mock('../email-notification-service', () => ({
+  sendTeamInvitationEmail: jest.fn(),
+}))
 
 // Mock Firebase
 jest.mock('@/lib/firebase', () => ({
@@ -77,6 +83,8 @@ const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
 const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
 const mockWhere = where as jest.MockedFunction<typeof where>
 const mockWriteBatch = writeBatch as jest.MockedFunction<typeof writeBatch>
+const mockSendTeamInvitationEmail =
+  sendTeamInvitationEmail as jest.MockedFunction<typeof sendTeamInvitationEmail>
 
 // Create a mock FirestoreError class
 const FirestoreError = class extends Error {
@@ -100,6 +108,7 @@ describe('TeamService Firestore', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockServerTimestamp.mockReturnValue(new Date('2024-01-01T00:00:00Z') as any)
+    mockSendTeamInvitationEmail.mockResolvedValue(undefined)
   })
 
   describe('createTeam', () => {
@@ -446,8 +455,22 @@ describe('TeamService Firestore', () => {
   describe('createTeamInvitation', () => {
     it('creates team invitation with 7-day expiration', async () => {
       const mockDocRef = { id: 'invitation123' } as DocumentReference
+
       mockAddDoc.mockResolvedValue(mockDocRef)
       mockCollection.mockReturnValue({} as CollectionReference)
+
+      // Mock getDoc to return a valid document snapshot for getTeam
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => ({
+          name: 'Test Team',
+          description: 'Test Description',
+          ownerId: 'owner123',
+          createdAt: createMockTimestamp(new Date('2024-01-01')),
+          updatedAt: createMockTimestamp(new Date('2024-01-01')),
+        }),
+      }
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
 
       const result = await firestoreService.createTeamInvitation(
         'team123',
@@ -466,6 +489,18 @@ describe('TeamService Firestore', () => {
         expiresAt: expect.any(Object), // Timestamp
         status: 'pending',
       })
+      expect(mockSendTeamInvitationEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'invitation123',
+          teamId: 'team123',
+          email: 'test@example.com',
+          role: 'member',
+          invitedBy: 'owner123',
+          status: 'pending',
+        }),
+        'Test Team',
+        'owner123',
+      )
     })
 
     it('handles invitation creation errors', async () => {
@@ -479,9 +514,7 @@ describe('TeamService Firestore', () => {
           'member',
           'owner123',
         ),
-      ).rejects.toThrow(
-        'Failed to create team invitation: Invitation creation failed',
-      )
+      ).rejects.toThrow('Invitation creation failed')
     })
 
     it('handles Firebase permission denied errors', async () => {
@@ -497,7 +530,7 @@ describe('TeamService Firestore', () => {
           'member',
           'owner123',
         ),
-      ).rejects.toThrow('Failed to create team invitation: Permission denied')
+      ).rejects.toThrow('Permission denied')
     })
 
     it('handles Firebase team not found errors', async () => {
@@ -513,7 +546,40 @@ describe('TeamService Firestore', () => {
           'member',
           'owner123',
         ),
-      ).rejects.toThrow('Failed to create team invitation: Team not found')
+      ).rejects.toThrow('Team not found')
+    })
+
+    it('handles email sending errors', async () => {
+      const mockDocRef = { id: 'invitation123' } as DocumentReference
+
+      mockAddDoc.mockResolvedValue(mockDocRef)
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      // Mock getDoc to return a valid document snapshot for getTeam
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => ({
+          name: 'Test Team',
+          description: 'Test Description',
+          ownerId: 'owner123',
+          createdAt: createMockTimestamp(new Date('2024-01-01')),
+          updatedAt: createMockTimestamp(new Date('2024-01-01')),
+        }),
+      }
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      mockSendTeamInvitationEmail.mockRejectedValue(
+        new Error('Email sending failed'),
+      )
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Email sending failed')
     })
   })
 
