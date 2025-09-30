@@ -409,7 +409,7 @@ export async function createTeamInvitation(
   } catch (error: unknown) {
     // If it's a Firestore error, format it; otherwise, propagate (e.g., email send failure)
     if (error instanceof FirestoreError) {
-      return handleFirebaseError(error, 'create team invitation')
+      handleFirebaseError(error, 'create team invitation')
     }
     throw error
   }
