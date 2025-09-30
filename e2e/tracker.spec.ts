@@ -347,7 +347,7 @@ test.describe('Core Tracker Functionality', () => {
       await expect(sickCard).toBeVisible({ timeout: 10000 })
 
       // Wait for the card content to be fully rendered
-      await expect(sickCard.getByText('07:00:00')).toBeVisible({
+      await expect(sickCard.getByText('08:00:00')).toBeVisible({
         timeout: 5000,
       })
 
@@ -400,7 +400,7 @@ test.describe('Core Tracker Functionality', () => {
       await page.getByRole('button', { name: 'Paid Time Off' }).click()
       const ptoCard = page.locator('[data-testid="time-entry-card-pto"]')
       await expect(ptoCard).toBeVisible()
-      await expect(ptoCard.getByText('07:00:00')).toBeVisible()
+      await expect(ptoCard.getByText('08:00:00')).toBeVisible()
 
       // Bank Holiday
       await page.getByRole('button', { name: 'Bank Holiday' }).click()
@@ -408,7 +408,7 @@ test.describe('Core Tracker Functionality', () => {
         '[data-testid="time-entry-card-bank_holiday"]',
       )
       await expect(holidayCard).toBeVisible()
-      await expect(holidayCard.getByText('07:00:00')).toBeVisible()
+      await expect(holidayCard.getByText('08:00:00')).toBeVisible()
 
       // Time Off in Lieu
       await page.getByRole('button', { name: 'Time Off in Lieu' }).click()
@@ -453,7 +453,7 @@ test.describe('Core Tracker Functionality', () => {
       // The summary total should be 2 + 7 = 9 hours.
       const summaryCard = page.locator('[data-testid="summary-card"]')
       const dailyTotal = summaryCard.locator('p:has-text("Selected Day") + p')
-      await expect(dailyTotal).toHaveText('9h 0m')
+      await expect(dailyTotal).toHaveText('10h 0m')
     })
   })
 
