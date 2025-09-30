@@ -71,7 +71,6 @@ const DateNavigation: React.FC = () => {
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                autoFocus
               />
             </PopoverContent>
           </Popover>

@@ -6,7 +6,7 @@ import { addMonths, isSameDay, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight, Download, Printer } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { Button, SubscriptionGuardButton } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -233,14 +233,14 @@ export default function ExportPreview() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <SubscriptionGuardButton
+                    <Button
                       onClick={handleExport}
                       data-testid="export-preview-export-button"
                       disabled={entries.length === 0}
                     >
                       <Download className="mr-2 h-4 w-4" />
                       {t('export.exportButton')}
-                    </SubscriptionGuardButton>
+                    </Button>
                   </span>
                 </TooltipTrigger>
                 {entries.length === 0 && (
@@ -255,7 +255,7 @@ export default function ExportPreview() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <SubscriptionGuardButton
+                    <Button
                       onClick={handlePdfExport}
                       variant="outline"
                       data-testid="export-preview-pdf-button"
@@ -263,7 +263,7 @@ export default function ExportPreview() {
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       {t('export.exportPdfButton')}
-                    </SubscriptionGuardButton>
+                    </Button>
                   </span>
                 </TooltipTrigger>
                 {entries.length === 0 && (

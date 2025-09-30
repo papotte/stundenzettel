@@ -296,7 +296,7 @@ export const mockTrialSubscription = async (
     : new Date(Date.now() + daysRemaining * 24 * 60 * 60 * 1000).toISOString()
 
   // Mock the subscription API with the correct pattern that matches the actual API call
-  await mockApiResponse(page, '**/api/subscriptions/*', {
+  await mockApiResponse(page, '**/api/subscriptions/**', {
     status: 200,
     body: {
       status,
@@ -324,4 +324,102 @@ export const verifyTeamTrialCheckoutParameters = (postData: any) => {
   expect(postData).toHaveProperty('teamId')
   expect(postData).toHaveProperty('quantity')
   expect(postData.quantity).toBeGreaterThan(0)
+}
+
+// Helper function to add a subscription to a user for testing
+export const addUserSubscription = async (
+  page: Page,
+  options: {
+    status?:
+      | 'active'
+      | 'trialing'
+      | 'canceled'
+      | 'past_due'
+      | 'incomplete'
+      | 'incomplete_expired'
+      | 'unpaid'
+      | 'inactive'
+    planName?: string
+    planDescription?: string
+    priceId?: string
+    quantity?: number
+    trialDays?: number
+    currentPeriodStart?: Date
+    cancelAtPeriodEnd?: boolean
+    cancelAt?: Date
+  } = {},
+) => {
+  const {
+    status = 'active',
+    planName = 'Individual Monthly',
+    planDescription = 'Individual subscription plan',
+    priceId = 'price_individual_monthly',
+    quantity = 1,
+    trialDays,
+    currentPeriodStart = new Date(),
+    cancelAtPeriodEnd = false,
+    cancelAt,
+  } = options
+
+  // Calculate trial end if trial days are specified
+  let trialEnd: Date | undefined
+  if (trialDays && trialDays > 0) {
+    trialEnd = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000)
+  }
+
+  // Create subscription data that matches the API response structure
+  const subscriptionData = {
+    stripeSubscriptionId: `sub_test_${Date.now()}`,
+    stripeCustomerId: `cus_test_${Date.now()}`,
+    status,
+    currentPeriodStart: currentPeriodStart.toISOString(),
+    cancelAtPeriodEnd,
+    priceId,
+    planName,
+    planDescription,
+    quantity,
+    updatedAt: new Date().toISOString(),
+    ...(trialEnd && { trialEnd: trialEnd.toISOString() }),
+    ...(cancelAt && { cancelAt: cancelAt.toISOString() }),
+  }
+
+  // Mock the subscription API response
+  await mockApiResponse(page, '**/api/subscriptions/**', {
+    status: 200,
+    body: subscriptionData,
+  })
+
+  return subscriptionData
+}
+
+// Helper function to add an active subscription (most common use case)
+export const addActiveSubscription = async (
+  page: Page,
+  options: {
+    planName?: string
+    planDescription?: string
+    priceId?: string
+  } = {},
+) => {
+  return await addUserSubscription(page, {
+    status: 'active',
+    ...options,
+  })
+}
+
+// Helper function to add a trial subscription
+export const addTrialSubscription = async (
+  page: Page,
+  options: {
+    trialDays?: number
+    planName?: string
+    planDescription?: string
+    priceId?: string
+  } = {},
+) => {
+  return await addUserSubscription(page, {
+    status: 'trialing',
+    trialDays: options.trialDays || 7,
+    ...options,
+  })
 }

@@ -422,7 +422,7 @@ test.describe('Subscription Workflow (Simplified)', () => {
 
     test('should handle trial API errors gracefully', async ({ page }) => {
       // Mock API error for trial subscription
-      await mockApiResponse(page, '**/api/subscriptions/*', {
+      await mockApiResponse(page, '**/api/subscriptions/**', {
         status: 500,
         body: { error: 'Failed to fetch trial subscription' },
       })

@@ -3,6 +3,8 @@ import { type Page, expect } from '@playwright/test'
 import { format, isSameMonth, parse } from 'date-fns'
 
 // Helper function to create a new manual entry for the currently selected day
+// ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
+// Make sure to call addActiveSubscription(page) in your test's beforeEach hook.
 export const addManualEntry = async (
   page: Page,
   location: string,
@@ -22,6 +24,8 @@ export const addManualEntry = async (
 }
 
 // Helper function to create a new duration-only entry for the currently selected day
+// ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
+// Make sure to call addActiveSubscription(page) in your test's beforeEach hook.
 export const addDurationEntry = async (
   page: Page,
   location: string,
@@ -98,6 +102,8 @@ export const navigateToMonth = async (page: Page, targetDate: Date) => {
 }
 
 // Helper function to add an entry for a specific date in the export view
+// ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
+// Make sure to call addActiveSubscription(page) in your test's beforeEach hook.
 export const addExportEntry = async (
   page: Page,
   date: Date,

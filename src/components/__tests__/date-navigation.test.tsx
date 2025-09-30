@@ -6,7 +6,11 @@ import DateNavigation from '../date-navigation'
 
 // Mock auth and subscription to simulate a subscribed user
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({ user: { uid: 'test-user-id' }, loading: false, signOut: jest.fn() }),
+  useAuth: () => ({
+    user: { uid: 'test-user-id' },
+    loading: false,
+    signOut: jest.fn(),
+  }),
 }))
 jest.mock('@/hooks/use-subscription-status', () => ({
   useSubscriptionStatus: () => ({
