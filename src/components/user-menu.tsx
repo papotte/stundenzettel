@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { Badge, ProBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/use-auth'
+import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 
 interface UserMenuProps {
@@ -46,6 +47,7 @@ export default function UserMenu({
 }: UserMenuProps) {
   const t = useTranslations()
   const { signOut, user } = useAuth()
+  const { hasValidSubscription } = useSubscriptionStatus(user)
   const { hasPendingInvitations, invitations } = useUserInvitations()
 
   const handleSignOut = async () => {
@@ -114,7 +116,8 @@ export default function UserMenu({
           <DropdownMenuItem asChild>
             <Link href="/company" data-testid="company">
               <Building2 className="mr-2 h-4 w-4" />
-              {t('settings.company')}
+              <span className="flex flex-grow">{t('settings.company')}</span>
+              {!hasValidSubscription && <ProBadge className="ml-2" />}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

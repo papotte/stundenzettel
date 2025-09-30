@@ -2,7 +2,9 @@
 
 import React from 'react'
 
+import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 import TrialBanner from '@/components/trial-banner'
 import { Button } from '@/components/ui/button'
@@ -36,8 +38,20 @@ function SubscriptionFallback({
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle>{t('subscription.loginRequiredTitle')}</CardTitle>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                aria-label={t('common.back')}
+              >
+                <Link href="/">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <CardTitle>{t('subscription.loginRequiredTitle')}</CardTitle>
+            </div>
             <CardDescription>
               {t('subscription.loginRequiredDescription')}
             </CardDescription>
@@ -58,8 +72,20 @@ function SubscriptionFallback({
   return (
     <div className="flex h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              aria-label={t('common.back')}
+            >
+              <Link href="/tracker">
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
+          </div>
           <CardDescription>
             {t('subscription.requiredDescription')}
           </CardDescription>

@@ -4,7 +4,7 @@ import { FileSpreadsheet } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
+import { SubscriptionGuardButton } from '@/components/ui/button'
 
 import TimeWiseIcon from './time-wise-icon'
 import UserMenu from './user-menu'
@@ -25,12 +25,12 @@ const TimeTrackerHeader: React.FC = () => {
         role="navigation"
         aria-label="Top navigation"
       >
-        <Button asChild variant="outline" className="hidden md:flex">
-          <Link href="/export">
+        <SubscriptionGuardButton variant="outline" className="hidden md:flex">
+          <Link href="/export" className="flex">
             <FileSpreadsheet className="mr-2 h-4 w-4" />
             {t('tracker.headerExportLink')}
           </Link>
-        </Button>
+        </SubscriptionGuardButton>
         <UserMenu />
       </div>
     </header>

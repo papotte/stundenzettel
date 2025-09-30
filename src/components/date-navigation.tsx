@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { Button } from '@/components/ui/button'
+import { Button, SubscriptionGuardButton } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -71,7 +71,7 @@ const DateNavigation: React.FC = () => {
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                initialFocus
+                autoFocus
               />
             </PopoverContent>
           </Popover>
@@ -86,9 +86,9 @@ const DateNavigation: React.FC = () => {
         </div>
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
           <SheetTrigger asChild>
-            <Button onClick={openNewEntryForm}>
+            <SubscriptionGuardButton onClick={openNewEntryForm}>
               <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')}
-            </Button>
+            </SubscriptionGuardButton>
           </SheetTrigger>
           <SheetContent className="flex w-full max-w-none flex-col sm:max-w-md">
             {selectedDate && (
