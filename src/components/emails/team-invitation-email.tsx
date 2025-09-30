@@ -5,7 +5,6 @@ interface TeamInvitationEmailProps {
   inviterName: string
   invitationLink: string
   role: string
-  language?: string
 }
 
 export function TeamInvitationEmail({
