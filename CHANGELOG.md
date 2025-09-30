@@ -1,3 +1,16 @@
+# [1.12.0](https://github.com/papotte/stundenzettel/compare/v1.11.2...v1.12.0) (2025-09-30)
+
+
+### Bug Fixes
+
+* update default work hours to 8 ([4fdb6be](https://github.com/papotte/stundenzettel/commit/4fdb6bebb8a24c90c3fd966ba2ce33a34b776d5a))
+
+
+### Features
+
+* add copy entries script ([c6d0b31](https://github.com/papotte/stundenzettel/commit/c6d0b31327c129ef70b0d844269904dc0288eb72))
+* implement email invitations with Resend ([#112](https://github.com/papotte/stundenzettel/issues/112)) ([47d81eb](https://github.com/papotte/stundenzettel/commit/47d81eb3d2d31dd6695cae1b9e41ad503ec5f22a))
+
 ## [1.11.2](https://github.com/papotte/stundenzettel/compare/v1.11.1...v1.11.2) (2025-09-15)
 
 
