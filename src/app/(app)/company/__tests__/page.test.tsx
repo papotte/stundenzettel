@@ -12,6 +12,25 @@ import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import CompanyPage from '../page'
 
+// Mock subscription so SubscriptionGuard allows rendering
+jest.mock('@/hooks/use-subscription-status', () => ({
+  useSubscriptionStatus: () => ({
+    hasValidSubscription: true,
+    loading: false,
+    error: null,
+    subscription: { status: 'active' },
+  }),
+}))
+jest.mock('@/services/subscription-service', () => ({
+  subscriptionService: {
+    getUserSubscription: jest.fn(),
+    isInTrial: jest.fn().mockReturnValue(false),
+    getDaysRemainingInTrial: jest.fn().mockReturnValue(null),
+    isTrialExpiringSoon: jest.fn().mockReturnValue(false),
+    clearCache: jest.fn(),
+  },
+}))
+
 // Use centralized auth mock
 const mockAuthContext = createMockAuthContext()
 jest.mock('@/hooks/use-auth', () => ({
