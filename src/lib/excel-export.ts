@@ -3,7 +3,10 @@ import ExcelJS from 'exceljs'
 import { useTranslations } from 'next-intl'
 
 import { useFormatter } from '@/lib/date-formatter'
-import { calculateWeekCompensatedTime } from '@/lib/time-utils'
+import {
+  calculateExpectedMonthlyHours,
+  calculateWeekCompensatedTime,
+} from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -458,15 +461,7 @@ export const exportToExcel = async ({
   afterConversionRow.getCell(9).numFmt = '0.00'
 
   // --- EXPECTED HOURS ROW ---
-  const calculateExpectedHours = (): number => {
-    if (userSettings.defaultWorkHours) {
-      // Auto-calculate: defaultWorkHours × 260 ÷ 12
-      return (userSettings.defaultWorkHours * 260) / 12
-    }
-    // Use manual value or default
-    return userSettings.expectedMonthlyHours ?? 160
-  }
-  const expectedHours = calculateExpectedHours()
+  const expectedHours = calculateExpectedMonthlyHours(userSettings)
   const expectedHoursRow = worksheet.addRow([])
   worksheet.mergeCells(expectedHoursRow.number, 1, expectedHoursRow.number, 6)
   expectedHoursRow.getCell(7).value = t('export.footerExpectedHours')

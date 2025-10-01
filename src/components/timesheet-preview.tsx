@@ -16,7 +16,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useFormatter } from '@/lib/date-formatter'
-import { calculateWeekCompensatedTime } from '@/lib/time-utils'
+import {
+  calculateExpectedMonthlyHours,
+  calculateWeekCompensatedTime,
+} from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -104,16 +107,7 @@ export default function TimesheetPreview({
     monthPassengerTotal * (passengerCompPercent / 100)
 
   // Calculate expected hours and overtime
-  const calculateExpectedHours = (): number => {
-    if (userSettings?.defaultWorkHours) {
-      // Auto-calculate: defaultWorkHours × 260 ÷ 12
-      return (userSettings.defaultWorkHours * 260) / 12
-    }
-    // Use manual value or default
-    return userSettings?.expectedMonthlyHours ?? 160
-  }
-
-  const expectedHours = calculateExpectedHours()
+  const expectedHours = calculateExpectedMonthlyHours(userSettings)
   const actualHours = monthCompTotal + compensatedPassengerHours
   const overtime = actualHours - expectedHours
 
