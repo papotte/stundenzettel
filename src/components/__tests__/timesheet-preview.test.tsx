@@ -181,4 +181,76 @@ describe('TimesheetPreview', () => {
     expect(screen.getAllByText('9.10').length).toBeGreaterThan(0) // compensated + converted
     expect(screen.getAllByText('1.60').length).toBeGreaterThan(0) // compensated passenger only
   })
+
+  it('displays expected hours and overtime correctly', () => {
+    const selectedMonth = new Date('2024-07-01')
+    const settingsWithExpectedHours: UserSettings = {
+      ...mockUserSettings,
+      defaultWorkHours: 8,
+      expectedMonthlyHours: 160,
+    }
+
+    const testEntry: TimeEntry = {
+      id: '1',
+      userId: 'test-user',
+      location: 'Office',
+      startTime: new Date('2024-07-01T09:00:00'),
+      endTime: new Date('2024-07-01T17:00:00'),
+      pauseDuration: 30,
+      driverTimeHours: 0,
+      passengerTimeHours: 0,
+    }
+
+    render(
+      <TimesheetPreview
+        selectedMonth={selectedMonth}
+        user={mockUser}
+        userSettings={settingsWithExpectedHours}
+        getLocationDisplayName={mockGetLocationDisplayName}
+        onEdit={jest.fn()}
+        onAdd={jest.fn()}
+        getEntriesForDay={(day) =>
+          isSameDay(testEntry.startTime, day) ? [testEntry] : []
+        }
+      />,
+    )
+
+    // Expected hours should be shown
+    const expectedHoursElement = screen.getByTestId('timesheet-expected-hours')
+    expect(expectedHoursElement).toBeInTheDocument()
+
+    // Overtime should be shown
+    const overtimeElement = screen.getByTestId('timesheet-overtime')
+    expect(overtimeElement).toBeInTheDocument()
+
+    // With 7.5 hours worked and 160 expected, overtime should be negative
+    // Actual: 7.5 (8h - 0.5h pause)
+    // Expected: 160
+    // Overtime: 7.5 - 160 = -152.50
+    expect(overtimeElement.textContent).toContain('-152.50')
+  })
+
+  it('calculates expected hours from defaultWorkHours when set', () => {
+    const selectedMonth = new Date('2024-07-01')
+    const settingsWithDefaultWorkHours: UserSettings = {
+      ...mockUserSettings,
+      defaultWorkHours: 8, // Should auto-calculate: 8 * 260 / 12 = 173.33
+    }
+
+    render(
+      <TimesheetPreview
+        selectedMonth={selectedMonth}
+        user={mockUser}
+        userSettings={settingsWithDefaultWorkHours}
+        getLocationDisplayName={mockGetLocationDisplayName}
+        onEdit={jest.fn()}
+        onAdd={jest.fn()}
+        getEntriesForDay={() => []}
+      />,
+    )
+
+    const expectedHoursElement = screen.getByTestId('timesheet-expected-hours')
+    // 8 * 260 / 12 = 173.33
+    expect(expectedHoursElement.textContent).toBe('173.33')
+  })
 })
