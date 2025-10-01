@@ -107,6 +107,7 @@ export default function LoginPage() {
 
   const handleAuthAction = async (
     action: (email: string, password: string) => Promise<UserCredential>,
+    isSignup = false,
   ) => {
     setLoading(true)
     if (!auth || typeof auth.onAuthStateChanged !== 'function') {
@@ -120,7 +121,22 @@ export default function LoginPage() {
     }
     try {
       await setPersistence(auth, browserLocalPersistence)
-      await action(email, password)
+      const userCredential = await action(email, password)
+      
+      // Add contact to Resend on signup
+      if (isSignup && userCredential.user.email) {
+        try {
+          await fetch('/api/contacts/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userCredential.user.email }),
+          })
+        } catch (contactError) {
+          console.error('Failed to add contact to Resend:', contactError)
+          // Don't fail signup if contact creation fails
+        }
+      }
+      
       router.push(returnUrl)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
@@ -141,8 +157,10 @@ export default function LoginPage() {
     })
   }
   const handleSignUp = () =>
-    handleAuthAction((email, password) =>
-      createUserWithEmailAndPassword(auth, email, password),
+    handleAuthAction(
+      (email, password) =>
+        createUserWithEmailAndPassword(auth, email, password),
+      true,
     )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -170,7 +188,22 @@ export default function LoginPage() {
     const provider = new GoogleAuthProvider()
     try {
       await setPersistence(auth, browserLocalPersistence)
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      
+      // Check if this is a new user and add to Resend
+      if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime && result.user.email) {
+        try {
+          await fetch('/api/contacts/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: result.user.email }),
+          })
+        } catch (contactError) {
+          console.error('Failed to add contact to Resend:', contactError)
+          // Don't fail signup if contact creation fails
+        }
+      }
+      
       router.push(returnUrl)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
