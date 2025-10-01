@@ -12,6 +12,9 @@ env:
   - variable: NEXT_PUBLIC_ENVIRONMENT
     value: production
 
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://time.papotte.dev
+
   - variable: GOOGLE_MAPS_API_KEY
     secret: GOOGLE_MAPS_API_KEY
 
@@ -41,3 +44,6 @@ env:
 
   - variable: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
     secret: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+  - variable: RESEND_API_KEY
+    secret: RESEND_API_KEY
