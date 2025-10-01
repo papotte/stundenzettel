@@ -16,6 +16,8 @@
   "footerTotalPerWeek": "Total por semana:",
   "footerTotalHours": "Total de horas:",
   "footerTotalAfterConversion": "Total después de conversión:",
+  "footerExpectedHours": "Horas esperadas:",
+  "footerOvertime": "Horas extra:",
   "headerMileage": "Kilometraje/Gastos",
   "signatureLine": "Firma:",
   "noDataHint": "No hay datos disponibles para exportar en este mes."

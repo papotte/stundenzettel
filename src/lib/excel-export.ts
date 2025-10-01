@@ -456,6 +456,38 @@ export const exportToExcel = async ({
   afterConversionRow.getCell(8).numFmt = '0.00'
   afterConversionRow.getCell(9).value = compensatedPassengerHours
   afterConversionRow.getCell(9).numFmt = '0.00'
+
+  // --- EXPECTED HOURS ROW ---
+  const calculateExpectedHours = (): number => {
+    if (userSettings.defaultWorkHours) {
+      // Auto-calculate: defaultWorkHours × 260 ÷ 12
+      return (userSettings.defaultWorkHours * 260) / 12
+    }
+    // Use manual value or default
+    return userSettings.expectedMonthlyHours ?? 160
+  }
+  const expectedHours = calculateExpectedHours()
+  const expectedHoursRow = worksheet.addRow([])
+  worksheet.mergeCells(expectedHoursRow.number, 1, expectedHoursRow.number, 6)
+  expectedHoursRow.getCell(7).value = t('export.footerExpectedHours')
+  expectedHoursRow.getCell(8).value = expectedHours
+  expectedHoursRow.getCell(8).numFmt = '0.00'
+
+  // --- OVERTIME ROW ---
+  const actualHours = monthCompTotal + compensatedPassengerHours
+  const overtime = actualHours - expectedHours
+  const overtimeRow = worksheet.addRow([])
+  worksheet.mergeCells(overtimeRow.number, 1, overtimeRow.number, 6)
+  overtimeRow.getCell(7).value = t('export.footerOvertime')
+  overtimeRow.getCell(8).value = overtime
+  overtimeRow.getCell(8).numFmt = '0.00'
+  // Color code the overtime cell
+  if (overtime > 0) {
+    overtimeRow.getCell(8).font = { color: { argb: 'FF00AA00' } } // Green
+  } else if (overtime < 0) {
+    overtimeRow.getCell(8).font = { color: { argb: 'FFAA0000' } } // Red
+  }
+
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer()
   const blob = new Blob([buffer], {

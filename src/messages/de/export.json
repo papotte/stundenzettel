@@ -16,6 +16,8 @@
   "footerTotalPerWeek": "Gesamt pro Woche:",
   "footerTotalHours": "Stunden insgesamt:",
   "footerTotalAfterConversion": "Gesamt nach Umrechnung:",
+  "footerExpectedHours": "Erwartete Stunden:",
+  "footerOvertime": "Überstunden:",
   "headerMileage": "km eig. PKW/Verpfl.",
   "signatureLine": "Unterschrift:",
   "noDataHint": "Keine Daten für den Export in diesem Monat verfügbar."
