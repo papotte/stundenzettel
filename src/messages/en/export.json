@@ -16,6 +16,8 @@
   "footerTotalPerWeek": "Total per week:",
   "footerTotalHours": "Total hours:",
   "footerTotalAfterConversion": "Total after conversion:",
+  "footerExpectedHours": "Expected hours:",
+  "footerOvertime": "Overtime:",
   "headerMileage": "Mileage/Expenses",
   "signatureLine": "Signature:",
   "noDataHint": "No data available for export in this month."
