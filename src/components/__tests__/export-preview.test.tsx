@@ -6,7 +6,9 @@ import userEvent from '@testing-library/user-event'
 import { addMonths, subMonths } from 'date-fns'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { exportToExcel } from '@/lib/excel-export'
+import { subscriptionService } from '@/services/subscription-service'
 import { getTimeEntries } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 import { createMockAuthContext } from '@/test-utils/auth-mocks'
@@ -29,6 +31,19 @@ jest.mock('@/lib/excel-export', () => ({
   exportToExcel: jest.fn(),
 }))
 
+// Mock the subscription service
+jest.mock('@/services/subscription-service', () => ({
+  subscriptionService: {
+    getUserSubscription: jest.fn(),
+    clearCache: jest.fn(),
+  },
+}))
+
+// Mock the subscription status hook
+jest.mock('@/hooks/use-subscription-status', () => ({
+  useSubscriptionStatus: jest.fn(),
+}))
+
 const mockGetTimeEntries = getTimeEntries as jest.MockedFunction<
   typeof getTimeEntries
 >
@@ -37,6 +52,13 @@ const mockGetUserSettings = getUserSettings as jest.MockedFunction<
 >
 const mockExportToExcel = exportToExcel as jest.MockedFunction<
   typeof exportToExcel
+>
+const mockGetUserSubscription =
+  subscriptionService.getUserSubscription as jest.MockedFunction<
+    typeof subscriptionService.getUserSubscription
+  >
+const mockUseSubscriptionStatus = useSubscriptionStatus as jest.MockedFunction<
+  typeof useSubscriptionStatus
 >
 
 // Mock the toast hook
@@ -109,6 +131,26 @@ describe('ExportPreview', () => {
     // Set up default service responses
     mockGetTimeEntries.mockResolvedValue(mockTimeEntries)
     mockGetUserSettings.mockResolvedValue(mockUserSettings)
+
+    // Mock subscription service to return a valid subscription
+    const mockSubscription = {
+      stripeSubscriptionId: 'sub_123',
+      stripeCustomerId: 'cus_123',
+      status: 'active' as const,
+      currentPeriodStart: new Date(),
+      cancelAtPeriodEnd: false,
+      priceId: 'price_123',
+      updatedAt: new Date(),
+    }
+    mockGetUserSubscription.mockResolvedValue(mockSubscription)
+
+    // Mock subscription status hook to return valid subscription
+    mockUseSubscriptionStatus.mockReturnValue({
+      hasValidSubscription: true,
+      loading: false,
+      error: null,
+      subscription: mockSubscription,
+    })
   })
 
   describe('when loading', () => {

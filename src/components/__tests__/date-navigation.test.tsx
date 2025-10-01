@@ -4,6 +4,23 @@ import { fireEvent, render, screen } from '@jest-setup'
 
 import DateNavigation from '../date-navigation'
 
+// Mock auth and subscription to simulate a subscribed user
+jest.mock('@/hooks/use-auth', () => ({
+  useAuth: () => ({
+    user: { uid: 'test-user-id' },
+    loading: false,
+    signOut: jest.fn(),
+  }),
+}))
+jest.mock('@/hooks/use-subscription-status', () => ({
+  useSubscriptionStatus: () => ({
+    hasValidSubscription: true,
+    loading: false,
+    error: null,
+    subscription: { status: 'active' },
+  }),
+}))
+
 // Mock the time tracker context
 const mockHandlePreviousDay = jest.fn()
 const mockHandleNextDay = jest.fn()

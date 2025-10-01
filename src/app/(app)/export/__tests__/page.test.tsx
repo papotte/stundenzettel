@@ -8,6 +8,24 @@ import { TimeTrackerProviderProps } from '@/context/time-tracker-context'
 import { authScenarios } from '@/test-utils/auth-mocks'
 
 // Mocks
+// Mock subscription so SubscriptionGuard treats user as subscribed
+jest.mock('@/hooks/use-subscription-status', () => ({
+  useSubscriptionStatus: () => ({
+    hasValidSubscription: true,
+    loading: false,
+    error: null,
+    subscription: { status: 'active' },
+  }),
+}))
+jest.mock('@/services/subscription-service', () => ({
+  subscriptionService: {
+    getUserSubscription: jest.fn(),
+    isInTrial: jest.fn().mockReturnValue(false),
+    getDaysRemainingInTrial: jest.fn().mockReturnValue(null),
+    isTrialExpiringSoon: jest.fn().mockReturnValue(false),
+    clearCache: jest.fn(),
+  },
+}))
 const mockReplace = jest.fn()
 jest.mock('next/navigation', () => ({
   useRouter: () => ({

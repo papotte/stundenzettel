@@ -1,11 +1,15 @@
 import { format, getWeekOfMonth } from 'date-fns'
 
 import { expect, test } from './fixtures'
+import { addActiveSubscription } from './subscription-helpers'
 import { addExportEntry, addManualEntry, navigateToMonth } from './test-helpers'
 
 test.describe('Export Page', () => {
   let weekIndex: number = 0
   test.beforeEach(async ({ page, loginUser }) => {
+    // Set up subscription mock before login to ensure it's available when the page loads
+    await addActiveSubscription(page)
+
     await loginUser(page)
     await page.waitForURL('/tracker')
 

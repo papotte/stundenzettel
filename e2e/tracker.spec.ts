@@ -1,10 +1,15 @@
 import { expect, test } from './fixtures'
+import { addActiveSubscription } from './subscription-helpers'
 import { addManualEntry } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   // --- SETUP: Run before each test in this file ---
   test.beforeEach(async ({ page, loginUser }) => {
+    // Set up subscription mock before login to ensure it's available when the page loads
+    await addActiveSubscription(page)
+
     await loginUser(page)
+    await page.waitForURL('/tracker')
   })
 
   // --- LIVE TIME TRACKING ---

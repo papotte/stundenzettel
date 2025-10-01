@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test'
 
 import { expect, test } from './fixtures'
+import { addActiveSubscription } from './subscription-helpers'
 import { addManualEntry } from './test-helpers'
 
 async function navigateToCompanyPage(page: Page) {
@@ -15,8 +16,10 @@ async function navigateToCompanyPage(page: Page) {
 
 test.describe('Company Page', () => {
   test.beforeEach(async ({ page, loginUser }) => {
-    await loginUser(page)
+    // Set up subscription mock before login to ensure it's available when the page loads
+    await addActiveSubscription(page)
 
+    await loginUser(page)
     await page.waitForURL('/tracker')
   })
 

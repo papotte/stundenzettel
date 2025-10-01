@@ -1,7 +1,11 @@
 import { expect, test } from './fixtures'
+import { addActiveSubscription } from './subscription-helpers'
 
 test.describe('Preferences Page', () => {
   test.beforeEach(async ({ page, loginUser }) => {
+    // Set up subscription mock before login to ensure it's available when the page loads
+    await addActiveSubscription(page)
+
     await loginUser(page)
     await page.waitForURL('/tracker')
 
