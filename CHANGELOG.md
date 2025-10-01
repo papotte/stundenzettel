@@ -1,3 +1,14 @@
+## [1.12.1](https://github.com/papotte/stundenzettel/compare/v1.12.0...v1.12.1) (2025-10-01)
+
+
+### Bug Fixes
+
+* add resend variables to apphosting.yaml ([16e06e7](https://github.com/papotte/stundenzettel/commit/16e06e771b3fe24c88540f45da3285b9df0a18ed))
+* change German translation ([#115](https://github.com/papotte/stundenzettel/issues/115)) ([99c9762](https://github.com/papotte/stundenzettel/commit/99c9762e92212dd41dd5c8b734abf972e03ad3e3))
+* manage billing button text ([71c5fa4](https://github.com/papotte/stundenzettel/commit/71c5fa41007dae43fecac256cdfa6ea6d3db9e8e))
+* secure paywalled features ([#113](https://github.com/papotte/stundenzettel/issues/113)) ([5a3169c](https://github.com/papotte/stundenzettel/commit/5a3169cdb5852e8c3427a455408de9b5e24838b3))
+* test stability ([a0e06bd](https://github.com/papotte/stundenzettel/commit/a0e06bd93ca6ef7270b9075a564d858b9b0417d4))
+
 # [1.12.0](https://github.com/papotte/stundenzettel/compare/v1.11.2...v1.12.0) (2025-09-30)
 
 
