@@ -3,20 +3,32 @@ import { type Page, expect } from '@playwright/test'
 // Helper function to navigate to pricing page and verify it loads
 export const navigateToPricing = async (page: Page) => {
   await page.goto('/pricing')
+
+  // Wait for the page to load
+  await page.waitForURL('/pricing', { timeout: 10000 })
+
   await expect(
     page.getByRole('heading', {
       name: /Choose Your Plan|Wählen Sie Ihren Tarif/i,
     }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10000 })
 
   await expect(page.getByText('Individual Monthly')).toBeVisible({
-    timeout: 5000,
+    timeout: 10000,
   })
 }
 
 // Helper function to navigate to subscription page and verify it loads
 export const navigateToSubscription = async (page: Page) => {
   await page.goto('/subscription')
+
+  // Wait for the page to load (the auth check and subscription loading)
+  await page.waitForURL('/subscription', { timeout: 10000 })
+  // Wait for the page to finish loading by checking for a stable element
+  await expect(page.getByRole('link', { name: /Back to Tracker/ })).toBeVisible(
+    { timeout: 15000 },
+  )
+
   // Look for the subscription management title within the CardTitle (div with font-headline class)
   await expect(
     page.getByRole('heading', {

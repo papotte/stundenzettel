@@ -230,6 +230,13 @@ test.describe('Checkout and Payment Flow', () => {
       // Navigate directly to success URL
       await page.goto('/subscription?success=true')
 
+      // Wait for the page to load (the auth check and subscription loading)
+      await page.waitForURL(/\/subscription\?success=true/, { timeout: 10000 })
+      // Wait for the page to finish loading by checking for a stable element
+      await expect(
+        page.getByRole('link', { name: /Back to Tracker/ }),
+      ).toBeVisible({ timeout: 15000 })
+
       // Should show success message or updated subscription state
       await expect(
         page.getByRole('heading', {
@@ -274,6 +281,13 @@ test.describe('Checkout and Payment Flow', () => {
       // Navigate to subscription page
       await page.goto('/subscription')
 
+      // Wait for the page to load (the auth check and subscription loading)
+      await page.waitForURL('/subscription', { timeout: 10000 })
+      // Wait for the page to finish loading by checking for a stable element
+      await expect(
+        page.getByRole('link', { name: /Back to Tracker/ }),
+      ).toBeVisible({ timeout: 15000 })
+
       // Verify the API call was made
       if (subscriptionRequest) {
         const url = subscriptionRequest.url()
@@ -301,6 +315,13 @@ test.describe('Checkout and Payment Flow', () => {
       // Navigate to subscription page
       await page.goto('/subscription')
 
+      // Wait for the page to load (the auth check and subscription loading)
+      await page.waitForURL('/subscription', { timeout: 10000 })
+      // Wait for the page to finish loading by checking for a stable element
+      await expect(
+        page.getByRole('link', { name: /Back to Tracker/ }),
+      ).toBeVisible({ timeout: 15000 })
+
       // Should still show the page (with no subscription state)
       await expect(
         page.getByRole('heading', {
@@ -324,6 +345,13 @@ test.describe('Checkout and Payment Flow', () => {
       // For now, we'll test that the subscription service can handle webhook data
       // Navigate to subscription page
       await page.goto('/subscription')
+
+      // Wait for the page to load (the auth check and subscription loading)
+      await page.waitForURL('/subscription', { timeout: 10000 })
+      // Wait for the page to finish loading by checking for a stable element
+      await expect(
+        page.getByRole('link', { name: /Back to Tracker/ }),
+      ).toBeVisible({ timeout: 15000 })
 
       // Verify the page loads correctly
       await expect(
@@ -373,6 +401,13 @@ test.describe('Checkout and Payment Flow', () => {
     test('should handle subscription status changes', async ({ page }) => {
       // Navigate to subscription page
       await page.goto('/subscription')
+
+      // Wait for the page to load (the auth check and subscription loading)
+      await page.waitForURL('/subscription', { timeout: 10000 })
+      // Wait for the page to finish loading by checking for a stable element
+      await expect(
+        page.getByRole('link', { name: /Back to Tracker/ }),
+      ).toBeVisible({ timeout: 15000 })
 
       // Verify the page handles different subscription states
       // This would typically be tested with different mock data

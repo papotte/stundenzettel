@@ -40,10 +40,11 @@ test.describe('Authentication', () => {
     // Click the logout button in the dropdown
     await page.getByTestId('sign-out-btn').click()
 
+    // Wait for navigation to complete
+    await page.waitForURL(/\/login/)
+
     // Should be redirected to login page
-    await expect(
-      page.getByRole('heading', { name: /TimeWise Tracker/ }),
-    ).toBeVisible()
+    await expect(page.getByTestId('login-signin-button')).toBeVisible()
   })
 
   test('should redirect to login if accessing protected pages when not logged in', async ({

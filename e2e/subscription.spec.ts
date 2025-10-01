@@ -235,6 +235,13 @@ test.describe('Subscription Workflow (Simplified)', () => {
       await loginUser(page)
       await page.goto('/subscription?success=true')
 
+      // Wait for the page to load (the auth check and subscription loading)
+      await page.waitForURL(/\/subscription\?success=true/, { timeout: 10000 })
+      // Wait for the page to finish loading by checking for a stable element
+      await expect(
+        page.getByRole('link', { name: /Back to Tracker/ }),
+      ).toBeVisible({ timeout: 15000 })
+
       await expect(
         page.getByRole('heading', {
           name: /Manage Subscription/,
