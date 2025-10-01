@@ -10,7 +10,7 @@
   "headerPauseDuration": "abzgl. Pause",
   "headerDriverTime": "zzgl. FZ als Fahrer",
   "headerPassengerTime": "FZ als Beifahrer",
-  "headerCompensatedTime": "gesamt AZ",
+  "headerCompensatedTime": "qualifizierte AZ",
   "headerFrom": "von",
   "headerTo": "bis",
   "footerTotalPerWeek": "Gesamt pro Woche:",
