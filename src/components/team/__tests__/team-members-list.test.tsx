@@ -87,12 +87,12 @@ describe('TeamMembersList', () => {
       expect(screen.getByText('teams.joined')).toBeInTheDocument()
     })
 
-    it('displays all team members', () => {
+    it('displays all team members with hidden emails', () => {
       render(<TeamMembersList {...defaultProps} />)
 
-      expect(screen.getByText('owner@example.com')).toBeInTheDocument()
-      expect(screen.getByText('admin@example.com')).toBeInTheDocument()
-      expect(screen.getByText('member@example.com')).toBeInTheDocument()
+      expect(screen.getByText('own***@example.com')).toBeInTheDocument()
+      expect(screen.getByText('adm***@example.com')).toBeInTheDocument()
+      expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
     })
 
     it('displays member roles correctly', () => {
@@ -171,7 +171,7 @@ describe('TeamMembersList', () => {
 
       // Owner should not be able to change their own role
       // This would be tested by checking that the owner's row doesn't have role change options
-      const ownerRows = screen.getAllByText('owner@example.com')
+      const ownerRows = screen.getAllByText('own***@example.com')
       expect(ownerRows[0]).toBeInTheDocument()
     })
   })
@@ -190,8 +190,8 @@ describe('TeamMembersList', () => {
       const singleMember = [mockMembers[0]]
       render(<TeamMembersList {...defaultProps} members={singleMember} />)
 
-      expect(screen.getByText('owner@example.com')).toBeInTheDocument()
-      expect(screen.queryByText('admin@example.com')).not.toBeInTheDocument()
+      expect(screen.getByText('own***@example.com')).toBeInTheDocument()
+      expect(screen.queryByText('adm***@example.com')).not.toBeInTheDocument()
     })
   })
 })

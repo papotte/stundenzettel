@@ -163,7 +163,13 @@ export function TeamMembersList({
   const hasSeatAssigned = (member: TeamMember) => {
     return member.seatAssignment?.isActive === true
   }
-
+  function maskEmail(email: string): string {
+    const [localPart, domain] = email.split('@')
+    if (localPart.length <= 3) {
+      return `${localPart}***@${domain}`
+    }
+    return `${localPart.slice(0, 3)}***@${domain}`
+  }
   return (
     <div className="space-y-4">
       {/* Seat Assignment Header */}
@@ -202,7 +208,7 @@ export function TeamMembersList({
             {members.map((member) => (
               <TableRow key={member.id}>
                 <TableCell>
-                  <div className="font-medium">{member.email}</div>
+                  <div className="font-medium">{maskEmail(member.email)}</div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
