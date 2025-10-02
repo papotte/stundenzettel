@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/papotte/stundenzettel/compare/v1.12.1...v1.13.0) (2025-10-02)
+
+
+### Features
+
+* add new payment methods ([#120](https://github.com/papotte/stundenzettel/issues/120)) ([746434e](https://github.com/papotte/stundenzettel/commit/746434eb7e0826d3509a10f82c189f8dde5aea7c))
+
 ## [1.12.1](https://github.com/papotte/stundenzettel/compare/v1.12.0...v1.12.1) (2025-10-01)
 
 
