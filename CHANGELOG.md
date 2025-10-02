@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/papotte/stundenzettel/compare/v1.13.0...v1.14.0) (2025-10-02)
+
+
+### Features
+
+* hide user emails ([#121](https://github.com/papotte/stundenzettel/issues/121)) ([6c7b6c5](https://github.com/papotte/stundenzettel/commit/6c7b6c5ad6087ea7a8fc3294b9ccd6a5ce4ae5cd))
+
 # [1.13.0](https://github.com/papotte/stundenzettel/compare/v1.12.1...v1.13.0) (2025-10-02)
 
 
