@@ -114,7 +114,12 @@ export async function createCheckoutSession({
 
   // Configure payment method collection based on trial settings
   if (requirePaymentMethod) {
-    sessionParams.payment_method_types = ['card']
+    sessionParams.payment_method_types = [
+      'card',
+      'paypal',
+      'sepa_debit',
+      'klarna',
+    ]
   } else {
     // Free trial without payment method
     sessionParams.payment_method_collection = 'if_required'
