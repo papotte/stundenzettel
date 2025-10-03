@@ -91,7 +91,6 @@ export default function PreferencesPage() {
       const fetchData = async () => {
         try {
           const settings = await getUserSettings(user.uid)
-          console.log(settings)
           form.reset(settings)
         } catch (error) {
           console.error('Failed to fetch user settings', error)

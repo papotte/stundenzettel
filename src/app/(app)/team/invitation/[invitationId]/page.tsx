@@ -46,7 +46,6 @@ export default function InvitationPage() {
 
   useEffect(() => {
     const loadInvitation = async () => {
-      debugger
       if (!invitationId) {
         setError('Invalid invitation link')
         setLoading(false)
@@ -94,7 +93,6 @@ export default function InvitationPage() {
   }, [invitationId])
 
   const handleAccept = async () => {
-    debugger
     if (!invitation || !user) return
 
     // Check if user email matches invitation email
@@ -135,7 +133,6 @@ export default function InvitationPage() {
   }
 
   const handleDecline = async () => {
-    debugger
     if (!invitation) return
 
     setProcessing(true)
