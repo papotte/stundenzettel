@@ -694,6 +694,71 @@ describe('TeamService Firestore', () => {
     })
   })
 
+  describe('getTeamInvitation', () => {
+    it('returns invitation by ID', async () => {
+      const mockInvitationData = {
+        teamId: 'team123',
+        email: 'test@example.com',
+        role: 'member',
+        invitedBy: 'owner123',
+        invitedAt: createMockTimestamp(new Date('2024-01-01')),
+        expiresAt: createMockTimestamp(new Date('2024-01-08')),
+        status: 'pending',
+      }
+
+      const mockDocSnap = {
+        exists: () => true,
+        id: 'invitation123',
+        data: () => mockInvitationData,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeamInvitation('invitation123')
+
+      expect(result).toEqual({
+        id: 'invitation123',
+        teamId: 'team123',
+        email: 'test@example.com',
+        role: 'member',
+        invitedBy: 'owner123',
+        invitedAt: new Date('2024-01-01'),
+        expiresAt: new Date('2024-01-08'),
+        status: 'pending',
+      })
+      expect(mockDoc).toHaveBeenCalledWith(
+        expect.any(Object),
+        'team-invitations',
+        'invitation123',
+      )
+    })
+
+    it('returns null when invitation not found', async () => {
+      const mockDocSnap = {
+        exists: () => false,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeamInvitation('nonexistent')
+
+      expect(result).toBeNull()
+    })
+
+    it('handles Firebase errors', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(
+        new FirestoreError('permission-denied', 'Permission denied'),
+      )
+
+      await expect(
+        firestoreService.getTeamInvitation('invitation123'),
+      ).rejects.toThrow('Failed to get team invitation: Permission denied')
+    })
+  })
+
   describe('acceptTeamInvitation', () => {
     it('accepts invitation and adds user to team', async () => {
       const mockInvitationData = {

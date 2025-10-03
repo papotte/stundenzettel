@@ -415,6 +415,23 @@ export async function createTeamInvitation(
   }
 }
 
+export async function getTeamInvitation(
+  invitationId: string,
+): Promise<TeamInvitation | null> {
+  try {
+    const docRef = doc(db, 'team-invitations', invitationId)
+    const docSnap = await getDoc(docRef)
+
+    if (!docSnap.exists()) {
+      return null
+    }
+
+    return mapDocToTeamInvitation(docSnap as QueryDocumentSnapshot)
+  } catch (error: unknown) {
+    handleFirebaseError(error, 'get team invitation')
+  }
+}
+
 export async function getTeamInvitations(
   teamId: string,
 ): Promise<TeamInvitation[]> {

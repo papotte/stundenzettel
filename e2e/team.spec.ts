@@ -1,5 +1,16 @@
 import { expect, test } from './fixtures'
-import { navigateToTeamPage, testAuthRedirect } from './test-helpers'
+import {
+  createTestTeamWithInvitation,
+  navigateToTeamPage,
+  testAuthRedirect,
+} from './test-helpers'
+
+// Extend window interface for test context
+declare global {
+  interface Window {
+    testInvitationId?: string
+  }
+}
 
 test.describe('Team Page', () => {
   test.describe('Authorization', () => {
@@ -97,6 +108,9 @@ test.describe('Team Page', () => {
 
       // Verify dialog closes and team is created
       await expect(page.getByTestId('create-team-dialog')).not.toBeVisible()
+
+      // Wait for toast to appear before asserting its content
+      await expect(page.locator('[data-testid="toast-title"]')).toBeVisible()
       await expect(page.locator('[data-testid="toast-title"]')).toContainText(
         'Team created',
       )
@@ -127,6 +141,9 @@ test.describe('Team Page', () => {
 
       // Verify dialog closes and team is created
       await expect(page.getByTestId('create-team-dialog')).not.toBeVisible()
+
+      // Wait for toast to appear before asserting its content
+      await expect(page.locator('[data-testid="toast-title"]')).toBeVisible()
       await expect(page.locator('[data-testid="toast-title"]')).toContainText(
         'Team created',
       )
@@ -264,6 +281,123 @@ test.describe('Team Page', () => {
       await expect(
         page.getByRole('button', { name: 'Subscribe Now' }),
       ).toBeVisible()
+    })
+  })
+
+  test.describe('Team Invitation Page Navigation', () => {
+    test('should navigate to invitation page and show login prompt for unauthenticated users', async ({
+      page,
+    }) => {
+      // Navigate directly to an invitation page without being logged in
+      await page.goto('/team/invitation/test-invitation-id')
+
+      // Should show login prompt
+      await expect(page.getByText(/Team Invitation/i)).toBeVisible()
+      await expect(
+        page.getByText(/Please log in to accept or decline/i),
+      ).toBeVisible()
+      await expect(
+        page.getByRole('link', { name: /Sign In/i }),
+      ).toHaveAttribute('href', '/login')
+    })
+
+    test('should handle invalid invitation ID gracefully', async ({
+      page,
+      loginUser,
+    }) => {
+      await loginUser(page, false)
+
+      // Navigate to invitation page with invalid ID
+      await page.goto('/team/invitation/nonexistent-invitation-id')
+
+      // Should show error message
+      await expect(
+        page.getByText(/This invitation could not be found/i),
+      ).toBeVisible()
+      await expect(
+        page.getByRole('link', { name: /Go to Team Page/i }),
+      ).toBeVisible()
+    })
+  })
+
+  test.describe('Team Invitation Accept/Decline Flow', () => {
+    test.beforeEach(async ({ page, loginUser, workerUser }) => {
+      // Login as team owner
+      await loginUser(page)
+
+      // Create team and invitation directly in the database
+      const { invitationId } = await createTestTeamWithInvitation(
+        'Invitation Test Team',
+        'Team for testing invitations',
+        workerUser.uid,
+        'inviter@example.com',
+        workerUser.email,
+        'member',
+      )
+
+      // Store the invitation ID for use in tests
+      await page.evaluate((id) => {
+        window.testInvitationId = id
+      }, invitationId)
+    })
+
+    test('should display invitation details and allow acceptance', async ({
+      page,
+    }) => {
+      // Get the invitation ID from the test context
+      const invitationId = await page.evaluate(() => window.testInvitationId)
+
+      // Navigate to invitation page
+      await page.goto(`/team/invitation/${invitationId}`)
+
+      // Verify invitation page loads correctly
+      await expect(page.getByText('Team Invitation')).toBeVisible()
+      await expect(page.getByText('Invitation Test Team')).toBeVisible()
+      await expect(page.getByText('Member')).toBeVisible()
+
+      // Verify accept and decline buttons are present
+      await expect(
+        page.getByRole('button', { name: 'Accept Invitation' }),
+      ).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Decline Invitation' }),
+      ).toBeVisible()
+
+      // Accept the invitation
+      await page.getByRole('button', { name: 'Accept Invitation' }).click()
+
+      // Wait for toast to appear before redirect happens
+      await expect(page.locator('[data-testid="toast-title"]')).toBeVisible()
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Invitation accepted',
+      )
+
+      // Verify redirect to team page
+      await page.waitForURL('/team')
+    })
+
+    test('should allow declining an invitation', async ({ page }) => {
+      // Get the invitation ID from the test context
+      const invitationId = await page.evaluate(() => window.testInvitationId)
+
+      // Navigate to invitation page
+      await page.goto(`/team/invitation/${invitationId}`)
+
+      // Verify invitation page loads
+      await expect(page.getByText('Team Invitation')).toBeVisible()
+      await expect(page.getByText('Invitation Test Team')).toBeVisible()
+
+      // Decline the invitation
+      await page.getByRole('button', { name: 'Decline Invitation' }).click()
+
+      // Wait for toast to appear before redirect happens
+      await expect(page.locator('[data-testid="toast-title"]')).toBeVisible()
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Invitation declined',
+      )
+
+      // Verify redirect to team page
+      await page.waitForURL('/team')
     })
   })
 })

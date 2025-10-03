@@ -1,6 +1,6 @@
 {
   "testMode": "TimeWise Tracker (Test Mode)",
-  "selectMockUser": "Select a Mock User",
+  "selectMockUser": "or select a Mock User",
   "mockUserDescription": "Choose a user to log in with Firebase authentication. These are seeded users for local development and testing.",
   "loginAs": "Log in as {displayName}",
   "signingIn": "Signing In...",

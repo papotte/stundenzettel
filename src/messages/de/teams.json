@@ -146,5 +146,19 @@
   "seatUnassignedDescription": "Die Lizenz wurde erfolgreich von diesem Mitglied entfernt",
   "totalSeats": "Gesamte Lizenzen",
   "cannotUnassignOwnerSeat": "Lizenz kann nicht vom Team-Besitzer entfernt werden",
-  "ownerSeatRequired": "Besitzer-Lizenz erforderlich"
+  "ownerSeatRequired": "Besitzer-Lizenz erforderlich",
+  "loginToAcceptInvitation": "Bitte melden Sie sich an, um diese Einladung anzunehmen oder abzulehnen",
+  "invalidInvitationLink": "Dieser Einladungslink ist ungültig oder wurde entfernt",
+  "invitationNotFound": "Diese Einladung konnte nicht gefunden werden",
+  "invitationExpiredDescription": "Diese Einladung ist abgelaufen und kann nicht mehr angenommen werden",
+  "invitationAlreadyProcessed": "Diese Einladung wurde bereits angenommen oder abgelehnt",
+  "reviewInvitationDetails": "Überprüfen Sie die Einladungsdetails unten und wählen Sie, ob Sie annehmen oder ablehnen möchten",
+  "invitedTo": "Eingeladen an",
+  "expiredOn": "Abgelaufen am",
+  "expiresOn": "Läuft ab am",
+  "invitationEmailWarning": "Diese Einladung wurde an {invitedEmail} gesendet, aber Sie sind als {currentEmail} angemeldet. Sie können nur Einladungen annehmen, die an Ihre E-Mail-Adresse gesendet wurden.",
+  "invitationEmailMismatch": "Diese Einladung wurde an eine andere E-Mail-Adresse gesendet. Bitte melden Sie sich mit dem richtigen Konto an.",
+  "acceptInvitation": "Einladung annehmen",
+  "declineInvitation": "Einladung ablehnen",
+  "goToTeamPage": "Zur Team-Seite"
 }

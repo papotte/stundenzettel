@@ -1,6 +1,15 @@
 import { type Page, expect } from '@playwright/test'
 
 import { format, isSameMonth, parse } from 'date-fns'
+import { getApps } from 'firebase/app'
+import {
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore'
 
 // Helper function to create a new manual entry for the currently selected day
 // ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
@@ -158,4 +167,78 @@ export const testAuthRedirect = async (page: Page, protectedPath: string) => {
   const currentUrl = page.url()
   expect(currentUrl).toContain('returnUrl=')
   expect(currentUrl).toContain(protectedPath.replace('/', ''))
+}
+
+// Helper function to create a complete test setup (team + invitation) directly in the database
+export const createTestTeamWithInvitation = async (
+  teamName: string,
+  teamDescription: string,
+  ownerId: string,
+  ownerEmail: string,
+  inviteeEmail: string,
+  inviteeRole: 'member' | 'admin' = 'member',
+): Promise<{ teamId: string; invitationId: string }> => {
+  try {
+    // Get Firestore instance (same as in auth-utils.ts)
+    const db = getFirestore(getApps()[0], 'test-database')
+
+    // Create team directly in database
+    const teamData = {
+      name: teamName,
+      description: teamDescription,
+      ownerId,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
+
+    const teamDocRef = await addDoc(collection(db, 'teams'), teamData)
+    const teamId = teamDocRef.id
+
+    // Add owner as first member
+    const memberData = {
+      email: ownerEmail,
+      role: 'owner',
+      joinedAt: serverTimestamp(),
+      invitedBy: ownerId,
+      seatAssignment: {
+        assignedAt: serverTimestamp(),
+        assignedBy: ownerId,
+        isActive: true,
+      },
+    }
+
+    await setDoc(doc(db, 'teams', teamId, 'members', ownerId), memberData)
+
+    // Create user-team mapping for owner
+    await setDoc(doc(db, 'user-teams', ownerId), {
+      teamId,
+      role: 'owner',
+      joinedAt: serverTimestamp(),
+    })
+
+    // Create invitation directly in database
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 7) // 7 days from now
+
+    const invitationData = {
+      teamId,
+      email: inviteeEmail,
+      role: inviteeRole,
+      invitedBy: ownerId,
+      invitedAt: serverTimestamp(),
+      expiresAt,
+      status: 'pending',
+    }
+
+    const invitationDocRef = await addDoc(
+      collection(db, 'team-invitations'),
+      invitationData,
+    )
+    const invitationId = invitationDocRef.id
+
+    return { teamId, invitationId }
+  } catch (error) {
+    console.error('Failed to create test team with invitation:', error)
+    throw error
+  }
 }

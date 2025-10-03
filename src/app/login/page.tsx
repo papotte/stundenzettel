@@ -285,7 +285,10 @@ export default function LoginPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="mt-6">
-              {useMocks ? buildMockLogin() : buildLoginForm()}
+              {buildLoginForm()}
+              <div className="mt-4 pt-4 border-t">
+                {useMocks && buildMockLogin()}
+              </div>
             </TabsContent>
             <TabsContent value="signup" className="mt-6">
               <div className="space-y-4">

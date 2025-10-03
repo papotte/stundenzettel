@@ -146,5 +146,19 @@
   "seatUnassignedDescription": "El asiento ha sido desasignado exitosamente de este miembro",
   "totalSeats": "Total de Asientos",
   "cannotUnassignOwnerSeat": "No se puede desasignar asiento del propietario del equipo",
-  "ownerSeatRequired": "Se requiere asiento del propietario"
+  "ownerSeatRequired": "Se requiere asiento del propietario",
+  "loginToAcceptInvitation": "Por favor inicia sesión para aceptar o rechazar esta invitación",
+  "invalidInvitationLink": "Este enlace de invitación no es válido o ha sido eliminado",
+  "invitationNotFound": "No se pudo encontrar esta invitación",
+  "invitationExpiredDescription": "Esta invitación ha expirado y ya no se puede aceptar",
+  "invitationAlreadyProcessed": "Esta invitación ya ha sido aceptada o rechazada",
+  "reviewInvitationDetails": "Revisa los detalles de la invitación a continuación y elige aceptar o rechazar",
+  "invitedTo": "Invitado a",
+  "expiredOn": "Expiró el",
+  "expiresOn": "Expira el",
+  "invitationEmailWarning": "Esta invitación fue enviada a {invitedEmail}, pero has iniciado sesión como {currentEmail}. Solo puedes aceptar invitaciones enviadas a tu dirección de correo electrónico.",
+  "invitationEmailMismatch": "Esta invitación fue enviada a una dirección de correo diferente. Por favor inicia sesión con la cuenta correcta.",
+  "acceptInvitation": "Aceptar Invitación",
+  "declineInvitation": "Rechazar Invitación",
+  "goToTeamPage": "Ir a la Página del Equipo"
 }
