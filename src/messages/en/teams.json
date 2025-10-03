@@ -146,5 +146,19 @@
   "seatUnassignedDescription": "The seat has been successfully unassigned from this member",
   "totalSeats": "Total Seats",
   "cannotUnassignOwnerSeat": "Cannot unassign seat from team owner",
-  "ownerSeatRequired": "Owner seat required"
+  "ownerSeatRequired": "Owner seat required",
+  "loginToAcceptInvitation": "Please log in to accept or decline this invitation",
+  "invalidInvitationLink": "This invitation link is invalid or has been removed",
+  "invitationNotFound": "This invitation could not be found",
+  "invitationExpiredDescription": "This invitation has expired and can no longer be accepted",
+  "invitationAlreadyProcessed": "This invitation has already been accepted or declined",
+  "reviewInvitationDetails": "Review the invitation details below and choose to accept or decline",
+  "invitedTo": "Invited To",
+  "expiredOn": "Expired on",
+  "expiresOn": "Expires on",
+  "invitationEmailWarning": "This invitation was sent to {invitedEmail}, but you are logged in as {currentEmail}. You can only accept invitations sent to your email address.",
+  "invitationEmailMismatch": "This invitation was sent to a different email address. Please log in with the correct account.",
+  "acceptInvitation": "Accept Invitation",
+  "declineInvitation": "Decline Invitation",
+  "goToTeamPage": "Go to Team Page"
 }

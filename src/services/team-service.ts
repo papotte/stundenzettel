@@ -99,6 +99,12 @@ export const createTeamInvitation = (
   return service.createTeamInvitation(teamId, email, role, invitedBy)
 }
 
+export const getTeamInvitation = (
+  invitationId: string,
+): Promise<TeamInvitation | null> => {
+  return service.getTeamInvitation(invitationId)
+}
+
 export const getTeamInvitations = (
   teamId: string,
 ): Promise<TeamInvitation[]> => {
