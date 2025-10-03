@@ -279,10 +279,9 @@ test.describe('Team Page', () => {
       await expect(
         page.getByText(/Please log in to accept or decline/i),
       ).toBeVisible()
-      await expect(page.getByRole('link', { name: /Sign In/i })).toHaveAttribute(
-        'href',
-        '/login',
-      )
+      await expect(
+        page.getByRole('link', { name: /Sign In/i }),
+      ).toHaveAttribute('href', '/login')
     })
 
     test('should handle invalid invitation ID gracefully', async ({

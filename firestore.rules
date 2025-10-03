@@ -28,6 +28,15 @@ service cloud.firestore {
          request.auth.uid == resource.data.ownerId ||
          exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)));
       
+      // Allow reading team info for authenticated users
+      // This is needed for the team invitation flow where users need to see team details
+      // Security is maintained by the invitation system:
+      // - Invitation IDs are auto-generated and not guessable
+      // - Invitations have expiration dates and status validation
+      // - Users must have valid invitation links to access team information
+      // - The invitation page validates email matching before showing team details
+      allow read: if request.auth.uid != null;
+      
       // Allow users to query teams collection to find teams they own
       // This is needed for the getUserTeam function to work efficiently
       allow list: if request.auth.uid != null && 

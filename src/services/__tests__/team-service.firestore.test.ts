@@ -756,7 +756,7 @@ describe('TeamService Firestore', () => {
       await expect(
         firestoreService.getTeamInvitation('invitation123'),
       ).rejects.toThrow(
-        'You do not have permission to perform this action. Please check your authentication.',
+        'Failed to get team invitation: Permission denied',
       )
     })
   })

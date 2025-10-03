@@ -1,6 +1,6 @@
 {
   "testMode": "TimeWise Tracker (Testmodus)",
-  "selectMockUser": "Wählen Sie einen Testbenutzer",
+  "selectMockUser": "oder wählen Sie einen Testbenutzer",
   "mockUserDescription": "Wählen Sie einen Benutzer, um sich für lokale Tests anzumelden. Die Daten werden im Speicher gehalten und beim Neuladen der Seite zurückgesetzt.",
   "loginAs": "Als {displayName} anmelden",
   "signingIn": "Anmeldung läuft...",

@@ -77,7 +77,7 @@ const mockInvitation: TeamInvitation = {
   role: 'member',
   invitedBy: 'owner-123',
   invitedAt: new Date('2024-01-01'),
-  expiresAt: new Date('2025-01-01'), // Future date
+  expiresAt: new Date(Date.now() + 86400000), // 24 hours from now
   status: 'pending',
 }
 
@@ -100,18 +100,17 @@ describe('InvitationPage', () => {
   })
 
   describe('Loading States', () => {
-    it('shows loading skeleton while fetching invitation', () => {
-      mockAuthContext.loading = true
-      renderWithProviders(<InvitationPage />)
-
-      expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0)
-    })
-
-    it('shows loading skeleton while auth is loading', () => {
+    it('shows loading skeleton during auth and invitation loading', () => {
+      // Test auth loading
       mockAuthContext.loading = true
       mockAuthContext.user = null
-      renderWithProviders(<InvitationPage />)
+      const { rerender } = renderWithProviders(<InvitationPage />)
+      expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0)
 
+      // Test invitation loading
+      mockAuthContext.loading = false
+      mockAuthContext.user = createMockUser({ email: 'test@example.com' })
+      rerender(<InvitationPage />)
       expect(screen.getAllByTestId('skeleton').length).toBeGreaterThan(0)
     })
   })
@@ -124,16 +123,15 @@ describe('InvitationPage', () => {
       renderWithProviders(<InvitationPage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/Team Invitation/i)).toBeInTheDocument()
+        expect(screen.getByText('teams.teamInvitation')).toBeInTheDocument()
         expect(
-          screen.getByText(/Please log in to accept or decline/i),
+          screen.getByText('teams.loginToAcceptInvitation'),
         ).toBeInTheDocument()
       })
 
-      expect(screen.getByRole('link', { name: /Sign In/i })).toHaveAttribute(
-        'href',
-        '/login',
-      )
+      expect(
+        screen.getByRole('link', { name: 'login.signInButton' }),
+      ).toHaveAttribute('href', '/login')
     })
   })
 
@@ -146,14 +144,19 @@ describe('InvitationPage', () => {
     it('displays invitation details correctly', async () => {
       renderWithProviders(<InvitationPage />)
 
+      // Verify invitation details are displayed
       await waitFor(() => {
         expect(screen.getByText('Test Team')).toBeInTheDocument()
       })
 
-      expect(screen.getByText(/member/i)).toBeInTheDocument()
+      expect(screen.getByText('teams.roles.member')).toBeInTheDocument()
       expect(screen.getByText('test@example.com')).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Accept/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Decline/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'teams.acceptInvitation' }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'teams.declineInvitation' }),
+      ).toBeInTheDocument()
     })
 
     it('accepts invitation and redirects to team page', async () => {
@@ -165,7 +168,9 @@ describe('InvitationPage', () => {
         expect(screen.getByText('Test Team')).toBeInTheDocument()
       })
 
-      const acceptButton = screen.getByRole('button', { name: /Accept/i })
+      const acceptButton = screen.getByRole('button', {
+        name: 'teams.acceptInvitation',
+      })
       await userEvent.click(acceptButton)
 
       await waitFor(() => {
@@ -187,7 +192,9 @@ describe('InvitationPage', () => {
         expect(screen.getByText('Test Team')).toBeInTheDocument()
       })
 
-      const declineButton = screen.getByRole('button', { name: /Decline/i })
+      const declineButton = screen.getByRole('button', {
+        name: 'teams.declineInvitation',
+      })
       await userEvent.click(declineButton)
 
       await waitFor(() => {
@@ -199,8 +206,8 @@ describe('InvitationPage', () => {
     })
   })
 
-  describe('Email Mismatch', () => {
-    it('shows warning when logged-in email does not match invitation', async () => {
+  describe('Edge Cases', () => {
+    it('handles email mismatch', async () => {
       const differentEmailInvitation = {
         ...mockInvitation,
         email: 'different@example.com',
@@ -217,16 +224,16 @@ describe('InvitationPage', () => {
       })
 
       expect(
-        screen.getByText(/This invitation was sent to different@example.com/i),
+        screen.getByText('teams.invitationEmailWarning'),
       ).toBeInTheDocument()
 
-      const acceptButton = screen.getByRole('button', { name: /Accept/i })
+      const acceptButton = screen.getByRole('button', {
+        name: 'teams.acceptInvitation',
+      })
       expect(acceptButton).toBeDisabled()
     })
-  })
 
-  describe('Expired Invitation', () => {
-    it('shows expired message for expired invitations', async () => {
+    it('handles expired invitations', async () => {
       ;(getTeamInvitation as jest.Mock).mockResolvedValue(mockExpiredInvitation)
       ;(getTeam as jest.Mock).mockResolvedValue(mockTeam)
 
@@ -234,37 +241,33 @@ describe('InvitationPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/This invitation has expired/i),
+          screen.getByText('teams.invitationExpiredDescription'),
         ).toBeInTheDocument()
       })
 
       expect(
-        screen.queryByRole('button', { name: /Accept/i }),
+        screen.queryByRole('button', { name: 'teams.acceptInvitation' }),
       ).not.toBeInTheDocument()
       expect(
-        screen.queryByRole('button', { name: /Decline/i }),
+        screen.queryByRole('button', { name: 'teams.declineInvitation' }),
       ).not.toBeInTheDocument()
     })
-  })
 
-  describe('Invalid Invitation', () => {
-    it('shows error when invitation not found', async () => {
+    it('handles invalid invitations', async () => {
       ;(getTeamInvitation as jest.Mock).mockResolvedValue(null)
 
       renderWithProviders(<InvitationPage />)
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/This invitation could not be found/i),
-        ).toBeInTheDocument()
+        expect(screen.getByText('teams.invitationNotFound')).toBeInTheDocument()
       })
 
       expect(
-        screen.getByRole('link', { name: /Go to Team Page/i }),
+        screen.getByRole('link', { name: 'teams.goToTeamPage' }),
       ).toHaveAttribute('href', '/team')
     })
 
-    it('shows error for already processed invitations', async () => {
+    it('handles already processed invitations', async () => {
       const processedInvitation = {
         ...mockInvitation,
         status: 'accepted' as const,
@@ -276,7 +279,7 @@ describe('InvitationPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/already been accepted or declined/i),
+          screen.getByText('teams.invitationAlreadyProcessed'),
         ).toBeInTheDocument()
       })
     })
@@ -291,7 +294,9 @@ describe('InvitationPage', () => {
       renderWithProviders(<InvitationPage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/Failed to load invitation/i)).toBeInTheDocument()
+        expect(
+          screen.getByText('Failed to load invitation'),
+        ).toBeInTheDocument()
       })
     })
 
@@ -308,7 +313,9 @@ describe('InvitationPage', () => {
         expect(screen.getByText('Test Team')).toBeInTheDocument()
       })
 
-      const acceptButton = screen.getByRole('button', { name: /Accept/i })
+      const acceptButton = screen.getByRole('button', {
+        name: 'teams.acceptInvitation',
+      })
       await userEvent.click(acceptButton)
 
       await waitFor(() => {

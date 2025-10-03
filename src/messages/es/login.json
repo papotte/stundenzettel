@@ -1,6 +1,6 @@
 {
   "testMode": "TimeWise Tracker (Modo de Prueba)",
-  "selectMockUser": "Seleccionar un usuario de prueba",
+  "selectMockUser": "O seleccione un usuario de prueba",
   "mockUserDescription": "Elige un usuario para iniciar sesión para pruebas locales. Los datos se almacenan en memoria y se restablecerán al recargar la página.",
   "loginAs": "Iniciar sesión como {displayName}",
   "signingIn": "Iniciando sesión...",

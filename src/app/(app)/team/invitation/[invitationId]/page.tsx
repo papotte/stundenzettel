@@ -46,6 +46,7 @@ export default function InvitationPage() {
 
   useEffect(() => {
     const loadInvitation = async () => {
+      debugger
       if (!invitationId) {
         setError('Invalid invitation link')
         setLoading(false)
@@ -93,6 +94,7 @@ export default function InvitationPage() {
   }, [invitationId])
 
   const handleAccept = async () => {
+    debugger
     if (!invitation || !user) return
 
     // Check if user email matches invitation email
@@ -133,6 +135,7 @@ export default function InvitationPage() {
   }
 
   const handleDecline = async () => {
+    debugger
     if (!invitation) return
 
     setProcessing(true)
@@ -329,9 +332,7 @@ export default function InvitationPage() {
                   <div className="flex gap-3 pt-2">
                     <Button
                       onClick={handleAccept}
-                      disabled={
-                        processing || user.email !== invitation.email
-                      }
+                      disabled={processing || user.email !== invitation.email}
                       className="flex-1"
                     >
                       <Check className="mr-2 h-4 w-4" />
