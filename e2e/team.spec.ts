@@ -1,5 +1,16 @@
 import { expect, test } from './fixtures'
-import { navigateToTeamPage, testAuthRedirect } from './test-helpers'
+import {
+  createTestTeamWithInvitation,
+  navigateToTeamPage,
+  testAuthRedirect,
+} from './test-helpers'
+
+// Extend window interface for test context
+declare global {
+  interface Window {
+    testInvitationId?: string
+  }
+}
 
 test.describe('Team Page', () => {
   test.describe('Authorization', () => {
@@ -304,52 +315,77 @@ test.describe('Team Page', () => {
   })
 
   test.describe('Team Invitation Accept/Decline Flow', () => {
-    test.beforeEach(async ({ page, loginUser }) => {
-      await loginUser(page, false)
+    test.beforeEach(async ({ page, loginUser, workerUser }) => {
+      // Login as team owner
+      await loginUser(page)
+
+      // Create team and invitation directly in the database
+      const { invitationId } = await createTestTeamWithInvitation(
+        'Invitation Test Team',
+        'Team for testing invitations',
+        workerUser.uid,
+        'inviter@example.com',
+        workerUser.email,
+        'member',
+      )
+
+      // Store the invitation ID for use in tests
+      await page.evaluate((id) => {
+        window.testInvitationId = id
+      }, invitationId)
     })
 
     test('should display invitation details and allow acceptance', async ({
       page,
     }) => {
-      // Note: This test requires a valid invitation to be created first
-      // In a real scenario, we would:
-      // 1. Create a team with one user
-      // 2. Send an invitation to another user
-      // 3. Log in as the invited user
-      // 4. Navigate to the invitation link
-      // 5. Accept the invitation
+      // Get the invitation ID from the test context
+      const invitationId = await page.evaluate(() => window.testInvitationId)
 
-      // For this E2E test, we'll verify the page structure
-      // Navigate to team page first
-      await page.goto('/team')
+      // Navigate to invitation page
+      await page.goto(`/team/invitation/${invitationId}`)
 
-      // Verify we can access team page
+      // Verify invitation page loads correctly
+      await expect(page.getByText('Team Invitation')).toBeVisible()
+      await expect(page.getByText('Invitation Test Team')).toBeVisible()
+      await expect(page.getByText('Member')).toBeVisible()
+
+      // Verify accept and decline buttons are present
       await expect(
-        page.getByRole('link', { name: /Back to Tracker/i }),
+        page.getByRole('button', { name: 'Accept Invitation' }),
+      ).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Decline Invitation' }),
       ).toBeVisible()
 
-      // The actual invitation acceptance flow would require:
-      // - A multi-user test setup
-      // - Creating invitations via the team management interface
-      // - Switching between user sessions
-      // This is documented but not implemented in this minimal E2E test
+      // Accept the invitation
+      await page.getByRole('button', { name: 'Accept Invitation' }).click()
+
+      // Verify redirect to team page and success message
+      await page.waitForURL('/team')
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Invitation accepted',
+      )
     })
 
     test('should allow declining an invitation', async ({ page }) => {
-      // Similar to accept test, this would require a full invitation setup
-      // The page structure and navigation have been verified
-      // Actual decline flow would require:
-      // - A valid invitation ID
-      // - Proper authentication
-      // - Clicking the decline button
-      // - Verifying redirect to team page
+      // Get the invitation ID from the test context
+      const invitationId = await page.evaluate(() => window.testInvitationId)
 
-      await page.goto('/team')
+      // Navigate to invitation page
+      await page.goto(`/team/invitation/${invitationId}`)
 
-      // Verify navigation works
-      await expect(
-        page.getByRole('link', { name: /Back to Tracker/i }),
-      ).toBeVisible()
+      // Verify invitation page loads
+      await expect(page.getByText('Team Invitation')).toBeVisible()
+      await expect(page.getByText('Invitation Test Team')).toBeVisible()
+
+      // Decline the invitation
+      await page.getByRole('button', { name: 'Decline Invitation' }).click()
+
+      // Verify redirect to team page and success message
+      await page.waitForURL('/team')
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Invitation declined',
+      )
     })
   })
 })
