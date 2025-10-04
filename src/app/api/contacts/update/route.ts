@@ -1,29 +1,32 @@
 import { NextResponse } from 'next/server'
 
 import {
-  RESEND_AUDIENCE_ID,
   createResendService,
   handleResendError,
 } from '@/services/resend-service'
 
-export async function POST(request: Request) {
+export async function PUT(request: Request) {
   try {
     const body = await request.json()
-    const { email } = body as {
+    const { email, firstName, lastName, unsubscribed } = body as {
       email: string
+      firstName?: string
+      lastName?: string
+      unsubscribed?: boolean
     }
 
     if (!email) {
       return NextResponse.json(
-        { message: 'Missing required fields' },
+        { message: 'Missing required field: email' },
         { status: 400 },
       )
     }
 
     const resendService = createResendService()
-    const data = await resendService.createContact({
-      email,
-      audienceId: RESEND_AUDIENCE_ID,
+    const data = await resendService.updateContact(email, {
+      firstName,
+      lastName,
+      unsubscribed,
     })
 
     return NextResponse.json(data)

@@ -122,7 +122,7 @@ export default function LoginPage() {
     try {
       await setPersistence(auth, browserLocalPersistence)
       const userCredential = await action(email, password)
-      
+
       // Add contact to Resend on signup
       if (isSignup && userCredential.user.email) {
         try {
@@ -136,7 +136,7 @@ export default function LoginPage() {
           // Don't fail signup if contact creation fails
         }
       }
-      
+
       router.push(returnUrl)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
@@ -189,9 +189,13 @@ export default function LoginPage() {
     try {
       await setPersistence(auth, browserLocalPersistence)
       const result = await signInWithPopup(auth, provider)
-      
+
       // Check if this is a new user and add to Resend
-      if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime && result.user.email) {
+      if (
+        result.user.metadata.creationTime ===
+          result.user.metadata.lastSignInTime &&
+        result.user.email
+      ) {
         try {
           await fetch('/api/contacts/add', {
             method: 'POST',
@@ -203,7 +207,7 @@ export default function LoginPage() {
           // Don't fail signup if contact creation fails
         }
       }
-      
+
       router.push(returnUrl)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error)
