@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/papotte/stundenzettel/compare/v1.14.0...v1.15.0) (2025-10-04)
+
+
+### Features
+
+* add navigation page for team invitation links ([#123](https://github.com/papotte/stundenzettel/issues/123)) ([b5f3105](https://github.com/papotte/stundenzettel/commit/b5f31059c455602de9fe761f0d6cd54f8b593550))
+
 # [1.14.0](https://github.com/papotte/stundenzettel/compare/v1.13.0...v1.14.0) (2025-10-02)
 
 
