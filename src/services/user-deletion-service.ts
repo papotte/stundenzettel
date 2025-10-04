@@ -1,13 +1,19 @@
-import * as firestoreService from './user-deletion-service.firestore'
+import {
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  deleteUser,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+} from 'firebase/auth'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  writeBatch,
+} from 'firebase/firestore'
 
-// Always use Firestore service - local service has been removed
-// The environment-specific database selection is handled in firebase.ts
-const service = firestoreService
-
-const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'production'
-console.info(
-  `Using Firestore user deletion service for environment '${environment}'`,
-)
+import { auth, db } from '@/lib/firebase'
 
 /**
  * Permanently deletes a user account and all associated data.
@@ -17,11 +23,34 @@ console.info(
  * @param password - The user's current password for confirmation
  * @returns Promise that resolves when deletion is complete
  */
-export const deleteUserAccount = (
+export const deleteUserAccount = async (
   userId: string,
   password: string,
 ): Promise<void> => {
-  return service.deleteUserAccount(userId, password)
+  if (!userId) throw new Error('User not authenticated')
+  if (!password) throw new Error('Password is required for account deletion')
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    throw new Error('User not authenticated or mismatched user ID')
+  }
+
+  // Re-authenticate user before deletion for security
+  if (user.email) {
+    const credential = EmailAuthProvider.credential(user.email, password)
+    await reauthenticateWithCredential(user, credential)
+  }
+
+  try {
+    // Delete all user data from Firestore
+    await deleteAllUserData(userId)
+
+    // Delete the Firebase Auth user account
+    await deleteUser(user)
+  } catch (error) {
+    console.error('Error during account deletion:', error)
+    throw error
+  }
 }
 
 /**
@@ -33,11 +62,33 @@ export const deleteUserAccount = (
  * @param email - The user's email for confirmation
  * @returns Promise that resolves when deletion is complete
  */
-export const deleteUserAccountWithEmail = (
+export const deleteUserAccountWithEmail = async (
   userId: string,
   email: string,
 ): Promise<void> => {
-  return service.deleteUserAccountWithEmail(userId, email)
+  if (!userId) throw new Error('User not authenticated')
+  if (!email) throw new Error('Email is required for account deletion')
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    throw new Error('User not authenticated or mismatched user ID')
+  }
+
+  // Verify email matches the current user
+  if (user.email !== email) {
+    throw new Error('Email does not match current user')
+  }
+
+  try {
+    // Delete all user data from Firestore
+    await deleteAllUserData(userId)
+
+    // Delete the Firebase Auth user account
+    await deleteUser(user)
+  } catch (error) {
+    console.error('Error during account deletion:', error)
+    throw error
+  }
 }
 
 /**
@@ -48,6 +99,56 @@ export const deleteUserAccountWithEmail = (
  * @param userId - The ID of the user to delete
  * @returns Promise that resolves when deletion is complete
  */
-export const deleteUserAccountWithGoogle = (userId: string): Promise<void> => {
-  return service.deleteUserAccountWithGoogle(userId)
+export const deleteUserAccountWithGoogle = async (
+  userId: string,
+): Promise<void> => {
+  if (!userId) throw new Error('User not authenticated')
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    throw new Error('User not authenticated or mismatched user ID')
+  }
+
+  // Re-authenticate with Google before deletion for security
+  const provider = new GoogleAuthProvider()
+  await reauthenticateWithPopup(user, provider)
+
+  try {
+    // Delete all user data from Firestore
+    await deleteAllUserData(userId)
+
+    // Delete the Firebase Auth user account
+    await deleteUser(user)
+  } catch (error) {
+    console.error('Error during account deletion:', error)
+    throw error
+  }
+}
+
+/**
+ * Deletes all user data from Firestore including settings and time entries.
+ */
+const deleteAllUserData = async (userId: string): Promise<void> => {
+  const batch = writeBatch(db)
+
+  // Delete user settings
+  const settingsRef = doc(db, 'users', userId, 'settings', 'general')
+  batch.delete(settingsRef)
+
+  // Delete all time entries
+  const timeEntriesRef = collection(db, 'users', userId, 'timeEntries')
+  const timeEntriesSnapshot = await getDocs(timeEntriesRef)
+  timeEntriesSnapshot.docs.forEach((doc) => {
+    batch.delete(doc.ref)
+  })
+
+  // Delete any other user subcollections that might exist in the future
+  // This ensures GDPR compliance by removing all user data
+
+  // Commit all deletions in a single batch
+  await batch.commit()
+
+  // Delete the user document itself (this will also delete any remaining subcollections)
+  const userDocRef = doc(db, 'users', userId)
+  await deleteDoc(userDocRef)
 }
