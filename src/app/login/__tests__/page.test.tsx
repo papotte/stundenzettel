@@ -104,7 +104,16 @@ describe('LoginPage', () => {
 
     it('allows signing up with email and password', async () => {
       const user = userEvent.setup()
-      mockCreateUserWithEmailAndPassword.mockResolvedValue({})
+      mockCreateUserWithEmailAndPassword.mockResolvedValue({
+        user: { email: 'new@example.com' },
+      })
+
+      // Mock the fetch call for adding contact to Resend
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      })
+
       render(<LoginPage />)
 
       // Go to sign up tab
@@ -129,13 +138,33 @@ describe('LoginPage', () => {
           'new@example.com',
           'newpassword',
         )
+        expect(global.fetch).toHaveBeenCalledWith('/api/contacts/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'new@example.com' }),
+        })
         expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
     })
 
     it('handles Google sign-in', async () => {
       const user = userEvent.setup()
-      mockSignInWithPopup.mockResolvedValue({})
+      mockSignInWithPopup.mockResolvedValue({
+        user: {
+          email: 'test@example.com',
+          metadata: {
+            creationTime: '2024-01-01T00:00:00.000Z',
+            lastSignInTime: '2024-01-01T00:00:00.000Z', // Same time means new user
+          },
+        },
+      })
+
+      // Mock the fetch call for adding contact to Resend (for new users)
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      })
+
       render(<LoginPage />)
 
       await user.click(
@@ -144,6 +173,11 @@ describe('LoginPage', () => {
 
       await waitFor(() => {
         expect(mockSignInWithPopup).toHaveBeenCalled()
+        expect(global.fetch).toHaveBeenCalledWith('/api/contacts/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'test@example.com' }),
+        })
         expect(mockPush).toHaveBeenCalledWith('/tracker')
       })
     })

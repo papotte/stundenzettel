@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
 
 import { TeamInvitationEmail } from '@/components/emails/team-invitation-email'
+import {
+  createResendService,
+  handleResendError,
+} from '@/services/resend-service'
 
 export async function POST(request: Request) {
   try {
@@ -31,16 +34,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const apiKey = process.env.RESEND_API_KEY
-    if (!apiKey) {
-      return NextResponse.json(
-        { message: 'RESEND_API_KEY is not configured' },
-        { status: 500 },
-      )
-    }
-
-    const resend = new Resend(apiKey)
-    const { data, error } = await resend.emails.send({
+    const resendService = createResendService()
+    const data = await resendService.sendEmail({
       from,
       to: [to],
       subject: subject || `Invitation to join team "${teamName}"`,
@@ -52,12 +47,9 @@ export async function POST(request: Request) {
       }),
     })
 
-    if (error) {
-      return NextResponse.json(error, { status: 400 })
-    }
-
     return NextResponse.json(data)
-  } catch {
-    return NextResponse.json({ message: 'Unexpected error' }, { status: 500 })
+  } catch (error) {
+    const { message, status } = handleResendError(error)
+    return NextResponse.json({ message }, { status })
   }
 }
