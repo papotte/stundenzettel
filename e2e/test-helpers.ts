@@ -126,10 +126,17 @@ export const addExportEntry = async (
   // Wait for the timesheet to load
   await expect(page.getByTestId('export-preview-month')).toBeVisible()
 
+  // Workaround for Sunday: if the date is a Sunday, add one day since empty Sundays are not rendered
+  let targetDate = date
+  if (date.getDay() === 0) {
+    targetDate = new Date(date)
+    targetDate.setDate(targetDate.getDate() + 1)
+  }
+
   // Format the date as YYYY-MM-DD for the test ID
-  const yyyy = date.getFullYear()
-  const mm = String(date.getMonth() + 1).padStart(2, '0')
-  const dd = String(date.getDate()).padStart(2, '0')
+  const yyyy = targetDate.getFullYear()
+  const mm = String(targetDate.getMonth() + 1).padStart(2, '0')
+  const dd = String(targetDate.getDate()).padStart(2, '0')
   const dateId = `timesheet-day-${yyyy}-${mm}-${dd}`
 
   // Find the row for the specific date and click the add button
