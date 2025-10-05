@@ -115,6 +115,26 @@ export default function PreferencesPage() {
     try {
       await setUserSettings(user.uid, data)
       await setUserLocale(data.language)
+
+      // Update Resend contact if displayName is provided
+      if (data.displayName && user.email) {
+        try {
+          await fetch('/api/contacts/update', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: user.email,
+              firstName: data.displayName,
+            }),
+          })
+        } catch (resendError) {
+          // Log the error but don't fail the entire operation
+          console.warn('Failed to update Resend contact:', resendError)
+        }
+      }
+
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),

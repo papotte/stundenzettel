@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
+
+import {
+  createResendService,
+  handleResendError,
+} from '@/services/resend-service'
 
 export async function POST(request: Request) {
   try {
@@ -21,15 +25,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const apiKey = process.env.RESEND_API_KEY
-    if (!apiKey) {
-      return NextResponse.json(
-        { message: 'RESEND_API_KEY is not configured' },
-        { status: 500 },
-      )
-    }
-
-    const resend = new Resend(apiKey)
+    const resendService = createResendService()
     const subject = 'Your password was changed'
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -40,19 +36,16 @@ export async function POST(request: Request) {
       </div>
     `
 
-    const { data, error } = await resend.emails.send({
+    const data = await resendService.sendEmail({
       from,
       to: [to],
       subject,
       html,
     })
 
-    if (error) {
-      return NextResponse.json(error, { status: 400 })
-    }
-
     return NextResponse.json(data)
-  } catch {
-    return NextResponse.json({ message: 'Unexpected error' }, { status: 500 })
+  } catch (error) {
+    const { message, status } = handleResendError(error)
+    return NextResponse.json({ message }, { status })
   }
 }

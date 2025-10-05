@@ -1,13 +1,10 @@
-import * as firestoreService from './password-update-service.firestore'
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from 'firebase/auth'
 
-// Always use Firestore service - local service has been removed
-// The environment-specific database selection is handled in firebase.ts
-const service = firestoreService
-
-const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'production'
-console.info(
-  `Using Firestore password update service for environment '${environment}'`,
-)
+import { auth } from '@/lib/firebase'
 
 /**
  * Updates a user's password after verifying their current password.
@@ -18,12 +15,30 @@ console.info(
  * @param newPassword - The new password to set
  * @returns Promise that resolves when password update is complete
  */
-export const updateUserPassword = (
+export const updateUserPassword = async (
   userId: string,
   currentPassword: string,
   newPassword: string,
 ): Promise<void> => {
-  return service.updateUserPassword(userId, currentPassword, newPassword)
+  if (!userId) throw new Error('User not authenticated')
+  if (!currentPassword) throw new Error('Current password is required')
+  if (!newPassword) throw new Error('New password is required')
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    throw new Error('User not authenticated or mismatched user ID')
+  }
+
+  if (!user.email) {
+    throw new Error('User does not have email authentication')
+  }
+
+  // Re-authenticate user before password update for security
+  const credential = EmailAuthProvider.credential(user.email, currentPassword)
+  await reauthenticateWithCredential(user, credential)
+
+  // Update the password
+  await updatePassword(user, newPassword)
 }
 
 /**
@@ -33,6 +48,19 @@ export const updateUserPassword = (
  * @param userId - The ID of the user to check
  * @returns Promise that resolves to true if user has password authentication
  */
-export const hasPasswordAuthentication = (userId: string): Promise<boolean> => {
-  return service.hasPasswordAuthentication(userId)
+export const hasPasswordAuthentication = async (
+  userId: string,
+): Promise<boolean> => {
+  if (!userId) return false
+
+  const user = auth.currentUser
+  if (!user || user.uid !== userId) {
+    return false
+  }
+
+  // Check if user has password provider
+  return (
+    user.providerData?.some((provider) => provider.providerId === 'password') ??
+    false
+  )
 }
