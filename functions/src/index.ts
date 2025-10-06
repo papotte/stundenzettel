@@ -88,31 +88,46 @@ export const stripeWebhook = onRequest(
     }
 
     try {
+      // Log webhook event details
+      console.log(`🔔 Webhook received: ${event.type}`)
+      console.log(
+        `📅 Event created: ${new Date(event.created * 1000).toISOString()}`,
+      )
+      console.log(`🆔 Event ID: ${event.id}`)
+      console.log(`🌐 Live mode: ${event.livemode}`)
+      console.log(`📊 API version: ${event.api_version}`)
+
       switch (event.type) {
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
         case 'customer.subscription.deleted':
+          console.log(`📋 Processing subscription event: ${event.type}`)
           await handleSubscriptionChange(
             event.data.object as Stripe.Subscription,
             stripe,
           )
           break
         case 'invoice.payment_succeeded':
+          console.log(`💳 Processing payment succeeded event`)
           await handlePaymentSucceeded(
             event.data.object as Stripe.Invoice,
             stripe,
           )
           break
         case 'invoice.payment_failed':
+          console.log(`❌ Processing payment failed event`)
           await handlePaymentFailed(event.data.object as Stripe.Invoice, stripe)
           break
         default:
-          console.warn(`Unhandled event type: ${event.type}`)
+          console.warn(`⚠️ Unhandled event type: ${event.type}`)
       }
 
+      console.log(`✅ Webhook ${event.id} processed successfully`)
       res.json({ received: true })
     } catch (error) {
-      console.error('Error processing webhook:', error)
+      console.error(`💥 Error processing webhook ${event.id}:`, error)
+      console.error(`📋 Event type: ${event.type}`)
+      console.error(`📊 Event data:`, JSON.stringify(event.data, null, 2))
       res.status(500).send('Webhook processing failed')
     }
   },
@@ -131,15 +146,50 @@ async function handleSubscriptionChange(
     return
   }
 
+  // Add comprehensive logging for debugging
+  console.log(
+    `Processing subscription ${subscription.id} for customer ${customerId}`,
+  )
+  console.log(`Customer email: ${customer.email}`)
+  console.log(`Customer metadata:`, JSON.stringify(customer.metadata, null, 2))
+
   const firebaseUid = customer.metadata.firebase_uid
   const teamId = customer.metadata.team_id
 
+  // Defensive checks for missing metadata
+  if (!firebaseUid) {
+    console.error(
+      `Missing firebase_uid in customer metadata for subscription ${subscription.id}`,
+    )
+    console.error(`Customer ID: ${customerId}, Email: ${customer.email}`)
+    console.error(`Available metadata keys:`, Object.keys(customer.metadata))
+
+    // Log the full customer object for debugging (without sensitive data)
+    console.error(`Full customer object:`, {
+      id: customer.id,
+      email: customer.email,
+      metadata: customer.metadata,
+      created: customer.created,
+    })
+
+    // Don't process the webhook if we can't identify the user
+    return
+  }
+
   if (teamId && firebaseUid) {
     // Handle team subscription
+    console.log(
+      `Processing team subscription for team ${teamId} and user ${firebaseUid}`,
+    )
     await handleTeamSubscriptionChange(subscription, teamId)
   } else if (firebaseUid) {
     // Handle individual subscription
+    console.log(`Processing individual subscription for user ${firebaseUid}`)
     await handleIndividualSubscriptionChange(subscription, firebaseUid)
+  } else {
+    console.error(
+      `Incomplete metadata for subscription ${subscription.id}: firebase_uid=${firebaseUid}, team_id=${teamId}`,
+    )
   }
 }
 
@@ -204,16 +254,32 @@ async function handleTeamSubscriptionChange(
 
 // Handle successful payments
 async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
+  console.log(`💳 Processing payment succeeded for invoice ${invoice.id}`)
+  console.log(`💰 Amount paid: ${invoice.amount_paid} ${invoice.currency}`)
+
   const customerId = invoice.customer as string
   const customer = await stripe.customers.retrieve(customerId)
 
   if ('deleted' in customer) {
-    console.error('Customer was deleted')
+    console.error('❌ Customer was deleted')
     return
   }
 
+  console.log(`👤 Customer: ${customerId} (${customer.email})`)
+  console.log(
+    `📋 Customer metadata:`,
+    JSON.stringify(customer.metadata, null, 2),
+  )
+
   const firebaseUid = customer.metadata.firebase_uid
   const teamId = customer.metadata.team_id
+
+  if (!firebaseUid) {
+    console.error(
+      `❌ Missing firebase_uid in customer metadata for invoice ${invoice.id}`,
+    )
+    return
+  }
 
   // Update payment status
   const paymentData = {
@@ -223,7 +289,9 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice, stripe: Stripe) {
     paidAt: new Date(),
   }
 
+  console.log(`💾 Saving payment data:`, paymentData)
   await savePaymentToDb(invoice, teamId, firebaseUid, paymentData)
+  console.log(`✅ Payment data saved successfully`)
 }
 
 async function savePaymentToDb(
@@ -253,16 +321,32 @@ async function savePaymentToDb(
 
 // Handle failed payments
 async function handlePaymentFailed(invoice: Stripe.Invoice, stripe: Stripe) {
+  console.log(`❌ Processing payment failed for invoice ${invoice.id}`)
+  console.log(`💰 Amount due: ${invoice.amount_due} ${invoice.currency}`)
+
   const customerId = invoice.customer as string
   const customer = await stripe.customers.retrieve(customerId)
 
   if ('deleted' in customer) {
-    console.error('Customer was deleted')
+    console.error('❌ Customer was deleted')
     return
   }
 
+  console.log(`👤 Customer: ${customerId} (${customer.email})`)
+  console.log(
+    `📋 Customer metadata:`,
+    JSON.stringify(customer.metadata, null, 2),
+  )
+
   const firebaseUid = customer.metadata.firebase_uid
   const teamId = customer.metadata.team_id
+
+  if (!firebaseUid) {
+    console.error(
+      `❌ Missing firebase_uid in customer metadata for invoice ${invoice.id}`,
+    )
+    return
+  }
 
   // Update payment status
   const paymentData = {
@@ -271,7 +355,10 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, stripe: Stripe) {
     status: 'failed',
     failedAt: new Date(),
   }
+
+  console.log(`💾 Saving failed payment data:`, paymentData)
   await savePaymentToDb(invoice, teamId, firebaseUid, paymentData)
+  console.log(`✅ Failed payment data saved successfully`)
 }
 
 // Firestore triggers for team management
