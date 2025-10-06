@@ -84,7 +84,7 @@ export default function TeamPage() {
     if (success) {
       toast({
         title: t('teams.subscription'),
-        description: t('pricing.successToast'),
+        description: t('landing.pricing.successToast'),
         variant: 'default',
       })
       // Remove success/cancelled, add tab=subscription
@@ -96,7 +96,7 @@ export default function TeamPage() {
     } else if (cancelled) {
       toast({
         title: t('teams.subscription'),
-        description: t('pricing.cancelledToast'),
+        description: t('landing.pricing.cancelledToast'),
         variant: 'destructive',
       })
       const params = new URLSearchParams(searchParams.toString())

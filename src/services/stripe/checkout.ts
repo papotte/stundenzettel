@@ -99,6 +99,8 @@ export async function createCheckoutSession({
         quantity: 1,
       },
     ],
+    automatic_tax: { enabled: true },
+    customer_update: { address: 'auto' },
     mode: 'subscription',
     allow_promotion_codes: true,
     success_url: successUrl || `${origin}/subscription?success=true`,
