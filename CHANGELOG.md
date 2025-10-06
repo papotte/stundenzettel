@@ -1,3 +1,15 @@
+# [1.16.0](https://github.com/papotte/stundenzettel/compare/v1.15.0...v1.16.0) (2025-10-06)
+
+
+### Bug Fixes
+
+* minor error in e2e tests ([e49c399](https://github.com/papotte/stundenzettel/commit/e49c399f77fdcda95400d2d3fbc271261ee6fdcc))
+
+
+### Features
+
+* Add Resend Contact Integration on User Signup ([#119](https://github.com/papotte/stundenzettel/issues/119)) ([79bfcc4](https://github.com/papotte/stundenzettel/commit/79bfcc4b7bc02f05f7227ad7464c5aa00af7d42c))
+
 # [1.15.0](https://github.com/papotte/stundenzettel/compare/v1.14.0...v1.15.0) (2025-10-04)
 
 
