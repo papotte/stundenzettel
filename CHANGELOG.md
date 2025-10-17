@@ -1,3 +1,10 @@
+## [1.16.2](https://github.com/papotte/stundenzettel/compare/v1.16.1...v1.16.2) (2025-10-17)
+
+
+### Bug Fixes
+
+* write to the correct DB from firebase functions ([#130](https://github.com/papotte/stundenzettel/issues/130)) ([dfb77dc](https://github.com/papotte/stundenzettel/commit/dfb77dcd5e8c6d5a0e779805ecbb716b3822e9b6))
+
 ## [1.16.1](https://github.com/papotte/stundenzettel/compare/v1.16.0...v1.16.1) (2025-10-17)
 
 
