@@ -255,7 +255,8 @@ async function handleIndividualSubscriptionChange(
       userId,
       collectionPath,
       docId,
-      subscriptionData,
+      subscriptionId: subscription.id,
+      status: subscription.status,
     })
 
     await getDb()
