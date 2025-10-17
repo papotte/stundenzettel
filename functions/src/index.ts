@@ -23,6 +23,7 @@ dotenv.config({ path: '.env.local' })
 
 // Initialize Firebase Admin
 initializeApp()
+
 // Determine database ID based on environment
 const getDatabaseId = (): string => {
   // For e2e tests, always use test-database
@@ -40,9 +41,24 @@ const getDatabaseId = (): string => {
   return '' // Empty string means default database
 }
 
-const databaseId = getDatabaseId()
+// Database instance will be lazily initialized
+let db: FirebaseFirestore.Firestore | null = null
 
-const db = getFirestore(databaseId)
+// Get database instance (lazy initialization to ensure secrets are available)
+const getDb = (): FirebaseFirestore.Firestore => {
+  if (!db) {
+    const databaseId = getDatabaseId()
+    db = getFirestore(databaseId)
+
+    // Log database configuration on first access
+    info('Database initialized', {
+      databaseId: databaseId || '(default)',
+      environment: process.env.NEXT_PUBLIC_ENVIRONMENT || '(not set)',
+      hasCustomDatabaseId: !!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID,
+    })
+  }
+  return db
+}
 
 interface Payment {
   invoiceId: string
@@ -58,13 +74,24 @@ export const stripeWebhook = onRequest(
     region: 'europe-west1',
     cors: false,
     maxInstances: 10,
-    ...(process.env.NODE_ENV === 'production' && {
-      secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'],
-    }),
+    secrets: [
+      'STRIPE_SECRET_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'NEXT_PUBLIC_FIREBASE_DATABASE_ID',
+    ],
   },
   async (req: Request, res: Response) => {
+    // Debug: Log environment variable availability
+    info('Webhook handler started', {
+      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+      hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
+      hasDatabaseId: !!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID,
+      databaseIdValue:
+        process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || '(not set)',
+    })
+
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2025-08-27.basil',
+      apiVersion: '2025-06-30.basil',
     })
     const sig = req.headers['stripe-signature']
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -203,28 +230,57 @@ async function handleIndividualSubscriptionChange(
   subscription: Stripe.Subscription,
   userId: string,
 ) {
-  const currentPeriodStartTs = subscription.start_date || subscription.created
-  const currentPeriodStart = new Date(currentPeriodStartTs * 1000)
+  try {
+    const currentPeriodStartTs = subscription.start_date || subscription.created
+    const currentPeriodStart = new Date(currentPeriodStartTs * 1000)
 
-  const subscriptionData = {
-    stripeSubscriptionId: subscription.id,
-    stripeCustomerId: subscription.customer as string,
-    status: subscription.status,
-    currentPeriodStart: currentPeriodStart,
-    cancelAt: subscription.cancel_at
-      ? new Date(subscription.cancel_at * 1000)
-      : null,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    priceId: subscription.items.data[0]?.price.id,
-    updatedAt: new Date(),
+    const subscriptionData = {
+      stripeSubscriptionId: subscription.id,
+      stripeCustomerId: subscription.customer as string,
+      status: subscription.status,
+      currentPeriodStart: currentPeriodStart,
+      cancelAt: subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000)
+        : null,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      priceId: subscription.items.data[0]?.price.id,
+      updatedAt: new Date(),
+    }
+
+    const collectionPath = `users/${userId}/subscription`
+    const docId = 'current'
+
+    info('Writing individual subscription to database', {
+      databaseId: getDatabaseId(),
+      userId,
+      collectionPath,
+      docId,
+      subscriptionId: subscription.id,
+      status: subscription.status,
+    })
+
+    await getDb()
+      .collection('users')
+      .doc(userId)
+      .collection('subscription')
+      .doc('current')
+      .set(subscriptionData)
+
+    info('Individual subscription successfully written to database', {
+      databaseId: getDatabaseId(),
+      userId,
+      subscriptionId: subscription.id,
+    })
+  } catch (err) {
+    error('Failed to write individual subscription to database', {
+      databaseId: getDatabaseId(),
+      userId,
+      subscriptionId: subscription.id,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    })
+    throw err
   }
-
-  await db
-    .collection('users')
-    .doc(userId)
-    .collection('subscription')
-    .doc('current')
-    .set(subscriptionData)
 }
 
 // Handle team subscription changes
@@ -232,29 +288,57 @@ async function handleTeamSubscriptionChange(
   subscription: Stripe.Subscription,
   teamId: string,
 ) {
-  const currentPeriodStartTs = subscription.start_date || subscription.created
-  const currentPeriodStart = new Date(currentPeriodStartTs * 1000)
+  try {
+    const currentPeriodStartTs = subscription.start_date || subscription.created
+    const currentPeriodStart = new Date(currentPeriodStartTs * 1000)
 
-  const subscriptionData = {
-    stripeSubscriptionId: subscription.id,
-    stripeCustomerId: subscription.customer as string,
-    status: subscription.status,
-    currentPeriodStart: currentPeriodStart,
-    cancelAt: subscription.cancel_at
-      ? new Date(subscription.cancel_at * 1000)
-      : null,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    priceId: subscription.items.data[0]?.price.id,
-    quantity: subscription.items.data[0]?.quantity || 0,
-    updatedAt: new Date(),
+    const subscriptionData = {
+      stripeSubscriptionId: subscription.id,
+      stripeCustomerId: subscription.customer as string,
+      status: subscription.status,
+      currentPeriodStart: currentPeriodStart,
+      cancelAt: subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000)
+        : null,
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      priceId: subscription.items.data[0]?.price.id,
+      quantity: subscription.items.data[0]?.quantity || 0,
+      updatedAt: new Date(),
+    }
+
+    const collectionPath = `teams/${teamId}/subscription`
+    const docId = 'current'
+
+    info('Writing team subscription to database', {
+      databaseId: getDatabaseId(),
+      teamId,
+      collectionPath,
+      docId,
+      subscriptionData,
+    })
+
+    await getDb()
+      .collection('teams')
+      .doc(teamId)
+      .collection('subscription')
+      .doc('current')
+      .set(subscriptionData)
+
+    info('Team subscription successfully written to database', {
+      databaseId: getDatabaseId(),
+      teamId,
+      subscriptionId: subscription.id,
+    })
+  } catch (err) {
+    error('Failed to write team subscription to database', {
+      databaseId: getDatabaseId(),
+      teamId,
+      subscriptionId: subscription.id,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    })
+    throw err
   }
-
-  await db
-    .collection('teams')
-    .doc(teamId)
-    .collection('subscription')
-    .doc('current')
-    .set(subscriptionData)
 }
 
 // Handle successful payments
@@ -310,14 +394,14 @@ async function savePaymentToDb(
 ) {
   if (invoice.id) {
     if (teamId && firebaseUid) {
-      await db
+      await getDb()
         .collection('teams')
         .doc(teamId)
         .collection('payments')
         .doc(invoice.id)
         .set(paymentData)
     } else if (firebaseUid) {
-      await db
+      await getDb()
         .collection('users')
         .doc(firebaseUid)
         .collection('payments')
@@ -377,13 +461,14 @@ export const onTeamCreated = onDocumentCreated(
   {
     document: 'teams/{teamId}',
     region: 'europe-west1',
+    secrets: ['NEXT_PUBLIC_FIREBASE_DATABASE_ID'],
   },
   async (event: FirestoreEvent<any>) => {
     const teamData = event.data?.data()
     if (!teamData) return
 
     // Set up team subscription collection
-    await db
+    await getDb()
       .collection('teams')
       .doc(event.params.teamId)
       .collection('subscription')
@@ -399,6 +484,7 @@ export const onTeamMemberAdded = onDocumentUpdated(
   {
     document: 'teams/{teamId}/members/{memberId}',
     region: 'europe-west1',
+    secrets: ['NEXT_PUBLIC_FIREBASE_DATABASE_ID'],
   },
   async (event: FirestoreEvent<any>) => {
     const beforeData = event.data?.before.data()
@@ -410,7 +496,7 @@ export const onTeamMemberAdded = onDocumentUpdated(
       const memberId = event.params.memberId
 
       // Add user to team's users collection for easier querying
-      await db
+      await getDb()
         .collection('teams')
         .doc(teamId)
         .collection('users')
