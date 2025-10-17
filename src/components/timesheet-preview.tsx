@@ -16,7 +16,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useFormatter } from '@/lib/date-formatter'
-import { calculateWeekCompensatedTime } from '@/lib/time-utils'
+import {
+  calculateExpectedMonthlyHours,
+  calculateWeekCompensatedTime,
+} from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -102,6 +105,11 @@ export default function TimesheetPreview({
   const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 90
   const compensatedPassengerHours =
     monthPassengerTotal * (passengerCompPercent / 100)
+
+  // Calculate expected hours and overtime
+  const expectedHours = calculateExpectedMonthlyHours(userSettings)
+  const actualHours = monthCompTotal + compensatedPassengerHours
+  const overtime = actualHours - expectedHours
 
   return (
     <div
@@ -457,6 +465,49 @@ export default function TimesheetPreview({
               <div className="flex-1 text-right print:pb-1">
                 {compensatedPassengerHours.toFixed(2)}
               </div>
+              <div className="flex-1 print:pb-1"></div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex w-full justify-end print:text-xs">
+          <div className="md:flex-1"></div>
+          <div className="flex flex-1 gap-8 w-1/2 justify-between">
+            <div className="flex-1 text-right font-semibold">
+              {t('export.footerExpectedHours')}
+            </div>
+            <div className="flex flex-1 gap-8 pb-2">
+              <div
+                className="flex-1 text-right print:pb-1"
+                data-testid="timesheet-expected-hours"
+              >
+                {expectedHours.toFixed(2)}
+              </div>
+              <div className="flex-1 text-right print:pb-1"></div>
+              <div className="flex-1 print:pb-1"></div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex w-full justify-end print:text-xs">
+          <div className="md:flex-1"></div>
+          <div className="flex flex-1 gap-8 w-1/2 justify-between">
+            <div className="flex-1 text-right font-semibold">
+              {t('export.footerOvertime')}
+            </div>
+            <div className="flex flex-1 gap-8 pb-2">
+              <div
+                className={`flex-1 text-right print:pb-1 ${
+                  overtime > 0
+                    ? 'text-green-600'
+                    : overtime < 0
+                      ? 'text-red-600'
+                      : ''
+                }`}
+                data-testid="timesheet-overtime"
+              >
+                {overtime > 0 ? '+' : ''}
+                {overtime.toFixed(2)}
+              </div>
+              <div className="flex-1 text-right print:pb-1"></div>
               <div className="flex-1 print:pb-1"></div>
             </div>
           </div>

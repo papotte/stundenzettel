@@ -4,7 +4,7 @@ import React, { useEffect, useId, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
+import { ArrowLeft, InfoIcon, Loader2, Save, Settings } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -32,6 +32,12 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { locales } from '@/i18n'
@@ -46,7 +52,13 @@ const preferencesFormSchema = z.object({
   defaultWorkHours: z
     .number()
     .min(1, 'Must be at least 1 hour')
-    .max(10, 'Cannot be more than 10 hours'),
+    .max(10, 'Cannot be more than 10 hours')
+    .optional(),
+  expectedMonthlyHours: z
+    .number()
+    .min(1, 'Must be at least 1 hour')
+    .max(500, 'Cannot be more than 500 hours')
+    .optional(),
   defaultStartTime: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
@@ -73,12 +85,24 @@ export default function PreferencesPage() {
     mode: 'all',
     defaultValues: {
       defaultWorkHours: 7,
+      expectedMonthlyHours: 160,
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
       language: language,
       displayName: '',
     },
   })
+
+  // Watch defaultWorkHours to auto-calculate expectedMonthlyHours
+  const defaultWorkHours = form.watch('defaultWorkHours')
+
+  useEffect(() => {
+    if (defaultWorkHours) {
+      // Auto-calculate: defaultWorkHours × 260 ÷ 12
+      const calculated = (defaultWorkHours * 260) / 12
+      form.setValue('expectedMonthlyHours', calculated)
+    }
+  }, [defaultWorkHours, form])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -241,13 +265,62 @@ export default function PreferencesPage() {
                           type="number"
                           step="0.5"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value
+                            field.onChange(value ? Number(value) : undefined)
+                          }}
+                          value={field.value ?? ''}
                         />
                       </FormControl>
                       <FormDescription>
                         {t('settings.defaultWorkHoursDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="expectedMonthlyHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        {t('settings.expectedMonthlyHours')}
+                        {defaultWorkHours && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs">
+                                  {t('settings.expectedMonthlyHoursTooltip')}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="1"
+                          disabled={!!defaultWorkHours}
+                          {...field}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            field.onChange(value ? Number(value) : undefined)
+                          }}
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {defaultWorkHours
+                          ? t('settings.expectedMonthlyHoursDescriptionAuto', {
+                              hours: defaultWorkHours,
+                            })
+                          : t('settings.expectedMonthlyHoursDescriptionManual')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
