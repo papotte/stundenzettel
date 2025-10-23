@@ -16,7 +16,7 @@ const defaultSettings: UserSettings = {
   companyFax: '',
   driverCompensationPercent: 100,
   passengerCompensationPercent: 90,
-  expectedMonthlyHours: 160,
+  expectedMonthlyHours: undefined,
 }
 
 export const getUserSettings = async (
