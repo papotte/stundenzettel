@@ -1,8 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 
 import { useTranslations } from 'next-intl'
+
+import {
+  calculateExpectedMonthlyHours,
+  calculateWeekCompensatedTime,
+} from '@/lib/time-utils'
+import type { TimeEntry, UserSettings } from '@/lib/types'
 
 interface TotalsRowData {
   label: string
@@ -26,21 +32,57 @@ interface TotalsRow {
 }
 
 interface TimesheetPreviewTotalsProps {
-  expectedHours: number
-  monthCompTotal: number
-  monthPassengerTotal: number
-  overtime: number
-  compensatedPassengerHours: number
+  selectedMonth: Date
+  relevantWeeks: Date[][]
+  getEntriesForDay: (day: Date) => TimeEntry[]
+  userSettings: UserSettings
 }
 
 export default function TimesheetPreviewTotals({
-  expectedHours,
-  monthCompTotal,
-  monthPassengerTotal,
-  overtime,
-  compensatedPassengerHours,
+  selectedMonth,
+  relevantWeeks,
+  getEntriesForDay,
+  userSettings,
 }: TimesheetPreviewTotalsProps) {
   const t = useTranslations()
+
+  // Calculate totals using the same logic as the main component
+  const monthCompTotal = useMemo(
+    () =>
+      relevantWeeks.reduce(
+        (acc: number, week: Date[]) =>
+          acc +
+          calculateWeekCompensatedTime(
+            week,
+            getEntriesForDay,
+            userSettings,
+            selectedMonth,
+          ),
+        0,
+      ),
+    [relevantWeeks, getEntriesForDay, userSettings, selectedMonth],
+  )
+
+  const monthPassengerTotal = useMemo(() => {
+    const monthEntries = relevantWeeks.flatMap((week: Date[]) =>
+      week.flatMap(getEntriesForDay),
+    )
+    return monthEntries.reduce((total, entry) => {
+      return total + (entry.passengerTimeHours || 0)
+    }, 0)
+  }, [relevantWeeks, getEntriesForDay])
+
+  const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 90
+  const compensatedPassengerHours =
+    monthPassengerTotal * (passengerCompPercent / 100)
+
+  const expectedHours = useMemo(
+    () => calculateExpectedMonthlyHours(userSettings),
+    [userSettings],
+  )
+
+  const actualHours = monthCompTotal + compensatedPassengerHours
+  const overtime = actualHours - expectedHours
 
   // Rows data structure
   const rowsData: TotalsRow[] = [

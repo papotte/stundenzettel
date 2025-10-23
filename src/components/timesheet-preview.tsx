@@ -16,10 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useFormatter } from '@/lib/date-formatter'
-import {
-  calculateExpectedMonthlyHours,
-  calculateWeekCompensatedTime,
-} from '@/lib/time-utils'
+import { calculateWeekCompensatedTime } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -76,44 +73,6 @@ export default function TimesheetPreview({
     () => weeksInMonth.filter(weekHasEntries),
     [weeksInMonth, weekHasEntries],
   )
-
-  const monthEntries = useMemo(
-    () =>
-      relevantWeeks.flatMap((week: Date[]) => week.flatMap(getEntriesForDay)),
-    [relevantWeeks, getEntriesForDay],
-  )
-  // For monthCompTotal, sum the weekCompTotal for each week
-  const monthCompTotal = useMemo(
-    () =>
-      relevantWeeks.reduce(
-        (acc: number, week: Date[]) =>
-          acc +
-          calculateWeekCompensatedTime(
-            week,
-            getEntriesForDay,
-            userSettings,
-            selectedMonth,
-          ),
-        0,
-      ),
-    [relevantWeeks, getEntriesForDay, userSettings, selectedMonth],
-  )
-  const monthPassengerTotal = useMemo(
-    () => sumPassengerTime(monthEntries),
-    [monthEntries],
-  )
-
-  const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 90
-  const compensatedPassengerHours =
-    monthPassengerTotal * (passengerCompPercent / 100)
-
-  // Calculate expected hours and overtime
-  const expectedHours = useMemo(
-    () => calculateExpectedMonthlyHours(userSettings),
-    [userSettings],
-  )
-  const actualHours = monthCompTotal + compensatedPassengerHours
-  const overtime = actualHours - expectedHours
 
   return (
     <div
@@ -429,11 +388,10 @@ export default function TimesheetPreview({
         })}
         {/* after all weeks, add monthly totals */}
         <TimesheetPreviewTotals
-          expectedHours={expectedHours}
-          monthCompTotal={monthCompTotal}
-          monthPassengerTotal={monthPassengerTotal}
-          overtime={overtime}
-          compensatedPassengerHours={compensatedPassengerHours}
+          selectedMonth={selectedMonth}
+          relevantWeeks={relevantWeeks}
+          getEntriesForDay={getEntriesForDay}
+          userSettings={userSettings || {}}
         />
         <div id="pdf-footer-section" className="flex w-full justify-end">
           <div className="mt-24 text-right print:mt-12 print:text-sm">
