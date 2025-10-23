@@ -16,7 +16,7 @@ const defaultSettings: UserSettings = {
   companyFax: '',
   driverCompensationPercent: 100,
   passengerCompensationPercent: 90,
-  expectedMonthlyHours: undefined,
+  // expectedMonthlyHours is not included in default settings - it will be auto-calculated
 }
 
 export const getUserSettings = async (
@@ -40,6 +40,12 @@ export const setUserSettings = async (
   settings: Partial<UserSettings>,
 ): Promise<void> => {
   if (!userId) throw new Error('User not authenticated')
+
+  // Filter out undefined values to prevent Firestore validation errors
+  const cleanSettings = Object.fromEntries(
+    Object.entries(settings).filter(([, value]) => value !== undefined),
+  )
+
   const docRef = doc(db, 'users', userId, 'settings', 'general')
-  await setDoc(docRef, settings, { merge: true })
+  await setDoc(docRef, cleanSettings, { merge: true })
 }
