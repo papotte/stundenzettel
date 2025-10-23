@@ -371,5 +371,155 @@ describe('PreferencesPage', () => {
         screen.getByText(/settings\.defaultWorkHoursDescription/i),
       ).toBeInTheDocument()
     })
+
+    it('auto-calculates expectedMonthlyHours when defaultWorkHours changes', async () => {
+      const user = userEvent.setup()
+      mockedSetUserSettings.mockResolvedValue(undefined)
+
+      renderWithProviders(<PreferencesPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('settings.preferences')).toBeInTheDocument()
+      })
+
+      // Wait for form to be populated
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('')).toBeInTheDocument()
+      })
+
+      // Change default work hours from 8 to 8.5
+      const workHoursInput = screen.getByRole('spinbutton', {
+        name: /settings\.defaultWorkHours/i,
+      })
+      await user.clear(workHoursInput)
+      await user.type(workHoursInput, '8.5')
+
+      // Check that expectedMonthlyHours is auto-calculated
+      await waitFor(() => {
+        const expectedHoursInput = screen.getByRole('spinbutton', {
+          name: /settings\.expectedMonthlyHours/i,
+        })
+        // 8.5 × 260 ÷ 12 = 184.166... → 184.0 (rounded to nearest 0.5)
+        expect(expectedHoursInput).toHaveValue(184)
+      })
+    })
+
+    it('allows user to override expectedMonthlyHours', async () => {
+      const user = userEvent.setup()
+      mockedSetUserSettings.mockResolvedValue(undefined)
+
+      renderWithProviders(<PreferencesPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('settings.preferences')).toBeInTheDocument()
+      })
+
+      // Wait for form to be populated
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('')).toBeInTheDocument()
+      })
+
+      // Manually override expectedMonthlyHours
+      const expectedHoursInput = screen.getByRole('spinbutton', {
+        name: /settings\.expectedMonthlyHours/i,
+      })
+      await user.clear(expectedHoursInput)
+      await user.type(expectedHoursInput, '200')
+
+      // Submit the form
+      const form = document.querySelector('form')
+      form?.dispatchEvent(
+        new window.Event('submit', { bubbles: true, cancelable: true }),
+      )
+
+      // Check that the service was called with the overridden value
+      await waitFor(() => {
+        expect(mockedSetUserSettings).toHaveBeenCalledWith(
+          'test-user-id',
+          expect.objectContaining({
+            expectedMonthlyHours: 200,
+          }),
+        )
+      })
+    })
+
+    it('persists manually overridden expectedMonthlyHours on reload', async () => {
+      // Mock settings with manually overridden expectedMonthlyHours
+      const settingsWithOverride = {
+        displayName: '',
+        defaultWorkHours: 8,
+        expectedMonthlyHours: 200, // Manually overridden value
+        defaultStartTime: '09:00',
+        defaultEndTime: '17:00',
+        language: 'en',
+      }
+
+      mockedGetUserSettings.mockResolvedValue(settingsWithOverride)
+
+      renderWithProviders(<PreferencesPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('settings.preferences')).toBeInTheDocument()
+      })
+
+      // Wait for form to be populated
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('200')).toBeInTheDocument()
+      })
+
+      // Verify that the overridden value is displayed, not the auto-calculated one
+      const expectedHoursInput = screen.getByRole('spinbutton', {
+        name: /settings\.expectedMonthlyHours/i,
+      })
+      expect(expectedHoursInput).toHaveValue(200)
+    })
+
+    it('shows reset button and manual description when expectedMonthlyHours is manually set', async () => {
+      const user = userEvent.setup()
+      mockedSetUserSettings.mockResolvedValue(undefined)
+
+      renderWithProviders(<PreferencesPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('settings.preferences')).toBeInTheDocument()
+      })
+
+      // Wait for form to be populated
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('')).toBeInTheDocument()
+      })
+
+      // Manually override expectedMonthlyHours
+      const expectedHoursInput = screen.getByRole('spinbutton', {
+        name: /settings\.expectedMonthlyHours/i,
+      })
+      await user.clear(expectedHoursInput)
+      await user.type(expectedHoursInput, '200')
+
+      // Check that reset button appears and description changes to manual
+      await waitFor(() => {
+        expect(
+          screen.getByText('Reset to auto-calculation'),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByText(/settings\.expectedMonthlyHoursDescriptionManual/i),
+        ).toBeInTheDocument()
+      })
+
+      // Click the reset button
+      const resetButton = screen.getByText('Reset to auto-calculation')
+      await user.click(resetButton)
+
+      // Check that the value is reset to auto-calculated value and description changes back
+      await waitFor(() => {
+        expect(expectedHoursInput).toHaveValue(173) // 8 × 260 ÷ 12 = 173
+        expect(
+          screen.queryByText('Reset to auto-calculation'),
+        ).not.toBeInTheDocument()
+        expect(
+          screen.getByText(/settings\.expectedMonthlyHoursDescriptionAuto/i),
+        ).toBeInTheDocument()
+      })
+    })
   })
 })

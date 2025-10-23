@@ -78,6 +78,8 @@ export default function PreferencesPage() {
   const language: string = useLocale()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isExpectedHoursManuallySet, setIsExpectedHoursManuallySet] =
+    useState(false)
   const languageFieldId = useId()
 
   const form = useForm<PreferencesFormValues>({
@@ -98,12 +100,13 @@ export default function PreferencesPage() {
 
   useEffect(() => {
     // Only calculate when user manually changes defaultWorkHours (not during initial load)
-    if (defaultWorkHours && !pageLoading) {
+    // and when expectedMonthlyHours hasn't been manually set by the user
+    if (defaultWorkHours && !pageLoading && !isExpectedHoursManuallySet) {
       // Use the utility function to calculate expected monthly hours
       const calculated = calculateExpectedMonthlyHours({ defaultWorkHours })
       form.setValue('expectedMonthlyHours', calculated)
     }
-  }, [defaultWorkHours, form, pageLoading])
+  }, [defaultWorkHours, form, pageLoading, isExpectedHoursManuallySet])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -117,6 +120,19 @@ export default function PreferencesPage() {
         try {
           const settings = await getUserSettings(user.uid)
           form.reset(settings)
+
+          // Check if expectedMonthlyHours was manually set by the user
+          // If it exists and is different from the auto-calculated value, mark as manually set
+          if (settings.expectedMonthlyHours && settings.defaultWorkHours) {
+            const autoCalculated = calculateExpectedMonthlyHours({
+              defaultWorkHours: settings.defaultWorkHours,
+            })
+            if (
+              Math.abs(settings.expectedMonthlyHours - autoCalculated) > 0.1
+            ) {
+              setIsExpectedHoursManuallySet(true)
+            }
+          }
         } catch (error) {
           console.error('Failed to fetch user settings', error)
           toast({
@@ -305,14 +321,34 @@ export default function PreferencesPage() {
                           step="1"
                           {...field}
                           value={field.value ?? ''}
+                          onChange={(e) => {
+                            field.onChange(e)
+                            // Mark as manually set when user changes the value
+                            setIsExpectedHoursManuallySet(true)
+                          }}
                         />
                       </FormControl>
                       <FormDescription>
-                        {defaultWorkHours
-                          ? t('settings.expectedMonthlyHoursDescriptionAuto', {
-                              hours: defaultWorkHours,
-                            })
-                          : t('settings.expectedMonthlyHoursDescriptionManual')}
+                        {isExpectedHoursManuallySet
+                          ? t('settings.expectedMonthlyHoursDescriptionManual')
+                          : t('settings.expectedMonthlyHoursDescriptionAuto', {
+                              hours: defaultWorkHours || 0,
+                            })}
+                        {isExpectedHoursManuallySet && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const calculated = calculateExpectedMonthlyHours({
+                                defaultWorkHours,
+                              })
+                              form.setValue('expectedMonthlyHours', calculated)
+                              setIsExpectedHoursManuallySet(false)
+                            }}
+                            className="ml-2 text-sm text-green-600 hover:text-blue-800 underline"
+                          >
+                            Reset to auto-calculation
+                          </button>
+                        )}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
