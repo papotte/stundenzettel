@@ -7,6 +7,33 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    // Order classes for dynamic grid ordering
+    'order-1',
+    'order-2',
+    'order-3',
+    'order-4',
+    'order-5',
+    'order-6',
+    'sm:order-1',
+    'sm:order-2',
+    'sm:order-3',
+    'sm:order-4',
+    'sm:order-5',
+    'sm:order-6',
+    'md:order-1',
+    'md:order-2',
+    'md:order-3',
+    'md:order-4',
+    'md:order-5',
+    'md:order-6',
+    'print:order-1',
+    'print:order-2',
+    'print:order-3',
+    'print:order-4',
+    'print:order-5',
+    'print:order-6',
+  ],
   theme: {
     extend: {
       fontFamily: {

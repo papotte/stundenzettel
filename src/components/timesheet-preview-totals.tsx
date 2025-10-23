@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+
 import { useTranslations } from 'next-intl'
 
 interface TotalsRowData {
@@ -76,11 +77,7 @@ export default function TimesheetPreviewTotals({
         value: `${overtime > 0 ? '+' : ''}${overtime.toFixed(2)}`,
         testId: 'timesheet-overtime',
         className: `${
-          overtime > 0
-            ? 'text-green-600'
-            : overtime < 0
-              ? 'text-red-600'
-              : ''
+          overtime > 0 ? 'text-green-600' : overtime < 0 ? 'text-red-600' : ''
         }`,
       },
       rightColumn: {
@@ -105,59 +102,71 @@ export default function TimesheetPreviewTotals({
     },
   ]
 
-  const renderTotalsRow = (row: TotalsRow, isFirstRow: boolean = false) => {
-    const containerClass = isFirstRow ? 'mt-8 flex w-full print:mt-4 print:text-xs' : 'mt-2 flex w-full print:text-xs'
-    
+  const renderTotalsRow = (row: TotalsRow, index: number) => {
+    // Helper function to generate responsive order classes
+    const getOrderClasses = (baseOrder: number) => {
+      const orderValue = baseOrder + index * 3
+      return `sm:order-${orderValue} print:order-${orderValue}`
+    }
+
     return (
-      <div className={containerClass}>
-        <div className="flex w-full justify-between">
-          {/* Left column */}
-          <div className="flex gap-8 sm:w-1/4 justify-between">
-            <div className="flex gap-8 justify-between w-full">
-              <div className="text-right flex-1 font-semibold">
-                {row.leftColumn.label}
-              </div>
-              <div
-                className={`text-right print:pb-1 ${row.leftColumn.className || ''}`}
-                data-testid={row.leftColumn.testId}
-              >
-                {row.leftColumn.value}
-              </div>
-            </div>
+      <>
+        {/* Right column - single label with 4 values */}
+        <div
+          className={`col-span-full sm:col-span-6 print:col-span-6 flex gap-8 justify-between order-1 ${getOrderClasses(3)}`}
+        >
+          <div className="flex-1 text-right font-semibold">
+            {row.rightColumn.label}
           </div>
-          
-          {/* Spacer */}
-          <div className="flex-1"></div>
-          
-          {/* Right column - single label with 4 values */}
-          <div className="flex gap-8 md:w-1/2 justify-between">
-            <div className="flex-1 text-right font-semibold">
-              {row.rightColumn.label}
-            </div>
-            <div className={`flex flex-1 gap-8 ${row.rightColumn.className || ''}`}>
-              {row.rightColumn.values.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex-1 text-right print:pb-1"
-                  data-testid={item.testId}
-                >
-                  {item.value}
-                </div>
-              ))}
-            </div>
+          <div
+            className={`flex flex-1 gap-2 md:gap-0 ${row.rightColumn.className || ''}`}
+          >
+            {row.rightColumn.values.map((item, index) => (
+              <div
+                key={index}
+                className="flex-1 text-right print:pb-1"
+                data-testid={item.testId}
+              >
+                {item.value}
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+
+        {/* Spacer for desktop */}
+        <div
+          className={`hidden sm:block print:block sm:col-span-3 print:col-span-3 ${getOrderClasses(2)}`}
+        />
+
+        {/* Left column */}
+        <div
+          className={`col-span-full sm:col-span-3 print:col-span-3 flex gap-8 justify-between order-2 ${getOrderClasses(1)}`}
+        >
+          <div className="text-right flex-1 font-semibold">
+            {row.leftColumn.label}
+          </div>
+          <div
+            className={`text-right print:pb-1 ${row.leftColumn.className || ''}`}
+            data-testid={row.leftColumn.testId}
+          >
+            {row.leftColumn.value}
+          </div>
+        </div>
+      </>
     )
   }
 
   return (
-    <>
+    <div
+      className={
+        'grid grid-cols-none sm:grid-cols-12 print:grid-cols-12 w-full gap-2 mt-8'
+      }
+    >
       {rowsData.map((row, index) => (
         <React.Fragment key={index}>
-          {renderTotalsRow(row, index === 0)}
+          {renderTotalsRow(row, index)}
         </React.Fragment>
       ))}
-    </>
+    </div>
   )
 }
