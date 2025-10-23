@@ -144,18 +144,34 @@ export default function TimesheetPreviewTotals({
     },
   ]
 
-  const renderTotalsRow = (row: TotalsRow, index: number) => {
-    // Helper function to generate responsive order classes
-    const getOrderClasses = (baseOrder: number) => {
-      const orderValue = baseOrder + index * 3
-      return `sm:order-${orderValue} print:order-${orderValue}`
-    }
+  // Predefined layout classes for different row positions
+  const LAYOUT_CLASSES = {
+    row1: {
+      left: 'pt-2 sm:pt-0 order-2 sm:order-1 print:order-1',
+      spacer: 'sm:order-2 print:order-2',
+      right: 'order-1 sm:order-3 print:order-3',
+    },
+    row2: {
+      left: 'order-2 sm:order-4 print:order-4',
+      spacer: 'sm:order-5 print:order-5',
+      right: 'order-1 sm:order-6 print:order-6',
+    },
+  } as const
 
+  const getOrderClasses = (
+    rowIndex: number,
+    element: 'left' | 'spacer' | 'right',
+  ) => {
+    const rowKey = `row${rowIndex + 1}` as keyof typeof LAYOUT_CLASSES
+    return LAYOUT_CLASSES[rowKey]?.[element] || ''
+  }
+
+  const renderTotalsRow = (row: TotalsRow, index: number) => {
     return (
       <>
         {/* Right column - single label with 4 values */}
         <div
-          className={`col-span-full sm:col-span-6 print:col-span-6 flex gap-8 justify-between order-1 ${getOrderClasses(3)}`}
+          className={`col-span-full sm:col-span-6 print:col-span-6 flex gap-8 justify-between ${getOrderClasses(index, 'right')}`}
         >
           <div className="flex-1 text-right font-semibold">
             {row.rightColumn.label}
@@ -177,12 +193,12 @@ export default function TimesheetPreviewTotals({
 
         {/* Spacer for desktop */}
         <div
-          className={`hidden sm:block print:block sm:col-span-3 print:col-span-3 ${getOrderClasses(2)}`}
+          className={`hidden sm:block print:block sm:col-span-3 print:col-span-3 ${getOrderClasses(index, 'spacer')}`}
         />
 
         {/* Left column */}
         <div
-          className={`col-span-full sm:col-span-3 print:col-span-3 flex gap-8 justify-between order-2 ${getOrderClasses(1)}`}
+          className={`col-span-full sm:col-span-3 print:col-span-3 flex gap-8 justify-between ${getOrderClasses(index, 'left')}`}
         >
           <div className="text-right flex-1 font-semibold">
             {row.leftColumn.label}
