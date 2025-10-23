@@ -135,11 +135,17 @@ export function calculateExpectedMonthlyHours(
 ): number {
   if (!userSettings) return 160
 
-  if (userSettings.defaultWorkHours) {
-    // Auto-calculate: defaultWorkHours × 260 working days ÷ 12 months
-    return (userSettings.defaultWorkHours * 260) / 12
+  // If expectedMonthlyHours is already set, use that value
+  if (userSettings.expectedMonthlyHours) {
+    return userSettings.expectedMonthlyHours
   }
 
-  // Use manual value or default
-  return userSettings.expectedMonthlyHours ?? 160
+  // If defaultWorkHours is set but expectedMonthlyHours is not, auto-calculate
+  if (userSettings.defaultWorkHours) {
+    // Auto-calculate: defaultWorkHours × 260 working days ÷ 12 months
+    return Math.floor((userSettings.defaultWorkHours * 260) / 12)
+  }
+
+  // Default fallback
+  return 160
 }

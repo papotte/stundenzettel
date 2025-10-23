@@ -1,3 +1,5 @@
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+
 import type { UserSettings } from '@/lib/types'
 
 import * as userSettingsService from '../user-settings-service'
@@ -13,8 +15,6 @@ jest.mock('firebase/firestore', () => ({
 jest.mock('@/lib/firebase', () => ({
   db: {},
 }))
-
-import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 const mockDoc = doc as jest.MockedFunction<typeof doc>
 const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
@@ -51,16 +51,24 @@ describe('User Settings Service', () => {
     it('getUserSettings returns default settings when document does not exist', async () => {
       const mockDocRef = {}
       const mockDocSnap = { exists: () => false }
-      
+
       mockDoc.mockReturnValue(mockDocRef as any)
       mockGetDoc.mockResolvedValue(mockDocSnap as any)
       mockSetDoc.mockResolvedValue(undefined)
 
       const result = await userSettingsService.getUserSettings('new-user')
 
-      expect(mockDoc).toHaveBeenCalledWith({}, 'users', 'new-user', 'settings', 'general')
+      expect(mockDoc).toHaveBeenCalledWith(
+        {},
+        'users',
+        'new-user',
+        'settings',
+        'general',
+      )
       expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef)
-      expect(mockSetDoc).toHaveBeenCalledWith(mockDocRef, defaultSettings, { merge: true })
+      expect(mockSetDoc).toHaveBeenCalledWith(mockDocRef, defaultSettings, {
+        merge: true,
+      })
       expect(result).toEqual(defaultSettings)
     })
 
@@ -71,17 +79,23 @@ describe('User Settings Service', () => {
         defaultWorkHours: 7,
       }
       const mockDocRef = {}
-      const mockDocSnap = { 
-        exists: () => true, 
-        data: () => customSettings 
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => customSettings,
       }
-      
+
       mockDoc.mockReturnValue(mockDocRef as any)
       mockGetDoc.mockResolvedValue(mockDocSnap as any)
 
       const result = await userSettingsService.getUserSettings('existing-user')
 
-      expect(mockDoc).toHaveBeenCalledWith({}, 'users', 'existing-user', 'settings', 'general')
+      expect(mockDoc).toHaveBeenCalledWith(
+        {},
+        'users',
+        'existing-user',
+        'settings',
+        'general',
+      )
       expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef)
       expect(result).toEqual({ ...defaultSettings, ...customSettings })
     })
@@ -102,12 +116,22 @@ describe('User Settings Service', () => {
 
       await userSettingsService.setUserSettings('user-123', settingsToSet)
 
-      expect(mockDoc).toHaveBeenCalledWith({}, 'users', 'user-123', 'settings', 'general')
-      expect(mockSetDoc).toHaveBeenCalledWith(mockDocRef, settingsToSet, { merge: true })
+      expect(mockDoc).toHaveBeenCalledWith(
+        {},
+        'users',
+        'user-123',
+        'settings',
+        'general',
+      )
+      expect(mockSetDoc).toHaveBeenCalledWith(mockDocRef, settingsToSet, {
+        merge: true,
+      })
     })
 
     it('setUserSettings throws error when no user ID provided', async () => {
-      await expect(userSettingsService.setUserSettings('', {})).rejects.toThrow('User not authenticated')
+      await expect(userSettingsService.setUserSettings('', {})).rejects.toThrow(
+        'User not authenticated',
+      )
     })
   })
 })

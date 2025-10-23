@@ -107,7 +107,10 @@ export default function TimesheetPreview({
     monthPassengerTotal * (passengerCompPercent / 100)
 
   // Calculate expected hours and overtime
-  const expectedHours = calculateExpectedMonthlyHours(userSettings)
+  const expectedHours = useMemo(
+    () => calculateExpectedMonthlyHours(userSettings),
+    [userSettings],
+  )
   const actualHours = monthCompTotal + compensatedPassengerHours
   const overtime = actualHours - expectedHours
 

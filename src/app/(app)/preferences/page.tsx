@@ -41,6 +41,7 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { locales } from '@/i18n'
+import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import { setUserLocale } from '@/services/locale'
 import {
   getUserSettings,
@@ -97,12 +98,13 @@ export default function PreferencesPage() {
   const defaultWorkHours = form.watch('defaultWorkHours')
 
   useEffect(() => {
-    if (defaultWorkHours) {
-      // Auto-calculate: defaultWorkHours × 260 ÷ 12
-      const calculated = (defaultWorkHours * 260) / 12
+    // Only calculate when user manually changes defaultWorkHours (not during initial load)
+    if (defaultWorkHours && !pageLoading) {
+      // Use the utility function to calculate expected monthly hours
+      const calculated = calculateExpectedMonthlyHours({ defaultWorkHours })
       form.setValue('expectedMonthlyHours', calculated)
     }
-  }, [defaultWorkHours, form])
+  }, [defaultWorkHours, form, pageLoading])
 
   useEffect(() => {
     if (!authLoading && !user) {
