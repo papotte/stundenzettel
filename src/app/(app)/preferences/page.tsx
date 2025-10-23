@@ -308,7 +308,6 @@ export default function PreferencesPage() {
                         <Input
                           type="number"
                           step="1"
-                          disabled={!!defaultWorkHours}
                           {...field}
                           onChange={(e) => {
                             const value = e.target.value

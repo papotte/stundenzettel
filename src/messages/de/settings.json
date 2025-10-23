@@ -34,7 +34,7 @@
   "expectedMonthlyHours": "Soll-Stunden pro Monat",
   "expectedMonthlyHoursDescriptionAuto": "Automatisch berechnet aus Ihrer täglichen Arbeitszeit ({hours} Stunden/Tag × 260 Arbeitstage ÷ 12 Monate)",
   "expectedMonthlyHoursDescriptionManual": "Geben Sie Ihre erwarteten monatlichen Arbeitsstunden ein. Wird für Überstundenberechnungen bei Exporten verwendet.",
-  "expectedMonthlyHoursTooltip": "Dieser Wert wird automatisch aus Ihrer täglichen Arbeitszeit berechnet. Um manuell zu bearbeiten, löschen Sie zuerst das Feld \"Tägliche Standardarbeitszeit\".",
+  "expectedMonthlyHoursTooltip": "Dieser Wert wird automatisch aus Ihrer täglichen Arbeitszeit berechnet, kann aber bei Bedarf manuell überschrieben werden.",
   "companyName": "Firmenname",
   "companyNamePlaceholder": "Ihr Firmenname",
   "companyNameDescription": "Firmenname für Ihre Exporte.",

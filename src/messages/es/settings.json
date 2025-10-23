@@ -34,7 +34,7 @@
   "expectedMonthlyHours": "Horas esperadas por mes",
   "expectedMonthlyHoursDescriptionAuto": "Calculado automáticamente desde sus horas de trabajo diarias ({hours} horas/día × 260 días laborables ÷ 12 meses)",
   "expectedMonthlyHoursDescriptionManual": "Ingrese sus horas de trabajo mensuales esperadas. Se utiliza para cálculos de horas extra en exportaciones.",
-  "expectedMonthlyHoursTooltip": "Este valor se calcula automáticamente desde sus horas de trabajo diarias. Para editar manualmente, primero borre el campo \"Horas de trabajo diarias predeterminadas\".",
+  "expectedMonthlyHoursTooltip": "Este valor se calcula automáticamente desde sus horas de trabajo diarias, pero puede sobrescribirse manualmente si es necesario.",
   "companyName": "Nombre de la empresa",
   "companyNamePlaceholder": "Nombre de tu empresa",
   "companyNameDescription": "Nombre de la empresa para tus exportaciones.",
