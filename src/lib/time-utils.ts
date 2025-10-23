@@ -143,7 +143,10 @@ export function calculateExpectedMonthlyHours(
   // If defaultWorkHours is set but expectedMonthlyHours is not, auto-calculate
   if (userSettings.defaultWorkHours) {
     // Auto-calculate: defaultWorkHours × 260 working days ÷ 12 months
-    return Math.floor((userSettings.defaultWorkHours * 260) / 12)
+    const calculated = (userSettings.defaultWorkHours * 260) / 12
+    // Round to nearest 0.5, then format to 1 decimal place
+    const roundedToHalf = Math.round(calculated * 2) / 2
+    return parseFloat(roundedToHalf.toFixed(1))
   }
 
   // Default fallback

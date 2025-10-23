@@ -229,7 +229,7 @@ export default function ExportPreview() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="mt-4 flex items-center gap-2 sm:mt-0">
+            <div className="mt-4 flex flex-col items-center gap-2 sm:mt-0 md:flex-row">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>

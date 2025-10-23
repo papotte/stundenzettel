@@ -401,7 +401,7 @@ export default function TimesheetPreview({
               <div className="mt-2 flex w-full justify-end print:mt-1 print:text-xs">
                 <div className="flex w-full justify-end">
                   <div className="flex-1"></div>
-                  <div className="flex flex-1 gap-8 w-1/2 justify-between">
+                  <div className="flex flex-1 gap-8 sm:w-1/2 justify-between">
                     <div className="flex-1 text-right font-semibold">
                       {t('export.footerTotalPerWeek')}
                     </div>
@@ -429,8 +429,8 @@ export default function TimesheetPreview({
         {/* after all weeks, add monthly totals */}
         <div className="mt-8 flex w-full print:mt-4 print:text-xs">
           <div className="flex w-full justify-between">
-            <div className="flex gap-8">
-              <div className="text-right font-semibold">
+            <div className="flex gap-8 sm:w-1/4 justify-between">
+              <div className="text-right flex-1 font-semibold">
                 {t('export.footerExpectedHours')}
               </div>
               <div
@@ -441,7 +441,7 @@ export default function TimesheetPreview({
               </div>
             </div>
             <div className="flex-1"></div>
-            <div className="flex gap-8 w-1/2 justify-between">
+            <div className="flex gap-8 md:w-1/2 justify-between">
               <div className="flex-1 text-right font-semibold">
                 {t('export.footerTotalHours')}
               </div>
@@ -465,8 +465,8 @@ export default function TimesheetPreview({
         </div>
         <div className="mt-2 flex w-full print:text-xs">
           <div className="flex w-full justify-end">
-            <div className="flex gap-8">
-              <div className="text-right font-semibold">
+            <div className="flex gap-8 w-1/4 justify-between">
+              <div className="text-right flex-1 font-semibold">
                 {t('export.footerOvertime')}
               </div>
               <div
