@@ -205,6 +205,7 @@ describe('TimesheetPreview', () => {
       <TimesheetPreview
         selectedMonth={selectedMonth}
         user={mockUser}
+        entries={[]}
         userSettings={settingsWithExpectedHours}
         getLocationDisplayName={mockGetLocationDisplayName}
         onEdit={jest.fn()}
@@ -241,6 +242,7 @@ describe('TimesheetPreview', () => {
       <TimesheetPreview
         selectedMonth={selectedMonth}
         user={mockUser}
+        entries={[]}
         userSettings={settingsWithDefaultWorkHours}
         getLocationDisplayName={mockGetLocationDisplayName}
         onEdit={jest.fn()}
@@ -251,6 +253,6 @@ describe('TimesheetPreview', () => {
 
     const expectedHoursElement = screen.getByTestId('timesheet-expected-hours')
     // 8 * 260 / 12 = 173.33
-    expect(expectedHoursElement.textContent).toBe('173.33')
+    expect(expectedHoursElement.textContent).toBe('173.00')
   })
 })

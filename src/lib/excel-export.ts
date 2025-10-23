@@ -169,7 +169,11 @@ export const exportToExcel = async ({
       row.eachCell({ includeEmpty: true }, (cell) => {
         cell.fill = headerFill
         cell.font = headerFont
-        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'left',
+          wrapText: true,
+        }
         cell.border = allBorders
       })
     })

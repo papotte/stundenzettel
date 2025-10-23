@@ -51,12 +51,11 @@ import {
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
   defaultWorkHours: z
-    .number()
+    .number({ coerce: true })
     .min(1, 'Must be at least 1 hour')
-    .max(10, 'Cannot be more than 10 hours')
-    .optional(),
+    .max(10, 'Cannot be more than 10 hours'),
   expectedMonthlyHours: z
-    .number()
+    .number({ coerce: true })
     .min(1, 'Must be at least 1 hour')
     .max(500, 'Cannot be more than 500 hours')
     .optional(),
@@ -85,7 +84,7 @@ export default function PreferencesPage() {
     resolver: zodResolver(preferencesFormSchema),
     mode: 'all',
     defaultValues: {
-      defaultWorkHours: 7,
+      defaultWorkHours: 8,
       expectedMonthlyHours: 160,
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
@@ -267,10 +266,6 @@ export default function PreferencesPage() {
                           type="number"
                           step="0.5"
                           {...field}
-                          onChange={(e) => {
-                            const value = e.target.value
-                            field.onChange(value ? Number(value) : undefined)
-                          }}
                           value={field.value ?? ''}
                         />
                       </FormControl>
@@ -309,10 +304,6 @@ export default function PreferencesPage() {
                           type="number"
                           step="1"
                           {...field}
-                          onChange={(e) => {
-                            const value = e.target.value
-                            field.onChange(value ? Number(value) : undefined)
-                          }}
                           value={field.value ?? ''}
                         />
                       </FormControl>
