@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/papotte/stundenzettel/compare/v1.16.2...v1.17.0) (2025-10-23)
+
+
+### Features
+
+* display expected hours and overtime on export page ([#117](https://github.com/papotte/stundenzettel/issues/117)) ([5b315de](https://github.com/papotte/stundenzettel/commit/5b315defe4e733f712b9a3f3bf08b420a8762d51))
+
 ## [1.16.2](https://github.com/papotte/stundenzettel/compare/v1.16.1...v1.16.2) (2025-10-17)
 
 
