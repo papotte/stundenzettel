@@ -3,6 +3,7 @@ import { differenceInMinutes, set } from 'date-fns'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 
 import {
+  calculateExpectedMonthlyHours,
   calculateTotalCompensatedMinutes,
   calculateWeekCompensatedTime,
   parseTimeString,
@@ -405,5 +406,45 @@ describe('calculateWeekCompensatedTime', () => {
       mockUserSettings,
     )
     expect(result).toBe(0)
+  })
+})
+
+describe('calculateExpectedMonthlyHours', () => {
+  it('returns default 160 when userSettings is null or empty', () => {
+    let result = calculateExpectedMonthlyHours(null)
+    expect(result).toBe(160)
+
+    result = calculateExpectedMonthlyHours({})
+    expect(result).toBe(160)
+  })
+
+  it('uses expectedMonthlyHours when explicitly set', () => {
+    const userSettings: UserSettings = { expectedMonthlyHours: 180 }
+    const result = calculateExpectedMonthlyHours(userSettings)
+    expect(result).toBe(180)
+  })
+
+  it('auto-calculates from defaultWorkHours (0.5-step values)', () => {
+    const testCases = [
+      { defaultWorkHours: 7, expected: 151.5 }, // 7 × 260 ÷ 12 = 151.666... → 151.5
+      { defaultWorkHours: 7.5, expected: 162.5 }, // 7.5 × 260 ÷ 12 = 162.5
+      { defaultWorkHours: 8, expected: 173 }, // 8 × 260 ÷ 12 = 173.333... → 173.5
+      { defaultWorkHours: 6.5, expected: 140.5 }, // 6.5 × 260 ÷ 12 = 140.833... → 141.0
+    ]
+
+    testCases.forEach(({ defaultWorkHours, expected }) => {
+      const userSettings: UserSettings = { defaultWorkHours }
+      const result = calculateExpectedMonthlyHours(userSettings)
+      expect(result).toBe(expected)
+    })
+  })
+
+  it('prioritizes expectedMonthlyHours over defaultWorkHours when both are set', () => {
+    const userSettings: UserSettings = {
+      defaultWorkHours: 8,
+      expectedMonthlyHours: 200,
+    }
+    const result = calculateExpectedMonthlyHours(userSettings)
+    expect(result).toBe(200)
   })
 })
