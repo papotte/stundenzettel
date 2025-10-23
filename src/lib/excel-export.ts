@@ -408,32 +408,17 @@ export const exportToExcel = async ({
   const monthEntries = weeksInMonth.flatMap((week) =>
     week.flatMap(getEntriesForDay),
   )
-  const monthCompTotal = monthEntries.reduce((acc, entry) => {
-    let compensated = 0
-    if (typeof entry.durationMinutes === 'number') {
-      compensated = entry.durationMinutes / 60
-    } else if (entry.endTime && entry.startTime) {
-      const workDuration = differenceInMinutes(entry.endTime, entry.startTime)
-      const isCompensatedSpecialDay = [
-        'SICK_LEAVE',
-        'PTO',
-        'BANK_HOLIDAY',
-      ].includes(entry.location)
-      if (isCompensatedSpecialDay) {
-        compensated = workDuration / 60
-      } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-        const compensatedMinutes =
-          workDuration -
-          (entry.pauseDuration || 0) +
-          ((entry.driverTimeHours || 0) *
-            60 *
-            (userSettings.driverCompensationPercent ?? 100)) /
-            100
-        compensated = compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
-      }
-    }
-    return acc + compensated
-  }, 0)
+  const monthCompTotal = weeksInMonth.reduce(
+    (acc, week) =>
+      acc +
+      calculateWeekCompensatedTime(
+        week,
+        getEntriesForDay,
+        userSettings,
+        selectedMonth,
+      ),
+    0,
+  )
   const monthPassengerTotal = monthEntries.reduce(
     (acc, entry) => acc + (entry.passengerTimeHours || 0),
     0,
