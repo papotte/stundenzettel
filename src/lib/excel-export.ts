@@ -370,9 +370,11 @@ export const exportToExcel = async ({
       0,
     )
     const totalRow = worksheet.addRow([])
-    worksheet.mergeCells(totalRow.number, 1, totalRow.number, 6)
-    const totalLabelCell = totalRow.getCell(7)
+    worksheet.mergeCells(totalRow.number, 1, totalRow.number, 7)
+    const totalLabelCell = totalRow.getCell(1)
     totalLabelCell.value = t('export.footerTotalPerWeek')
+    totalLabelCell.alignment = { horizontal: 'right' }
+
     const totalCompCell = totalRow.getCell(8)
     totalCompCell.value = weekCompTotal
     totalCompCell.numFmt = '0.00'
@@ -389,6 +391,18 @@ export const exportToExcel = async ({
     totalPassengerCell.alignment = { horizontal: 'right' }
     worksheet.addRow([]) // Blank row for spacing
   })
+
+  // -- GRAND TOTAL AND EXPECTED HOURS ROW --
+  const grandTotalRow = worksheet.addRow([])
+
+  // --- EXPECTED HOURS  ---
+  const expectedHours = calculateExpectedMonthlyHours(userSettings)
+  worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 2)
+  grandTotalRow.getCell(1).value = t('export.footerExpectedHours')
+  const expectedHoursCell = grandTotalRow.getCell(3)
+  expectedHoursCell.value = expectedHours
+  expectedHoursCell.numFmt = '0'
+  expectedHoursCell.alignment = { horizontal: 'left' }
 
   // --- GRAND TOTAL ---
   const monthEntries = weeksInMonth.flatMap((week) =>
@@ -424,10 +438,11 @@ export const exportToExcel = async ({
     (acc, entry) => acc + (entry.passengerTimeHours || 0),
     0,
   )
-  const grandTotalRow = worksheet.addRow([])
-  worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 6)
-  const grandTotalLabelCell = grandTotalRow.getCell(7)
+
+  worksheet.mergeCells(grandTotalRow.number, 4, grandTotalRow.number, 7)
+  const grandTotalLabelCell = grandTotalRow.getCell(4)
   grandTotalLabelCell.value = t('export.footerTotalHours')
+  grandTotalLabelCell.alignment = { horizontal: 'right' }
   const grandTotalCompCell = grandTotalRow.getCell(8)
   grandTotalCompCell.value = monthCompTotal
   grandTotalCompCell.numFmt = '0.00'
@@ -442,46 +457,51 @@ export const exportToExcel = async ({
     bottom: { style: 'double', color: { argb: 'FF000000' } },
   }
   grandTotalPassengerCell.alignment = { horizontal: 'right' }
-  // --- SECOND MONTHLY TOTAL ROW ---
+
+  // -- GRAND TOTAL AND OVERTIME ROW --
+  const afterConversionRow = worksheet.addRow([])
   const passengerCompPercent = userSettings.passengerCompensationPercent ?? 90
   const compensatedPassengerHours =
     monthPassengerTotal * (passengerCompPercent / 100)
-  const afterConversionRow = worksheet.addRow([])
+
+  // --- OVERTIME CELLS ---
+  const actualHours = monthCompTotal + compensatedPassengerHours
+  const overtime = actualHours - expectedHours
   worksheet.mergeCells(
     afterConversionRow.number,
     1,
     afterConversionRow.number,
-    6,
+    2,
   )
-  afterConversionRow.getCell(7).value = t('export.footerTotalAfterConversion')
-  afterConversionRow.getCell(8).value =
-    monthCompTotal + compensatedPassengerHours
-  afterConversionRow.getCell(8).numFmt = '0.00'
-  afterConversionRow.getCell(9).value = compensatedPassengerHours
-  afterConversionRow.getCell(9).numFmt = '0.00'
+  afterConversionRow.getCell(1).value = t('export.footerOvertime')
+  const overTimeCell = afterConversionRow.getCell(3)
+  overTimeCell.value = overtime
+  overTimeCell.numFmt = '0.00'
+  overTimeCell.alignment = { horizontal: 'left' }
 
-  // --- EXPECTED HOURS ROW ---
-  const expectedHours = calculateExpectedMonthlyHours(userSettings)
-  const expectedHoursRow = worksheet.addRow([])
-  worksheet.mergeCells(expectedHoursRow.number, 1, expectedHoursRow.number, 6)
-  expectedHoursRow.getCell(7).value = t('export.footerExpectedHours')
-  expectedHoursRow.getCell(8).value = expectedHours
-  expectedHoursRow.getCell(8).numFmt = '0.00'
-
-  // --- OVERTIME ROW ---
-  const actualHours = monthCompTotal + compensatedPassengerHours
-  const overtime = actualHours - expectedHours
-  const overtimeRow = worksheet.addRow([])
-  worksheet.mergeCells(overtimeRow.number, 1, overtimeRow.number, 6)
-  overtimeRow.getCell(7).value = t('export.footerOvertime')
-  overtimeRow.getCell(8).value = overtime
-  overtimeRow.getCell(8).numFmt = '0.00'
   // Color code the overtime cell
   if (overtime > 0) {
-    overtimeRow.getCell(8).font = { color: { argb: 'FF00AA00' } } // Green
+    overTimeCell.font = { color: { argb: 'FF00AA00' } } // Green
   } else if (overtime < 0) {
-    overtimeRow.getCell(8).font = { color: { argb: 'FFAA0000' } } // Red
+    overTimeCell.font = { color: { argb: 'FFAA0000' } } // Red
   }
+
+  // --- SECOND MONTHLY TOTAL CELLS ---
+  worksheet.mergeCells(
+    afterConversionRow.number,
+    4,
+    afterConversionRow.number,
+    7,
+  )
+  const afterConversionLabelCell = afterConversionRow.getCell(4)
+  afterConversionLabelCell.value = t('export.footerTotalAfterConversion')
+  afterConversionLabelCell.alignment = { horizontal: 'right' }
+
+  const afterConversionValueCell = afterConversionRow.getCell(8)
+  afterConversionValueCell.value = monthCompTotal + compensatedPassengerHours
+  afterConversionValueCell.numFmt = '0.00'
+  afterConversionRow.getCell(9).value = compensatedPassengerHours
+  afterConversionRow.getCell(9).numFmt = '0.00'
 
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer()
