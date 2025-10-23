@@ -84,12 +84,12 @@ export const exportToExcel = async ({
   worksheet.columns = [
     { key: 'week', width: 5 },
     { key: 'date', width: 12 },
-    { key: 'location', width: 24 },
-    { key: 'from', width: 12 },
-    { key: 'to', width: 12 },
+    { key: 'location', width: 16 },
+    { key: 'from', width: 8 },
+    { key: 'to', width: 8 },
     { key: 'pause', width: 8 },
     { key: 'driverTime', width: 8 },
-    { key: 'compensated', width: 12 },
+    { key: 'compensated', width: 8 },
     { key: 'passengerTime', width: 8 },
     { key: 'mileage', width: 12 },
   ]
@@ -169,7 +169,7 @@ export const exportToExcel = async ({
       row.eachCell({ includeEmpty: true }, (cell) => {
         cell.fill = headerFill
         cell.font = headerFont
-        cell.alignment = { vertical: 'middle', horizontal: 'left' }
+        cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
         cell.border = allBorders
       })
     })
@@ -296,7 +296,7 @@ export const exportToExcel = async ({
           const dataRow = worksheet.addRow(rowData)
           applyRowStyles(dataRow)
           // Set specific alignments after applying common styles
-          dataRow.getCell(3).alignment.horizontal = 'left'
+          dataRow.getCell(3).alignment = { horizontal: 'left', wrapText: true }
           dataRow.getCell(4).alignment.horizontal = 'right'
           dataRow.getCell(5).alignment.horizontal = 'right'
           dataRow.getCell(6).alignment.horizontal = 'right'
