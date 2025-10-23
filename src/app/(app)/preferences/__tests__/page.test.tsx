@@ -399,7 +399,7 @@ describe('PreferencesPage', () => {
         const expectedHoursInput = screen.getByRole('spinbutton', {
           name: /settings\.expectedMonthlyHours/i,
         })
-        // 8.5 × 260 ÷ 12 = 184.166... → 184.0 (rounded to nearest 0.5)
+        // 8.5 × 260 ÷ 12 = 184.166... → 184.0 (rounded down to nearest 0.5)
         expect(expectedHoursInput).toHaveValue(184)
       })
     })
@@ -499,7 +499,7 @@ describe('PreferencesPage', () => {
       // Check that reset button appears and description changes to manual
       await waitFor(() => {
         expect(
-          screen.getByText('Reset to auto-calculation'),
+          screen.getByText('settings.resetToAutoCalculation'),
         ).toBeInTheDocument()
         expect(
           screen.getByText(/settings\.expectedMonthlyHoursDescriptionManual/i),
@@ -507,7 +507,7 @@ describe('PreferencesPage', () => {
       })
 
       // Click the reset button
-      const resetButton = screen.getByText('Reset to auto-calculation')
+      const resetButton = screen.getByText('settings.resetToAutoCalculation')
       await user.click(resetButton)
 
       // Check that the value is reset to auto-calculated value and description changes back

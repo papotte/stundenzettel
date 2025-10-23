@@ -344,9 +344,9 @@ export default function PreferencesPage() {
                               form.setValue('expectedMonthlyHours', calculated)
                               setIsExpectedHoursManuallySet(false)
                             }}
-                            className="ml-2 text-sm text-green-600 hover:text-blue-800 underline"
+                            className="ml-2 text-sm text-primary hover:text-primary/80 underline"
                           >
-                            Reset to auto-calculation
+                            {t('settings.resetToAutoCalculation')}
                           </button>
                         )}
                       </FormDescription>

@@ -43,9 +43,7 @@ export const setUserSettings = async (
 
   // Filter out undefined values to prevent Firestore validation errors
   const cleanSettings = Object.fromEntries(
-    Object.entries(settings).filter(
-      ([, value]) => value !== undefined && value !== null,
-    ),
+    Object.entries(settings).filter(([, value]) => value !== undefined),
   )
 
   const docRef = doc(db, 'users', userId, 'settings', 'general')
