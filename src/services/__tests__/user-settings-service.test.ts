@@ -1,4 +1,5 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore'
+import type { DocumentReference, DocumentSnapshot } from 'firebase/firestore'
 
 import type { UserSettings } from '@/lib/types'
 
@@ -39,7 +40,7 @@ describe('User Settings Service', () => {
       companyFax: '',
       driverCompensationPercent: 100,
       passengerCompensationPercent: 90,
-      expectedMonthlyHours: 160,
+      expectedMonthlyHours: undefined,
     }
 
     it('getUserSettings returns default settings when no user ID provided', async () => {
@@ -52,8 +53,8 @@ describe('User Settings Service', () => {
       const mockDocRef = {}
       const mockDocSnap = { exists: () => false }
 
-      mockDoc.mockReturnValue(mockDocRef as any)
-      mockGetDoc.mockResolvedValue(mockDocSnap as any)
+      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
       mockSetDoc.mockResolvedValue(undefined)
 
       const result = await userSettingsService.getUserSettings('new-user')
@@ -84,8 +85,8 @@ describe('User Settings Service', () => {
         data: () => customSettings,
       }
 
-      mockDoc.mockReturnValue(mockDocRef as any)
-      mockGetDoc.mockResolvedValue(mockDocSnap as any)
+      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
 
       const result = await userSettingsService.getUserSettings('existing-user')
 
@@ -111,7 +112,7 @@ describe('User Settings Service', () => {
       }
 
       const mockDocRef = {}
-      mockDoc.mockReturnValue(mockDocRef as any)
+      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
       mockSetDoc.mockResolvedValue(undefined)
 
       await userSettingsService.setUserSettings('user-123', settingsToSet)
