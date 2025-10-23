@@ -58,7 +58,7 @@ export default function BottomNav() {
   const t = useTranslations()
   return (
     <nav
-      className="fixed bottom-0 left-0 z-50 w-full border-t border-gray-200 bg-white shadow md:hidden"
+      className="fixed bottom-0 left-0 z-50 w-full border-t border-gray-200 bg-white shadow md:hidden print:hidden"
       role="navigation"
       aria-label="Bottom navigation"
     >

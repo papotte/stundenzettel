@@ -400,7 +400,7 @@ export default function TimesheetPreview({
               </Table>
               <div className="mt-2 flex w-full justify-end print:mt-1 print:text-xs">
                 <div className="flex w-full justify-end">
-                  <div className="md:flex-1"></div>
+                  <div className="flex-1"></div>
                   <div className="flex flex-1 gap-8 w-1/2 justify-between">
                     <div className="flex-1 text-right font-semibold">
                       {t('export.footerTotalPerWeek')}
@@ -427,10 +427,21 @@ export default function TimesheetPreview({
           )
         })}
         {/* after all weeks, add monthly totals */}
-        <div className="mt-8 flex w-full justify-end print:mt-4 print:text-xs">
-          <div className="flex w-full justify-end">
-            <div className="md:flex-1"></div>
-            <div className="flex flex-1 gap-8 w-1/2 justify-between">
+        <div className="mt-8 flex w-full print:mt-4 print:text-xs">
+          <div className="flex w-full justify-between">
+            <div className="flex gap-8">
+              <div className="text-right font-semibold">
+                {t('export.footerExpectedHours')}
+              </div>
+              <div
+                className="text-right print:pb-1"
+                data-testid="timesheet-expected-hours"
+              >
+                {expectedHours.toFixed(2)}
+              </div>
+            </div>
+            <div className="flex-1"></div>
+            <div className="flex gap-8 w-1/2 justify-between">
               <div className="flex-1 text-right font-semibold">
                 {t('export.footerTotalHours')}
               </div>
@@ -452,53 +463,14 @@ export default function TimesheetPreview({
             </div>
           </div>
         </div>
-        <div className="mt-4 flex w-full justify-end print:text-xs">
-          <div className="md:flex-1"></div>
-          <div className="flex flex-1 gap-8 w-1/2 justify-between">
-            <div className="flex-1 text-right font-semibold">
-              {t('export.footerTotalAfterConversion')}
-            </div>
-            <div className="flex flex-1 gap-8 pb-2">
-              <div
-                className="flex-1 text-right print:pb-1"
-                data-testid="timesheet-month-adjusted"
-              >
-                {(monthCompTotal + compensatedPassengerHours).toFixed(2)}
+        <div className="mt-2 flex w-full print:text-xs">
+          <div className="flex w-full justify-end">
+            <div className="flex gap-8">
+              <div className="text-right font-semibold">
+                {t('export.footerOvertime')}
               </div>
-              <div className="flex-1 text-right print:pb-1">
-                {compensatedPassengerHours.toFixed(2)}
-              </div>
-              <div className="flex-1 print:pb-1"></div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 flex w-full justify-end print:text-xs">
-          <div className="md:flex-1"></div>
-          <div className="flex flex-1 gap-8 w-1/2 justify-between">
-            <div className="flex-1 text-right font-semibold">
-              {t('export.footerExpectedHours')}
-            </div>
-            <div className="flex flex-1 gap-8 pb-2">
               <div
-                className="flex-1 text-right print:pb-1"
-                data-testid="timesheet-expected-hours"
-              >
-                {expectedHours.toFixed(2)}
-              </div>
-              <div className="flex-1 text-right print:pb-1"></div>
-              <div className="flex-1 print:pb-1"></div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 flex w-full justify-end print:text-xs">
-          <div className="md:flex-1"></div>
-          <div className="flex flex-1 gap-8 w-1/2 justify-between">
-            <div className="flex-1 text-right font-semibold">
-              {t('export.footerOvertime')}
-            </div>
-            <div className="flex flex-1 gap-8 pb-2">
-              <div
-                className={`flex-1 text-right print:pb-1 ${
+                className={`text-right print:pb-1 ${
                   overtime > 0
                     ? 'text-green-600'
                     : overtime < 0
@@ -510,8 +482,24 @@ export default function TimesheetPreview({
                 {overtime > 0 ? '+' : ''}
                 {overtime.toFixed(2)}
               </div>
-              <div className="flex-1 text-right print:pb-1"></div>
-              <div className="flex-1 print:pb-1"></div>
+            </div>
+            <div className="flex-1"></div>
+            <div className="flex gap-8 w-1/2 justify-between">
+              <div className="flex-1 text-right font-semibold">
+                {t('export.footerTotalAfterConversion')}
+              </div>
+              <div className="flex flex-1 gap-8 pb-2">
+                <div
+                  className="flex-1 text-right print:pb-1"
+                  data-testid="timesheet-month-adjusted"
+                >
+                  {(monthCompTotal + compensatedPassengerHours).toFixed(2)}
+                </div>
+                <div className="flex-1 text-right print:pb-1">
+                  {compensatedPassengerHours.toFixed(2)}
+                </div>
+                <div className="flex-1 print:pb-1"></div>
+              </div>
             </div>
           </div>
         </div>
