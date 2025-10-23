@@ -429,7 +429,7 @@ describe('calculateExpectedMonthlyHours', () => {
       { defaultWorkHours: 7, expected: 151.5 }, // 7 × 260 ÷ 12 = 151.666... → 151.5
       { defaultWorkHours: 7.5, expected: 162.5 }, // 7.5 × 260 ÷ 12 = 162.5
       { defaultWorkHours: 8, expected: 173 }, // 8 × 260 ÷ 12 = 173.333... → 173.5
-      { defaultWorkHours: 6.5, expected: 140.5 }, // 6.5 × 260 ÷ 12 = 140.833... → 141.0
+      { defaultWorkHours: 6.5, expected: 140.5 }, // 6.5 × 260 ÷ 12 = 140.833... → 140.5
     ]
 
     testCases.forEach(({ defaultWorkHours, expected }) => {

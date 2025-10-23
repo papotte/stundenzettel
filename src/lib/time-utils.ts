@@ -144,7 +144,7 @@ export function calculateExpectedMonthlyHours(
   if (userSettings.defaultWorkHours) {
     // Auto-calculate: defaultWorkHours × 260 working days ÷ 12 months
     const calculated = (userSettings.defaultWorkHours * 260) / 12
-    // Round to nearest 0.5, then format to 1 decimal place
+    // Round to nearest lowest 0.5, then format to 1 decimal place
     const roundedToHalf = Math.floor(calculated * 2) / 2
     return parseFloat(roundedToHalf.toFixed(1))
   }
