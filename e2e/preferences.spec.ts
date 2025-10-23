@@ -87,4 +87,54 @@ test.describe('Preferences Page', () => {
     // Check for display name in export preview
     await expect(page.getByText('Malcolm X')).toBeVisible()
   })
+
+  test('should auto-calculate expected monthly hours when default work hours change', async ({
+    page,
+  }) => {
+    // Change default work hours from 7 to 8
+    await page.getByLabel('Default daily work hours').fill('8')
+
+    // Check that expected monthly hours is auto-calculated
+    // 8 × 260 ÷ 12 = 173.333... → 173 (rounded to nearest 0.5)
+    const expectedHoursInput = page.getByLabel('Expected Hours per Month')
+    await expect(expectedHoursInput).toHaveValue('173')
+
+    // Save the settings
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Settings Saved',
+    )
+  })
+
+  test('should allow user to override expected monthly hours', async ({
+    page,
+  }) => {
+    // First change default work hours to trigger auto-calculation
+    await page.getByLabel('Default daily work hours').fill('8')
+
+    // Verify auto-calculation worked
+    const expectedHoursInput = page.getByLabel('Expected Hours per Month')
+    await expect(expectedHoursInput).toHaveValue('173')
+
+    // Now manually override the expected monthly hours
+    await expectedHoursInput.fill('200')
+    await expect(expectedHoursInput).toHaveValue('200')
+
+    // Check that reset button appears
+    await expect(page.getByText('Reset to auto-calculation')).toBeVisible()
+
+    // Save the settings
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Settings Saved',
+    )
+
+    // Verify the override persisted by refreshing and checking the value
+    await page.reload()
+    await expect(expectedHoursInput).toHaveValue('200')
+
+    // Verify that changing default work hours doesn't recalculate the overridden value
+    await page.getByLabel('Default daily work hours').fill('7')
+    await expect(expectedHoursInput).toHaveValue('200') // Should still be 200, not recalculated
+  })
 })

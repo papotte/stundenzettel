@@ -32,6 +32,7 @@ export interface UserSettings {
   companyFax?: string
   driverCompensationPercent?: number // percent, default 100
   passengerCompensationPercent?: number // percent, default 90
+  expectedMonthlyHours?: number // expected working hours per month, default 160
 }
 
 export interface AuthenticatedUser {

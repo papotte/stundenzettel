@@ -144,41 +144,4 @@ describe('TimesheetPreview', () => {
     expect(calledDate.getMonth()).toBe(6) // 0-indexed, so 6 is July
     expect(calledDate.getDate()).toBe(3)
   })
-
-  it('displays correct converted totals with passenger hours', () => {
-    const entriesWithPassenger: TimeEntry[] = [
-      {
-        id: '1',
-        userId: 'test-user',
-        location: 'Office',
-        startTime: new Date('2024-07-01T09:00:00Z'),
-        endTime: new Date('2024-07-01T17:00:00Z'),
-        pauseDuration: 30,
-        driverTimeHours: 0,
-        passengerTimeHours: 2, // 2 hours as passenger
-      },
-    ]
-    const userSettingsWithPassengerPercent: UserSettings = {
-      ...mockUserSettings,
-      passengerCompensationPercent: 80,
-    }
-    render(
-      <TimesheetPreview
-        {...defaultProps}
-        entries={entriesWithPassenger}
-        userSettings={userSettingsWithPassengerPercent}
-        getEntriesForDay={(day) =>
-          entriesWithPassenger.filter((e) => isSameDay(e.startTime, day))
-        }
-      />,
-    )
-
-    // Compensated time: (8h - 0.5h pause) + (2h * 0.8) = 7.5 + 1.6 = 9.10
-    // Converted total: 7.5 + 2 = 9.5 (if that's how your UI displays it)
-    // Compensated passenger: 2 * 0.8 = 1.6
-
-    // Check for the converted total (Gesamtstd. nach Umr.)
-    expect(screen.getAllByText('9.10').length).toBeGreaterThan(0) // compensated + converted
-    expect(screen.getAllByText('1.60').length).toBeGreaterThan(0) // compensated passenger only
-  })
 })

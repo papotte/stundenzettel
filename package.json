@@ -5,10 +5,10 @@
   "license": "MPL-2.0",
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
-    "dev:prod": "NODE_ENV=production NEXT_PUBLIC_ENVIRONMENT=production next dev --turbopack -p 9004",
     "dev:test": "NODE_ENV=test NEXT_PUBLIC_ENVIRONMENT=test next dev --turbopack -p 9003",
     "build": "next build",
     "start": "next start",
+    "start:prod": "NODE_ENV=production NEXT_PUBLIC_ENVIRONMENT=production next dev --turbopack -p 9004",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,md,json,yml,yaml}\" --ignore-path .prettierignore",

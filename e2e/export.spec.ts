@@ -29,6 +29,9 @@ test.describe('Export Page', () => {
     await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
+    // Wait for the export preview to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
     // Check for the entry in the preview table
     const preview = page.locator('.printable-area')
     await expect(preview).toBeVisible()
@@ -58,8 +61,17 @@ test.describe('Export Page', () => {
     page,
   }) => {
     await page.goto('/export')
+
+    // Wait for the export preview to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
     // Export button should be disabled
-    await expect(page.getByRole('button', { name: /Excel/i })).toBeDisabled()
+    await expect(
+      page.getByTestId('export-preview-export-button'),
+    ).toBeDisabled()
+    // PDF button should also be disabled
+    await expect(page.getByTestId('export-preview-pdf-button')).toBeDisabled()
+
     // Export button should have a tooltip
     const tooltipTrigger = page.locator(
       'span:has([data-testid="export-preview-export-button"])',
@@ -80,9 +92,13 @@ test.describe('Export Page', () => {
     // Navigate to export page
     await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
+
+    // Wait for the export preview to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      page.getByRole('button', { name: /Excel/i }).click(),
+      page.getByTestId('export-preview-export-button').click(),
     ])
     const path = await download.path()
     expect(path).toBeTruthy()
@@ -100,7 +116,10 @@ test.describe('Export Page', () => {
     await page.getByRole('link', { name: 'Preview & Export' }).click()
     await page.waitForURL('/export')
 
-    const pdfButton = page.getByRole('button', { name: /PDF/i })
+    // Wait for the export preview to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
+    const pdfButton = page.getByTestId('export-preview-pdf-button')
     await expect(pdfButton).toBeEnabled()
     // await pdfButton.click()
   })
@@ -318,5 +337,104 @@ test.describe('Export Page', () => {
     await expect(preview.getByTestId('timesheet-month-total')).toContainText(
       '8.00',
     )
+  })
+
+  test('should display auto-calculated expected hours and calculate overtime correctly', async ({
+    page,
+  }) => {
+    // Add a time entry first (8 hours)
+    const locationName = `Auto Calc Test Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '09:00'
+    const endTime = '17:00' // 8 hours
+    await addManualEntry(page, locationName, startTime, endTime)
+
+    // Go to preferences to set default work hours
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
+    await page.waitForURL('/export')
+
+    // Go to preferences
+    await page.getByRole('link', { name: 'Back to Tracker' }).click()
+    await page.waitForURL('/tracker')
+
+    // Open user menu and go to preferences
+    const dropdown = page.locator('[data-testid="user-menu-btn"]')
+    await dropdown.click()
+    await page.getByTestId('preferences').click()
+    await page.waitForURL('/preferences')
+
+    // Set default work hours to 8 (auto-calculates to 173.00)
+    await page.getByLabel('Default daily work hours').fill('8')
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Settings Saved',
+    )
+
+    // Go back to export page
+    await page.getByRole('link', { name: 'Back to Tracker' }).click()
+    await page.waitForURL('/tracker')
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
+    await page.waitForURL('/export')
+
+    // Wait for the export preview to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
+    // Check that expected hours shows auto-calculated value (8 * 260 / 12 = 173.00)
+    const expectedHoursElement = page.getByTestId('timesheet-expected-hours')
+    await expect(expectedHoursElement).toContainText('173.00')
+
+    // Check that overtime shows -165.00 (8 hours worked - 173 expected = -165 overtime)
+    const overtimeElement = page.getByTestId('timesheet-overtime')
+    await expect(overtimeElement).toContainText('-165.00')
+  })
+
+  test('should display manually overridden expected hours and calculate overtime correctly', async ({
+    page,
+  }) => {
+    // Add a time entry first (8 hours)
+    const locationName = `Manual Override Test Entry ${Math.random().toString(36).substring(2, 15)}`
+    const startTime = '09:00'
+    const endTime = '17:00' // 8 hours
+    await addManualEntry(page, locationName, startTime, endTime)
+
+    // Go to preferences
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
+    await page.waitForURL('/export')
+
+    // Go to preferences
+    await page.getByRole('link', { name: 'Back to Tracker' }).click()
+    await page.waitForURL('/tracker')
+
+    // Open user menu and go to preferences
+    const dropdown = page.locator('[data-testid="user-menu-btn"]')
+    await dropdown.click()
+    await page.getByTestId('preferences').click()
+    await page.waitForURL('/preferences')
+
+    // Set default work hours to 8 (would auto-calculate to 173.00)
+    await page.getByLabel('Default daily work hours').fill('8')
+
+    // Manually override expected monthly hours to 6 (so we have overtime)
+    await page.getByLabel('Expected Hours per Month').fill('6')
+    await page.getByRole('button', { name: 'Save' }).click()
+    await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+      'Settings Saved',
+    )
+
+    // Go back to export page
+    await page.getByRole('link', { name: 'Back to Tracker' }).click()
+    await page.waitForURL('/tracker')
+    await page.getByRole('link', { name: 'Preview & Export' }).click()
+    await page.waitForURL('/export')
+
+    // Wait for the export preview to load
+    await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
+    // Check that expected hours shows the manually overridden value (6)
+    const expectedHoursElement = page.getByTestId('timesheet-expected-hours')
+    await expect(expectedHoursElement).toContainText('6.00')
+
+    // Check that overtime shows +2.00 (8 hours worked - 6 expected = +2 overtime)
+    const overtimeElement = page.getByTestId('timesheet-overtime')
+    await expect(overtimeElement).toContainText('+2.00')
   })
 })

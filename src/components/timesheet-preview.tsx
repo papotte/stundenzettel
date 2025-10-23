@@ -21,6 +21,7 @@ import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
 import TimesheetHeader from './timesheet-header'
+import TimesheetPreviewTotals from './timesheet-preview-totals'
 
 interface TimesheetPreviewProps {
   selectedMonth: Date
@@ -72,36 +73,6 @@ export default function TimesheetPreview({
     () => weeksInMonth.filter(weekHasEntries),
     [weeksInMonth, weekHasEntries],
   )
-
-  const monthEntries = useMemo(
-    () =>
-      relevantWeeks.flatMap((week: Date[]) => week.flatMap(getEntriesForDay)),
-    [relevantWeeks, getEntriesForDay],
-  )
-  // For monthCompTotal, sum the weekCompTotal for each week
-  const monthCompTotal = useMemo(
-    () =>
-      relevantWeeks.reduce(
-        (acc: number, week: Date[]) =>
-          acc +
-          calculateWeekCompensatedTime(
-            week,
-            getEntriesForDay,
-            userSettings,
-            selectedMonth,
-          ),
-        0,
-      ),
-    [relevantWeeks, getEntriesForDay, userSettings, selectedMonth],
-  )
-  const monthPassengerTotal = useMemo(
-    () => sumPassengerTime(monthEntries),
-    [monthEntries],
-  )
-
-  const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 90
-  const compensatedPassengerHours =
-    monthPassengerTotal * (passengerCompPercent / 100)
 
   return (
     <div
@@ -389,8 +360,8 @@ export default function TimesheetPreview({
               </Table>
               <div className="mt-2 flex w-full justify-end print:mt-1 print:text-xs">
                 <div className="flex w-full justify-end">
-                  <div className="md:flex-1"></div>
-                  <div className="flex flex-1 gap-8 w-1/2 justify-between">
+                  <div className="flex-1"></div>
+                  <div className="flex flex-1 gap-8 sm:w-1/2 justify-between">
                     <div className="flex-1 text-right font-semibold">
                       {t('export.footerTotalPerWeek')}
                     </div>
@@ -416,51 +387,12 @@ export default function TimesheetPreview({
           )
         })}
         {/* after all weeks, add monthly totals */}
-        <div className="mt-8 flex w-full justify-end print:mt-4 print:text-xs">
-          <div className="flex w-full justify-end">
-            <div className="md:flex-1"></div>
-            <div className="flex flex-1 gap-8 w-1/2 justify-between">
-              <div className="flex-1 text-right font-semibold">
-                {t('export.footerTotalHours')}
-              </div>
-              <div className="flex flex-1 gap-8 border-b-4 border-double border-black pb-2">
-                <div
-                  className="flex-1 text-right print:pb-1"
-                  data-testid="timesheet-month-total"
-                >
-                  {monthCompTotal.toFixed(2)}
-                </div>
-                <div
-                  className="flex-1 text-right print:pb-1"
-                  data-testid="timesheet-month-passenger-total"
-                >
-                  {monthPassengerTotal.toFixed(2)}
-                </div>
-                <div className="flex-1 print:pb-1">Km:</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 flex w-full justify-end print:text-xs">
-          <div className="md:flex-1"></div>
-          <div className="flex flex-1 gap-8 w-1/2 justify-between">
-            <div className="flex-1 text-right font-semibold">
-              {t('export.footerTotalAfterConversion')}
-            </div>
-            <div className="flex flex-1 gap-8 pb-2">
-              <div
-                className="flex-1 text-right print:pb-1"
-                data-testid="timesheet-month-adjusted"
-              >
-                {(monthCompTotal + compensatedPassengerHours).toFixed(2)}
-              </div>
-              <div className="flex-1 text-right print:pb-1">
-                {compensatedPassengerHours.toFixed(2)}
-              </div>
-              <div className="flex-1 print:pb-1"></div>
-            </div>
-          </div>
-        </div>
+        <TimesheetPreviewTotals
+          selectedMonth={selectedMonth}
+          relevantWeeks={relevantWeeks}
+          getEntriesForDay={getEntriesForDay}
+          userSettings={userSettings || {}}
+        />
         <div id="pdf-footer-section" className="flex w-full justify-end">
           <div className="mt-24 text-right print:mt-12 print:text-sm">
             <p className="mt-2">{t('export.signatureLine')}</p>

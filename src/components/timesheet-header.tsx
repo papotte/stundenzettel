@@ -36,7 +36,7 @@ const TimesheetHeader = ({ userSettings }: TimesheetHeaderProps) => {
 
   return (
     <div
-      className="mb-8 flex w-full justify-between text-sm print:mb-2 print:text-xs"
+      className="mb-8 flex w-full flex-col justify-between text-sm print:mb-2 print:text-xs sm:flex-row"
       data-testid="timesheet-header"
     >
       <span>{t('export.headerCompany')}</span>

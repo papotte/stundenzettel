@@ -4,7 +4,7 @@ import React, { useEffect, useId, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { ArrowLeft, Loader2, Save, Settings } from 'lucide-react'
+import { ArrowLeft, InfoIcon, Loader2, Save, Settings } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -32,9 +32,16 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { locales } from '@/i18n'
+import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import { setUserLocale } from '@/services/locale'
 import {
   getUserSettings,
@@ -44,9 +51,14 @@ import {
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
   defaultWorkHours: z
-    .number()
+    .number({ coerce: true })
     .min(1, 'Must be at least 1 hour')
     .max(10, 'Cannot be more than 10 hours'),
+  expectedMonthlyHours: z
+    .number({ coerce: true })
+    .min(1, 'Must be at least 1 hour')
+    .max(500, 'Cannot be more than 500 hours')
+    .optional(),
   defaultStartTime: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
@@ -66,19 +78,35 @@ export default function PreferencesPage() {
   const language: string = useLocale()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isExpectedHoursManuallySet, setIsExpectedHoursManuallySet] =
+    useState(false)
   const languageFieldId = useId()
 
   const form = useForm<PreferencesFormValues>({
     resolver: zodResolver(preferencesFormSchema),
     mode: 'all',
     defaultValues: {
-      defaultWorkHours: 7,
+      defaultWorkHours: 8,
+      expectedMonthlyHours: 160,
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
       language: language,
       displayName: '',
     },
   })
+
+  // Watch defaultWorkHours to auto-calculate expectedMonthlyHours
+  const defaultWorkHours = form.watch('defaultWorkHours')
+
+  useEffect(() => {
+    // Only calculate when user manually changes defaultWorkHours (not during initial load)
+    // and when expectedMonthlyHours hasn't been manually set by the user
+    if (defaultWorkHours && !pageLoading && !isExpectedHoursManuallySet) {
+      // Use the utility function to calculate expected monthly hours
+      const calculated = calculateExpectedMonthlyHours({ defaultWorkHours })
+      form.setValue('expectedMonthlyHours', calculated)
+    }
+  }, [defaultWorkHours, form, pageLoading, isExpectedHoursManuallySet])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -92,6 +120,19 @@ export default function PreferencesPage() {
         try {
           const settings = await getUserSettings(user.uid)
           form.reset(settings)
+
+          // Check if expectedMonthlyHours was manually set by the user
+          // If it exists and is different from the auto-calculated value, mark as manually set
+          if (settings.expectedMonthlyHours && settings.defaultWorkHours) {
+            const autoCalculated = calculateExpectedMonthlyHours({
+              defaultWorkHours: settings.defaultWorkHours,
+            })
+            if (
+              Math.abs(settings.expectedMonthlyHours - autoCalculated) > 0.1
+            ) {
+              setIsExpectedHoursManuallySet(true)
+            }
+          }
         } catch (error) {
           console.error('Failed to fetch user settings', error)
           toast({
@@ -241,13 +282,73 @@ export default function PreferencesPage() {
                           type="number"
                           step="0.5"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          value={field.value ?? ''}
                         />
                       </FormControl>
                       <FormDescription>
                         {t('settings.defaultWorkHoursDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="expectedMonthlyHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        {t('settings.expectedMonthlyHours')}
+                        {defaultWorkHours && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="max-w-xs">
+                                  {t('settings.expectedMonthlyHoursTooltip')}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="1"
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => {
+                            field.onChange(e)
+                            // Mark as manually set when user changes the value
+                            setIsExpectedHoursManuallySet(true)
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {isExpectedHoursManuallySet
+                          ? t('settings.expectedMonthlyHoursDescriptionManual')
+                          : t('settings.expectedMonthlyHoursDescriptionAuto', {
+                              hours: defaultWorkHours || 0,
+                            })}
+                        {isExpectedHoursManuallySet && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const calculated = calculateExpectedMonthlyHours({
+                                defaultWorkHours,
+                              })
+                              form.setValue('expectedMonthlyHours', calculated)
+                              setIsExpectedHoursManuallySet(false)
+                            }}
+                            className="ml-2 text-sm text-primary hover:text-primary/80 underline"
+                          >
+                            {t('settings.resetToAutoCalculation')}
+                          </button>
+                        )}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

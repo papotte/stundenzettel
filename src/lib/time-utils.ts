@@ -121,3 +121,34 @@ export function calculateWeekCompensatedTime(
     )
   }, 0)
 }
+
+/**
+ * Calculates the expected monthly working hours based on user settings.
+ * If defaultWorkHours is set, auto-calculates using the formula: defaultWorkHours × 260 ÷ 12
+ * Otherwise, uses the manual expectedMonthlyHours value or defaults to 160.
+ *
+ * @param userSettings UserSettings object
+ * @returns Expected monthly hours (number)
+ */
+export function calculateExpectedMonthlyHours(
+  userSettings: UserSettings | null,
+): number {
+  if (!userSettings) return 160
+
+  // If expectedMonthlyHours is already set, use that value
+  if (userSettings.expectedMonthlyHours) {
+    return userSettings.expectedMonthlyHours
+  }
+
+  // If defaultWorkHours is set but expectedMonthlyHours is not, auto-calculate
+  if (userSettings.defaultWorkHours) {
+    // Auto-calculate: defaultWorkHours × 260 working days ÷ 12 months
+    const calculated = (userSettings.defaultWorkHours * 260) / 12
+    // Round to nearest lowest 0.5, then format to 1 decimal place
+    const roundedToHalf = Math.floor(calculated * 2) / 2
+    return parseFloat(roundedToHalf.toFixed(1))
+  }
+
+  // Default fallback
+  return 160
+}
