@@ -1,23 +1,45 @@
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+
+import { db } from '@/lib/firebase'
 import type { UserSettings } from '@/lib/types'
 
-import * as firestoreService from './user-settings-service.firestore'
-
-// Always use Firestore service - local service has been removed
-// The environment-specific database selection is handled in firebase.ts
-const service = firestoreService
-
-const environment = process.env.NEXT_PUBLIC_ENVIRONMENT || 'production'
-console.info(
-  `Using Firestore user settings service for environment '${environment}'`,
-)
-
-export const getUserSettings = (userId: string): Promise<UserSettings> => {
-  return service.getUserSettings(userId)
+const defaultSettings: UserSettings = {
+  defaultWorkHours: 8,
+  defaultStartTime: '09:00',
+  defaultEndTime: '17:00',
+  language: 'en',
+  displayName: '', // New
+  companyName: '',
+  companyEmail: '',
+  companyPhone1: '',
+  companyPhone2: '',
+  companyFax: '',
+  driverCompensationPercent: 100,
+  passengerCompensationPercent: 90,
+  expectedMonthlyHours: 160,
 }
 
-export const setUserSettings = (
+export const getUserSettings = async (
   userId: string,
-  settings: UserSettings,
+): Promise<UserSettings> => {
+  if (!userId) return defaultSettings
+  const docRef = doc(db, 'users', userId, 'settings', 'general')
+  const docSnap = await getDoc(docRef)
+
+  if (docSnap.exists()) {
+    return { ...defaultSettings, ...docSnap.data() } as UserSettings
+  } else {
+    // If no settings exist, create them with default values
+    await setUserSettings(userId, defaultSettings)
+    return defaultSettings
+  }
+}
+
+export const setUserSettings = async (
+  userId: string,
+  settings: Partial<UserSettings>,
 ): Promise<void> => {
-  return service.setUserSettings(userId, settings)
+  if (!userId) throw new Error('User not authenticated')
+  const docRef = doc(db, 'users', userId, 'settings', 'general')
+  await setDoc(docRef, settings, { merge: true })
 }
