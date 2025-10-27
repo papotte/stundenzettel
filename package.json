@@ -73,7 +73,7 @@
     "exceljs": "^4.4.0",
     "firebase": "^12.0.0",
     "firebase-functions": "^6.0.1",
-    "lucide-react": "^0.546.0",
+    "lucide-react": "^0.548.0",
     "next": "15.5.6",
     "next-intl": "^4.3.4",
     "patch-package": "^8.0.0",
@@ -82,7 +82,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "resend": "^6.1.1",
-    "stripe": "18.3.0",
+    "stripe": "18.5.0",
     "tailwind-merge": "3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.25.76"
