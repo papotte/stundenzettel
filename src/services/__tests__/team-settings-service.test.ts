@@ -1,3 +1,5 @@
+import { type DocumentSnapshot, doc, getDoc, setDoc } from 'firebase/firestore'
+
 import type { TeamSettings } from '@/lib/types'
 
 import {
@@ -5,7 +7,21 @@ import {
   getTeamSettings,
   setTeamSettings,
 } from '../team-settings-service'
-import { mockTeamSettings } from '../team-settings-service.local'
+import { getUserSettings } from '../user-settings-service'
+
+jest.mock('@/lib/firebase', () => ({
+  db: {},
+}))
+
+jest.mock('firebase/firestore', () => ({
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  setDoc: jest.fn(),
+}))
+
+jest.mock('../user-settings-service', () => ({
+  getUserSettings: jest.fn(),
+}))
 
 describe('TeamSettingsService', () => {
   const mockTeamId = 'test-team-id'
@@ -23,14 +39,66 @@ describe('TeamSettingsService', () => {
     defaultPassengerCompensationPercent: 90,
     allowMembersToOverrideCompensation: true,
     allowMembersToOverrideExportSettings: false,
-    allowMembersToOverrideWorkHours: true,
     companyName: 'Test Company',
     companyEmail: 'test@company.com',
   }
 
+  const mockDoc = doc as jest.MockedFunction<typeof doc>
+  const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
+  const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
+
+  const mockGetUserSettings = getUserSettings as jest.MockedFunction<
+    typeof getUserSettings
+  >
+
+  const inMemoryTeams: Record<
+    string,
+    {
+      settings?: TeamSettings
+    }
+  > = {}
+
   beforeEach(() => {
-    // Clear any existing team settings to ensure test isolation
-    delete mockTeamSettings[mockTeamId]
+    jest.clearAllMocks()
+    Object.keys(inMemoryTeams).forEach((key) => {
+      delete inMemoryTeams[key]
+    })
+
+    mockDoc.mockImplementation((_db, collection, teamId) => ({
+      collection,
+      id: teamId,
+    }))
+
+    mockGetDoc.mockImplementation(async (ref) => {
+      const data = inMemoryTeams[ref.id]
+      return {
+        exists: () => Boolean(data),
+        data: () => data ?? {},
+      } as DocumentSnapshot
+    })
+
+    mockSetDoc.mockImplementation(async (ref, value) => {
+      const { settings } = value as { settings: TeamSettings }
+      inMemoryTeams[ref.id] = {
+        settings: {
+          ...(inMemoryTeams[ref.id]?.settings ?? {}),
+          ...settings,
+        },
+      }
+    })
+
+    mockGetUserSettings.mockResolvedValue({
+      defaultWorkHours: 8,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
+      language: 'en',
+      displayName: 'User',
+      companyName: 'User Company',
+      companyEmail: 'user@example.com',
+      companyPhone1: undefined,
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 90,
+    })
   })
 
   it('should set and get team settings', async () => {
@@ -70,6 +138,18 @@ describe('TeamSettingsService', () => {
     expect(updatedSettings.companyName).toBe('Updated Company Name')
   })
 
+  it('should remove undefined values before persisting', async () => {
+    await setTeamSettings(mockTeamId, {
+      ...sampleSettings,
+      companyPhone1: undefined,
+      companyFax: undefined,
+    })
+
+    expect(inMemoryTeams[mockTeamId]?.settings).toEqual({
+      ...sampleSettings,
+    })
+  })
+
   describe('getEffectiveUserSettings', () => {
     const mockUserId = 'test-user-id'
 
@@ -78,7 +158,6 @@ describe('TeamSettingsService', () => {
 
       expect(result.overrides.canOverrideCompensation).toBe(true)
       expect(result.overrides.canOverrideExportSettings).toBe(true)
-      expect(result.overrides.canOverrideWorkHours).toBe(true)
       expect(result.compensationSplitEnabled).toBe(true)
       expect(result.settings).toBeDefined()
     })
@@ -91,7 +170,6 @@ describe('TeamSettingsService', () => {
         defaultPassengerCompensationPercent: 70,
         allowMembersToOverrideCompensation: false,
         allowMembersToOverrideExportSettings: true,
-        allowMembersToOverrideWorkHours: false,
         companyName: 'Team Company',
         companyEmail: 'team@company.com',
       }
@@ -102,7 +180,6 @@ describe('TeamSettingsService', () => {
 
       expect(result.overrides.canOverrideCompensation).toBe(false)
       expect(result.overrides.canOverrideExportSettings).toBe(true)
-      expect(result.overrides.canOverrideWorkHours).toBe(false)
       expect(result.compensationSplitEnabled).toBe(true)
       expect(result.settings.companyName).toBe('Team Company')
       expect(result.settings.companyEmail).toBe('team@company.com')

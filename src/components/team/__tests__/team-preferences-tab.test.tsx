@@ -1,8 +1,13 @@
-import { render, screen, fireEvent, waitFor } from '@jest-setup'
-import TeamPreferencesTab from '../team-preferences-tab'
+import { fireEvent, render, screen, waitFor } from '@jest-setup'
+
 import { useToast } from '@/hooks/use-toast'
-import { getTeamSettings, setTeamSettings } from '@/services/team-settings-service'
 import { Team, TeamSettings } from '@/lib/types'
+import {
+  getTeamSettings,
+  setTeamSettings,
+} from '@/services/team-settings-service'
+
+import { TeamPreferencesTab } from '../team-preferences-tab'
 
 // Mock the hooks and services
 jest.mock('@/hooks/use-toast')
@@ -12,8 +17,13 @@ jest.mock('next-intl', () => ({
 }))
 
 const mockToast = jest.fn()
-const mockGetTeamSettings = getTeamSettings as jest.MockedFunction<typeof getTeamSettings>
-const mockSetTeamSettings = setTeamSettings as jest.MockedFunction<typeof setTeamSettings>
+const mockedUseToast = useToast as jest.MockedFunction<typeof useToast>
+const mockGetTeamSettings = getTeamSettings as jest.MockedFunction<
+  typeof getTeamSettings
+>
+const mockSetTeamSettings = setTeamSettings as jest.MockedFunction<
+  typeof setTeamSettings
+>
 
 const mockTeam: Team = {
   id: 'team-1',
@@ -46,7 +56,11 @@ const mockTeamSettings: TeamSettings = {
 describe('TeamPreferencesTab', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useToast as any).mockReturnValue({ toast: mockToast })
+    mockedUseToast.mockReturnValue({
+      toasts: [],
+      toast: mockToast,
+      dismiss: jest.fn(),
+    })
     mockGetTeamSettings.mockResolvedValue(mockTeamSettings)
     mockSetTeamSettings.mockResolvedValue(undefined)
   })
@@ -58,14 +72,20 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
         expect(screen.getByText('teams.teamPreferences')).toBeInTheDocument()
-        expect(screen.getByText('teams.trackingConfiguration')).toBeInTheDocument()
-        expect(screen.getByText('teams.compensationDefaults')).toBeInTheDocument()
-        expect(screen.getByText('teams.overridePermissions')).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.trackingConfiguration'),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.compensationDefaults'),
+        ).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.overridePermissions'),
+        ).toBeInTheDocument()
         expect(screen.getByText('teams.teamCompanyDetails')).toBeInTheDocument()
       })
     })
@@ -73,7 +93,10 @@ describe('TeamPreferencesTab', () => {
     it('hides compensation section when driving time is disabled', async () => {
       const settingsWithoutDriving = {
         ...mockTeamSettings,
-        exportFields: { ...mockTeamSettings.exportFields, includeDrivingTime: false }
+        exportFields: {
+          ...mockTeamSettings.exportFields,
+          includeDrivingTime: false,
+        },
       }
       mockGetTeamSettings.mockResolvedValue(settingsWithoutDriving)
 
@@ -82,11 +105,13 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
-        expect(screen.queryByText('teams.compensationDefaults')).not.toBeInTheDocument()
+        expect(
+          screen.queryByText('teams.compensationDefaults'),
+        ).not.toBeInTheDocument()
       })
     })
   })
@@ -98,17 +123,17 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
         const saveButtons = screen.getAllByText('common.save')
-        saveButtons.forEach(button => {
+        saveButtons.forEach((button) => {
           expect(button).not.toBeDisabled()
         })
 
         const checkboxes = screen.getAllByRole('checkbox')
-        checkboxes.forEach(checkbox => {
+        checkboxes.forEach((checkbox) => {
           expect(checkbox).not.toBeDisabled()
         })
       })
@@ -120,7 +145,7 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="member"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
@@ -128,7 +153,7 @@ describe('TeamPreferencesTab', () => {
         expect(saveButtons).toHaveLength(0)
 
         const checkboxes = screen.getAllByRole('checkbox')
-        checkboxes.forEach(checkbox => {
+        checkboxes.forEach((checkbox) => {
           expect(checkbox).toBeDisabled()
         })
       })
@@ -143,18 +168,22 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={onTeamUpdated}
-        />
+        />,
       )
 
       await waitFor(() => {
-        expect(screen.getByText('teams.trackingConfiguration')).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.trackingConfiguration'),
+        ).toBeInTheDocument()
       })
 
       // Find and click the tracking configuration save button
-      const trackingCard = screen.getByText('teams.trackingConfiguration').closest('.rounded-lg')
+      const trackingCard = screen
+        .getByText('teams.trackingConfiguration')
+        .closest('.rounded-lg')
       const saveButton = trackingCard?.querySelector('button')
       expect(saveButton).toBeInTheDocument()
-      
+
       fireEvent.click(saveButton!)
 
       await waitFor(() => {
@@ -180,26 +209,32 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={onTeamUpdated}
-        />
+        />,
       )
 
       await waitFor(() => {
-        expect(screen.getByText('teams.compensationDefaults')).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.compensationDefaults'),
+        ).toBeInTheDocument()
       })
 
       // Find and click the compensation save button
-      const compensationCard = screen.getByText('teams.compensationDefaults').closest('.rounded-lg')
+      const compensationCard = screen
+        .getByText('teams.compensationDefaults')
+        .closest('.rounded-lg')
       const saveButton = compensationCard?.querySelector('button')
       expect(saveButton).toBeInTheDocument()
-      
+
       fireEvent.click(saveButton!)
 
       await waitFor(() => {
         expect(mockSetTeamSettings).toHaveBeenCalledWith(mockTeam.id, {
           ...mockTeamSettings,
           enableCompensationSplit: mockTeamSettings.enableCompensationSplit,
-          defaultDriverCompensationPercent: mockTeamSettings.defaultDriverCompensationPercent,
-          defaultPassengerCompensationPercent: mockTeamSettings.defaultPassengerCompensationPercent,
+          defaultDriverCompensationPercent:
+            mockTeamSettings.defaultDriverCompensationPercent,
+          defaultPassengerCompensationPercent:
+            mockTeamSettings.defaultPassengerCompensationPercent,
         })
       })
 
@@ -213,20 +248,24 @@ describe('TeamPreferencesTab', () => {
 
     it('handles save failures gracefully', async () => {
       mockSetTeamSettings.mockRejectedValue(new Error('Save failed'))
-      
+
       render(
         <TeamPreferencesTab
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
-        expect(screen.getByText('teams.trackingConfiguration')).toBeInTheDocument()
+        expect(
+          screen.getByText('teams.trackingConfiguration'),
+        ).toBeInTheDocument()
       })
 
-      const trackingCard = screen.getByText('teams.trackingConfiguration').closest('.rounded-lg')
+      const trackingCard = screen
+        .getByText('teams.trackingConfiguration')
+        .closest('.rounded-lg')
       const saveButton = trackingCard?.querySelector('button')
       fireEvent.click(saveButton!)
 
@@ -247,7 +286,7 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       await waitFor(() => {
@@ -257,13 +296,13 @@ describe('TeamPreferencesTab', () => {
 
     it('handles loading failure gracefully', async () => {
       mockGetTeamSettings.mockRejectedValue(new Error('Load failed'))
-      
+
       render(
         <TeamPreferencesTab
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       // Should render without crashing
@@ -273,14 +312,16 @@ describe('TeamPreferencesTab', () => {
 
   describe('Edge Cases', () => {
     it('handles undefined team settings gracefully', async () => {
-      mockGetTeamSettings.mockResolvedValue(undefined as any)
-      
+      mockGetTeamSettings.mockResolvedValue(
+        undefined as unknown as TeamSettings,
+      )
+
       render(
         <TeamPreferencesTab
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       // Should render without crashing
@@ -290,7 +331,7 @@ describe('TeamPreferencesTab', () => {
     it('handles empty export fields', async () => {
       const settingsWithEmptyExport = {
         ...mockTeamSettings,
-        exportFields: {}
+        exportFields: {},
       }
       mockGetTeamSettings.mockResolvedValue(settingsWithEmptyExport)
 
@@ -299,7 +340,7 @@ describe('TeamPreferencesTab', () => {
           team={mockTeam}
           currentUserRole="owner"
           onTeamUpdated={jest.fn()}
-        />
+        />,
       )
 
       // Should render without crashing

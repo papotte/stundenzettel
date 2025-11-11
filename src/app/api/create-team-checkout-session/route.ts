@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { createTeamCheckoutSession } from '@/services/stripe'
+import { getTeamMembers } from '@/services/team-service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,6 +23,22 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       )
     }
+    const teamMembers = await getTeamMembers(teamId)
+    const isTeamAdmin = teamMembers.some(
+      (member) =>
+        (member.id === userId || member.email === userEmail) &&
+        (member.role === 'owner' || member.role === 'admin'),
+    )
+
+    if (!isTeamAdmin) {
+      return NextResponse.json(
+        {
+          error: 'Insufficient permissions to create team subscription',
+        },
+        { status: 403 },
+      )
+    }
+
     const result = await createTeamCheckoutSession({
       userId,
       userEmail,

@@ -1,14 +1,10 @@
+import { useFormatter } from '@/lib/date-formatter'
+import { calculateExpectedMonthlyHours, calculateWeekCompensatedTime } from '@/lib/time-utils'
+import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
+import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 import { differenceInMinutes, getDay, isSameMonth } from 'date-fns'
 import ExcelJS from 'exceljs'
 import { useTranslations } from 'next-intl'
-
-import { useFormatter } from '@/lib/date-formatter'
-import {
-  calculateExpectedMonthlyHours,
-  calculateWeekCompensatedTime,
-} from '@/lib/time-utils'
-import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
-import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
 interface ExportParams {
   selectedMonth: Date
@@ -169,19 +165,42 @@ export const exportToExcel = async ({
       t('export.headerTo'),
     ]
 
-    const baseColIndex = 1
-    let col = baseColIndex
-    worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ // week
-    worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ // date
-    if (showLocation) { worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ }
+    let col = 1
+    worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+    col++ // week
+    worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+    col++ // date
+    if (showLocation) {
+      worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+      col++
+    }
     const workTimeStart = col
     const workTimeEnd = col + 1
-    worksheet.mergeCells(headerRow1Num, workTimeStart, headerRow1Num, workTimeEnd); col = workTimeEnd + 1
-    if (showPause) { worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ }
-    if (showDriving) { worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ }
-    worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ // compensated
-    if (showDriving) { worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ }
-    if (showMileage) { worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col); col++ }
+    worksheet.mergeCells(
+      headerRow1Num,
+      workTimeStart,
+      headerRow1Num,
+      workTimeEnd,
+    )
+    col = workTimeEnd + 1
+    if (showPause) {
+      worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+      col++
+    }
+    if (showDriving) {
+      worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+      col++
+    }
+    worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+    col++ // compensated
+    if (showDriving) {
+      worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+      col++
+    }
+    if (showMileage) {
+      worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+      col++
+    }
 
     // Apply styles to header rows
     ;[headerRow1, headerRow2].forEach((row) => {
@@ -248,7 +267,7 @@ export const exportToExcel = async ({
         })
       }
 
-       if (dayEntries.length > 0) {
+      if (dayEntries.length > 0) {
         dayEntries.forEach((entry) => {
           let compensatedHours = 0
           let fromValue = ''
@@ -319,31 +338,50 @@ export const exportToExcel = async ({
           const dataRow = worksheet.addRow(rowData)
           applyRowStyles(dataRow)
           // Set specific alignments after applying common styles
-          let c = 1
-          c++ // week
-          c++ // date
+          let columnIndex = 1
+          columnIndex += 1 // week
+          columnIndex += 1 // date
           if (showLocation) {
-            dataRow.getCell(c).alignment.horizontal = 'left';
-            dataRow.getCell(c).alignment.wrapText = true;
-            c++
+            const locationCell = dataRow.getCell(columnIndex)
+            locationCell.alignment.horizontal = 'left'
+            locationCell.alignment.wrapText = true
+            columnIndex += 1
           }
-          dataRow.getCell(c++).alignment.horizontal = 'right' // from
-          dataRow.getCell(c++).alignment.horizontal = 'right' // to
-          if (showPause) { dataRow.getCell(c++).alignment.horizontal = 'right' }
-          if (showDriving) { dataRow.getCell(c++).alignment.horizontal = 'right' }
-          dataRow.getCell(c++).alignment.horizontal = 'right' // compensated
-          if (showDriving) { dataRow.getCell(c++).alignment.horizontal = 'right' }
-          if (showMileage) { dataRow.getCell(c).alignment.horizontal = 'left' }
-          // number formats for right-aligned numeric cells
-          // rebuild indexes similarly for formats
-          let f = 1
-          f += 2 // week, date
-          if (showLocation) f += 1
-          f += 2 // from, to
-          if (showPause) { dataRow.getCell(f).numFmt = '0.00'; f += 1 }
-          if (showDriving) { dataRow.getCell(f).numFmt = '0.00'; f += 1 }
-          dataRow.getCell(f).numFmt = '0.00'; f += 1 // compensated
-          if (showDriving) { dataRow.getCell(f).numFmt = '0.00'; f += 1 }
+          const fromCell = dataRow.getCell(columnIndex)
+          fromCell.alignment.horizontal = 'right'
+          columnIndex += 1
+
+          const toCell = dataRow.getCell(columnIndex)
+          toCell.alignment.horizontal = 'right'
+          columnIndex += 1
+
+          if (showPause) {
+            const pauseCell = dataRow.getCell(columnIndex)
+            pauseCell.alignment.horizontal = 'right'
+            pauseCell.numFmt = '0.00'
+            columnIndex += 1
+          }
+          if (showDriving) {
+            const driverCell = dataRow.getCell(columnIndex)
+            driverCell.alignment.horizontal = 'right'
+            driverCell.numFmt = '0.00'
+            columnIndex += 1
+          }
+          const compensatedCell = dataRow.getCell(columnIndex)
+          compensatedCell.alignment.horizontal = 'right'
+          compensatedCell.numFmt = '0.00'
+          columnIndex += 1
+
+          if (showDriving) {
+            const passengerCell = dataRow.getCell(columnIndex)
+            passengerCell.alignment.horizontal = 'right'
+            passengerCell.numFmt = '0.00'
+            columnIndex += 1
+          }
+          if (showMileage) {
+            const mileageCell = dataRow.getCell(columnIndex)
+            mileageCell.alignment.horizontal = 'left'
+          }
         })
 
         // Set and merge weekday and date cells

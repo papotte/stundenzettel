@@ -20,6 +20,8 @@ import { useFormatter } from '@/lib/date-formatter'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'
+import { getUserTeam } from '@/services/team-service'
+import { getEffectiveUserSettings } from '@/services/team-settings-service'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -28,8 +30,6 @@ import {
   updateTimeEntry,
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
-import { getUserTeam } from '@/services/team-service'
-import { getEffectiveUserSettings } from '@/services/team-settings-service'
 
 export function useTimeTracker(user: { uid: string } | null) {
   const { toast } = useToast()
@@ -57,10 +57,8 @@ export function useTimeTracker(user: { uid: string } | null) {
 
         const team = await getUserTeam(user.uid)
         if (team) {
-          const { settings: effectiveSettings } = await getEffectiveUserSettings(
-            user.uid,
-            team.id,
-          )
+          const { settings: effectiveSettings } =
+            await getEffectiveUserSettings(user.uid, team.id)
           setUserSettings(effectiveSettings)
         } else {
           const settings = await getUserSettings(user.uid)

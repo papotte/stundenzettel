@@ -14,9 +14,7 @@ This implementation adds comprehensive team-wide settings functionality to the T
 
 ### 2. Service Layer
 
-- **team-settings-service.ts** - Main service interface
-- **team-settings-service.firestore.ts** - Firestore implementation
-- **team-settings-service.local.ts** - Local mock implementation
+- **team-settings-service.ts** - Firestore-backed service implementation
 - Follows the existing pattern used by other services in the application
 
 ### 3. Enhanced UI Components

@@ -1,17 +1,6 @@
 'use client'
 
-import SubscriptionGuard from '@/components/subscription-guard'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useAuth } from '@/hooks/use-auth'
-import { useToast } from '@/hooks/use-toast'
-import { getUserTeam } from '@/services/team-service'
-import { getEffectiveUserSettings } from '@/services/team-settings-service'
-import { getUserSettings, setUserSettings } from '@/services/user-settings-service'
+import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -19,9 +8,39 @@ import { ArrowLeft, Building, Info, Loader2, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+
+import SubscriptionGuard from '@/components/subscription-guard'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAuth } from '@/hooks/use-auth'
+import { useToast } from '@/hooks/use-toast'
+import { getUserTeam } from '@/services/team-service'
+import { getEffectiveUserSettings } from '@/services/team-settings-service'
+import {
+  getUserSettings,
+  setUserSettings,
+} from '@/services/user-settings-service'
 
 const companyFormSchema = z.object({
   companyName: z.string().optional(),
@@ -51,7 +70,6 @@ export default function CompanyPage() {
   const [overridePermissions, setOverridePermissions] = useState({
     canOverrideCompensation: true,
     canOverrideExportSettings: true,
-    canOverrideWorkHours: true,
   })
 
   const form = useForm<CompanyFormValues>({
@@ -161,8 +179,8 @@ export default function CompanyPage() {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">
-          <Skeleton className="mb-8 h-10 w-32"/>
-          <Skeleton className="h-96 w-full"/>
+          <Skeleton className="mb-8 h-10 w-32" />
+          <Skeleton className="h-96 w-full" />
         </div>
       </div>
     )
@@ -178,7 +196,7 @@ export default function CompanyPage() {
         <div className="mx-auto max-w-2xl">
           <Button asChild variant="outline" className="mb-8">
             <Link href="/tracker">
-              <ArrowLeft className="mr-2 h-4 w-4"/>
+              <ArrowLeft className="mr-2 h-4 w-4" />
               {t('settings.backToTracker')}
             </Link>
           </Button>
@@ -187,7 +205,7 @@ export default function CompanyPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Building className="h-5 w-5"/>
+                    <Building className="h-5 w-5" />
                     {t('settings.company')}
                   </CardTitle>
                   <CardDescription>
@@ -210,7 +228,7 @@ export default function CompanyPage() {
                         <FormDescription>
                           {t('settings.companyNameDescription')}
                         </FormDescription>
-                        <FormMessage/>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -231,7 +249,7 @@ export default function CompanyPage() {
                         <FormDescription>
                           {t('settings.companyEmailDescription')}
                         </FormDescription>
-                        <FormMessage/>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -251,7 +269,7 @@ export default function CompanyPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormMessage/>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -270,7 +288,7 @@ export default function CompanyPage() {
                               {...field}
                             />
                           </FormControl>
-                          <FormMessage/>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
@@ -288,7 +306,7 @@ export default function CompanyPage() {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage/>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -300,7 +318,7 @@ export default function CompanyPage() {
 
                     {!overridePermissions.canOverrideCompensation && (
                       <Alert className="mb-4">
-                        <Info className="h-4 w-4"/>
+                        <Info className="h-4 w-4" />
                         <AlertDescription>
                           {t('teams.settingsInheritedFromTeam')}
                         </AlertDescription>
@@ -322,9 +340,9 @@ export default function CompanyPage() {
                                 min="0"
                                 max="200"
                                 step="0.1"
-                              disabled={
-                                !overridePermissions.canOverrideCompensation
-                              }
+                                disabled={
+                                  !overridePermissions.canOverrideCompensation
+                                }
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
@@ -334,11 +352,11 @@ export default function CompanyPage() {
                             <FormDescription>
                               {!overridePermissions.canOverrideCompensation
                                 ? t('teams.settingsOverriddenByTeam')
-                              : t(
-                                  'settings.driverCompensationPercentDescription',
-                                )}
+                                : t(
+                                    'settings.driverCompensationPercentDescription',
+                                  )}
                             </FormDescription>
-                            <FormMessage/>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -357,9 +375,9 @@ export default function CompanyPage() {
                                 min="0"
                                 max="200"
                                 step="0.1"
-                              disabled={
-                                !overridePermissions.canOverrideCompensation
-                              }
+                                disabled={
+                                  !overridePermissions.canOverrideCompensation
+                                }
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
@@ -369,11 +387,11 @@ export default function CompanyPage() {
                             <FormDescription>
                               {!overridePermissions.canOverrideCompensation
                                 ? t('teams.settingsOverriddenByTeam')
-                              : t(
-                                  'settings.passengerCompensationPercentDescription',
-                                )}
+                                : t(
+                                    'settings.passengerCompensationPercentDescription',
+                                  )}
                             </FormDescription>
-                            <FormMessage/>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -393,7 +411,7 @@ export default function CompanyPage() {
                         data-testid="loader-icon"
                       />
                     ) : (
-                      <Save className="mr-2 h-4 w-4"/>
+                      <Save className="mr-2 h-4 w-4" />
                     )}
                     {isSaving ? t('common.saving') : t('common.save')}
                   </Button>
@@ -403,5 +421,6 @@ export default function CompanyPage() {
           </Form>
         </div>
       </div>
-      )
-      }
+    </SubscriptionGuard>
+  )
+}

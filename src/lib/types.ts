@@ -98,7 +98,6 @@ export interface EffectiveUserSettings {
   overrides: {
     canOverrideCompensation: boolean
     canOverrideExportSettings: boolean
-    canOverrideWorkHours: boolean
   }
   compensationSplitEnabled: boolean
 }

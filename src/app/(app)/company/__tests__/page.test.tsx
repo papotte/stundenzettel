@@ -4,7 +4,11 @@ import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { UserSettings } from '@/lib/types'
-import { getEffectiveUserSettings } from '@/services/team-settings-service'
+import { getUserTeam } from '@/services/team-service'
+import {
+  getEffectiveUserSettings,
+  getTeamSettings,
+} from '@/services/team-settings-service'
 import {
   getUserSettings,
   setUserSettings,
@@ -56,9 +60,12 @@ jest.mock('next/navigation', () => ({
 
 jest.mock('@/services/user-settings-service')
 jest.mock('@/services/team-settings-service')
+jest.mock('@/services/team-service')
 const mockGetUserSettings = getUserSettings as jest.Mock
 const mockSetUserSettings = setUserSettings as jest.Mock
 const mockGetEffectiveUserSettings = getEffectiveUserSettings as jest.Mock
+const mockGetTeamSettings = getTeamSettings as jest.Mock
+const mockGetUserTeam = getUserTeam as jest.Mock
 
 const mockSettings: UserSettings = {
   defaultWorkHours: 7.5,
@@ -76,6 +83,14 @@ const mockSettings: UserSettings = {
 }
 
 let currentSettings: UserSettings
+
+const mockTeam = {
+  id: 'test-team',
+  name: 'Test Team',
+  ownerId: 'owner-1',
+  createdAt: new Date('2024-01-01T00:00:00Z'),
+  updatedAt: new Date('2024-01-01T00:00:00Z'),
+}
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(component)
@@ -99,11 +114,12 @@ describe('CompanyPage', () => {
         overrides: {
           canOverrideCompensation: true,
           canOverrideExportSettings: true,
-          canOverrideWorkHours: true,
         },
         compensationSplitEnabled: true,
       }),
     )
+    mockGetTeamSettings.mockResolvedValue({})
+    mockGetUserTeam.mockResolvedValue(null)
     mockAuthContext.user = createMockUser()
     mockAuthContext.loading = false
   })
@@ -401,9 +417,8 @@ describe('CompanyPage', () => {
 
   describe('Team Settings Integration', () => {
     it('loads effective user settings when user has team', async () => {
-      const mockUser = createMockUser()
-      mockUser.teamId = 'test-team'
-      mockAuthContext.user = mockUser
+      mockAuthContext.user = createMockUser()
+      mockGetUserTeam.mockResolvedValue(mockTeam)
 
       mockGetEffectiveUserSettings.mockResolvedValue({
         settings: {
@@ -414,7 +429,6 @@ describe('CompanyPage', () => {
         overrides: {
           canOverrideCompensation: false,
           canOverrideExportSettings: true,
-          canOverrideWorkHours: true,
         },
         compensationSplitEnabled: true,
       })
@@ -435,16 +449,14 @@ describe('CompanyPage', () => {
     })
 
     it('disables compensation fields when team restricts overrides', async () => {
-      const mockUser = createMockUser()
-      mockUser.teamId = 'test-team'
-      mockAuthContext.user = mockUser
+      mockAuthContext.user = createMockUser()
+      mockGetUserTeam.mockResolvedValue(mockTeam)
 
       mockGetEffectiveUserSettings.mockResolvedValue({
         settings: mockSettings,
         overrides: {
           canOverrideCompensation: false,
           canOverrideExportSettings: true,
-          canOverrideWorkHours: true,
         },
         compensationSplitEnabled: true,
       })
@@ -454,6 +466,10 @@ describe('CompanyPage', () => {
       await waitFor(() => {
         expect(screen.getByText('settings.company')).toBeInTheDocument()
       })
+
+      expect(
+        screen.getByText('teams.settingsInheritedFromTeam'),
+      ).toBeInTheDocument()
 
       const driverInput = screen.getByRole('spinbutton', {
         name: /settings\.driverCompensationPercent/i,
@@ -466,10 +482,9 @@ describe('CompanyPage', () => {
       expect(passengerInput).toBeDisabled()
     })
 
-    it('shows unified compensation field when team disables split', async () => {
-      const mockUser = createMockUser()
-      mockUser.teamId = 'test-team'
-      mockAuthContext.user = mockUser
+    it('shows both compensation inputs when team disables split', async () => {
+      mockAuthContext.user = createMockUser()
+      mockGetUserTeam.mockResolvedValue(mockTeam)
 
       mockGetEffectiveUserSettings.mockResolvedValue({
         settings: {
@@ -480,7 +495,6 @@ describe('CompanyPage', () => {
         overrides: {
           canOverrideCompensation: true,
           canOverrideExportSettings: true,
-          canOverrideWorkHours: true,
         },
         compensationSplitEnabled: false,
       })
@@ -491,29 +505,29 @@ describe('CompanyPage', () => {
         expect(screen.getByText('settings.company')).toBeInTheDocument()
       })
 
-      // Should show unified compensation field instead of separate driver/passenger
-      expect(
-        screen.getByText('settings.compensationPercent'),
-      ).toBeInTheDocument()
-      expect(
-        screen.queryByText('settings.driverCompensationPercent'),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByText('settings.passengerCompensationPercent'),
-      ).not.toBeInTheDocument()
+      // Both fields remain visible with synchronized values
+      const driverInput = screen.getByRole('spinbutton', {
+        name: /settings\.driverCompensationPercent/i,
+      })
+      const passengerInput = screen.getByRole('spinbutton', {
+        name: /settings\.passengerCompensationPercent/i,
+      })
+
+      expect(driverInput).toBeInTheDocument()
+      expect(passengerInput).toBeInTheDocument()
+      expect(driverInput).toHaveValue(85)
+      expect(passengerInput).toHaveValue(85)
     })
 
     it('shows team override message for restricted fields', async () => {
-      const mockUser = createMockUser()
-      mockUser.teamId = 'test-team'
-      mockAuthContext.user = mockUser
+      mockAuthContext.user = createMockUser()
+      mockGetUserTeam.mockResolvedValue(mockTeam)
 
       mockGetEffectiveUserSettings.mockResolvedValue({
         settings: mockSettings,
         overrides: {
           canOverrideCompensation: false,
           canOverrideExportSettings: true,
-          canOverrideWorkHours: true,
         },
         compensationSplitEnabled: true,
       })
@@ -525,8 +539,11 @@ describe('CompanyPage', () => {
       })
 
       expect(
-        screen.getByText('settings.teamControlledSetting'),
+        screen.getByText('teams.settingsInheritedFromTeam'),
       ).toBeInTheDocument()
+      expect(
+        screen.getAllByText('teams.settingsOverriddenByTeam').length,
+      ).toBeGreaterThan(0)
     })
 
     it('uses regular user settings when no team', async () => {
@@ -537,7 +554,6 @@ describe('CompanyPage', () => {
         overrides: {
           canOverrideCompensation: true,
           canOverrideExportSettings: true,
-          canOverrideWorkHours: true,
         },
         compensationSplitEnabled: true,
       })
@@ -545,11 +561,11 @@ describe('CompanyPage', () => {
       renderWithProviders(<CompanyPage />)
 
       await waitFor(() => {
-        expect(mockGetEffectiveUserSettings).toHaveBeenCalledWith(
-          'test-user-id',
-          undefined,
-        )
+        expect(screen.getByText('settings.company')).toBeInTheDocument()
       })
+
+      expect(mockGetUserTeam).toHaveBeenCalledWith('test-user-id')
+      expect(mockGetEffectiveUserSettings).not.toHaveBeenCalled()
 
       const driverInput = screen.getByRole('spinbutton', {
         name: /settings\.driverCompensationPercent/i,
@@ -563,9 +579,8 @@ describe('CompanyPage', () => {
     })
 
     it('handles team settings loading errors gracefully', async () => {
-      const mockUser = createMockUser()
-      mockUser.teamId = 'test-team'
-      mockAuthContext.user = mockUser
+      mockAuthContext.user = createMockUser()
+      mockGetUserTeam.mockResolvedValue(mockTeam)
 
       mockGetEffectiveUserSettings.mockRejectedValue(
         new Error('Team settings load failed'),
