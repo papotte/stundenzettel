@@ -74,6 +74,7 @@
   "noActiveSubscription": "No Active Subscription",
   "noActiveSubscriptionDescription": "Subscribe to unlock team collaboration features",
   "subscribeNow": "Subscribe Now",
+  "subscriptionAdminOnly": "Only team admins can create subscriptions. Please contact your team admin.",
   "subscriptionStatus": "Subscription Status",
   "teamPlan": "Team Plan",
   "seatUsage": "Seat Usage",

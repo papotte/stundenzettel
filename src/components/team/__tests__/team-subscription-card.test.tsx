@@ -10,14 +10,11 @@ import { getTeamSubscription } from '@/services/team-service'
 
 import { TeamSubscriptionCard } from '../team-subscription-card'
 
+const mockUseAuth = jest.fn()
+
 // Mock the auth context
 jest.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({
-    user: {
-      uid: 'user-1',
-      email: 'test@example.com',
-    },
-  }),
+  useAuth: () => mockUseAuth(),
 }))
 
 // Mock the payment service
@@ -95,6 +92,12 @@ const defaultProps = {
 describe('TeamSubscriptionCard', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseAuth.mockReturnValue({
+      user: {
+        uid: 'user-1',
+        email: 'test@example.com',
+      },
+    })
     ;(useToast as jest.Mock).mockReturnValue(mockToast)
     ;(global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
@@ -174,13 +177,22 @@ describe('TeamSubscriptionCard', () => {
 
   describe('Member Limit Warnings', () => {
     it('shows warning when approaching member limit', () => {
-      const approachingLimitMembers = Array.from({ length: 4 }, (_, i) => ({
-        id: `user-${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        role: 'member' as const,
-        joinedAt: new Date('2024-01-01'),
-        invitedBy: 'user-1',
-      }))
+      const approachingLimitMembers = [
+        {
+          id: 'user-1',
+          email: 'owner@example.com',
+          role: 'owner' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'user-1',
+        },
+        ...Array.from({ length: 3 }, (_, i) => ({
+          id: `user-${i + 2}`,
+          email: `user${i + 2}@example.com`,
+          role: 'member' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'user-1',
+        })),
+      ]
 
       render(
         <TeamSubscriptionCard
@@ -193,13 +205,22 @@ describe('TeamSubscriptionCard', () => {
     })
 
     it('shows warning when at member limit', () => {
-      const atLimitMembers = Array.from({ length: 5 }, (_, i) => ({
-        id: `user-${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        role: 'member' as const,
-        joinedAt: new Date('2024-01-01'),
-        invitedBy: 'user-1',
-      }))
+      const atLimitMembers = [
+        {
+          id: 'user-1',
+          email: 'owner@example.com',
+          role: 'owner' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'user-1',
+        },
+        ...Array.from({ length: 4 }, (_, i) => ({
+          id: `user-${i + 2}`,
+          email: `user${i + 2}@example.com`,
+          role: 'member' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'user-1',
+        })),
+      ]
 
       render(
         <TeamSubscriptionCard {...defaultProps} members={atLimitMembers} />,
@@ -321,13 +342,22 @@ describe('TeamSubscriptionCard', () => {
 
     it('handles upgrade subscription click when at limit', async () => {
       const user = userEvent.setup()
-      const atLimitMembers = Array.from({ length: 5 }, (_, i) => ({
-        id: `user-${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        role: 'member' as const,
-        joinedAt: new Date('2024-01-01'),
-        invitedBy: 'user-1',
-      }))
+      const atLimitMembers = [
+        {
+          id: 'user-1',
+          email: 'owner@example.com',
+          role: 'owner' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'user-1',
+        },
+        ...Array.from({ length: 4 }, (_, i) => ({
+          id: `user-${i + 2}`,
+          email: `user${i + 2}@example.com`,
+          role: 'member' as const,
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'user-1',
+        })),
+      ]
 
       render(
         <TeamSubscriptionCard {...defaultProps} members={atLimitMembers} />,
@@ -397,6 +427,9 @@ describe('TeamSubscriptionCard', () => {
       ).toBeInTheDocument()
       expect(screen.getByText('teams.noActiveSubscription')).toBeInTheDocument()
       expect(screen.getByText('teams.subscribeNow')).toBeInTheDocument()
+      expect(
+        screen.getByText('teams.noActiveSubscriptionDescription'),
+      ).toBeInTheDocument()
     })
 
     it('handles subscribe now click', async () => {
@@ -410,6 +443,41 @@ describe('TeamSubscriptionCard', () => {
       await waitFor(() => {
         expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Permission Handling', () => {
+    it('prevents non-admin members from creating a subscription', () => {
+      mockUseAuth.mockReturnValue({
+        user: {
+          uid: 'user-2',
+          email: 'member@example.com',
+        },
+      })
+
+      render(<TeamSubscriptionCard {...defaultProps} subscription={null} />)
+
+      expect(screen.queryByText('teams.subscribeNow')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('teams.noActiveSubscriptionDescription'),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByText('teams.subscriptionAdminOnly'),
+      ).toBeInTheDocument()
+    })
+
+    it('disables manage subscription button for non-admin members', () => {
+      mockUseAuth.mockReturnValue({
+        user: {
+          uid: 'user-2',
+          email: 'member@example.com',
+        },
+      })
+
+      render(<TeamSubscriptionCard {...defaultProps} />)
+
+      const manageButton = screen.getByText('subscription.manageBilling')
+      expect(manageButton).toBeDisabled()
     })
   })
 

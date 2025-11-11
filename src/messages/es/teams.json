@@ -74,6 +74,7 @@
   "noActiveSubscription": "Sin Suscripción Activa",
   "noActiveSubscriptionDescription": "Suscríbete para desbloquear características de colaboración en equipo",
   "subscribeNow": "Suscríbete Ahora",
+  "subscriptionAdminOnly": "Solo los administradores del equipo pueden crear suscripciones. Ponte en contacto con el administrador de tu equipo.",
   "subscriptionStatus": "Estado de suscripción",
   "teamPlan": "Plan de equipo",
   "seatUsage": "Uso de asientos",

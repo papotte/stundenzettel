@@ -74,6 +74,7 @@
   "noActiveSubscription": "Kein aktives Abonnement",
   "noActiveSubscriptionDescription": "Abonnieren Sie, um Team-Zusammenarbeitsfunktionen freizuschalten",
   "subscribeNow": "Jetzt abonnieren",
+  "subscriptionAdminOnly": "Nur Team-Admins können Abonnements erstellen. Bitte wenden Sie sich an Ihre Team-Admins.",
   "subscriptionStatus": "Abonnement-Status",
   "teamPlan": "Team-Tarif",
   "seatUsage": "Sitzungsnutzung",
