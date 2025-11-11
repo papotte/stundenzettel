@@ -18,6 +18,7 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamPreferencesTab } from '@/components/team/team-preferences-tab'
 import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { UserInvitationsList } from '@/components/team/user-invitations-list'
@@ -350,28 +351,23 @@ export default function TeamPage() {
               onValueChange={setSelectedTab}
               className="space-y-6"
             >
-              <TabsList className="flex w-full flex-start bg-transparent p-0">
-                <TabsTrigger
-                  value="members"
-                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                >
+              <TabsList className="flex w-full flex-start">
+                <TabsTrigger value="members">
                   <Users className="h-4 w-4" />
                   {t('teams.teamMembers')} ({members.length})
                 </TabsTrigger>
                 {(currentUserRole === 'owner' ||
                   currentUserRole === 'admin') && (
-                  <TabsTrigger
-                    value="invitations"
-                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                  >
+                  <TabsTrigger value="invitations">
                     <UserPlus className="h-4 w-4" />
                     {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
-                <TabsTrigger
-                  value="subscription"
-                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                >
+                <TabsTrigger value="preferences">
+                  <Settings className="h-4 w-4" />
+                  {t('teams.preferences')}
+                </TabsTrigger>
+                <TabsTrigger value="subscription">
                   <CreditCard className="h-4 w-4" />
                   {t('teams.subscription')}
                 </TabsTrigger>
@@ -416,6 +412,14 @@ export default function TeamPage() {
                   </Card>
                 </TabsContent>
               )}
+
+              <TabsContent value="preferences">
+                <TeamPreferencesTab
+                  team={team}
+                  currentUserRole={currentUserRole}
+                  onTeamUpdated={handleTeamUpdated}
+                />
+              </TabsContent>
 
               <TabsContent value="subscription">
                 <TeamSubscriptionCard

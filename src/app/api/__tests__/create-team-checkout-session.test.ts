@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 
 import * as stripeService from '@/services/stripe'
+import * as teamService from '@/services/team-service'
 
 import { POST } from '../create-team-checkout-session/route'
 
@@ -9,13 +10,28 @@ jest.mock('@/services/stripe', () => ({
   createTeamCheckoutSession: jest.fn(),
 }))
 
+// Mock the Team service
+jest.mock('@/services/team-service', () => ({
+  getTeamMembers: jest.fn(),
+}))
+
 const mockCreateTeamCheckoutSession = jest.mocked(
   stripeService.createTeamCheckoutSession,
 )
+const mockGetTeamMembers = jest.mocked(teamService.getTeamMembers)
 
 describe('/api/create-team-checkout-session', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetTeamMembers.mockResolvedValue([
+      {
+        id: 'user123',
+        email: 'owner@example.com',
+        role: 'admin',
+        joinedAt: new Date(),
+        invitedBy: 'user123',
+      },
+    ])
   })
 
   const createMockRequest = (
@@ -178,6 +194,35 @@ describe('/api/create-team-checkout-session', () => {
       expect(responseData).toEqual({
         error: 'Missing required parameters',
       })
+    })
+
+    it('should return 403 when user is not an admin', async () => {
+      const mockBody = {
+        userId: 'user123',
+        teamId: 'team456',
+        priceId: 'price_123',
+        quantity: 5,
+      }
+
+      mockGetTeamMembers.mockResolvedValue([
+        {
+          id: 'user123',
+          email: 'member@example.com',
+          role: 'member',
+          joinedAt: new Date(),
+          invitedBy: 'user789',
+        },
+      ])
+
+      const request = createMockRequest(mockBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(403)
+      const responseData = await response.json()
+      expect(responseData).toEqual({
+        error: 'Insufficient permissions to create team subscription',
+      })
+      expect(mockCreateTeamCheckoutSession).not.toHaveBeenCalled()
     })
 
     it('should handle unknown errors', async () => {

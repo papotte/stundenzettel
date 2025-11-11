@@ -55,6 +55,11 @@ export function TeamSubscriptionCard({
   const t = useTranslations()
   const format = useFormatter()
   const { user } = useAuth()
+  const currentMemberRole = members.find(
+    (member) => member.id === user?.uid || member.email === user?.email,
+  )?.role
+  const canManageSubscription =
+    currentMemberRole === 'owner' || currentMemberRole === 'admin'
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -104,6 +109,9 @@ export function TeamSubscriptionCard({
   }
 
   const handleManageSubscription = async () => {
+    if (!canManageSubscription) {
+      return
+    }
     setIsLoading(true)
     try {
       // Redirect to customer portal or pricing page
@@ -129,6 +137,14 @@ export function TeamSubscriptionCard({
   }
 
   const handleUpgradeSubscription = () => {
+    if (!canManageSubscription) {
+      toast({
+        title: t('common.error'),
+        description: t('teams.subscriptionAdminOnly'),
+        variant: 'destructive',
+      })
+      return
+    }
     setShowSubscriptionDialog(true)
   }
 
@@ -167,13 +183,21 @@ export function TeamSubscriptionCard({
               <h3 className="text-lg font-medium mb-2">
                 {t('teams.noActiveSubscription')}
               </h3>
-              <p className="text-muted-foreground mb-6">
-                {t('teams.noActiveSubscriptionDescription')}
-              </p>
-              <Button onClick={handleUpgradeSubscription}>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('teams.subscribeNow')}
-              </Button>
+              {canManageSubscription ? (
+                <p className="text-muted-foreground mb-6">
+                  {t('teams.noActiveSubscriptionDescription')}
+                </p>
+              ) : (
+                <p className="text-muted-foreground mb-6">
+                  {t('teams.subscriptionAdminOnly')}
+                </p>
+              )}
+              {canManageSubscription ? (
+                <Button onClick={handleUpgradeSubscription}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('teams.subscribeNow')}
+                </Button>
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -299,7 +323,7 @@ export function TeamSubscriptionCard({
             <Button
               variant="outline"
               onClick={handleManageSubscription}
-              disabled={isLoading}
+              disabled={isLoading || !canManageSubscription}
               className="flex-1"
             >
               <CreditCard className="mr-2 h-4 w-4" />
@@ -307,7 +331,7 @@ export function TeamSubscriptionCard({
                 ? t('common.loading')
                 : t('subscription.manageBilling')}
             </Button>
-            {seatsUsed >= totalSeats && (
+            {seatsUsed >= totalSeats && canManageSubscription && (
               <Button onClick={handleUpgradeSubscription} className="flex-1">
                 <Plus className="mr-2 h-4 w-4" />
                 {t('teams.addSeats')}
@@ -318,16 +342,18 @@ export function TeamSubscriptionCard({
       </Card>
 
       {/* Team Subscription Dialog */}
-      <TeamSubscriptionDialog
-        open={showSubscriptionDialog}
-        onOpenChange={setShowSubscriptionDialog}
-        team={team}
-        currentMembersCount={members.length}
-        onSubscriptionCreated={() => {
-          setShowSubscriptionDialog(false)
-          onSubscriptionUpdate(null) // This will trigger a refresh
-        }}
-      />
+      {canManageSubscription && (
+        <TeamSubscriptionDialog
+          open={showSubscriptionDialog}
+          onOpenChange={setShowSubscriptionDialog}
+          team={team}
+          currentMembersCount={members.length}
+          onSubscriptionCreated={() => {
+            setShowSubscriptionDialog(false)
+            onSubscriptionUpdate(null) // This will trigger a refresh
+          }}
+        />
+      )}
 
       {/* Seat Assignment Dialog */}
       {onMembersChange && user && (

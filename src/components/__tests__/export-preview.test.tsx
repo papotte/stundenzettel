@@ -9,6 +9,11 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { exportToExcel } from '@/lib/excel-export'
 import { subscriptionService } from '@/services/subscription-service'
+import { getUserTeam } from '@/services/team-service'
+import {
+  getEffectiveUserSettings,
+  getTeamSettings,
+} from '@/services/team-settings-service'
 import { getTimeEntries } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 import { createMockAuthContext } from '@/test-utils/auth-mocks'
@@ -39,6 +44,15 @@ jest.mock('@/services/subscription-service', () => ({
   },
 }))
 
+jest.mock('@/services/team-service', () => ({
+  getUserTeam: jest.fn(),
+}))
+
+jest.mock('@/services/team-settings-service', () => ({
+  getTeamSettings: jest.fn(),
+  getEffectiveUserSettings: jest.fn(),
+}))
+
 // Mock the subscription status hook
 jest.mock('@/hooks/use-subscription-status', () => ({
   useSubscriptionStatus: jest.fn(),
@@ -50,6 +64,14 @@ const mockGetTimeEntries = getTimeEntries as jest.MockedFunction<
 const mockGetUserSettings = getUserSettings as jest.MockedFunction<
   typeof getUserSettings
 >
+const mockGetUserTeam = getUserTeam as jest.MockedFunction<typeof getUserTeam>
+const mockGetTeamSettings = getTeamSettings as jest.MockedFunction<
+  typeof getTeamSettings
+>
+const mockGetEffectiveUserSettings =
+  getEffectiveUserSettings as jest.MockedFunction<
+    typeof getEffectiveUserSettings
+  >
 const mockExportToExcel = exportToExcel as jest.MockedFunction<
   typeof exportToExcel
 >
@@ -131,6 +153,16 @@ describe('ExportPreview', () => {
     // Set up default service responses
     mockGetTimeEntries.mockResolvedValue(mockTimeEntries)
     mockGetUserSettings.mockResolvedValue(mockUserSettings)
+    mockGetUserTeam.mockResolvedValue(null)
+    mockGetTeamSettings.mockResolvedValue({})
+    mockGetEffectiveUserSettings.mockResolvedValue({
+      settings: mockUserSettings,
+      overrides: {
+        canOverrideCompensation: true,
+        canOverrideExportSettings: true,
+      },
+      compensationSplitEnabled: true,
+    })
 
     // Mock subscription service to return a valid subscription
     const mockSubscription = {
@@ -308,16 +340,18 @@ describe('ExportPreview', () => {
       const exportButton = screen.getByTestId('export-preview-export-button')
       await user.click(exportButton)
 
-      expect(mockExportToExcel).toHaveBeenCalledWith({
-        selectedMonth: expect.any(Date),
-        user: mockAuthContext.user,
-        userSettings: mockUserSettings,
-        entries: mockTimeEntries,
-        getEntriesForDay: expect.any(Function),
-        getLocationDisplayName: expect.any(Function),
-        t: expect.any(Function),
-        format: expect.any(Object),
-      })
+      expect(mockExportToExcel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          selectedMonth: expect.any(Date),
+          user: mockAuthContext.user,
+          userSettings: mockUserSettings,
+          entries: mockTimeEntries,
+          getEntriesForDay: expect.any(Function),
+          getLocationDisplayName: expect.any(Function),
+          t: expect.any(Function),
+          format: expect.any(Object),
+        }),
+      )
     })
 
     it('calls window.print when PDF export button is clicked', async () => {

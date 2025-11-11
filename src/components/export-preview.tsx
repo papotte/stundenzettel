@@ -20,8 +20,13 @@ import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
-import type { TimeEntry, UserSettings } from '@/lib/types'
+import type { TeamSettings, TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'
+import { getUserTeam } from '@/services/team-service'
+import {
+  getEffectiveUserSettings,
+  getTeamSettings,
+} from '@/services/team-settings-service'
 import {
   addTimeEntry,
   getTimeEntries,
@@ -44,18 +49,31 @@ export default function ExportPreview() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [newEntryDate, setNewEntryDate] = useState<Date | null>(null)
+  const [teamSettings, setTeamSettings] = useState<TeamSettings | null>(null)
 
   useEffect(() => {
     if (!user) return
     const fetchAndSetEntries = async () => {
       setIsLoading(true)
       try {
-        const [fetchedEntries, settings] = await Promise.all([
-          getTimeEntries(user.uid),
-          getUserSettings(user.uid),
-        ])
+        const fetchedEntries = await getTimeEntries(user.uid)
         setEntries(fetchedEntries)
-        setUserSettings(settings)
+
+        // Determine team and effective settings
+        const team = await getUserTeam(user.uid)
+        if (team) {
+          const [{ settings: effectiveSettings }, fetchedTeamSettings] =
+            await Promise.all([
+              getEffectiveUserSettings(user.uid, team.id),
+              getTeamSettings(team.id),
+            ])
+          setUserSettings(effectiveSettings)
+          setTeamSettings(fetchedTeamSettings)
+        } else {
+          const settings = await getUserSettings(user.uid)
+          setUserSettings(settings)
+          setTeamSettings(null)
+        }
       } catch (error) {
         console.error('Failed to load initial data from Firestore.', error)
       }
@@ -91,6 +109,14 @@ export default function ExportPreview() {
   const handleExport = async () => {
     if (!selectedMonth || !userSettings) return
 
+    const columnPrefs = teamSettings?.exportFields || {}
+    const visibleColumns = {
+      includeLocation: columnPrefs.includeLocation ?? true,
+      includePauseDuration: columnPrefs.includePauseDuration ?? true,
+      includeMileage: columnPrefs.includeMileage ?? true,
+      includeDrivingTime: columnPrefs.includeDrivingTime ?? true,
+    }
+
     await exportToExcel({
       selectedMonth,
       user,
@@ -98,6 +124,7 @@ export default function ExportPreview() {
       entries,
       getEntriesForDay,
       getLocationDisplayName,
+      visibleColumns,
       t,
       format,
     })
@@ -236,7 +263,10 @@ export default function ExportPreview() {
                     <Button
                       onClick={handleExport}
                       data-testid="export-preview-export-button"
-                      disabled={entries.length === 0}
+                      disabled={
+                        entries.length === 0 ||
+                        teamSettings?.exportFormat === 'pdf'
+                      }
                     >
                       <Download className="mr-2 h-4 w-4" />
                       {t('export.exportButton')}
@@ -259,7 +289,10 @@ export default function ExportPreview() {
                       onClick={handlePdfExport}
                       variant="outline"
                       data-testid="export-preview-pdf-button"
-                      disabled={entries.length === 0}
+                      disabled={
+                        entries.length === 0 ||
+                        teamSettings?.exportFormat === 'excel'
+                      }
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       {t('export.exportPdfButton')}
@@ -287,6 +320,16 @@ export default function ExportPreview() {
             getLocationDisplayName={getLocationDisplayName}
             onEdit={handleEditEntry}
             onAdd={handleAddNewEntry}
+            visibleColumns={{
+              includeLocation:
+                teamSettings?.exportFields?.includeLocation ?? true,
+              includePauseDuration:
+                teamSettings?.exportFields?.includePauseDuration ?? true,
+              includeMileage:
+                teamSettings?.exportFields?.includeMileage ?? true,
+              includeDrivingTime:
+                teamSettings?.exportFields?.includeDrivingTime ?? true,
+            }}
           />
         </CardContent>
       </Card>

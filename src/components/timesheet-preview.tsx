@@ -32,6 +32,12 @@ interface TimesheetPreviewProps {
   getLocationDisplayName: (location: string) => string
   onEdit: (entry: TimeEntry) => void
   onAdd: (date: Date) => void
+  visibleColumns?: {
+    includeLocation?: boolean
+    includePauseDuration?: boolean
+    includeDrivingTime?: boolean
+    includeMileage?: boolean
+  }
 }
 
 // Helper for passenger time (local, not imported)
@@ -50,9 +56,15 @@ export default function TimesheetPreview({
   getLocationDisplayName,
   onEdit,
   onAdd,
+  visibleColumns,
 }: TimesheetPreviewProps) {
   const t = useTranslations()
   const format = useFormatter()
+
+  const showLocation = visibleColumns?.includeLocation ?? true
+  const showPause = visibleColumns?.includePauseDuration ?? true
+  const showDriving = visibleColumns?.includeDrivingTime ?? true
+  const showMileage = visibleColumns?.includeMileage ?? true
 
   const weeksInMonth = useMemo(
     () => getWeeksForMonth(selectedMonth),
@@ -133,48 +145,58 @@ export default function TimesheetPreview({
                     >
                       {t('export.headerDate')}
                     </TableHead>
-                    <TableHead
-                      rowSpan={2}
-                      className="w-auto border-r border-black text-left print:h-auto print:p-1"
-                    >
-                      {t('export.headerLocation')}
-                    </TableHead>
+                    {showLocation && (
+                      <TableHead
+                        rowSpan={2}
+                        className="w-auto border-r border-black text-left print:h-auto print:p-1"
+                      >
+                        {t('export.headerLocation')}
+                      </TableHead>
+                    )}
                     <TableHead
                       colSpan={2}
                       className="w-[18%] border-b border-black print:h-auto print:p-1"
                     >
                       {t('export.headerWorkTime')}
                     </TableHead>
-                    <TableHead
-                      rowSpan={2}
-                      className="w-[8%] border-l border-r border-black align-middle print:h-auto print:p-1"
-                    >
-                      {t('export.headerPauseDuration')}
-                    </TableHead>
-                    <TableHead
-                      rowSpan={2}
-                      className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
-                    >
-                      {t('export.headerDriverTime')}
-                    </TableHead>
+                    {showPause && (
+                      <TableHead
+                        rowSpan={2}
+                        className="w-[8%] border-l border-r border-black align-middle print:h-auto print:p-1"
+                      >
+                        {t('export.headerPauseDuration')}
+                      </TableHead>
+                    )}
+                    {showDriving && (
+                      <TableHead
+                        rowSpan={2}
+                        className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
+                      >
+                        {t('export.headerDriverTime')}
+                      </TableHead>
+                    )}
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                     >
                       {t('export.headerCompensatedTime')}
                     </TableHead>
-                    <TableHead
-                      rowSpan={2}
-                      className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
-                    >
-                      {t('export.headerPassengerTime')}
-                    </TableHead>
-                    <TableHead
-                      rowSpan={2}
-                      className="w-[8%] align-middle print:h-auto print:p-1"
-                    >
-                      {t('export.headerMileage')}
-                    </TableHead>
+                    {showDriving && (
+                      <TableHead
+                        rowSpan={2}
+                        className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
+                      >
+                        {t('export.headerPassengerTime')}
+                      </TableHead>
+                    )}
+                    {showMileage && (
+                      <TableHead
+                        rowSpan={2}
+                        className="w-[8%] align-middle print:h-auto print:p-1"
+                      >
+                        {t('export.headerMileage')}
+                      </TableHead>
+                    )}
                   </TableRow>
                   <TableRow className="border-b border-black bg-table-header text-black hover:bg-table-header">
                     <TableHead className="border-r-0 print:h-auto print:p-1">
@@ -218,14 +240,24 @@ export default function TimesheetPreview({
                               <span className="sr-only">Add entry</span>
                             </Button>
                           </TableCell>
-                          <TableCell className="border-r border-black text-left text-muted-foreground print:p-1"></TableCell>
+                          {showLocation && (
+                            <TableCell className="border-r border-black text-left text-muted-foreground print:p-1"></TableCell>
+                          )}
                           <TableCell className="text-right print:p-1"></TableCell>
                           <TableCell className="text-right print:p-1"></TableCell>
-                          <TableCell className="border-l border-r border-black text-right print:p-1"></TableCell>
+                          {showPause && (
+                            <TableCell className="border-l border-r border-black text-right print:p-1"></TableCell>
+                          )}
+                          {showDriving && (
+                            <TableCell className="border-r border-black text-right print:p-1"></TableCell>
+                          )}
                           <TableCell className="border-r border-black text-right print:p-1"></TableCell>
-                          <TableCell className="border-r border-black text-right print:p-1"></TableCell>
-                          <TableCell className="border-r border-black text-right print:p-1"></TableCell>
-                          <TableCell className="text-right print:p-1"></TableCell>
+                          {showDriving && (
+                            <TableCell className="border-r border-black text-right print:p-1"></TableCell>
+                          )}
+                          {showMileage && (
+                            <TableCell className="text-right print:p-1"></TableCell>
+                          )}
                         </TableRow>
                       )
                     }
@@ -308,9 +340,11 @@ export default function TimesheetPreview({
                               </Button>
                             </TableCell>
                           )}
-                          <TableCell className="border-r border-black text-left print:p-1">
-                            {getLocationDisplayName(entry.location)}
-                          </TableCell>
+                          {showLocation && (
+                            <TableCell className="border-r border-black text-left print:p-1">
+                              {getLocationDisplayName(entry.location)}
+                            </TableCell>
+                          )}
                           <TableCell className="text-right print:p-1">
                             {/* For duration-only entries, leave blank */}
                             {typeof entry.durationMinutes === 'number'
@@ -323,35 +357,40 @@ export default function TimesheetPreview({
                               ? ''
                               : toValue}
                           </TableCell>
-                          <TableCell className="border-l border-r border-black text-right print:p-1">
-                            {/* Show blank if pause is 0 or 0.00 */}
-                            {entry.pauseDuration && entry.pauseDuration !== 0
-                              ? formatDecimalHours(entry.pauseDuration)
-                              : ''}
-                          </TableCell>
-                          <TableCell className="border-r border-black text-right print:p-1">
-                            {/* Show blank if driver time is 0 or 0.00 */}
-                            {entry.driverTimeHours &&
-                            entry.driverTimeHours !== 0
-                              ? formatDecimalHours(entry.driverTimeHours * 60)
-                              : ''}
-                          </TableCell>
+                          {showPause && (
+                            <TableCell className="border-l border-r border-black text-right print:p-1">
+                              {entry.pauseDuration && entry.pauseDuration !== 0
+                                ? formatDecimalHours(entry.pauseDuration)
+                                : ''}
+                            </TableCell>
+                          )}
+                          {showDriving && (
+                            <TableCell className="border-r border-black text-right print:p-1">
+                              {entry.driverTimeHours &&
+                              entry.driverTimeHours !== 0
+                                ? formatDecimalHours(entry.driverTimeHours * 60)
+                                : ''}
+                            </TableCell>
+                          )}
                           <TableCell className="border-r border-black text-right print:p-1">
                             {/* Show blank if compensated is 0 or 0.00 */}
                             {compensatedHours && compensatedHours !== 0
                               ? compensatedHours.toFixed(2)
                               : ''}
                           </TableCell>
-                          <TableCell className="border-r border-black text-right print:p-1">
-                            {/* Show blank if passenger time is 0 or 0.00 */}
-                            {entry.passengerTimeHours &&
-                            entry.passengerTimeHours !== 0
-                              ? formatDecimalHours(
-                                  entry.passengerTimeHours * 60,
-                                )
-                              : ''}
-                          </TableCell>
-                          <TableCell className="text-right print:p-1"></TableCell>
+                          {showDriving && (
+                            <TableCell className="border-r border-black text-right print:p-1">
+                              {entry.passengerTimeHours &&
+                              entry.passengerTimeHours !== 0
+                                ? formatDecimalHours(
+                                    entry.passengerTimeHours * 60,
+                                  )
+                                : ''}
+                            </TableCell>
+                          )}
+                          {showMileage && (
+                            <TableCell className="text-right print:p-1"></TableCell>
+                          )}
                         </TableRow>
                       )
                     })
@@ -372,13 +411,15 @@ export default function TimesheetPreview({
                       >
                         {weekCompTotal.toFixed(2)}
                       </div>
-                      <div
-                        className="flex-1 text-right print:pb-0.5"
-                        data-testid={`timesheet-week-${weekIndex}-passenger`}
-                      >
-                        {weekPassengerTotal.toFixed(2)}
-                      </div>
-                      <div className="flex-1 print:pb-1"></div>
+                      {showDriving && (
+                        <div
+                          className="flex-1 text-right print:pb-0.5"
+                          data-testid={`timesheet-week-${weekIndex}-passenger`}
+                        >
+                          {weekPassengerTotal.toFixed(2)}
+                        </div>
+                      )}
+                      {showMileage && <div className="flex-1 print:pb-1"></div>}
                     </div>
                   </div>
                 </div>
