@@ -406,7 +406,7 @@ export const exportToExcel = async ({
   grandTotalRow.getCell(1).value = t('export.footerExpectedHours')
   const expectedHoursCell = grandTotalRow.getCell(3)
   expectedHoursCell.value = expectedHours
-  expectedHoursCell.numFmt = '0'
+  expectedHoursCell.numFmt = '0.00'
   expectedHoursCell.alignment = { horizontal: 'left' }
 
   // --- GRAND TOTAL ---
