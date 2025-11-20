@@ -123,6 +123,32 @@ export function calculateWeekCompensatedTime(
 }
 
 /**
+ * Calculates the total passenger time (in hours) for a week.
+ * @param week Array of Date objects representing the days in the week
+ * @param getEntriesForDay Function to get all TimeEntry objects for a given day
+ * @param selectedMonth Optional month to filter by - only days in this month will be included
+ * @returns Total passenger time in hours (number, may be fractional)
+ */
+export function calculateWeekPassengerTime(
+  week: Date[],
+  getEntriesForDay: (day: Date) => TimeEntry[],
+  selectedMonth?: Date,
+): number {
+  return week.reduce((weekTotal, day) => {
+    // If selectedMonth is provided, only include days from that month
+    if (selectedMonth && !isSameMonth(day, selectedMonth)) {
+      return weekTotal
+    }
+
+    const entries = getEntriesForDay(day)
+    return (
+      weekTotal +
+      entries.reduce((acc, entry) => acc + (entry.passengerTimeHours || 0), 0)
+    )
+  }, 0)
+}
+
+/**
  * Calculates the expected monthly working hours based on user settings.
  * If defaultWorkHours is set, auto-calculates using the formula: defaultWorkHours × 260 ÷ 12
  * Otherwise, uses the manual expectedMonthlyHours value or defaults to 160.

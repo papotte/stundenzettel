@@ -6,6 +6,7 @@ import {
   calculateExpectedMonthlyHours,
   calculateTotalCompensatedMinutes,
   calculateWeekCompensatedTime,
+  calculateWeekPassengerTime,
   parseTimeString,
 } from '../time-utils'
 
@@ -164,6 +165,26 @@ describe('calculateTotalCompensatedMinutes', () => {
   })
 })
 
+// Shared test data helper for month filtering tests
+const createMonthFilterTestData = () => {
+  // Week spanning July 28 - August 3, 2025
+  // Use Date constructor with explicit year, month, day to avoid timezone issues
+  // Month is 0-indexed: 6 = July, 7 = August
+  const week = [
+    new Date(2025, 6, 28), // Monday (July)
+    new Date(2025, 6, 29), // Tuesday (July)
+    new Date(2025, 6, 30), // Wednesday (July)
+    new Date(2025, 6, 31), // Thursday (July)
+    new Date(2025, 7, 1), // Friday (August)
+    new Date(2025, 7, 2), // Saturday (August)
+    new Date(2025, 7, 3), // Sunday (August)
+  ]
+
+  const august2025 = new Date(2025, 7, 1)
+
+  return { week, august2025 }
+}
+
 describe('calculateWeekCompensatedTime', () => {
   const mockUserSettings: UserSettings = {
     driverCompensationPercent: 100,
@@ -225,18 +246,7 @@ describe('calculateWeekCompensatedTime', () => {
   })
 
   it('filters by selected month when provided', () => {
-    // Week spanning July 28 - August 3, 2025
-    const week = [
-      new Date('2025-07-28'), // Monday (July)
-      new Date('2025-07-29'), // Tuesday (July)
-      new Date('2025-07-30'), // Wednesday (July)
-      new Date('2025-07-31'), // Thursday (July)
-      new Date('2025-08-01'), // Friday (August)
-      new Date('2025-08-02'), // Saturday (August)
-      new Date('2025-08-03'), // Sunday (August)
-    ]
-
-    const august2025 = new Date('2025-08-01')
+    const { week, august2025 } = createMonthFilterTestData()
 
     const entriesByDay = {
       '2025-07-31': [
@@ -244,8 +254,8 @@ describe('calculateWeekCompensatedTime', () => {
           id: '1',
           userId: 'u1',
           location: 'Test',
-          startTime: set(new Date('2025-07-31'), { hours: 9, minutes: 0 }),
-          endTime: set(new Date('2025-07-31'), { hours: 17, minutes: 0 }),
+          startTime: set(new Date(2025, 6, 31), { hours: 9, minutes: 0 }),
+          endTime: set(new Date(2025, 6, 31), { hours: 17, minutes: 0 }),
           pauseDuration: 30,
         } as TimeEntry,
       ],
@@ -254,8 +264,8 @@ describe('calculateWeekCompensatedTime', () => {
           id: '2',
           userId: 'u1',
           location: 'Test',
-          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
-          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          startTime: set(new Date(2025, 7, 1), { hours: 9, minutes: 0 }),
+          endTime: set(new Date(2025, 7, 1), { hours: 17, minutes: 0 }),
           pauseDuration: 30,
         } as TimeEntry,
       ],
@@ -264,8 +274,8 @@ describe('calculateWeekCompensatedTime', () => {
           id: '3',
           userId: 'u1',
           location: 'Test',
-          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
-          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          startTime: set(new Date(2025, 7, 2), { hours: 10, minutes: 0 }),
+          endTime: set(new Date(2025, 7, 2), { hours: 14, minutes: 0 }),
           pauseDuration: 0,
         } as TimeEntry,
       ],
@@ -405,6 +415,169 @@ describe('calculateWeekCompensatedTime', () => {
       getEntriesForDay,
       mockUserSettings,
     )
+    expect(result).toBe(0)
+  })
+})
+
+describe('calculateWeekPassengerTime', () => {
+  const createMockGetEntriesForDay = (
+    entriesByDay: Record<string, TimeEntry[]>,
+  ) => {
+    return (day: Date) => {
+      const dayKey = day.toISOString().split('T')[0]
+      return entriesByDay[dayKey] || []
+    }
+  }
+
+  it('calculates total for a week with passenger time entries', () => {
+    const week = [
+      new Date('2025-08-01'), // Friday
+      new Date('2025-08-02'), // Saturday
+      new Date('2025-08-03'), // Sunday
+    ]
+
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          passengerTimeHours: 2.5,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          passengerTimeHours: 1.5,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    const result = calculateWeekPassengerTime(week, getEntriesForDay)
+
+    // Friday: 2.5 hours
+    // Saturday: 1.5 hours
+    // Sunday: 0 hours
+    // Total: 4 hours
+    expect(result).toBe(4)
+  })
+
+  it('filters by selected month when provided', () => {
+    const { week, august2025 } = createMonthFilterTestData()
+
+    const entriesByDay = {
+      '2025-07-31': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date(2025, 6, 31), { hours: 9, minutes: 0 }),
+          endTime: set(new Date(2025, 6, 31), { hours: 17, minutes: 0 }),
+          passengerTimeHours: 3.0,
+        } as TimeEntry,
+      ],
+      '2025-08-01': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date(2025, 7, 1), { hours: 9, minutes: 0 }),
+          endTime: set(new Date(2025, 7, 1), { hours: 17, minutes: 0 }),
+          passengerTimeHours: 2.0,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '3',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date(2025, 7, 2), { hours: 10, minutes: 0 }),
+          endTime: set(new Date(2025, 7, 2), { hours: 14, minutes: 0 }),
+          passengerTimeHours: 1.5,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+
+    // Without month filter - should include all days
+    const resultWithoutFilter = calculateWeekPassengerTime(
+      week,
+      getEntriesForDay,
+    )
+    // July 31: 3.0 hours
+    // August 1: 2.0 hours
+    // August 2: 1.5 hours
+    // Total: 6.5 hours
+    expect(resultWithoutFilter).toBe(6.5)
+
+    // With August filter - should only include August days
+    const resultWithFilter = calculateWeekPassengerTime(
+      week,
+      getEntriesForDay,
+      august2025,
+    )
+    // August 1: 2.0 hours
+    // August 2: 1.5 hours
+    // Total: 3.5 hours
+    expect(resultWithFilter).toBe(3.5)
+  })
+
+  it('handles entries with zero or undefined passenger time', () => {
+    const week = [new Date('2025-08-01'), new Date('2025-08-02')]
+
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          passengerTimeHours: 0,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          passengerTimeHours: undefined,
+        } as TimeEntry,
+        {
+          id: '3',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 15, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 17, minutes: 0 }),
+          passengerTimeHours: 1.0,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    const result = calculateWeekPassengerTime(week, getEntriesForDay)
+
+    // August 1: 0 hours
+    // August 2: 0 + 1.0 = 1.0 hours
+    // Total: 1.0 hours
+    expect(result).toBe(1.0)
+  })
+
+  it('handles empty week', () => {
+    const week = [new Date('2025-08-01'), new Date('2025-08-02')]
+    const getEntriesForDay = () => []
+
+    const result = calculateWeekPassengerTime(week, getEntriesForDay)
     expect(result).toBe(0)
   })
 })

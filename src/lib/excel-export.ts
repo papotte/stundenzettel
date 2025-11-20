@@ -6,6 +6,7 @@ import { useFormatter } from '@/lib/date-formatter'
 import {
   calculateExpectedMonthlyHours,
   calculateWeekCompensatedTime,
+  calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
@@ -362,16 +363,16 @@ export const exportToExcel = async ({
     })
 
     // --- RENDER WEEKLY TOTAL ---
-    const weekEntries = week.flatMap(getEntriesForDay)
     const weekCompTotal = calculateWeekCompensatedTime(
       week,
       getEntriesForDay,
       userSettings,
       selectedMonth,
     )
-    const weekPassengerTotal = weekEntries.reduce(
-      (acc, entry) => acc + (entry.passengerTimeHours || 0),
-      0,
+    const weekPassengerTotal = calculateWeekPassengerTime(
+      week,
+      getEntriesForDay,
+      selectedMonth,
     )
     const totalRow = worksheet.addRow([])
     worksheet.mergeCells(totalRow.number, 1, totalRow.number, 7)
@@ -409,9 +410,6 @@ export const exportToExcel = async ({
   expectedHoursCell.alignment = { horizontal: 'left' }
 
   // --- GRAND TOTAL ---
-  const monthEntries = weeksInMonth.flatMap((week) =>
-    week.flatMap(getEntriesForDay),
-  )
   const monthCompTotal = weeksInMonth.reduce(
     (acc, week) =>
       acc +
@@ -423,8 +421,9 @@ export const exportToExcel = async ({
       ),
     0,
   )
-  const monthPassengerTotal = monthEntries.reduce(
-    (acc, entry) => acc + (entry.passengerTimeHours || 0),
+  const monthPassengerTotal = weeksInMonth.reduce(
+    (acc, week) =>
+      acc + calculateWeekPassengerTime(week, getEntriesForDay, selectedMonth),
     0,
   )
 
