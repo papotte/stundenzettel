@@ -1,3 +1,10 @@
+## [1.17.2](https://github.com/papotte/stundenzettel/compare/v1.17.1...v1.17.2) (2025-11-20)
+
+
+### Bug Fixes
+
+* bug on passenger time and Excel export ([#144](https://github.com/papotte/stundenzettel/issues/144)) ([54a6631](https://github.com/papotte/stundenzettel/commit/54a66313522cff1badc3c26ea270854f076938fc))
+
 ## [1.17.1](https://github.com/papotte/stundenzettel/compare/v1.17.0...v1.17.1) (2025-10-27)
 
 
