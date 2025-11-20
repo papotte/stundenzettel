@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import {
   calculateExpectedMonthlyHours,
   calculateWeekCompensatedTime,
+  calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 
@@ -63,14 +64,16 @@ export default function TimesheetPreviewTotals({
     [relevantWeeks, getEntriesForDay, userSettings, selectedMonth],
   )
 
-  const monthPassengerTotal = useMemo(() => {
-    const monthEntries = relevantWeeks.flatMap((week: Date[]) =>
-      week.flatMap(getEntriesForDay),
-    )
-    return monthEntries.reduce((total, entry) => {
-      return total + (entry.passengerTimeHours || 0)
-    }, 0)
-  }, [relevantWeeks, getEntriesForDay])
+  const monthPassengerTotal = useMemo(
+    () =>
+      relevantWeeks.reduce(
+        (acc: number, week: Date[]) =>
+          acc +
+          calculateWeekPassengerTime(week, getEntriesForDay, selectedMonth),
+        0,
+      ),
+    [relevantWeeks, getEntriesForDay, selectedMonth],
+  )
 
   const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 90
   const compensatedPassengerHours =

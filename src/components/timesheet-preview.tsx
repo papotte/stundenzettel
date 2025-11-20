@@ -16,7 +16,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useFormatter } from '@/lib/date-formatter'
-import { calculateWeekCompensatedTime } from '@/lib/time-utils'
+import {
+  calculateWeekCompensatedTime,
+  calculateWeekPassengerTime,
+} from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
@@ -32,14 +35,6 @@ interface TimesheetPreviewProps {
   getLocationDisplayName: (location: string) => string
   onEdit: (entry: TimeEntry) => void
   onAdd: (date: Date) => void
-}
-
-// Helper for passenger time (local, not imported)
-function sumPassengerTime(entries: TimeEntry[]): number {
-  return entries.reduce(
-    (acc, entry) => acc + (entry.passengerTimeHours || 0),
-    0,
-  )
 }
 
 export default function TimesheetPreview({
@@ -103,7 +98,6 @@ export default function TimesheetPreview({
       <main id="pdf-main-section">
         {relevantWeeks.map((week: Date[], weekIndex: number) => {
           // At the end of each week, add a totals row styled as in the screenshot
-          const weekEntries = week.flatMap(getEntriesForDay)
           // Use the shared utility for compensated week total
           const weekCompTotal = calculateWeekCompensatedTime(
             week,
@@ -111,7 +105,11 @@ export default function TimesheetPreview({
             userSettings,
             selectedMonth,
           )
-          const weekPassengerTotal = sumPassengerTime(weekEntries)
+          const weekPassengerTotal = calculateWeekPassengerTime(
+            week,
+            getEntriesForDay,
+            selectedMonth,
+          )
           return (
             <div
               key={weekIndex}
