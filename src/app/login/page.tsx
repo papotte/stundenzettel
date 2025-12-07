@@ -14,6 +14,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 
+import { StandalonePasswordInput } from '@/components/inputs/password-input'
 import TimeWiseIcon from '@/components/time-wise-icon'
 import { Button } from '@/components/ui/button'
 import {
@@ -81,6 +82,8 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('signin')
   const [returnUrl, setReturnUrl] = useState('/tracker')
   const [pendingAuth, setPendingAuth] = useState(false)
+  const [showPasswordSignIn, setShowPasswordSignIn] = useState(false)
+  const [showPasswordSignUp, setShowPasswordSignUp] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -247,13 +250,18 @@ export default function LoginPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password-signin">{t('login.passwordLabel')}</Label>
-          <Input
+          <StandalonePasswordInput
             id="password-signin"
-            type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={handleKeyDown}
+            showPassword={showPasswordSignIn}
+            onToggleVisibility={() =>
+              setShowPasswordSignIn(!showPasswordSignIn)
+            }
+            data-testid="password-signin"
+            toggleTestId="toggle-password-signin"
           />
         </div>
         <Button
@@ -345,13 +353,18 @@ export default function LoginPage() {
                   <Label htmlFor="password-signup">
                     {t('login.passwordLabel')}
                   </Label>
-                  <Input
+                  <StandalonePasswordInput
                     id="password-signup"
-                    type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    showPassword={showPasswordSignUp}
+                    onToggleVisibility={() =>
+                      setShowPasswordSignUp(!showPasswordSignUp)
+                    }
+                    data-testid="password-signup"
+                    toggleTestId="toggle-password-signup"
                   />
                 </div>
                 <Button
