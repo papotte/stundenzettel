@@ -21,23 +21,42 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { db } from '@/lib/firebase'
+import type { Subscription } from '@/lib/types'
 import { getPricingPlans } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
 type EligibleStatus = 'active' | 'trialing' | 'past_due'
 
-interface LinkableSubscription {
-  stripeSubscriptionId: string
-  stripeCustomerId: string
+// Type that narrows Subscription to only allow eligible statuses
+type SubscriptionWithEligibleStatus = Omit<Subscription, 'status'> & {
   status: EligibleStatus
-  currentPeriodStart: string
-  cancelAt?: string
-  cancelAtPeriodEnd: boolean
-  priceId: string
-  quantity?: number
-  planName?: string
-  planDescription?: string
-  updatedAt: string
+}
+
+// Type guard to check if a subscription has an eligible status
+function hasEligibleStatus(
+  subscription: Subscription,
+): subscription is SubscriptionWithEligibleStatus {
+  return (
+    subscription.status === 'active' ||
+    subscription.status === 'trialing' ||
+    subscription.status === 'past_due'
+  )
+}
+
+// Safely converts a date value (Date, string, or Firestore Timestamp) to ISO string
+function toISOString(value: Date | string | null | undefined): string | null {
+  if (!value) return null
+  if (typeof value === 'string') return value
+  if (value instanceof Date) return value.toISOString()
+  // Handle Firestore Timestamp
+  if (
+    typeof value === 'object' &&
+    'toDate' in value &&
+    typeof (value as { toDate: () => Date }).toDate === 'function'
+  ) {
+    return (value as { toDate: () => Date }).toDate().toISOString()
+  }
+  return null
 }
 
 interface LinkTeamSubscriptionDialogProps {
@@ -67,7 +86,9 @@ export function LinkTeamSubscriptionDialog({
 
   const [isLoading, setIsLoading] = useState(false)
   const [isLinking, setIsLinking] = useState(false)
-  const [subscriptions, setSubscriptions] = useState<LinkableSubscription[]>([])
+  const [subscriptions, setSubscriptions] = useState<
+    SubscriptionWithEligibleStatus[]
+  >([])
   const [selectedId, setSelectedId] = useState<string>('')
 
   const selected = useMemo(
@@ -79,6 +100,7 @@ export function LinkTeamSubscriptionDialog({
     if (!open || !user?.uid) return
 
     let cancelled = false
+
     async function load() {
       setIsLoading(true)
       try {
@@ -90,38 +112,23 @@ export function LinkTeamSubscriptionDialog({
           user.uid,
         )
 
-        // Fetch pricing plans to determine which are team plans
-        const pricingPlans = await getPricingPlans()
-        const teamPlans = pricingPlans.filter((plan) => plan.maxUsers)
-        const teamPriceIds = new Set(
-          teamPlans.map((plan) => plan.stripePriceId),
-        )
+        const linkable: SubscriptionWithEligibleStatus[] = []
 
-        const linkable: LinkableSubscription[] = []
+        // If subscription exists, check if it's eligible and a team plan
         if (subscription) {
-          const status = subscription.status as EligibleStatus | undefined
+          // Fetch pricing plans to determine which are team plans
+          const pricingPlans = await getPricingPlans()
+          const teamPlans = pricingPlans.filter((plan) => plan.maxUsers)
+          const teamPriceIds = new Set(
+            teamPlans.map((plan) => plan.stripePriceId),
+          )
+
           // Only include if status is eligible AND it's a team plan (priceId matches a team plan)
           if (
-            (status === 'active' ||
-              status === 'trialing' ||
-              status === 'past_due') &&
+            hasEligibleStatus(subscription) &&
             teamPriceIds.has(subscription.priceId)
           ) {
-            linkable.push({
-              stripeSubscriptionId: subscription.stripeSubscriptionId,
-              stripeCustomerId: subscription.stripeCustomerId,
-              status,
-              currentPeriodStart: subscription.currentPeriodStart.toISOString(),
-              cancelAt: subscription.cancelAt
-                ? subscription.cancelAt.toISOString()
-                : undefined,
-              cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-              priceId: subscription.priceId,
-              quantity: subscription.quantity,
-              planName: subscription.planName,
-              planDescription: subscription.planDescription,
-              updatedAt: subscription.updatedAt.toISOString(),
-            })
+            linkable.push(subscription)
           }
         }
 
@@ -162,12 +169,7 @@ export function LinkTeamSubscriptionDialog({
         throw new Error('Subscription not found')
       }
 
-      const status = subscription.status as EligibleStatus | undefined
-      if (
-        status !== 'active' &&
-        status !== 'trialing' &&
-        status !== 'past_due'
-      ) {
+      if (!hasEligibleStatus(subscription)) {
         throw new Error('Subscription status is not eligible')
       }
 
@@ -179,8 +181,8 @@ export function LinkTeamSubscriptionDialog({
           stripeSubscriptionId: subscription.stripeSubscriptionId,
           stripeCustomerId: subscription.stripeCustomerId,
           status: subscription.status,
-          currentPeriodStart: subscription.currentPeriodStart.toISOString(),
-          cancelAt: subscription.cancelAt ?? null,
+          currentPeriodStart: toISOString(subscription.currentPeriodStart),
+          cancelAt: toISOString(subscription.cancelAt),
           cancelAtPeriodEnd: subscription.cancelAtPeriodEnd ?? false,
           priceId: subscription.priceId,
           quantity: subscription.quantity ?? 0,
@@ -223,7 +225,6 @@ export function LinkTeamSubscriptionDialog({
             {t('teams.linkExistingSubscriptionDescription')}
           </DialogDescription>
         </DialogHeader>
-
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-6 w-2/3" />

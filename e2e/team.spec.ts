@@ -271,7 +271,9 @@ test.describe('Team Page', () => {
 
       // Open team settings
       await page.getByRole('button', { name: 'Settings' }).click()
-      await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
+      await expect(
+        page.getByRole('heading', { name: 'Settings' }),
+      ).toBeVisible()
 
       // Open delete confirmation (AlertDialog)
       await page.getByRole('button', { name: 'Delete Team' }).click()
@@ -279,7 +281,9 @@ test.describe('Team Page', () => {
       await expect(alertDialog).toBeVisible()
 
       // Confirm by typing exact team name
-      await alertDialog.getByPlaceholder('Delete Me Team').fill('Delete Me Team')
+      await alertDialog
+        .getByPlaceholder('Delete Me Team')
+        .fill('Delete Me Team')
       await alertDialog.getByRole('button', { name: 'Delete Team' }).click()
 
       // Wait for toast and verify deletion
@@ -290,7 +294,9 @@ test.describe('Team Page', () => {
 
       // Verify we're back to the "no team" page
       await expect(page.getByText('No team yet')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Create Team' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Create Team' }),
+      ).toBeVisible()
     })
 
     test('should create team and verify subscription tab', async ({ page }) => {

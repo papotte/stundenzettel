@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 // Import mocked services
+import { paymentService } from '@/services/payment-service'
 import { createTeam, getTeam } from '@/services/team-service'
 
 import { CreateTeamDialog } from '../create-team-dialog'
@@ -14,6 +15,13 @@ import { CreateTeamDialog } from '../create-team-dialog'
 jest.mock('@/services/team-service', () => ({
   createTeam: jest.fn(),
   getTeam: jest.fn(),
+}))
+
+// Mock the payment service
+jest.mock('@/services/payment-service', () => ({
+  paymentService: {
+    syncTeamWithStripe: jest.fn(),
+  },
 }))
 
 // Mock the toast hook
@@ -27,6 +35,7 @@ const mockToast = {
 
 const mockCreateTeam = jest.fn()
 const mockGetTeam = jest.fn()
+const mockSyncTeamWithStripe = jest.fn()
 
 const mockTeam: Team = {
   id: 'team-1',
@@ -49,6 +58,9 @@ describe('CreateTeamDialog', () => {
     ;(useToast as jest.Mock).mockReturnValue(mockToast)
     ;(createTeam as jest.Mock).mockImplementation(mockCreateTeam)
     ;(getTeam as jest.Mock).mockImplementation(mockGetTeam)
+    ;(paymentService.syncTeamWithStripe as jest.Mock).mockImplementation(
+      mockSyncTeamWithStripe,
+    )
   })
 
   describe('Dialog Trigger', () => {
@@ -267,6 +279,63 @@ describe('CreateTeamDialog', () => {
 
       expect(screen.getByLabelText('teams.teamName')).toHaveValue('')
       expect(screen.getByLabelText('teams.description')).toHaveValue('')
+    })
+
+    it('syncs team with Stripe after successful team creation', async () => {
+      const user = userEvent.setup()
+      mockCreateTeam.mockResolvedValue('team-1')
+      mockGetTeam.mockResolvedValue(mockTeam)
+      mockSyncTeamWithStripe.mockResolvedValue(undefined)
+
+      const nameInput = screen.getByLabelText('teams.teamName')
+      await user.type(nameInput, 'Test Team')
+
+      const createButton = screen.getByRole('button', {
+        name: /teams.createTeam/i,
+      })
+      await user.click(createButton)
+
+      await waitFor(() => {
+        expect(mockSyncTeamWithStripe).toHaveBeenCalledWith(
+          'test@example.com',
+          'user-1',
+          'team-1',
+        )
+      })
+    })
+
+    it('continues team creation even if Stripe sync fails', async () => {
+      const user = userEvent.setup()
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
+      mockCreateTeam.mockResolvedValue('team-1')
+      mockGetTeam.mockResolvedValue(mockTeam)
+      mockSyncTeamWithStripe.mockRejectedValue(
+        new Error('Failed to sync with Stripe'),
+      )
+
+      const nameInput = screen.getByLabelText('teams.teamName')
+      await user.type(nameInput, 'Test Team')
+
+      const createButton = screen.getByRole('button', {
+        name: /teams.createTeam/i,
+      })
+      await user.click(createButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onTeamCreated).toHaveBeenCalledWith(mockTeam)
+        expect(mockToast.toast).toHaveBeenCalledWith({
+          title: 'teams.teamCreated',
+          description: 'teams.teamCreatedDescription',
+        })
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Failed to sync team with Stripe:',
+          expect.any(Error),
+        )
+      })
+
+      consoleErrorSpy.mockRestore()
     })
   })
 

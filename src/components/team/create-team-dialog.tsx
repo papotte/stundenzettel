@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
+import { paymentService } from '@/services/payment-service'
 import { createTeam, getTeam } from '@/services/team-service'
 
 type TeamFormValues = {
@@ -79,6 +80,14 @@ export function CreateTeamDialog({
       const team = await getTeam(teamId)
 
       if (team) {
+        // Sync team with Stripe
+        try {
+          await paymentService.syncTeamWithStripe(userEmail, userId, teamId)
+        } catch (error) {
+          // Log error but don't fail team creation
+          console.error('Failed to sync team with Stripe:', error)
+        }
+
         onTeamCreated(team)
         setOpen(false)
         form.reset()

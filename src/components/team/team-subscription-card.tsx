@@ -297,12 +297,10 @@ export function TeamSubscriptionCard({
               </div>
             </div>
             <Progress value={seatUsagePercentage} className="h-2" />
-            {(seatUsagePercentage > 90 || usersWithoutSeats > 0) && (
+            {usersWithoutSeats > 0 && (
               <p className="text-sm text-amber-600 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                {usersWithoutSeats > 0
-                  ? t('teams.usersWithoutSeats', { count: usersWithoutSeats })
-                  : t('teams.seatLimitWarning')}
+                {t('teams.usersWithoutSeats', { count: usersWithoutSeats })}
               </p>
             )}
           </div>

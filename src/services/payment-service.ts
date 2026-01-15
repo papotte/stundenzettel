@@ -161,6 +161,30 @@ export class PaymentService {
     return response.json()
   }
 
+  async syncTeamWithStripe(
+    userEmail: string,
+    firebaseUid: string,
+    teamId: string,
+  ): Promise<void> {
+    await this.initialize()
+
+    const response = await fetch('/api/sync-team-with-stripe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userEmail,
+        firebaseUid,
+        teamId,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to sync team with Stripe')
+    }
+  }
+
   async redirectToCheckout(sessionUrl: string): Promise<void> {
     await this.initialize()
     window.location.href = sessionUrl
