@@ -13,21 +13,18 @@ service cloud.firestore {
     match /user-teams/{userId} {
       allow read, write: if request.auth.uid == userId;
       
-      // Allow team owners and admins to delete user-team mappings when removing team members
+      // Allow team owners and admins to delete user-team mappings when removing team members.
+      // NOTE: We intentionally do NOT allow all members to delete other users' mappings.
       allow delete: if request.auth.uid != null && 
         (request.auth.uid == userId ||
-         exists(/databases/$(database)/documents/teams/$(resource.data.teamId)) &&
-         (request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
-          exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid))));
+         (exists(/databases/$(database)/documents/teams/$(resource.data.teamId)) &&
+          (request.auth.uid == get(/databases/$(database)/documents/teams/$(resource.data.teamId)).data.ownerId ||
+           (exists(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/teams/$(resource.data.teamId)/members/$(request.auth.uid)).data.role == 'admin'))));
     }
     
     // Team rules
     match /teams/{teamId} {
-      allow read, write: if request.auth.uid != null && 
-        (resource == null || 
-         request.auth.uid == resource.data.ownerId ||
-         exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)));
-      
       // Allow reading team info for authenticated users
       // This is needed for the team invitation flow where users need to see team details
       // Security is maintained by the invitation system:
@@ -36,6 +33,14 @@ service cloud.firestore {
       // - Users must have valid invitation links to access team information
       // - The invitation page validates email matching before showing team details
       allow read: if request.auth.uid != null;
+
+      // Create: only the creating user can set themselves as owner.
+      allow create: if request.auth.uid != null &&
+        request.resource.data.ownerId == request.auth.uid;
+
+      // Update/Delete: only the team owner can modify/delete the team document.
+      allow update, delete: if request.auth.uid != null &&
+        request.auth.uid == resource.data.ownerId;
       
       // Allow users to query teams collection to find teams they own
       // This is needed for the getUserTeam function to work efficiently

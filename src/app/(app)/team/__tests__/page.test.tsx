@@ -13,6 +13,7 @@ import type {
 } from '@/lib/types'
 // Import mocked services
 import {
+  deleteTeam,
   getTeamInvitations,
   getTeamMembers,
   getTeamSubscription,
@@ -38,6 +39,7 @@ jest.mock('next/navigation', () => ({
 
 // Mock team service
 jest.mock('@/services/team-service', () => ({
+  deleteTeam: jest.fn(),
   getUserTeam: jest.fn(),
   getTeamMembers: jest.fn(),
   getTeamInvitations: jest.fn(),
@@ -148,6 +150,7 @@ describe('TeamPage', () => {
     mockAuthContext.loading = false
 
     // Reset service mocks
+    ;(deleteTeam as jest.Mock).mockResolvedValue(undefined)
     ;(getUserTeam as jest.Mock).mockResolvedValue(null)
     ;(getTeamMembers as jest.Mock).mockResolvedValue([])
     ;(getTeamInvitations as jest.Mock).mockResolvedValue([])
@@ -325,6 +328,54 @@ describe('TeamPage', () => {
       await waitFor(() => {
         expect(screen.getByText('teams.subscription')).toBeInTheDocument()
       })
+    })
+
+    it('transitions to no-team state after team deletion and reloads data', async () => {
+      // React StrictMode (or similar) can cause effects to run more than once in tests.
+      // Use a stateful mock so "after deletion" reliably returns null regardless of call count.
+      let currentTeam: Team | null = mockTeam
+      ;(getUserTeam as jest.Mock).mockImplementation(async () => currentTeam)
+      ;(getUserInvitations as jest.Mock).mockResolvedValue([])
+      ;(deleteTeam as jest.Mock).mockImplementation(async () => {
+        currentTeam = null
+      })
+
+      const user = userEvent.setup()
+      renderWithProviders(<TeamPage />)
+
+      // Confirm team is shown initially
+      await waitFor(() => {
+        expect(screen.getByText('Test Team')).toBeInTheDocument()
+      })
+
+      // Open team settings dialog
+      await user.click(screen.getByRole('button', { name: 'teams.settings' }))
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+      // Open delete confirmation (alert dialog)
+      await user.click(screen.getByRole('button', { name: 'teams.deleteTeam' }))
+      expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+
+      // Confirm by typing the exact team name
+      await user.type(
+        screen.getByLabelText('teams.deleteTeamConfirmLabel'),
+        'Test Team',
+      )
+
+      // Confirm deletion
+      await user.click(screen.getByRole('button', { name: 'teams.deleteTeam' }))
+
+      await waitFor(() => {
+        expect(deleteTeam).toHaveBeenCalledWith('team-1')
+      })
+
+      // Should transition to "no team" UI after reload
+      await waitFor(() => {
+        expect(screen.getByText('teams.noTeamYet')).toBeInTheDocument()
+      })
+
+      // After deletion when no team is found, it should load user invitations
+      expect(getUserInvitations).toHaveBeenCalledWith('test@example.com')
     })
   })
 

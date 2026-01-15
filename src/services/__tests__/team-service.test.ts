@@ -1,373 +1,1191 @@
-import * as teamService from '../team-service'
-import * as firestoreService from '../team-service.firestore'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  type CollectionReference,
+  type DocumentReference,
+  type DocumentSnapshot,
+  type Query,
+  type QueryFieldFilterConstraint,
+  type QueryOrderByConstraint,
+  type QuerySnapshot,
+  type WriteBatch,
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+  writeBatch,
+} from 'firebase/firestore'
 
-// Mock the Firestore service
-jest.mock('../team-service.firestore')
+import { sendTeamInvitationEmail } from '../email-notification-service'
+import * as firestoreService from '../team-service'
 
-const mockFirestoreService = firestoreService as jest.Mocked<
-  typeof firestoreService
+// Mock email notification service
+jest.mock('../email-notification-service', () => ({
+  sendTeamInvitationEmail: jest.fn(),
+}))
+
+// Mock Firebase
+jest.mock('@/lib/firebase', () => ({
+  db: {},
+}))
+
+jest.mock('firebase/firestore', () => ({
+  addDoc: jest.fn(),
+  collection: jest.fn(),
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  getDocs: jest.fn(),
+  onSnapshot: jest.fn(),
+  orderBy: jest.fn(),
+  query: jest.fn(),
+  serverTimestamp: jest.fn(() => new Date()),
+  setDoc: jest.fn(),
+  Timestamp: {
+    fromDate: jest.fn((date) => ({
+      toDate: () => date,
+      seconds: Math.floor(date.getTime() / 1000),
+      nanoseconds: (date.getTime() % 1000) * 1000000,
+    })),
+  },
+  updateDoc: jest.fn(),
+  where: jest.fn(),
+  writeBatch: jest.fn(),
+  FirestoreError: class FirestoreError extends Error {
+    constructor(
+      public code: string,
+      message: string,
+    ) {
+      super(message)
+      this.name = 'FirestoreError'
+    }
+  },
+}))
+
+const mockAddDoc = addDoc as jest.MockedFunction<typeof addDoc>
+const mockCollection = collection as jest.MockedFunction<typeof collection>
+const mockDoc = doc as jest.MockedFunction<typeof doc>
+const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
+const mockGetDocs = getDocs as jest.MockedFunction<typeof getDocs>
+const mockOnSnapshot = onSnapshot as jest.MockedFunction<typeof onSnapshot>
+const mockOrderBy = orderBy as jest.MockedFunction<typeof orderBy>
+const mockQuery = query as jest.MockedFunction<typeof query>
+const mockServerTimestamp = serverTimestamp as jest.MockedFunction<
+  typeof serverTimestamp
 >
+const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
+const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
+const mockWhere = where as jest.MockedFunction<typeof where>
+const mockWriteBatch = writeBatch as jest.MockedFunction<typeof writeBatch>
+const mockSendTeamInvitationEmail =
+  sendTeamInvitationEmail as jest.MockedFunction<typeof sendTeamInvitationEmail>
+
+// Create a mock FirestoreError class
+const FirestoreError = class extends Error {
+  constructor(
+    public code: string,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'FirestoreError'
+  }
+}
+
+// Helper function to create mock Firestore timestamp
+const createMockTimestamp = (date: Date) => ({
+  toDate: () => date,
+  seconds: Math.floor(date.getTime() / 1000),
+  nanoseconds: (date.getTime() % 1000) * 1000000,
+})
 
 describe('TeamService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockServerTimestamp.mockReturnValue(new Date('2024-01-01T00:00:00Z') as any)
+    mockSendTeamInvitationEmail.mockResolvedValue(undefined)
   })
 
-  describe('Service Selection Logic', () => {
-    it('delegates all operations to the Firestore service', async () => {
-      // Test that all operations delegate to the Firestore service
-      mockFirestoreService.getTeam.mockResolvedValue({
-        id: 'team-123',
+  describe('createTeam', () => {
+    it('creates team successfully with owner as first member', async () => {
+      const mockDocRef = { id: 'team123' } as DocumentReference
+      mockAddDoc.mockResolvedValue(mockDocRef)
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      const result = await firestoreService.createTeam(
+        'Test Team',
+        'Test Description',
+        'user123',
+        'test@example.com',
+      )
+
+      expect(result).toBe('team123')
+      expect(mockAddDoc).toHaveBeenCalledWith(expect.any(Object), {
         name: 'Test Team',
         description: 'Test Description',
-        ownerId: 'user-123',
+        ownerId: 'user123',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      })
+      expect(mockSetDoc).toHaveBeenCalledTimes(3) // member + user-team mapping + addTeamMember call
+    })
+
+    it('handles errors during team creation', async () => {
+      mockAddDoc.mockRejectedValue(new Error('Firestore error'))
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      await expect(
+        firestoreService.createTeam(
+          'Test Team',
+          'Test Description',
+          'user123',
+          'test@example.com',
+        ),
+      ).rejects.toThrow('Firestore error')
+    })
+  })
+
+  describe('getTeam', () => {
+    it('returns team when exists', async () => {
+      const mockTeamData = {
+        name: 'Test Team',
+        description: 'Test Description',
+        ownerId: 'user123',
+        createdAt: createMockTimestamp(new Date('2024-01-01')),
+        updatedAt: createMockTimestamp(new Date('2024-01-01')),
+      }
+
+      const mockDocSnap = {
+        exists: () => true,
+        id: 'team123',
+        data: () => mockTeamData,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeam('team123')
+
+      expect(result).toEqual({
+        id: 'team123',
+        name: 'Test Team',
+        description: 'Test Description',
+        ownerId: 'user123',
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
       })
+    })
 
-      const result = await teamService.getTeam('team-123')
+    it('returns null when team does not exist', async () => {
+      const mockDocSnap = {
+        exists: () => false,
+      }
 
-      expect(mockFirestoreService.getTeam).toHaveBeenCalledWith('team-123')
-      expect(result).toEqual({
-        id: 'team-123',
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeam('team123')
+
+      expect(result).toBeNull()
+    })
+
+    it('handles missing timestamp fields', async () => {
+      const mockTeamData = {
         name: 'Test Team',
         description: 'Test Description',
-        ownerId: 'user-123',
+        ownerId: 'user123',
+        // Missing createdAt and updatedAt
+      }
+
+      const mockDocSnap = {
+        exists: () => true,
+        id: 'team123',
+        data: () => mockTeamData,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeam('team123')
+
+      expect(result).toEqual({
+        id: 'team123',
+        name: 'Test Team',
+        description: 'Test Description',
+        ownerId: 'user123',
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
       })
     })
   })
 
-  describe('Team CRUD Operations', () => {
-    it('createTeam delegates to Firestore service', async () => {
-      mockFirestoreService.createTeam.mockResolvedValue('team-123')
+  describe('updateTeam', () => {
+    it('updates team successfully', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockUpdateDoc.mockResolvedValue(undefined)
 
-      const result = await teamService.createTeam(
-        'Test Team',
-        'Test Description',
-        'user-123',
-        'test@example.com',
-      )
-
-      expect(mockFirestoreService.createTeam).toHaveBeenCalledWith(
-        'Test Team',
-        'Test Description',
-        'user-123',
-        'test@example.com',
-      )
-      expect(result).toBe('team-123')
-    })
-
-    it('getTeam delegates to Firestore service', async () => {
-      const mockTeam = {
-        id: 'team-123',
-        name: 'Test Team',
-        description: 'Test Description',
-        ownerId: 'user-123',
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01'),
-      }
-      mockFirestoreService.getTeam.mockResolvedValue(mockTeam)
-
-      const result = await teamService.getTeam('team-123')
-
-      expect(mockFirestoreService.getTeam).toHaveBeenCalledWith('team-123')
-      expect(result).toBe(mockTeam)
-    })
-
-    it('updateTeam delegates to Firestore service', async () => {
-      mockFirestoreService.updateTeam.mockResolvedValue(undefined)
-
-      await teamService.updateTeam('team-123', {
+      await firestoreService.updateTeam('team123', {
         name: 'Updated Team',
         description: 'Updated Description',
       })
 
-      expect(mockFirestoreService.updateTeam).toHaveBeenCalledWith('team-123', {
+      expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
         name: 'Updated Team',
         description: 'Updated Description',
+        updatedAt: expect.any(Date),
       })
     })
 
-    it('deleteTeam delegates to Firestore service', async () => {
-      mockFirestoreService.deleteTeam.mockResolvedValue(undefined)
+    it('handles partial updates', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockUpdateDoc.mockResolvedValue(undefined)
 
-      await teamService.deleteTeam('team-123')
+      await firestoreService.updateTeam('team123', {
+        name: 'Updated Team',
+      })
 
-      expect(mockFirestoreService.deleteTeam).toHaveBeenCalledWith('team-123')
+      expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
+        name: 'Updated Team',
+        updatedAt: expect.any(Date),
+      })
     })
   })
 
-  describe('Team Member Operations', () => {
-    it('addTeamMember delegates to Firestore service', async () => {
-      mockFirestoreService.addTeamMember.mockResolvedValue(undefined)
+  describe('deleteTeam', () => {
+    it('deletes team and all related data', async () => {
+      const mockCleanupBatch = {
+        delete: jest.fn(),
+        commit: jest.fn(),
+      }
+      const mockTeamBatch = {
+        delete: jest.fn(),
+        commit: jest.fn(),
+      }
+      const mockMembersSnapshot = {
+        docs: [
+          { id: 'member1', ref: { id: 'member1' } },
+          { id: 'member2', ref: { id: 'member2' } },
+        ],
+      }
+      const mockUsersSnapshot = {
+        docs: [{ ref: { id: 'user1' } }],
+      }
+      const mockPaymentsSnapshot = {
+        docs: [{ ref: { id: 'payment1' } }],
+      }
+      const mockInvitationsSnapshot = {
+        docs: [{ ref: { id: 'invite1' } }],
+      }
 
-      await teamService.addTeamMember(
-        'team-123',
-        'user-123',
-        'member',
-        'owner-123',
-      )
+      mockWriteBatch
+        .mockReturnValueOnce(mockCleanupBatch as unknown as WriteBatch)
+        .mockReturnValueOnce(mockTeamBatch as unknown as WriteBatch)
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDoc.mockResolvedValue({
+        exists: () => false,
+      } as unknown as DocumentSnapshot)
+      mockGetDocs
+        .mockResolvedValueOnce(mockMembersSnapshot as unknown as QuerySnapshot)
+        .mockResolvedValueOnce(mockUsersSnapshot as unknown as QuerySnapshot)
+        .mockResolvedValueOnce(mockPaymentsSnapshot as unknown as QuerySnapshot)
+        .mockResolvedValueOnce(
+          mockInvitationsSnapshot as unknown as QuerySnapshot,
+        )
 
-      expect(mockFirestoreService.addTeamMember).toHaveBeenCalledWith(
-        'team-123',
-        'user-123',
-        'member',
-        'owner-123',
-      )
+      await firestoreService.deleteTeam('team123')
+
+      // Cleanup batch should delete:
+      // - 2 members
+      // - 2 user-team mappings
+      // - 1 legacy user doc
+      // - subscription doc
+      // - 1 payment doc
+      // - 1 invitation doc
+      expect(mockCleanupBatch.delete).toHaveBeenCalledTimes(8)
+      expect(mockCleanupBatch.commit).toHaveBeenCalledTimes(1)
+
+      // Team batch should delete the team document
+      expect(mockTeamBatch.delete).toHaveBeenCalledTimes(1)
+      expect(mockTeamBatch.commit).toHaveBeenCalledTimes(1)
     })
 
-    it('getTeamMembers delegates to Firestore service', async () => {
-      const mockMembers = [
+    it('handles empty collections during deletion', async () => {
+      const mockCleanupBatch = {
+        delete: jest.fn(),
+        commit: jest.fn(),
+      }
+      const mockTeamBatch = {
+        delete: jest.fn(),
+        commit: jest.fn(),
+      }
+      const mockEmptySnapshot = {
+        docs: [],
+      }
+
+      mockWriteBatch
+        .mockReturnValueOnce(mockCleanupBatch as unknown as WriteBatch)
+        .mockReturnValueOnce(mockTeamBatch as unknown as WriteBatch)
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDoc.mockResolvedValue({
+        exists: () => false,
+      } as unknown as DocumentSnapshot)
+      mockGetDocs
+        .mockResolvedValueOnce(mockEmptySnapshot as unknown as QuerySnapshot) // members
+        .mockResolvedValueOnce(mockEmptySnapshot as unknown as QuerySnapshot) // users
+        .mockResolvedValueOnce(mockEmptySnapshot as unknown as QuerySnapshot) // payments
+        .mockResolvedValueOnce(mockEmptySnapshot as unknown as QuerySnapshot) // invitations
+
+      await firestoreService.deleteTeam('team123')
+
+      // Cleanup batch should delete only subscription doc
+      expect(mockCleanupBatch.delete).toHaveBeenCalledTimes(1)
+      expect(mockCleanupBatch.commit).toHaveBeenCalledTimes(1)
+
+      // Team batch should delete the team doc
+      expect(mockTeamBatch.delete).toHaveBeenCalledTimes(1)
+      expect(mockTeamBatch.commit).toHaveBeenCalledTimes(1)
+    })
+
+    it('blocks deletion when subscription is still active', async () => {
+      mockGetDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ status: 'active' }),
+      } as unknown as DocumentSnapshot)
+
+      await expect(firestoreService.deleteTeam('team123')).rejects.toThrow(
+        'Please cancel the team subscription before deleting the team.',
+      )
+    })
+  })
+
+  describe('addTeamMember', () => {
+    it('adds team member successfully', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await firestoreService.addTeamMember(
+        'team123',
+        'user123',
+        'member',
+        'owner123',
+        'test@example.com',
+      )
+
+      expect(mockSetDoc).toHaveBeenCalledTimes(2)
+      expect(mockSetDoc).toHaveBeenCalledWith(expect.any(Object), {
+        email: 'test@example.com',
+        role: 'member',
+        joinedAt: expect.any(Date),
+        invitedBy: 'owner123',
+      })
+    })
+
+    it('adds team member without email', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await firestoreService.addTeamMember(
+        'team123',
+        'user123',
+        'member',
+        'owner123',
+      )
+
+      expect(mockSetDoc).toHaveBeenCalledWith(expect.any(Object), {
+        email: '',
+        role: 'member',
+        joinedAt: expect.any(Date),
+        invitedBy: 'owner123',
+      })
+    })
+  })
+
+  describe('getTeamMembers', () => {
+    it('returns team members ordered by joined date', async () => {
+      const mockMembersData = [
         {
-          id: 'member-1',
-          email: 'member1@example.com',
-          role: 'member' as const,
-          joinedAt: new Date('2024-01-01'),
-          invitedBy: 'owner-123',
+          id: 'member1',
+          data: () => ({
+            email: 'member1@example.com',
+            role: 'member',
+            joinedAt: createMockTimestamp(new Date('2024-01-01')),
+            invitedBy: 'owner123',
+          }),
+        },
+        {
+          id: 'member2',
+          data: () => ({
+            email: 'member2@example.com',
+            role: 'admin',
+            joinedAt: createMockTimestamp(new Date('2024-01-02')),
+            invitedBy: 'owner123',
+          }),
         },
       ]
-      mockFirestoreService.getTeamMembers.mockResolvedValue(mockMembers)
 
-      const result = await teamService.getTeamMembers('team-123')
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDocs.mockResolvedValue({
+        docs: mockMembersData,
+      } as unknown as QuerySnapshot)
 
-      expect(mockFirestoreService.getTeamMembers).toHaveBeenCalledWith(
-        'team-123',
-      )
-      expect(result).toBe(mockMembers)
+      const result = await firestoreService.getTeamMembers('team123')
+
+      expect(result).toEqual([
+        {
+          id: 'member1',
+          email: 'member1@example.com',
+          role: 'member',
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'owner123',
+        },
+        {
+          id: 'member2',
+          email: 'member2@example.com',
+          role: 'admin',
+          joinedAt: new Date('2024-01-02'),
+          invitedBy: 'owner123',
+        },
+      ])
+      expect(mockOrderBy).toHaveBeenCalledWith('joinedAt', 'desc')
     })
 
-    it('updateTeamMemberRole delegates to Firestore service', async () => {
-      mockFirestoreService.updateTeamMemberRole.mockResolvedValue(undefined)
+    it('returns empty array when no members', async () => {
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDocs.mockResolvedValue({
+        docs: [],
+      } as unknown as QuerySnapshot)
 
-      await teamService.updateTeamMemberRole('team-123', 'member-123', 'admin')
+      const result = await firestoreService.getTeamMembers('team123')
 
-      expect(mockFirestoreService.updateTeamMemberRole).toHaveBeenCalledWith(
-        'team-123',
-        'member-123',
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('updateTeamMemberRole', () => {
+    it('updates team member role', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockUpdateDoc.mockResolvedValue(undefined)
+
+      await firestoreService.updateTeamMemberRole(
+        'team123',
+        'member123',
         'admin',
       )
-    })
 
-    it('removeTeamMember delegates to Firestore service', async () => {
-      mockFirestoreService.removeTeamMember.mockResolvedValue(undefined)
-
-      await teamService.removeTeamMember('team-123', 'member-123')
-
-      expect(mockFirestoreService.removeTeamMember).toHaveBeenCalledWith(
-        'team-123',
-        'member-123',
-      )
+      expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
+        role: 'admin',
+      })
     })
   })
 
-  describe('Team Invitations', () => {
-    it('createTeamInvitation delegates to Firestore service', async () => {
-      mockFirestoreService.createTeamInvitation.mockResolvedValue(
-        'invitation-123',
-      )
+  describe('removeTeamMember', () => {
+    it('removes team member and related data', async () => {
+      const mockBatch = {
+        delete: jest.fn(),
+        commit: jest.fn(),
+      }
 
-      const result = await teamService.createTeamInvitation(
-        'team-123',
-        'test@example.com',
-        'member',
-        'owner-123',
-      )
+      mockWriteBatch.mockReturnValue(mockBatch as unknown as WriteBatch)
+      mockDoc.mockReturnValue({} as DocumentReference)
 
-      expect(mockFirestoreService.createTeamInvitation).toHaveBeenCalledWith(
-        'team-123',
-        'test@example.com',
-        'member',
-        'owner-123',
-      )
-      expect(result).toBe('invitation-123')
-    })
+      await firestoreService.removeTeamMember('team123', 'member123')
 
-    it('getTeamInvitations delegates to Firestore service', async () => {
-      const mockInvitations = [
-        {
-          id: 'invitation-1',
-          teamId: 'team-123',
-          email: 'test@example.com',
-          role: 'member' as const,
-          invitedBy: 'owner-123',
-          invitedAt: new Date('2024-01-01'),
-          expiresAt: new Date('2024-01-08'),
-          status: 'pending' as const,
-        },
-      ]
-      mockFirestoreService.getTeamInvitations.mockResolvedValue(mockInvitations)
-
-      const result = await teamService.getTeamInvitations('team-123')
-
-      expect(mockFirestoreService.getTeamInvitations).toHaveBeenCalledWith(
-        'team-123',
-      )
-      expect(result).toBe(mockInvitations)
-    })
-
-    it('getUserInvitations delegates to Firestore service', async () => {
-      const mockInvitations = [
-        {
-          id: 'invitation-1',
-          teamId: 'team-123',
-          email: 'test@example.com',
-          role: 'member' as const,
-          invitedBy: 'owner-123',
-          invitedAt: new Date('2024-01-01'),
-          expiresAt: new Date('2024-01-08'),
-          status: 'pending' as const,
-        },
-      ]
-      mockFirestoreService.getUserInvitations.mockResolvedValue(mockInvitations)
-
-      const result = await teamService.getUserInvitations('test@example.com')
-
-      expect(mockFirestoreService.getUserInvitations).toHaveBeenCalledWith(
-        'test@example.com',
-      )
-      expect(result).toBe(mockInvitations)
-    })
-
-    it('acceptTeamInvitation delegates to Firestore service', async () => {
-      mockFirestoreService.acceptTeamInvitation.mockResolvedValue(undefined)
-
-      await teamService.acceptTeamInvitation(
-        'invitation-123',
-        'user-123',
-        'test@example.com',
-      )
-
-      expect(mockFirestoreService.acceptTeamInvitation).toHaveBeenCalledWith(
-        'invitation-123',
-        'user-123',
-        'test@example.com',
-      )
-    })
-
-    it('declineTeamInvitation delegates to Firestore service', async () => {
-      mockFirestoreService.declineTeamInvitation.mockResolvedValue(undefined)
-
-      await teamService.declineTeamInvitation('invitation-123')
-
-      expect(mockFirestoreService.declineTeamInvitation).toHaveBeenCalledWith(
-        'invitation-123',
-      )
+      expect(mockBatch.delete).toHaveBeenCalledTimes(3) // member + user + user-team mapping
+      expect(mockBatch.commit).toHaveBeenCalled()
     })
   })
 
-  describe('User Team Management', () => {
-    it('getUserTeam delegates to Firestore service', async () => {
-      const mockTeam = {
-        id: 'team-123',
+  describe('createTeamInvitation', () => {
+    it('creates team invitation with 7-day expiration', async () => {
+      const mockDocRef = { id: 'invitation123' } as DocumentReference
+
+      mockAddDoc.mockResolvedValue(mockDocRef)
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      // Mock getDoc to return a valid document snapshot for getTeam
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => ({
+          name: 'Test Team',
+          description: 'Test Description',
+          ownerId: 'owner123',
+          createdAt: createMockTimestamp(new Date('2024-01-01')),
+          updatedAt: createMockTimestamp(new Date('2024-01-01')),
+        }),
+      }
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.createTeamInvitation(
+        'team123',
+        'test@example.com',
+        'member',
+        'owner123',
+      )
+
+      expect(result).toBe('invitation123')
+      expect(mockAddDoc).toHaveBeenCalledWith(expect.any(Object), {
+        teamId: 'team123',
+        email: 'test@example.com',
+        role: 'member',
+        invitedBy: 'owner123',
+        invitedAt: expect.any(Date),
+        expiresAt: expect.any(Object), // Timestamp
+        status: 'pending',
+      })
+      expect(mockSendTeamInvitationEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'invitation123',
+          teamId: 'team123',
+          email: 'test@example.com',
+          role: 'member',
+          invitedBy: 'owner123',
+          status: 'pending',
+        }),
+        'Test Team',
+        'owner123',
+      )
+    })
+
+    it('handles invitation creation errors', async () => {
+      mockAddDoc.mockRejectedValue(new Error('Invitation creation failed'))
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Invitation creation failed')
+    })
+
+    it('handles Firebase permission denied errors', async () => {
+      mockAddDoc.mockRejectedValue(
+        new FirestoreError('permission-denied', 'Permission denied'),
+      )
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Permission denied')
+    })
+
+    it('handles Firebase team not found errors', async () => {
+      mockAddDoc.mockRejectedValue(
+        new FirestoreError('not-found', 'Team not found'),
+      )
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Team not found')
+    })
+
+    it('handles email sending errors', async () => {
+      const mockDocRef = { id: 'invitation123' } as DocumentReference
+
+      mockAddDoc.mockResolvedValue(mockDocRef)
+      mockCollection.mockReturnValue({} as CollectionReference)
+
+      // Mock getDoc to return a valid document snapshot for getTeam
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => ({
+          name: 'Test Team',
+          description: 'Test Description',
+          ownerId: 'owner123',
+          createdAt: createMockTimestamp(new Date('2024-01-01')),
+          updatedAt: createMockTimestamp(new Date('2024-01-01')),
+        }),
+      }
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      mockSendTeamInvitationEmail.mockRejectedValue(
+        new Error('Email sending failed'),
+      )
+
+      await expect(
+        firestoreService.createTeamInvitation(
+          'team123',
+          'test@example.com',
+          'member',
+          'owner123',
+        ),
+      ).rejects.toThrow('Email sending failed')
+    })
+  })
+
+  describe('getTeamInvitations', () => {
+    it('returns pending team invitations', async () => {
+      const mockInvitationsData = [
+        {
+          id: 'invitation1',
+          data: () => ({
+            teamId: 'team123',
+            email: 'test1@example.com',
+            role: 'member',
+            invitedBy: 'owner123',
+            invitedAt: createMockTimestamp(new Date('2024-01-01')),
+            expiresAt: createMockTimestamp(new Date('2024-01-08')),
+            status: 'pending',
+          }),
+        },
+        {
+          id: 'invitation2',
+          data: () => ({
+            teamId: 'team123',
+            email: 'test2@example.com',
+            role: 'admin',
+            invitedBy: 'owner123',
+            invitedAt: createMockTimestamp(new Date('2024-01-02')),
+            expiresAt: createMockTimestamp(new Date('2024-01-09')),
+            status: 'pending',
+          }),
+        },
+      ]
+
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockWhere.mockReturnValue({} as QueryFieldFilterConstraint)
+      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDocs.mockResolvedValue({
+        docs: mockInvitationsData,
+      } as unknown as QuerySnapshot)
+
+      const result = await firestoreService.getTeamInvitations('team123')
+
+      expect(result).toEqual([
+        {
+          id: 'invitation1',
+          teamId: 'team123',
+          email: 'test1@example.com',
+          role: 'member',
+          invitedBy: 'owner123',
+          invitedAt: new Date('2024-01-01'),
+          expiresAt: new Date('2024-01-08'),
+          status: 'pending',
+        },
+        {
+          id: 'invitation2',
+          teamId: 'team123',
+          email: 'test2@example.com',
+          role: 'admin',
+          invitedBy: 'owner123',
+          invitedAt: new Date('2024-01-02'),
+          expiresAt: new Date('2024-01-09'),
+          status: 'pending',
+        },
+      ])
+      expect(mockWhere).toHaveBeenCalledWith('teamId', '==', 'team123')
+      expect(mockWhere).toHaveBeenCalledWith('status', '==', 'pending')
+    })
+  })
+
+  describe('getUserInvitations', () => {
+    it('returns pending invitations for user email', async () => {
+      const mockInvitationsData = [
+        {
+          id: 'invitation1',
+          data: () => ({
+            teamId: 'team123',
+            email: 'test@example.com',
+            role: 'member',
+            invitedBy: 'owner123',
+            invitedAt: createMockTimestamp(new Date('2024-01-01')),
+            expiresAt: createMockTimestamp(new Date('2024-01-08')),
+            status: 'pending',
+          }),
+        },
+      ]
+
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockWhere.mockReturnValue({} as QueryFieldFilterConstraint)
+      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDocs.mockResolvedValue({
+        docs: mockInvitationsData,
+      } as unknown as QuerySnapshot)
+
+      const result =
+        await firestoreService.getUserInvitations('test@example.com')
+
+      expect(result).toEqual([
+        {
+          id: 'invitation1',
+          teamId: 'team123',
+          email: 'test@example.com',
+          role: 'member',
+          invitedBy: 'owner123',
+          invitedAt: new Date('2024-01-01'),
+          expiresAt: new Date('2024-01-08'),
+          status: 'pending',
+        },
+      ])
+      expect(mockWhere).toHaveBeenCalledWith('email', '==', 'test@example.com')
+      expect(mockWhere).toHaveBeenCalledWith('status', '==', 'pending')
+    })
+  })
+
+  describe('getTeamInvitation', () => {
+    it('returns invitation by ID', async () => {
+      const mockInvitationData = {
+        teamId: 'team123',
+        email: 'test@example.com',
+        role: 'member',
+        invitedBy: 'owner123',
+        invitedAt: createMockTimestamp(new Date('2024-01-01')),
+        expiresAt: createMockTimestamp(new Date('2024-01-08')),
+        status: 'pending',
+      }
+
+      const mockDocSnap = {
+        exists: () => true,
+        id: 'invitation123',
+        data: () => mockInvitationData,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeamInvitation('invitation123')
+
+      expect(result).toEqual({
+        id: 'invitation123',
+        teamId: 'team123',
+        email: 'test@example.com',
+        role: 'member',
+        invitedBy: 'owner123',
+        invitedAt: new Date('2024-01-01'),
+        expiresAt: new Date('2024-01-08'),
+        status: 'pending',
+      })
+      expect(mockDoc).toHaveBeenCalledWith(
+        expect.any(Object),
+        'team-invitations',
+        'invitation123',
+      )
+    })
+
+    it('returns null when invitation not found', async () => {
+      const mockDocSnap = {
+        exists: () => false,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeamInvitation('nonexistent')
+
+      expect(result).toBeNull()
+    })
+
+    it('handles Firebase errors', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(
+        new FirestoreError('permission-denied', 'Permission denied'),
+      )
+
+      await expect(
+        firestoreService.getTeamInvitation('invitation123'),
+      ).rejects.toThrow('Failed to get team invitation: Permission denied')
+    })
+  })
+
+  describe('acceptTeamInvitation', () => {
+    it('accepts invitation and adds user to team', async () => {
+      const mockInvitationData = {
+        teamId: 'team123',
+        role: 'member',
+        invitedBy: 'owner123',
+      }
+
+      const mockInvitationSnap = {
+        exists: () => true,
+        data: () => mockInvitationData,
+      }
+
+      const mockBatch = {
+        update: jest.fn(),
+        set: jest.fn(),
+        commit: jest.fn(),
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(
+        mockInvitationSnap as unknown as DocumentSnapshot,
+      )
+      mockWriteBatch.mockReturnValue(mockBatch as unknown as WriteBatch)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await firestoreService.acceptTeamInvitation(
+        'invitation123',
+        'user123',
+        'test@example.com',
+      )
+
+      expect(mockBatch.update).toHaveBeenCalledWith(expect.any(Object), {
+        status: 'accepted',
+      })
+      expect(mockBatch.set).toHaveBeenCalledWith(expect.any(Object), {
+        teamId: 'team123',
+        role: 'member',
+        joinedAt: expect.any(Date),
+      })
+      expect(mockBatch.commit).toHaveBeenCalled()
+    })
+
+    it('throws error when invitation not found', async () => {
+      const mockInvitationSnap = {
+        exists: () => false,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(
+        mockInvitationSnap as unknown as DocumentSnapshot,
+      )
+
+      await expect(
+        firestoreService.acceptTeamInvitation(
+          'invitation123',
+          'user123',
+          'test@example.com',
+        ),
+      ).rejects.toThrow('Invitation not found')
+    })
+  })
+
+  describe('declineTeamInvitation', () => {
+    it('declines invitation by setting status to expired', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockUpdateDoc.mockResolvedValue(undefined)
+
+      await firestoreService.declineTeamInvitation('invitation123')
+
+      expect(mockUpdateDoc).toHaveBeenCalledWith(expect.any(Object), {
+        status: 'expired',
+      })
+    })
+  })
+
+  describe('getUserTeam', () => {
+    it('returns user team from user-teams mapping', async () => {
+      const mockUserTeamData = {
+        teamId: 'team123',
+        role: 'member',
+        joinedAt: createMockTimestamp(new Date('2024-01-01')),
+      }
+
+      const mockTeamData = {
         name: 'Test Team',
         description: 'Test Description',
-        ownerId: 'user-123',
+        ownerId: 'owner123',
+        createdAt: createMockTimestamp(new Date('2024-01-01')),
+        updatedAt: createMockTimestamp(new Date('2024-01-01')),
+      }
+
+      const mockUserTeamSnap = {
+        exists: () => true,
+        data: () => mockUserTeamData,
+      }
+
+      const mockTeamSnap = {
+        exists: () => true,
+        id: 'team123',
+        data: () => mockTeamData,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockUserTeamSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockTeamSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getUserTeam('user123')
+
+      expect(result).toEqual({
+        id: 'team123',
+        name: 'Test Team',
+        description: 'Test Description',
+        ownerId: 'owner123',
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
+      })
+    })
+
+    it('returns null when user has no team mapping', async () => {
+      const mockUserTeamSnap = {
+        exists: () => false,
       }
-      mockFirestoreService.getUserTeam.mockResolvedValue(mockTeam)
 
-      const result = await teamService.getUserTeam('user-123')
+      const mockQuerySnapshot = {
+        empty: true,
+        docs: [],
+      }
 
-      expect(mockFirestoreService.getUserTeam).toHaveBeenCalledWith('user-123')
-      expect(result).toBe(mockTeam)
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(
+        mockUserTeamSnap as unknown as DocumentSnapshot,
+      )
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockWhere.mockReturnValue({} as QueryFieldFilterConstraint)
+      mockQuery.mockReturnValue({} as Query)
+      mockGetDocs.mockResolvedValue(
+        mockQuerySnapshot as unknown as QuerySnapshot,
+      )
+
+      const result = await firestoreService.getUserTeam('user123')
+
+      expect(result).toBeNull()
+    })
+
+    it('handles errors gracefully', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(new Error('Firestore error'))
+
+      await expect(firestoreService.getUserTeam('user123')).rejects.toThrow(
+        'Failed to fetch team data: Firestore error',
+      )
+    })
+
+    it('handles Firebase permission denied errors', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(
+        new FirestoreError('permission-denied', 'Permission denied'),
+      )
+
+      await expect(firestoreService.getUserTeam('user123')).rejects.toThrow(
+        'Failed to fetch team data: Permission denied',
+      )
+    })
+
+    it('handles Firebase team not found errors', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(
+        new FirestoreError('not-found', 'Team not found'),
+      )
+
+      await expect(firestoreService.getUserTeam('user123')).rejects.toThrow(
+        'Failed to fetch team data: Team not found',
+      )
     })
   })
 
-  describe('Team Subscription', () => {
-    it('getTeamSubscription delegates to Firestore service', async () => {
-      const mockSubscription = {
+  describe('getTeamSubscription', () => {
+    it('returns team subscription when exists', async () => {
+      const mockSubscriptionData = {
         stripeSubscriptionId: 'sub_123',
         stripeCustomerId: 'cus_123',
-        status: 'active' as const,
+        status: 'active',
+        currentPeriodStart: createMockTimestamp(new Date('2024-01-01')),
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        quantity: 5,
+        updatedAt: createMockTimestamp(new Date('2024-01-01')),
+        planName: 'Team Plan',
+        planDescription: 'Team subscription',
+      }
+
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => mockSubscriptionData,
+      }
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await firestoreService.getTeamSubscription('team123')
+
+      expect(result).toEqual({
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'active',
         currentPeriodStart: new Date('2024-01-01'),
+        cancelAt: undefined,
         cancelAtPeriodEnd: false,
         priceId: 'price_123',
         quantity: 5,
         updatedAt: new Date('2024-01-01'),
         planName: 'Team Plan',
         planDescription: 'Team subscription',
+      })
+    })
+
+    it('returns null when subscription does not exist', async () => {
+      const mockDocSnap = {
+        exists: () => false,
       }
-      mockFirestoreService.getTeamSubscription.mockResolvedValue(
-        mockSubscription,
-      )
 
-      const result = await teamService.getTeamSubscription('team-123')
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
 
-      expect(mockFirestoreService.getTeamSubscription).toHaveBeenCalledWith(
-        'team-123',
-      )
-      expect(result).toBe(mockSubscription)
+      const result = await firestoreService.getTeamSubscription('team123')
+
+      expect(result).toBeNull()
     })
   })
 
-  describe('Real-time Listeners', () => {
-    it('onTeamMembersChange delegates to Firestore service', () => {
+  describe('onTeamMembersChange', () => {
+    it('sets up real-time listener for team members', () => {
       const mockUnsubscribe = jest.fn()
-      mockFirestoreService.onTeamMembersChange.mockReturnValue(mockUnsubscribe)
+      mockOnSnapshot.mockReturnValue(mockUnsubscribe)
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
+      mockQuery.mockReturnValue({} as Query)
+
       const callback = jest.fn()
-
-      const result = teamService.onTeamMembersChange('team-123', callback)
-
-      expect(mockFirestoreService.onTeamMembersChange).toHaveBeenCalledWith(
-        'team-123',
+      const unsubscribe = firestoreService.onTeamMembersChange(
+        'team123',
         callback,
       )
-      expect(result).toBe(mockUnsubscribe)
+
+      expect(mockOnSnapshot).toHaveBeenCalled()
+      expect(unsubscribe).toBe(mockUnsubscribe)
     })
 
-    it('onTeamSubscriptionChange delegates to Firestore service', () => {
+    it('calls callback with formatted members data', () => {
       const mockUnsubscribe = jest.fn()
-      mockFirestoreService.onTeamSubscriptionChange.mockReturnValue(
-        mockUnsubscribe,
-      )
-      const callback = jest.fn()
+      const mockCallback = jest.fn()
 
-      const result = teamService.onTeamSubscriptionChange('team-123', callback)
+      mockOnSnapshot.mockImplementation((query, callback: any) => {
+        // Simulate snapshot callback
+        const mockSnapshot = {
+          docs: [
+            {
+              id: 'member1',
+              data: () => ({
+                email: 'test@example.com',
+                role: 'member',
+                joinedAt: createMockTimestamp(new Date('2024-01-01')),
+                invitedBy: 'owner123',
+              }),
+            },
+          ],
+        }
+        callback(mockSnapshot)
+        return mockUnsubscribe
+      })
 
-      expect(
-        mockFirestoreService.onTeamSubscriptionChange,
-      ).toHaveBeenCalledWith('team-123', callback)
-      expect(result).toBe(mockUnsubscribe)
+      mockCollection.mockReturnValue({} as CollectionReference)
+      mockOrderBy.mockReturnValue({} as QueryOrderByConstraint)
+      mockQuery.mockReturnValue({} as Query)
+
+      firestoreService.onTeamMembersChange('team123', mockCallback)
+
+      expect(mockCallback).toHaveBeenCalledWith([
+        {
+          id: 'member1',
+          email: 'test@example.com',
+          role: 'member',
+          joinedAt: new Date('2024-01-01'),
+          invitedBy: 'owner123',
+        },
+      ])
     })
   })
 
-  describe('Service Architecture', () => {
-    it('delegates all operations to the Firestore service', async () => {
-      // Test that the service acts as a proper facade
-      mockFirestoreService.createTeam.mockResolvedValue('team-123')
-      mockFirestoreService.getTeam.mockResolvedValue({
-        id: 'team-123',
-        name: 'Test Team',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
-      mockFirestoreService.updateTeam.mockResolvedValue(undefined)
-      mockFirestoreService.deleteTeam.mockResolvedValue(undefined)
+  describe('onTeamSubscriptionChange', () => {
+    it('sets up real-time listener for team subscription', () => {
+      const mockUnsubscribe = jest.fn()
+      mockOnSnapshot.mockReturnValue(mockUnsubscribe)
+      mockDoc.mockReturnValue({} as DocumentReference)
 
-      // Test all CRUD operations delegate correctly
-      await teamService.createTeam(
-        'Test Team',
-        'Description',
-        'user-123',
-        'test@example.com',
+      const callback = jest.fn()
+      const unsubscribe = firestoreService.onTeamSubscriptionChange(
+        'team123',
+        callback,
       )
-      await teamService.getTeam('team-123')
-      await teamService.updateTeam('team-123', { name: 'Updated Team' })
-      await teamService.deleteTeam('team-123')
 
-      expect(mockFirestoreService.createTeam).toHaveBeenCalledWith(
-        'Test Team',
-        'Description',
-        'user-123',
-        'test@example.com',
-      )
-      expect(mockFirestoreService.getTeam).toHaveBeenCalledWith('team-123')
-      expect(mockFirestoreService.updateTeam).toHaveBeenCalledWith('team-123', {
-        name: 'Updated Team',
+      expect(mockOnSnapshot).toHaveBeenCalled()
+      expect(unsubscribe).toBe(mockUnsubscribe)
+    })
+
+    it('calls callback with null when subscription does not exist', () => {
+      const mockUnsubscribe = jest.fn()
+      const mockCallback = jest.fn()
+
+      mockOnSnapshot.mockImplementation((doc, callback: any) => {
+        // Simulate snapshot callback with non-existent document
+        const mockDocSnap = {
+          exists: () => false,
+        }
+        callback(mockDocSnap)
+        return mockUnsubscribe
       })
-      expect(mockFirestoreService.deleteTeam).toHaveBeenCalledWith('team-123')
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+
+      firestoreService.onTeamSubscriptionChange('team123', mockCallback)
+
+      expect(mockCallback).toHaveBeenCalledWith(null)
+    })
+
+    it('calls callback with formatted subscription data', () => {
+      const mockUnsubscribe = jest.fn()
+      const mockCallback = jest.fn()
+
+      mockOnSnapshot.mockImplementation((doc, callback: any) => {
+        // Simulate snapshot callback with existing document
+        const mockDocSnap = {
+          exists: () => true,
+          data: () => ({
+            stripeSubscriptionId: 'sub_123',
+            stripeCustomerId: 'cus_123',
+            status: 'active',
+            currentPeriodStart: createMockTimestamp(new Date('2024-01-01')),
+            cancelAtPeriodEnd: false,
+            priceId: 'price_123',
+            quantity: 5,
+            updatedAt: createMockTimestamp(new Date('2024-01-01')),
+            planName: 'Team Plan',
+            planDescription: 'Team subscription',
+          }),
+        }
+        callback(mockDocSnap)
+        return mockUnsubscribe
+      })
+
+      mockDoc.mockReturnValue({} as DocumentReference)
+
+      firestoreService.onTeamSubscriptionChange('team123', mockCallback)
+
+      expect(mockCallback).toHaveBeenCalledWith({
+        stripeSubscriptionId: 'sub_123',
+        stripeCustomerId: 'cus_123',
+        status: 'active',
+        currentPeriodStart: new Date('2024-01-01'),
+        cancelAt: undefined,
+        cancelAtPeriodEnd: false,
+        priceId: 'price_123',
+        quantity: 5,
+        updatedAt: new Date('2024-01-01'),
+        planName: 'Team Plan',
+        planDescription: 'Team subscription',
+      })
     })
   })
 })

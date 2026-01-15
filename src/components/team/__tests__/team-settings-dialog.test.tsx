@@ -1,18 +1,20 @@
 import React from 'react'
 
 import { render, screen, waitFor } from '@jest-setup'
+import { within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
 // Import mocked services
-import { updateTeam } from '@/services/team-service'
+import { deleteTeam, updateTeam } from '@/services/team-service'
 
 import { TeamSettingsDialog } from '../team-settings-dialog'
 
 // Mock the team service
 jest.mock('@/services/team-service', () => ({
   updateTeam: jest.fn(),
+  deleteTeam: jest.fn(),
 }))
 
 // Mock the toast hook
@@ -25,6 +27,7 @@ const mockToast = {
 }
 
 const mockUpdateTeam = jest.fn()
+const mockDeleteTeam = jest.fn()
 
 const mockTeam: Team = {
   id: 'team-1',
@@ -39,6 +42,7 @@ const defaultProps = {
   team: mockTeam,
   currentUserRole: 'owner' as const,
   onTeamUpdated: jest.fn(),
+  onTeamDeleted: jest.fn(),
 }
 
 const renderTeamSettingsDialog = (props = {}) => {
@@ -54,6 +58,7 @@ describe('TeamSettingsDialog', () => {
     jest.clearAllMocks()
     ;(useToast as jest.Mock).mockReturnValue(mockToast)
     ;(updateTeam as jest.Mock).mockImplementation(mockUpdateTeam)
+    ;(deleteTeam as jest.Mock).mockImplementation(mockDeleteTeam)
   })
 
   describe('Dialog Trigger', () => {
@@ -113,6 +118,12 @@ describe('TeamSettingsDialog', () => {
       expect(screen.getByLabelText('teams.description')).toHaveValue(
         'A test team description',
       )
+    })
+
+    it('shows delete team action for owners', () => {
+      expect(
+        screen.getByRole('button', { name: 'teams.deleteTeam' }),
+      ).toBeInTheDocument()
     })
   })
 
@@ -374,6 +385,84 @@ describe('TeamSettingsDialog', () => {
       expect(screen.getByLabelText('teams.description')).toHaveValue(
         'A test team description',
       )
+    })
+  })
+
+  describe('Delete Team Flow', () => {
+    it('does not show delete action for non-owners', async () => {
+      const user = userEvent.setup()
+      renderTeamSettingsDialog({ currentUserRole: 'admin' })
+
+      const settingsButton = screen.getByRole('button', { name: /settings/i })
+      await user.click(settingsButton)
+
+      expect(
+        screen.queryByRole('button', { name: 'teams.deleteTeam' }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('requires exact team name confirmation before enabling delete', async () => {
+      const user = userEvent.setup()
+      mockDeleteTeam.mockResolvedValue(undefined)
+      renderTeamSettingsDialog()
+
+      const settingsButton = screen.getByRole('button', { name: /settings/i })
+      await user.click(settingsButton)
+
+      const deleteButton = screen.getByRole('button', { name: 'teams.deleteTeam' })
+      await user.click(deleteButton)
+
+      // Alert dialog should open
+      expect(screen.getByText('teams.deleteTeamTitle')).toBeInTheDocument()
+      const alertDialog = screen.getByRole('alertdialog')
+
+      const confirmInput = within(alertDialog).getByLabelText(
+        'teams.deleteTeamConfirmLabel',
+      )
+
+      await user.type(confirmInput, 'Wrong Name')
+
+      // The destructive action button should be disabled until exact match
+      const confirmDeleteButton = within(alertDialog).getByRole('button', {
+        name: 'teams.deleteTeam',
+      })
+      expect(confirmDeleteButton).toBeDisabled()
+
+      await user.clear(confirmInput)
+      await user.type(confirmInput, 'Test Team')
+      expect(confirmDeleteButton).toBeEnabled()
+    })
+
+    it('deletes team, shows toast, and calls onTeamDeleted', async () => {
+      const user = userEvent.setup()
+      mockDeleteTeam.mockResolvedValue(undefined)
+      renderTeamSettingsDialog()
+
+      const settingsButton = screen.getByRole('button', { name: /settings/i })
+      await user.click(settingsButton)
+
+      const deleteButton = screen.getByRole('button', { name: 'teams.deleteTeam' })
+      await user.click(deleteButton)
+      const alertDialog = screen.getByRole('alertdialog')
+
+      const confirmInput = within(alertDialog).getByLabelText(
+        'teams.deleteTeamConfirmLabel',
+      )
+      await user.type(confirmInput, 'Test Team')
+
+      const confirmDeleteButton = within(alertDialog).getByRole('button', {
+        name: 'teams.deleteTeam',
+      })
+      await user.click(confirmDeleteButton)
+
+      await waitFor(() => {
+        expect(mockDeleteTeam).toHaveBeenCalledWith('team-1')
+        expect(defaultProps.onTeamDeleted).toHaveBeenCalledTimes(1)
+        expect(mockToast.toast).toHaveBeenCalledWith({
+          title: 'teams.teamDeleted',
+          description: 'teams.teamDeletedDescription',
+        })
+      })
     })
   })
 

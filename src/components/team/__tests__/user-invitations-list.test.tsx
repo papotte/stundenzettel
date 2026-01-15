@@ -10,6 +10,7 @@ import {
   acceptTeamInvitation,
   declineTeamInvitation,
 } from '@/services/team-service'
+import { addMonths } from 'date-fns'
 
 import { UserInvitationsList } from '../user-invitations-list'
 
@@ -38,7 +39,9 @@ const mockToast = {
 const mockAcceptTeamInvitation = jest.fn()
 const mockDeclineTeamInvitation = jest.fn()
 
-// Use dates that are definitely in the future relative to the mocked current date
+// Use dates that are definitely in the future relative to "today" so these stay pending.
+const futureExpiry1 = addMonths(new Date(), 1)
+const futureExpiry2 = addMonths(new Date(), 2)
 const mockInvitations: TeamInvitation[] = [
   {
     id: 'invitation-1',
@@ -47,7 +50,7 @@ const mockInvitations: TeamInvitation[] = [
     role: 'member',
     invitedBy: 'owner@example.com',
     invitedAt: new Date('2024-01-01'),
-    expiresAt: new Date('2025-12-31'), // Far in the future
+    expiresAt: futureExpiry1,
     status: 'pending',
   },
   {
@@ -57,7 +60,7 @@ const mockInvitations: TeamInvitation[] = [
     role: 'admin',
     invitedBy: 'admin@example.com',
     invitedAt: new Date('2024-01-02'),
-    expiresAt: new Date('2025-12-30'), // Far in the future
+    expiresAt: futureExpiry2,
     status: 'pending',
   },
 ]
