@@ -146,7 +146,9 @@ export function TeamSettingsDialog({
       toast({
         title: t('common.error'),
         description:
-          error instanceof Error ? error.message : t('teams.failedToDeleteTeam'),
+          error instanceof Error
+            ? error.message
+            : t('teams.failedToDeleteTeam'),
         variant: 'destructive',
       })
     } finally {
@@ -237,7 +239,9 @@ export function TeamSettingsDialog({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>{t('teams.deleteTeamTitle')}</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      {t('teams.deleteTeamTitle')}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                       {t('teams.deleteTeamDescription')}
                     </AlertDialogDescription>
@@ -270,9 +274,13 @@ export function TeamSettingsDialog({
                         e.preventDefault()
                         void handleDeleteTeam()
                       }}
-                      disabled={deleteLoading || deleteConfirm.trim() !== team.name}
+                      disabled={
+                        deleteLoading || deleteConfirm.trim() !== team.name
+                      }
                     >
-                      {deleteLoading ? t('common.loading') : t('teams.deleteTeam')}
+                      {deleteLoading
+                        ? t('common.loading')
+                        : t('teams.deleteTeam')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

@@ -25,6 +25,7 @@ import type {
   TeamInvitation,
   TeamMember,
 } from '@/lib/types'
+import { toDate } from '@/lib/utils'
 
 import { sendTeamInvitationEmail } from './email-notification-service'
 
@@ -48,7 +49,9 @@ function mapDocToTeamMember(docSnap: QueryDocumentSnapshot): TeamMember {
 }
 
 // Helper function to map Firestore document to TeamInvitation
-function mapDocToTeamInvitation(docSnap: QueryDocumentSnapshot): TeamInvitation {
+function mapDocToTeamInvitation(
+  docSnap: QueryDocumentSnapshot,
+): TeamInvitation {
   return {
     id: docSnap.id,
     teamId: docSnap.data().teamId,
@@ -202,7 +205,9 @@ export async function deleteTeam(teamId: string): Promise<void> {
     const data = subscriptionSnap.data()
     const status = data.status as string | undefined
     if (status && status !== 'canceled') {
-      throw new Error('Please cancel the team subscription before deleting the team.')
+      throw new Error(
+        'Please cancel the team subscription before deleting the team.',
+      )
     }
   }
 
@@ -390,7 +395,10 @@ export async function createTeamInvitation(
   }
 
   try {
-    const docRef = await addDoc(collection(db, 'team-invitations'), invitationData)
+    const docRef = await addDoc(
+      collection(db, 'team-invitations'),
+      invitationData,
+    )
 
     // Send email invitation
     try {
@@ -404,7 +412,9 @@ export async function createTeamInvitation(
       // Get inviter information
       let inviterName = invitedBy
       try {
-        const inviterDoc = await getDoc(doc(db, 'teams', teamId, 'members', invitedBy))
+        const inviterDoc = await getDoc(
+          doc(db, 'teams', teamId, 'members', invitedBy),
+        )
         if (inviterDoc.exists()) {
           const inviterData = inviterDoc.data()
           inviterName = inviterData.email || invitedBy
@@ -466,7 +476,9 @@ export async function getTeamInvitation(
   }
 }
 
-export async function getTeamInvitations(teamId: string): Promise<TeamInvitation[]> {
+export async function getTeamInvitations(
+  teamId: string,
+): Promise<TeamInvitation[]> {
   const querySnapshot = await getDocs(
     query(
       collection(db, 'team-invitations'),
@@ -479,7 +491,9 @@ export async function getTeamInvitations(teamId: string): Promise<TeamInvitation
   return querySnapshot.docs.map(mapDocToTeamInvitation)
 }
 
-export async function getUserInvitations(userEmail: string): Promise<TeamInvitation[]> {
+export async function getUserInvitations(
+  userEmail: string,
+): Promise<TeamInvitation[]> {
   const querySnapshot = await getDocs(
     query(
       collection(db, 'team-invitations'),
@@ -531,7 +545,9 @@ export async function acceptTeamInvitation(
   await batch.commit()
 }
 
-export async function declineTeamInvitation(invitationId: string): Promise<void> {
+export async function declineTeamInvitation(
+  invitationId: string,
+): Promise<void> {
   const docRef = doc(db, 'team-invitations', invitationId)
   await updateDoc(docRef, { status: 'expired' })
 }
@@ -563,7 +579,10 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
     }
 
     // Fallback: Check if user is owner of any team (for backward compatibility)
-    const teamsQuery = query(collection(db, 'teams'), where('ownerId', '==', userId))
+    const teamsQuery = query(
+      collection(db, 'teams'),
+      where('ownerId', '==', userId),
+    )
 
     const teamsSnapshot = await getDocs(teamsQuery)
 
@@ -588,7 +607,9 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
 }
 
 // Team subscription
-export async function getTeamSubscription(teamId: string): Promise<Subscription | null> {
+export async function getTeamSubscription(
+  teamId: string,
+): Promise<Subscription | null> {
   const docRef = doc(db, 'teams', teamId, 'subscription', 'current')
   const docSnap = await getDoc(docRef)
 
@@ -597,16 +618,22 @@ export async function getTeamSubscription(teamId: string): Promise<Subscription 
   }
 
   const data = docSnap.data()
+  // Teams have a placeholder subscription doc created on team creation.
+  // Treat placeholder/inactive/missing Stripe IDs as "no subscription" in the UI.
+  if (!data.stripeSubscriptionId || data.status === 'inactive') {
+    return null
+  }
+
   return {
     stripeSubscriptionId: data.stripeSubscriptionId,
     stripeCustomerId: data.stripeCustomerId,
     status: data.status,
-    currentPeriodStart: data.currentPeriodStart?.toDate() || new Date(),
-    cancelAt: data.cancelAt?.toDate() || undefined,
+    currentPeriodStart: toDate(data.currentPeriodStart),
+    cancelAt: data.cancelAt ? toDate(data.cancelAt) : undefined,
     cancelAtPeriodEnd: data.cancelAtPeriodEnd,
     priceId: data.priceId,
     quantity: data.quantity,
-    updatedAt: data.updatedAt?.toDate() || new Date(),
+    updatedAt: toDate(data.updatedAt),
     planName: data.planName,
     planDescription: data.planDescription,
   }
@@ -618,7 +645,10 @@ export function onTeamMembersChange(
   callback: (members: TeamMember[]) => void,
 ): Unsubscribe {
   return onSnapshot(
-    query(collection(db, 'teams', teamId, 'members'), orderBy('joinedAt', 'desc')),
+    query(
+      collection(db, 'teams', teamId, 'members'),
+      orderBy('joinedAt', 'desc'),
+    ),
     (snapshot) => {
       const members = snapshot.docs.map(mapDocToTeamMember)
       callback(members)
@@ -630,26 +660,35 @@ export function onTeamSubscriptionChange(
   teamId: string,
   callback: (subscription: Subscription | null) => void,
 ): Unsubscribe {
-  return onSnapshot(doc(db, 'teams', teamId, 'subscription', 'current'), (docSnap) => {
-    if (!docSnap.exists()) {
-      callback(null)
-      return
-    }
+  return onSnapshot(
+    doc(db, 'teams', teamId, 'subscription', 'current'),
+    (docSnap) => {
+      if (!docSnap.exists()) {
+        callback(null)
+        return
+      }
 
-    const data = docSnap.data()
-    const subscription: Subscription = {
-      stripeSubscriptionId: data.stripeSubscriptionId,
-      stripeCustomerId: data.stripeCustomerId,
-      status: data.status,
-      currentPeriodStart: data.currentPeriodStart?.toDate() || new Date(),
-      cancelAt: data.cancelAt?.toDate() || undefined,
-      cancelAtPeriodEnd: data.cancelAtPeriodEnd,
-      priceId: data.priceId,
-      quantity: data.quantity,
-      updatedAt: data.updatedAt?.toDate() || new Date(),
-      planName: data.planName,
-      planDescription: data.planDescription,
-    }
-    callback(subscription)
-  })
+      const data = docSnap.data()
+      // Teams have a placeholder subscription doc created on team creation.
+      // Treat placeholder/inactive/missing Stripe IDs as "no subscription" in the UI.
+      if (!data.stripeSubscriptionId || data.status === 'inactive') {
+        callback(null)
+        return
+      }
+      const subscription: Subscription = {
+        stripeSubscriptionId: data.stripeSubscriptionId,
+        stripeCustomerId: data.stripeCustomerId,
+        status: data.status,
+        currentPeriodStart: toDate(data.currentPeriodStart),
+        cancelAt: data.cancelAt ? toDate(data.cancelAt) : undefined,
+        cancelAtPeriodEnd: data.cancelAtPeriodEnd,
+        priceId: data.priceId,
+        quantity: data.quantity,
+        updatedAt: toDate(data.updatedAt),
+        planName: data.planName,
+        planDescription: data.planDescription,
+      }
+      callback(subscription)
+    },
+  )
 }

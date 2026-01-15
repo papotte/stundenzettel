@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore'
+
 import type { TimeEntry } from '../types'
 import {
   compareEntriesByStartTime,
@@ -9,6 +11,7 @@ import {
   getUserId,
   getWeeksForMonth,
   timeStringToMinutes,
+  toDate,
 } from '../utils'
 
 describe('utils', () => {
@@ -223,6 +226,136 @@ describe('utils', () => {
           const expectedDayOfWeek = dayIndex === 0 ? 1 : (dayIndex + 1) % 7 // Monday=1, Tuesday=2, ..., Sunday=0
           expect(day.getDay()).toBe(expectedDayOfWeek)
         })
+      })
+    })
+  })
+
+  describe('toDate', () => {
+    it('should return Date object as-is when given a Date', () => {
+      const date = new Date('2024-01-15T12:00:00Z')
+      const result = toDate(date)
+      expect(result).toBe(date)
+      expect(result).toBeInstanceOf(Date)
+      expect(result.getTime()).toBe(date.getTime())
+    })
+
+    it('should convert Firestore Timestamp to Date', () => {
+      const originalDate = new Date('2024-01-15T12:00:00Z')
+      const timestamp = Timestamp.fromDate(originalDate)
+      const result = toDate(timestamp)
+      expect(result).toBeInstanceOf(Date)
+      expect(result.getTime()).toBe(originalDate.getTime())
+    })
+
+    it('should return new Date when value is null', () => {
+      const result = toDate(null)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is undefined', () => {
+      const result = toDate(undefined)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is empty string', () => {
+      const result = toDate('')
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is 0', () => {
+      const result = toDate(0)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is false', () => {
+      const result = toDate(false)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should handle object with toDate method (Firestore Timestamp-like)', () => {
+      const mockTimestamp = {
+        toDate: () => new Date('2024-01-15T12:00:00Z'),
+      }
+      const result = toDate(mockTimestamp)
+      expect(result).toBeInstanceOf(Date)
+      expect(result.getTime()).toBe(new Date('2024-01-15T12:00:00Z').getTime())
+    })
+
+    it('should return new Date when object has toDate but it is not a function', () => {
+      const invalidObject = {
+        toDate: 'not a function',
+      }
+      const result = toDate(invalidObject)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is a plain object without toDate', () => {
+      const plainObject = { someProperty: 'value' }
+      const result = toDate(plainObject)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is a string', () => {
+      const result = toDate('2024-01-15')
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is a number', () => {
+      const result = toDate(1234567890)
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should return new Date when value is an array', () => {
+      const result = toDate([1, 2, 3])
+      expect(result).toBeInstanceOf(Date)
+      // Should be a recent date (within last second)
+      expect(result.getTime()).toBeGreaterThan(Date.now() - 1000)
+    })
+
+    it('should preserve Date object identity', () => {
+      const date1 = new Date('2024-01-15T12:00:00Z')
+      const date2 = new Date('2024-01-15T12:00:00Z')
+      const result1 = toDate(date1)
+      const result2 = toDate(date2)
+
+      // Same reference should return same reference
+      expect(result1).toBe(date1)
+      expect(result2).toBe(date2)
+      // Different Date objects with same time should be different references
+      expect(result1).not.toBe(result2)
+      expect(result1.getTime()).toBe(result2.getTime())
+    })
+
+    it('should handle Firestore Timestamp with different dates', () => {
+      const dates = [
+        new Date('2024-01-01T00:00:00Z'),
+        new Date('2024-06-15T12:30:45Z'),
+        new Date('2024-12-31T23:59:59Z'),
+      ]
+
+      dates.forEach((date) => {
+        const timestamp = Timestamp.fromDate(date)
+        const result = toDate(timestamp)
+        expect(result).toBeInstanceOf(Date)
+        expect(result.getTime()).toBe(date.getTime())
       })
     })
   })

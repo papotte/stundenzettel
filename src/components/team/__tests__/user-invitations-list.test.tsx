@@ -3,6 +3,8 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
+import { addMonths } from 'date-fns'
+
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 // Import mocked services
@@ -10,7 +12,6 @@ import {
   acceptTeamInvitation,
   declineTeamInvitation,
 } from '@/services/team-service'
-import { addMonths } from 'date-fns'
 
 import { UserInvitationsList } from '../user-invitations-list'
 

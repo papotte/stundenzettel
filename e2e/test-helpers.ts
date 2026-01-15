@@ -249,3 +249,65 @@ export const createTestTeamWithInvitation = async (
     throw error
   }
 }
+
+// Helper function to create a user subscription directly in Firestore
+export const createUserSubscription = async (
+  userId: string,
+  options: {
+    status?: 'active' | 'trialing' | 'past_due' | 'canceled'
+    planName?: string
+    planDescription?: string
+    priceId?: string
+    quantity?: number
+    stripeSubscriptionId?: string
+    stripeCustomerId?: string
+  } = {},
+): Promise<{
+  stripeSubscriptionId: string
+  stripeCustomerId: string
+  status: string
+  priceId: string
+}> => {
+  try {
+    const db = getFirestore(getApps()[0], 'test-database')
+
+    const {
+      status = 'active',
+      planName = 'Team Plan',
+      planDescription = 'Team subscription plan',
+      priceId = 'price_team_monthly',
+      quantity = 5,
+      stripeSubscriptionId = `sub_test_${Date.now()}`,
+      stripeCustomerId = `cus_test_${Date.now()}`,
+    } = options
+
+    const subscriptionData = {
+      stripeSubscriptionId,
+      stripeCustomerId,
+      status,
+      currentPeriodStart: serverTimestamp(),
+      cancelAtPeriodEnd: false,
+      priceId,
+      quantity,
+      planName,
+      planDescription,
+      updatedAt: serverTimestamp(),
+    }
+
+    // Write subscription to user's subscription collection
+    await setDoc(
+      doc(db, 'users', userId, 'subscription', 'current'),
+      subscriptionData,
+    )
+
+    return {
+      stripeSubscriptionId,
+      stripeCustomerId,
+      status,
+      priceId,
+    }
+  } catch (error) {
+    console.error('Failed to create user subscription:', error)
+    throw error
+  }
+}

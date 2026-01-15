@@ -389,19 +389,34 @@ describe('TeamSubscriptionCard', () => {
 
   describe('No Subscription State', () => {
     it('renders no subscription state', () => {
-      render(<TeamSubscriptionCard {...defaultProps} subscription={null} />)
+      render(
+        <TeamSubscriptionCard
+          {...defaultProps}
+          subscription={null}
+          currentUserRole="owner"
+        />,
+      )
 
       expect(screen.getByText('teams.teamSubscription')).toBeInTheDocument()
       expect(
         screen.getByText('teams.teamSubscriptionDescription'),
       ).toBeInTheDocument()
       expect(screen.getByText('teams.noActiveSubscription')).toBeInTheDocument()
+      expect(
+        screen.getByText('teams.linkExistingSubscription'),
+      ).toBeInTheDocument()
       expect(screen.getByText('teams.subscribeNow')).toBeInTheDocument()
     })
 
     it('handles subscribe now click', async () => {
       const user = userEvent.setup()
-      render(<TeamSubscriptionCard {...defaultProps} subscription={null} />)
+      render(
+        <TeamSubscriptionCard
+          {...defaultProps}
+          subscription={null}
+          currentUserRole="owner"
+        />,
+      )
 
       const subscribeButton = screen.getByText('teams.subscribeNow')
       await user.click(subscribeButton)

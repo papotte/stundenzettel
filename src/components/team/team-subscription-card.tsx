@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import {
   AlertCircle,
+  AlertTriangle,
   Check,
   CreditCard,
   Plus,
@@ -29,6 +30,7 @@ import type { Subscription, Team, TeamMember } from '@/lib/types'
 import { paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
 
+import { LinkTeamSubscriptionDialog } from './link-team-subscription-dialog'
 import { SeatAssignmentDialog } from './seat-assignment-dialog'
 import { TeamSubscriptionDialog } from './team-subscription-dialog'
 
@@ -38,6 +40,7 @@ interface TeamSubscriptionCardProps {
   subscription: Subscription | null
   onSubscriptionUpdate: (subscription: Subscription | null) => void
   onMembersChange?: (members: TeamMember[]) => void
+  currentUserRole?: 'owner' | 'admin' | 'member'
 }
 
 export function TeamSubscriptionCard({
@@ -46,6 +49,7 @@ export function TeamSubscriptionCard({
   subscription,
   onSubscriptionUpdate,
   onMembersChange,
+  currentUserRole,
 }: TeamSubscriptionCardProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -133,6 +137,7 @@ export function TeamSubscriptionCard({
   }
 
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false)
+  const [showLinkDialog, setShowLinkDialog] = useState(false)
 
   if (!subscription) {
     return (
@@ -170,13 +175,39 @@ export function TeamSubscriptionCard({
               <p className="text-muted-foreground mb-6">
                 {t('teams.noActiveSubscriptionDescription')}
               </p>
-              <Button onClick={handleUpgradeSubscription}>
-                <Plus className="mr-2 h-4 w-4" />
-                {t('teams.subscribeNow')}
-              </Button>
+              <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowLinkDialog(true)}
+                  >
+                    {t('teams.linkExistingSubscription')}
+                  </Button>
+                )}
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
+                  <Button onClick={handleUpgradeSubscription}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('teams.subscribeNow')}
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Link Existing Subscription Dialog */}
+        <LinkTeamSubscriptionDialog
+          open={showLinkDialog}
+          onOpenChange={setShowLinkDialog}
+          teamId={team.id}
+          onLinked={async () => {
+            // Refresh subscription immediately since we write directly to Firestore
+            const updated = await getTeamSubscription(team.id)
+            onSubscriptionUpdate(updated)
+          }}
+        />
 
         {/* Team Subscription Dialog */}
         <TeamSubscriptionDialog
@@ -193,9 +224,12 @@ export function TeamSubscriptionCard({
     )
   }
 
-  const seatsUsed = members.length
+  const seatsUsed = members.filter((m) => m.seatAssignment?.isActive).length
   const totalSeats = subscription.quantity || 1
   const seatUsagePercentage = (seatsUsed / totalSeats) * 100
+  const usersWithoutSeats = members.filter(
+    (m) => !m.seatAssignment?.isActive,
+  ).length
 
   return (
     <>
@@ -249,22 +283,26 @@ export function TeamSubscriptionCard({
                 <span className="text-sm text-muted-foreground">
                   {t('teams.seatsUsed', { used: seatsUsed, total: totalSeats })}
                 </span>
-                {onMembersChange && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSeatAssignmentDialog(true)}
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    {t('teams.seatAssignment')}
-                  </Button>
-                )}
+                {(currentUserRole === 'owner' || currentUserRole === 'admin') &&
+                  onMembersChange && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowSeatAssignmentDialog(true)}
+                    >
+                      <Users className="mr-2 h-4 w-4" />
+                      {t('teams.seatAssignment')}
+                    </Button>
+                  )}
               </div>
             </div>
             <Progress value={seatUsagePercentage} className="h-2" />
-            {seatUsagePercentage > 90 && (
-              <p className="text-sm text-amber-600">
-                {t('teams.seatLimitWarning')}
+            {(seatUsagePercentage > 90 || usersWithoutSeats > 0) && (
+              <p className="text-sm text-amber-600 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                {usersWithoutSeats > 0
+                  ? t('teams.usersWithoutSeats', { count: usersWithoutSeats })
+                  : t('teams.seatLimitWarning')}
               </p>
             )}
           </div>
@@ -295,25 +333,33 @@ export function TeamSubscriptionCard({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleManageSubscription}
-              disabled={isLoading}
-              className="flex-1"
-            >
-              <CreditCard className="mr-2 h-4 w-4" />
-              {isLoading
-                ? t('common.loading')
-                : t('subscription.manageBilling')}
-            </Button>
-            {seatsUsed >= totalSeats && (
-              <Button onClick={handleUpgradeSubscription} className="flex-1">
-                <Plus className="mr-2 h-4 w-4" />
-                {t('teams.addSeats')}
-              </Button>
-            )}
-          </div>
+          {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleManageSubscription}
+                  disabled={isLoading}
+                  className="flex-1"
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  {isLoading
+                    ? t('common.loading')
+                    : t('subscription.manageBilling')}
+                </Button>
+              </div>
+              {usersWithoutSeats > 0 && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
+                  <p className="font-medium text-amber-900 mb-1">
+                    {t('teams.updateSeatsTitle')}
+                  </p>
+                  <p className="text-amber-800">
+                    {t('teams.updateSeatsInstructions')}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -435,6 +435,7 @@ export default function TeamPage() {
                   subscription={subscription}
                   onSubscriptionUpdate={handleSubscriptionUpdate}
                   onMembersChange={handleMembersChange}
+                  currentUserRole={currentUserRole}
                 />
               </TabsContent>
             </Tabs>

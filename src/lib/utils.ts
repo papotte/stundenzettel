@@ -147,3 +147,23 @@ export function getUserId(
   if (!user) return undefined
   return user.uid || user.email
 }
+
+/**
+ * Safely converts a Firestore Timestamp or Date to a JavaScript Date object.
+ * Handles various input types including Firestore Timestamps, Date objects, and null/undefined.
+ *
+ * @param value - The value to convert (Firestore Timestamp, Date, or null/undefined)
+ * @returns A JavaScript Date object, or a new Date if the value is invalid
+ */
+export function toDate(value: unknown): Date {
+  if (!value) return new Date()
+  if (value instanceof Date) return value
+  if (
+    typeof value === 'object' &&
+    'toDate' in value &&
+    typeof (value as { toDate: () => Date }).toDate === 'function'
+  ) {
+    return (value as { toDate: () => Date }).toDate()
+  }
+  return new Date()
+}

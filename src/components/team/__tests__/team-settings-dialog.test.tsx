@@ -409,7 +409,9 @@ describe('TeamSettingsDialog', () => {
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
 
-      const deleteButton = screen.getByRole('button', { name: 'teams.deleteTeam' })
+      const deleteButton = screen.getByRole('button', {
+        name: 'teams.deleteTeam',
+      })
       await user.click(deleteButton)
 
       // Alert dialog should open
@@ -441,7 +443,9 @@ describe('TeamSettingsDialog', () => {
       const settingsButton = screen.getByRole('button', { name: /settings/i })
       await user.click(settingsButton)
 
-      const deleteButton = screen.getByRole('button', { name: 'teams.deleteTeam' })
+      const deleteButton = screen.getByRole('button', {
+        name: 'teams.deleteTeam',
+      })
       await user.click(deleteButton)
       const alertDialog = screen.getByRole('alertdialog')
 
