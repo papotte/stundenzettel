@@ -152,7 +152,7 @@ describe('TeamSubscriptionCard', () => {
     })
 
     it('displays manage billing button', () => {
-      render(<TeamSubscriptionCard {...defaultProps} />)
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       expect(screen.getByText('subscription.manageBilling')).toBeInTheDocument()
     })
@@ -173,40 +173,27 @@ describe('TeamSubscriptionCard', () => {
   })
 
   describe('Member Limit Warnings', () => {
-    it('shows warning when approaching member limit', () => {
-      const approachingLimitMembers = Array.from({ length: 4 }, (_, i) => ({
+    it('shows warning when users are without seats', () => {
+      // Create members without seat assignments
+      const membersWithoutSeats = Array.from({ length: 5 }, (_, i) => ({
         id: `user-${i + 1}`,
         email: `user${i + 1}@example.com`,
         role: 'member' as const,
         joinedAt: new Date('2024-01-01'),
         invitedBy: 'user-1',
+        // No seatAssignment means they don't have seats
       }))
 
       render(
         <TeamSubscriptionCard
           {...defaultProps}
-          members={approachingLimitMembers}
+          members={membersWithoutSeats}
+          currentUserRole="owner"
         />,
       )
 
-      expect(screen.getByText('teams.seatsUsed')).toBeInTheDocument()
-    })
-
-    it('shows warning when at member limit', () => {
-      const atLimitMembers = Array.from({ length: 5 }, (_, i) => ({
-        id: `user-${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        role: 'member' as const,
-        joinedAt: new Date('2024-01-01'),
-        invitedBy: 'user-1',
-      }))
-
-      render(
-        <TeamSubscriptionCard {...defaultProps} members={atLimitMembers} />,
-      )
-
-      expect(screen.getByText('teams.seatLimitWarning')).toBeInTheDocument()
-      expect(screen.getByText('teams.addSeats')).toBeInTheDocument()
+      // Should show warning for users without seats
+      expect(screen.getByText(/teams.usersWithoutSeats/i)).toBeInTheDocument()
     })
   })
 
@@ -223,7 +210,7 @@ describe('TeamSubscriptionCard', () => {
       })
       mockRedirectToCustomerPortal.mockResolvedValue(undefined)
 
-      render(<TeamSubscriptionCard {...defaultProps} />)
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
@@ -284,7 +271,7 @@ describe('TeamSubscriptionCard', () => {
 
       mockRedirectToCustomerPortal.mockResolvedValue(undefined)
 
-      render(<TeamSubscriptionCard {...defaultProps} />)
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
@@ -318,29 +305,6 @@ describe('TeamSubscriptionCard', () => {
         returnUrl: 'http://localhost/subscription',
       })
     })
-
-    it('handles upgrade subscription click when at limit', async () => {
-      const user = userEvent.setup()
-      const atLimitMembers = Array.from({ length: 5 }, (_, i) => ({
-        id: `user-${i + 1}`,
-        email: `user${i + 1}@example.com`,
-        role: 'member' as const,
-        joinedAt: new Date('2024-01-01'),
-        invitedBy: 'user-1',
-      }))
-
-      render(
-        <TeamSubscriptionCard {...defaultProps} members={atLimitMembers} />,
-      )
-
-      const upgradeButton = screen.getByText('teams.addSeats')
-      await user.click(upgradeButton)
-
-      // Should open the team subscription dialog
-      await waitFor(() => {
-        expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
-      })
-    })
   })
 
   describe('Error Handling', () => {
@@ -350,7 +314,7 @@ describe('TeamSubscriptionCard', () => {
         paymentService.createCustomerPortalSession as jest.Mock
       mockCreateCustomerPortalSession.mockRejectedValue(new Error('API Error'))
 
-      render(<TeamSubscriptionCard {...defaultProps} />)
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
@@ -372,7 +336,7 @@ describe('TeamSubscriptionCard', () => {
         new Error('Network error'),
       )
 
-      render(<TeamSubscriptionCard {...defaultProps} />)
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
@@ -444,7 +408,7 @@ describe('TeamSubscriptionCard', () => {
       mockCreateCustomerPortalSession.mockReturnValue(portalPromise)
       mockRedirectToCustomerPortal.mockResolvedValue(undefined)
 
-      render(<TeamSubscriptionCard {...defaultProps} />)
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       const manageButton = screen.getByText('subscription.manageBilling')
       await user.click(manageButton)
@@ -597,6 +561,7 @@ describe('TeamSubscriptionCard', () => {
         <TeamSubscriptionCard
           {...defaultProps}
           onMembersChange={mockOnMembersChange}
+          currentUserRole="owner"
         />,
       )
 
@@ -617,14 +582,22 @@ describe('TeamSubscriptionCard', () => {
         <TeamSubscriptionCard
           {...defaultProps}
           onMembersChange={mockOnMembersChange}
+          currentUserRole="owner"
         />,
       )
 
-      const manageSeatsButton = screen.getByText('teams.seatAssignment')
+      // Get the button by role before the dialog opens
+      const manageSeatsButton = screen.getByRole('button', {
+        name: /teams.seatAssignment/i,
+      })
       await user.click(manageSeatsButton)
 
-      // The dialog should be rendered (we can't easily test the dialog content without more complex setup)
-      expect(manageSeatsButton).toBeInTheDocument()
+      // Verify the dialog opens by checking for the dialog description
+      await waitFor(() => {
+        expect(
+          screen.getByText('teams.seatAssignmentDescription'),
+        ).toBeInTheDocument()
+      })
     })
   })
 })
