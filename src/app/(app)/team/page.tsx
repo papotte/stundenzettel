@@ -225,6 +225,16 @@ export default function TeamPage() {
     setTeam(updatedTeam)
   }
 
+  const handleTeamDeleted = async () => {
+    // Reset local state immediately, then reload to reflect "no team" state + invitations.
+    setTeam(null)
+    setMembers([])
+    setInvitations([])
+    setSubscription(null)
+    setCurrentUserRole('member')
+    await loadTeamData()
+  }
+
   if (authLoading || pageLoading) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
@@ -334,6 +344,7 @@ export default function TeamPage() {
                       team={team}
                       currentUserRole={currentUserRole}
                       onTeamUpdated={handleTeamUpdated}
+                      onTeamDeleted={handleTeamDeleted}
                     >
                       <Button variant="outline" size="sm">
                         <Settings className="mr-2 h-4 w-4" />
@@ -424,6 +435,7 @@ export default function TeamPage() {
                   subscription={subscription}
                   onSubscriptionUpdate={handleSubscriptionUpdate}
                   onMembersChange={handleMembersChange}
+                  currentUserRole={currentUserRole}
                 />
               </TabsContent>
             </Tabs>

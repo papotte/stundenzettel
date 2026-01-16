@@ -17,6 +17,8 @@ export const mockStripeInstance = {
   },
   subscriptions: {
     list: jest.fn(),
+    retrieve: jest.fn(),
+    update: jest.fn(),
   },
   products: {
     list: jest.fn(),

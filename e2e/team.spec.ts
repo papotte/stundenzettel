@@ -260,6 +260,45 @@ test.describe('Team Page', () => {
       await page.getByRole('button', { name: 'Cancel' }).click()
     })
 
+    test('should delete a team from settings', async ({ page }) => {
+      // Create a team first
+      await page.getByRole('button', { name: 'Create Team' }).click()
+      await page.getByLabel('Team Name').fill('Delete Me Team')
+      await page.getByRole('button', { name: 'Create Team' }).click()
+
+      // Verify team exists
+      await expect(page.getByTestId('team-name')).toHaveText('Delete Me Team')
+
+      // Open team settings
+      await page.getByRole('button', { name: 'Settings' }).click()
+      await expect(
+        page.getByRole('heading', { name: 'Settings' }),
+      ).toBeVisible()
+
+      // Open delete confirmation (AlertDialog)
+      await page.getByRole('button', { name: 'Delete Team' }).click()
+      const alertDialog = page.getByRole('alertdialog')
+      await expect(alertDialog).toBeVisible()
+
+      // Confirm by typing exact team name
+      await alertDialog
+        .getByPlaceholder('Delete Me Team')
+        .fill('Delete Me Team')
+      await alertDialog.getByRole('button', { name: 'Delete Team' }).click()
+
+      // Wait for toast and verify deletion
+      await expect(page.locator('[data-testid="toast-title"]')).toBeVisible()
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Team deleted',
+      )
+
+      // Verify we're back to the "no team" page
+      await expect(page.getByText('No team yet')).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Create Team' }),
+      ).toBeVisible()
+    })
+
     test('should create team and verify subscription tab', async ({ page }) => {
       // Create a team
       await page.getByRole('button', { name: 'Create Team' }).click()

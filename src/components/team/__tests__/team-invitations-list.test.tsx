@@ -3,6 +3,8 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
+import { addMonths } from 'date-fns'
+
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 // Import mocked services
@@ -123,7 +125,7 @@ describe('TeamInvitationsList', () => {
           role: 'member',
           invitedBy: 'user-1',
           invitedAt: new Date('2024-01-01'),
-          expiresAt: new Date('2025-12-31'), // Future date
+          expiresAt: addMonths(new Date(), 1), // Future date relative to today
           status: 'pending',
         },
       ]

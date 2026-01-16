@@ -222,6 +222,60 @@ describe('PaymentService', () => {
       })
     })
 
+    describe('syncTeamWithStripe', () => {
+      it('syncs team with Stripe successfully', async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({}),
+        } as Response)
+
+        await paymentService.syncTeamWithStripe(
+          'user@example.com',
+          'firebase-uid-123',
+          'team123',
+        )
+
+        expect(mockFetch).toHaveBeenCalledWith('/api/sync-team-with-stripe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userEmail: 'user@example.com',
+            firebaseUid: 'firebase-uid-123',
+            teamId: 'team123',
+          }),
+        })
+      })
+
+      it('throws error when API call fails', async () => {
+        mockFetch.mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+        } as Response)
+
+        await expect(
+          paymentService.syncTeamWithStripe(
+            'user@example.com',
+            'firebase-uid-123',
+            'team123',
+          ),
+        ).rejects.toThrow('Failed to sync team with Stripe')
+      })
+
+      it('throws error when network request fails', async () => {
+        mockFetch.mockRejectedValueOnce(new Error('Network Error'))
+
+        await expect(
+          paymentService.syncTeamWithStripe(
+            'user@example.com',
+            'firebase-uid-123',
+            'team123',
+          ),
+        ).rejects.toThrow('Network Error')
+      })
+    })
+
     describe('redirectToCheckout', () => {
       it('redirects to checkout URL', async () => {
         // Mock window.location
