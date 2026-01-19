@@ -1,3 +1,7 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { isSameDay, isSameMonth } from 'date-fns'
+
 import {
   calculateExpectedMonthlyHours,
   calculateWeekCompensatedTime,
@@ -7,9 +11,6 @@ import type { MemberSummary, TeamMember, TimeEntry } from '@/lib/types'
 import { compareEntriesByStartTime, getWeeksForMonth } from '@/lib/utils'
 import { getTimeEntries } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
-
-import { isSameDay, isSameMonth } from 'date-fns'
-import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
   const [memberSummaries, setMemberSummaries] = useState<
