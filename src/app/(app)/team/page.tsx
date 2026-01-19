@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeft,
   CreditCard,
+  FileSpreadsheet,
   Mail,
   Settings,
   UserPlus,
@@ -18,6 +19,7 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamReportsTab } from '@/components/team/team-reports-tab'
 import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
 import { UserInvitationsList } from '@/components/team/user-invitations-list'
@@ -379,6 +381,16 @@ export default function TeamPage() {
                     {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
+                  <TabsTrigger
+                    value="reports"
+                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  >
+                    <FileSpreadsheet className="h-4 w-4" />
+                    {t('reports.tab')}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="subscription"
                   className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
@@ -425,6 +437,12 @@ export default function TeamPage() {
                       />
                     </CardContent>
                   </Card>
+                </TabsContent>
+              )}
+
+              {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+                <TabsContent value="reports">
+                  <TeamReportsTab members={members} />
                 </TabsContent>
               )}
 

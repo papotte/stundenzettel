@@ -23,6 +23,7 @@ export default getRequestConfig(async () => {
       export: (await import(`./messages/${locale}/export.json`)).default,
       settings: (await import(`./messages/${locale}/settings.json`)).default,
       teams: (await import(`./messages/${locale}/teams.json`)).default,
+      reports: (await import(`./messages/${locale}/reports.json`)).default,
       subscription: (await import(`./messages/${locale}/subscription.json`))
         .default,
       special_locations: (

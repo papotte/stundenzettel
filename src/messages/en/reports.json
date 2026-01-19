@@ -1,0 +1,21 @@
+{
+  "title": "Team Reports",
+  "subtitle": "View and export team member timesheets",
+  "monthSelector": "Select Month",
+  "memberName": "Member",
+  "hoursWorked": "Hours Worked",
+  "hoursLeft": "Hours Left",
+  "percentage": "Percentage",
+  "viewReport": "View Report",
+  "backToReports": "Back to Reports",
+  "noData": "No data available",
+  "unauthorized": "You must be a team admin or owner to view reports",
+  "tab": "Reports",
+  "tabDescription": "View and export team member timesheets",
+  "loadingMembers": "Loading team members...",
+  "loadingMemberData": "Loading member data...",
+  "noMembers": "No team members found",
+  "selectMember": "Select a team member to view their report",
+  "viewGrid": "Grid view",
+  "viewList": "List view"
+}

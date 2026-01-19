@@ -2,10 +2,27 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper function to check if requester is admin/owner of a team where target user is a member
+    function isTeamAdminOrOwnerForMember(requesterId, targetUserId) {
+      // Check if requester has a team
+      return exists(/databases/$(database)/documents/user-teams/$(requesterId)) &&
+        // Get the team ID from requester's user-teams document
+        exists(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/user-teams/$(requesterId)).data.teamId)) &&
+        // Check if requester is owner or admin of that team
+        (requesterId == get(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/user-teams/$(requesterId)).data.teamId)).data.ownerId ||
+         (exists(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/user-teams/$(requesterId)).data.teamId)/members/$(requesterId)) &&
+          get(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/user-teams/$(requesterId)).data.teamId)/members/$(requesterId)).data.role in ['owner', 'admin'])) &&
+        // Check if target user is also a member of the same team
+        exists(/databases/$(database)/documents/teams/$(get(/databases/$(database)/documents/user-teams/$(requesterId)).data.teamId)/members/$(targetUserId));
+    }
+
     // Users can only read and write to their own data, stored in a
     // document named after their user ID in the 'users' collection.
+    // Exception: Team owners and admins can read their team members' data for reports
     match /users/{userId}/{documents=**} {
-      allow read, write: if request.auth.uid == userId;
+      allow read: if request.auth.uid == userId ||
+        (request.auth.uid != null && isTeamAdminOrOwnerForMember(request.auth.uid, userId));
+      allow write: if request.auth.uid == userId;
     }
     
     // User-team mappings - users can only access their own mapping

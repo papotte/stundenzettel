@@ -1,0 +1,21 @@
+{
+  "title": "Team-Berichte",
+  "subtitle": "Zeiterfassungen von Teammitgliedern anzeigen und exportieren",
+  "monthSelector": "Monat auswählen",
+  "memberName": "Mitglied",
+  "hoursWorked": "Gearbeitete Stunden",
+  "hoursLeft": "Verbleibende Stunden",
+  "percentage": "Prozent",
+  "viewReport": "Bericht anzeigen",
+  "backToReports": "Zurück zu Berichten",
+  "noData": "Keine Daten verfügbar",
+  "unauthorized": "Sie müssen Team-Administrator oder -Besitzer sein, um Berichte anzuzeigen",
+  "tab": "Berichte",
+  "tabDescription": "Zeiterfassungen von Teammitgliedern anzeigen und exportieren",
+  "loadingMembers": "Teammitglieder werden geladen...",
+  "loadingMemberData": "Mitgliederdaten werden geladen...",
+  "noMembers": "Keine Teammitglieder gefunden",
+  "selectMember": "Wählen Sie ein Teammitglied aus, um dessen Bericht anzuzeigen",
+  "viewGrid": "Rasteransicht",
+  "viewList": "Listenansicht"
+}

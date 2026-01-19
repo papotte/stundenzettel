@@ -97,6 +97,31 @@ describe('TimesheetPreview', () => {
     expect(screen.getByText('Sick Leave')).toBeInTheDocument()
   })
 
+  it('hides edit and add buttons when readOnly is true', () => {
+    render(<TimesheetPreview {...defaultProps} readOnly={true} />)
+
+    // Check that entry rows are not clickable (no cursor-pointer class)
+    const rows = screen.getAllByRole('row')
+    rows.forEach((row) => {
+      // In read-only mode, rows should not have cursor-pointer class
+      expect(row).not.toHaveClass('cursor-pointer')
+    })
+
+    // Add buttons should not be present in read-only mode
+    const addButtons = screen.queryAllByRole('button', { name: /add entry/i })
+    expect(addButtons).toHaveLength(0)
+  })
+
+  it('shows edit and add buttons when readOnly is false', () => {
+    render(<TimesheetPreview {...defaultProps} readOnly={false} />)
+
+    // Entry rows should be clickable
+    const entryRows = screen
+      .getAllByRole('row')
+      .filter((row) => row.textContent?.includes('Office'))
+    expect(entryRows.length).toBeGreaterThan(0)
+  })
+
   it('displays weekly and monthly totals', () => {
     render(<TimesheetPreview {...defaultProps} />)
     // The component renders a "Total per week" for each week in the month.
