@@ -4,7 +4,18 @@ import { createCustomerPortalSession } from '@/services/stripe'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, returnUrl } = await request.json()
+    let userId: string | undefined
+    let returnUrl: string | undefined
+    try {
+      const body = await request.json()
+      userId = body?.userId
+      returnUrl = body?.returnUrl
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid or missing JSON body' },
+        { status: 400 },
+      )
+    }
     const origin = request.nextUrl.origin
     if (!userId) {
       return NextResponse.json(

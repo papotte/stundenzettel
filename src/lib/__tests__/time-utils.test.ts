@@ -171,13 +171,13 @@ const createMonthFilterTestData = () => {
   // Use Date constructor with explicit year, month, day to avoid timezone issues
   // Month is 0-indexed: 6 = July, 7 = August
   const week = [
-    new Date(2025, 6, 28), // Monday (July)
-    new Date(2025, 6, 29), // Tuesday (July)
-    new Date(2025, 6, 30), // Wednesday (July)
-    new Date(2025, 6, 31), // Thursday (July)
-    new Date(2025, 7, 1), // Friday (August)
-    new Date(2025, 7, 2), // Saturday (August)
-    new Date(2025, 7, 3), // Sunday (August)
+    new Date(2025, 6, 28, 12), // Monday (July)
+    new Date(2025, 6, 29, 12), // Tuesday (July)
+    new Date(2025, 6, 30, 12), // Wednesday (July)
+    new Date(2025, 6, 31, 12), // Thursday (July)
+    new Date(2025, 7, 1, 12), // Friday (August)
+    new Date(2025, 7, 2, 12), // Saturday (August)
+    new Date(2025, 7, 3, 12), // Sunday (August)
   ]
 
   const august2025 = new Date(2025, 7, 1)
@@ -197,6 +197,7 @@ describe('calculateWeekCompensatedTime', () => {
   ) => {
     return (day: Date) => {
       const dayKey = day.toISOString().split('T')[0]
+
       return entriesByDay[dayKey] || []
     }
   }

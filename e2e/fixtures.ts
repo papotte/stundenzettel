@@ -7,6 +7,8 @@ import {
   deleteTestUser,
 } from './auth-utils'
 
+const RESEND_STUB = { id: 'e2e-stub' }
+
 type TestFixtures = {
   autoCleanup: void
   loginOrRegisterTestUser: (page: Page) => Promise<void>
@@ -21,6 +23,29 @@ type WorkerFixtures = {
 }
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
+  // Stub Resend-backed API routes so e2e never hits the real Resend SDK
+  page: async ({ page }, use) => {
+    await page.route('**/api/emails/**', (route) =>
+      route.request().method() === 'POST'
+        ? route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(RESEND_STUB),
+          })
+        : route.continue(),
+    )
+    await page.route('**/api/contacts/**', (route) =>
+      ['POST', 'PUT'].includes(route.request().method())
+        ? route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(RESEND_STUB),
+          })
+        : route.continue(),
+    )
+    await use(page)
+  },
+
   // Provide a stable per-worker email so tests in the same worker do not affect other workers
   workerEmail: [
     async ({}, use, workerInfo) => {

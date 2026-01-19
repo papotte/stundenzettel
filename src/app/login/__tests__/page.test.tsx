@@ -9,11 +9,13 @@ import LoginPage from '../page'
 
 // --- MOCKS ---
 const mockPush = jest.fn()
+const mockSearchParams = new URLSearchParams()
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }))
 
 // This mock is crucial. It prevents the real firebase.ts from running and
@@ -63,6 +65,8 @@ describe('LoginPage', () => {
       jest.resetModules()
       // Reset the environment variable for each test if needed
       process.env.NEXT_PUBLIC_ENVIRONMENT = 'production'
+      // Reset search params
+      mockSearchParams.delete('returnUrl')
     })
 
     it('renders sign-in and sign-up tabs', () => {
@@ -209,6 +213,66 @@ describe('LoginPage', () => {
       })
       expect(mockPush).not.toHaveBeenCalled()
     })
+
+    it('redirects to returnUrl after successful login', async () => {
+      const user = userEvent.setup()
+      mockSignInWithEmailAndPassword.mockResolvedValue({})
+
+      // Set returnUrl in search params
+      mockSearchParams.set(
+        'returnUrl',
+        encodeURIComponent('/pricing?plan=individual'),
+      )
+
+      render(<LoginPage />)
+
+      await user.type(
+        screen.getByLabelText('login.emailLabel'),
+        'test@example.com',
+      )
+      await user.type(
+        screen.getByLabelText('login.passwordLabel'),
+        'password123',
+      )
+      await user.click(
+        screen.getByRole('button', { name: 'login.signInButton' }),
+      )
+
+      await waitFor(() => {
+        expect(mockSignInWithEmailAndPassword).toHaveBeenCalledWith(
+          expect.any(Object),
+          'test@example.com',
+          'password123',
+        )
+        expect(mockPush).toHaveBeenCalledWith('/pricing?plan=individual')
+      })
+    })
+
+    it('defaults to /tracker when no returnUrl is provided', async () => {
+      const user = userEvent.setup()
+      mockSignInWithEmailAndPassword.mockResolvedValue({})
+
+      // Ensure returnUrl is not set
+      mockSearchParams.delete('returnUrl')
+
+      render(<LoginPage />)
+
+      await user.type(
+        screen.getByLabelText('login.emailLabel'),
+        'test@example.com',
+      )
+      await user.type(
+        screen.getByLabelText('login.passwordLabel'),
+        'password123',
+      )
+      await user.click(
+        screen.getByRole('button', { name: 'login.signInButton' }),
+      )
+
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith('/tracker')
+      })
+    })
   })
 
   describe('Development/Test Environment', () => {
@@ -217,6 +281,8 @@ describe('LoginPage', () => {
       jest.resetModules()
       // Reset the environment variable for each test if needed
       process.env.NEXT_PUBLIC_ENVIRONMENT = 'development'
+      // Reset search params
+      mockSearchParams.delete('returnUrl')
     })
 
     it('renders mock user selection screen', () => {

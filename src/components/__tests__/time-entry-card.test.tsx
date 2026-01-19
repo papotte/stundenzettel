@@ -51,6 +51,25 @@ describe('TimeEntryCard', () => {
     expect(screen.getByText('08:15:00')).toBeInTheDocument()
   })
 
+  it('renders TIME_OFF_IN_LIEU with em dash (no compensated time)', () => {
+    const toilEntry: TimeEntry = {
+      id: '1',
+      userId: 'user-1',
+      location: 'TIME_OFF_IN_LIEU',
+      startTime: new Date('2024-01-10T09:00:00'),
+      endTime: new Date('2024-01-10T17:00:00'),
+      pauseDuration: 0,
+    }
+    render(
+      <TimeEntryCard entry={toilEntry} onEdit={onEdit} onDelete={onDelete} />,
+    )
+
+    expect(
+      screen.getByText('special_locations.TIME_OFF_IN_LIEU'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
+  })
+
   it('renders a special time entry (Sick Leave) correctly', () => {
     const specialEntry: TimeEntry = {
       ...baseEntry,

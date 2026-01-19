@@ -247,6 +247,41 @@ describe('TimeEntryForm', () => {
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
+  it('displays validation error when location has fewer than 2 characters', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+
+    await user.clear(screen.getByLabelText('time_entry_form.locationLabel'))
+    await user.type(screen.getByLabelText('time_entry_form.locationLabel'), 'A')
+    fireEvent.blur(screen.getByLabelText('time_entry_form.locationLabel'))
+    await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.startTimeLabel'),
+      '09:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '11:00',
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+
+    expect(
+      await screen.findByText('Location must be at least 2 characters.'),
+    ).toBeInTheDocument()
+    expect(mockOnSave).not.toHaveBeenCalled()
+  })
+
   it('fetches and sets location when "Get current location" is clicked', async () => {
     mockedReverseGeocode.mockResolvedValue({ address: '123 Main St' })
     // Mock geolocation API
@@ -331,6 +366,41 @@ describe('TimeEntryForm', () => {
     )
   })
 
+  it('shows 9h pause suggestion (45 min) when work duration exceeds 9 hours', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await user.type(locationInput, 'Long Day')
+    fireEvent.blur(locationInput)
+    await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.startTimeLabel'),
+      '08:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '17:30',
+    ) // 9.5h
+
+    const suggestionButton = await screen.findByRole('button', {
+      name: /45|time_entry_form.pauseSuggestion/i,
+    })
+    await user.click(suggestionButton)
+    expect(screen.getByLabelText('time_entry_form.pauseLabel')).toHaveValue(
+      '00:45',
+    )
+  })
+
   it('should not call onClose when clicking outside the Sheet (pointerDownOutside)', () => {
     render(
       <TestWrapper
@@ -351,6 +421,177 @@ describe('TimeEntryForm', () => {
     expect(mockOnClose).not.toHaveBeenCalled()
     // The form should still be visible
     expect(dialog).toBeVisible()
+  })
+
+  it('displays Total Compensated Time 5h 0m for pause and driver', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await user.type(locationInput, 'Calc Test')
+    fireEvent.blur(locationInput)
+    await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.startTimeLabel'),
+      '08:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '12:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.pauseLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.pauseLabel'),
+      '00:30',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.driverTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.driverTimeLabel'),
+      '1.5',
+    )
+
+    expect(screen.getByText('5h 0m')).toBeInTheDocument()
+  })
+
+  it('displays Total Compensated Time 4h 57m for pause, driver, and passenger', async () => {
+    const user = userEvent.setup()
+    const settingsWithPassenger = {
+      ...mockUserSettings,
+      passengerCompensationPercent: 90,
+      driverCompensationPercent: 100,
+    }
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={settingsWithPassenger}
+      />,
+    )
+
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await user.type(locationInput, 'Calc Test 2')
+    fireEvent.blur(locationInput)
+    await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.startTimeLabel'),
+      '08:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '12:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.pauseLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.pauseLabel'),
+      '00:30',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.driverTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.driverTimeLabel'),
+      '1',
+    )
+    await user.clear(
+      screen.getByLabelText('time_entry_form.passengerTimeLabel'),
+    )
+    await user.type(
+      screen.getByLabelText('time_entry_form.passengerTimeLabel'),
+      '0.5',
+    )
+
+    expect(screen.getByText('4h 57m')).toBeInTheDocument()
+  })
+
+  it('allows 10h entry and shows warning when work duration exceeds 10 hours', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await user.type(locationInput, 'Boundary Test')
+    fireEvent.blur(locationInput)
+    await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.startTimeLabel'),
+      '08:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '18:00',
+    )
+
+    expect(
+      screen.queryByText(
+        /time_entry_form.warning10HoursTitle|Warning: Exceeds 10 Hours/i,
+      ),
+    ).not.toBeInTheDocument()
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+    await waitFor(() => expect(mockOnSave).toHaveBeenCalled())
+
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '19:00',
+    )
+    expect(
+      screen.getByText(
+        /time_entry_form.warning10HoursTitle|Warning: Exceeds 10 Hours/i,
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('allows entry 00:00-01:00 (midnight start)', async () => {
+    const user = userEvent.setup()
+    render(
+      <TestWrapper
+        entry={null}
+        selectedDate={new Date()}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+        userSettings={mockUserSettings}
+      />,
+    )
+
+    const locationInput = screen.getByLabelText('time_entry_form.locationLabel')
+    await user.type(locationInput, 'Midnight Start')
+    fireEvent.blur(locationInput)
+    await user.clear(screen.getByLabelText('time_entry_form.startTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.startTimeLabel'),
+      '00:00',
+    )
+    await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
+    await user.type(
+      screen.getByLabelText('time_entry_form.endTimeLabel'),
+      '01:00',
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
+    )
+
+    await waitFor(() => expect(mockOnSave).toHaveBeenCalled())
   })
 })
 

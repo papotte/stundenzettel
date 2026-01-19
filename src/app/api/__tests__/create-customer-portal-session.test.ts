@@ -150,7 +150,7 @@ describe('/api/create-customer-portal-session', () => {
       })
     })
 
-    it('should handle JSON parsing errors', async () => {
+    it('should return 400 when JSON body is invalid or missing', async () => {
       const request = {
         json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
         nextUrl: { origin: 'http://localhost:3000' },
@@ -158,11 +158,12 @@ describe('/api/create-customer-portal-session', () => {
 
       const response = await POST(request)
 
-      expect(response.status).toBe(500)
+      expect(response.status).toBe(400)
       const responseData = await response.json()
       expect(responseData).toEqual({
-        error: 'Failed to create customer portal session',
+        error: 'Invalid or missing JSON body',
       })
+      expect(mockCreateCustomerPortalSession).not.toHaveBeenCalled()
     })
 
     it('should work without returnUrl parameter', async () => {
