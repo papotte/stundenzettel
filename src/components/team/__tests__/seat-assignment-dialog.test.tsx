@@ -1,6 +1,7 @@
-import { render, screen } from '@jest-setup'
+import { render, screen, waitFor } from '@jest-setup'
 
 import type { Subscription, TeamMember } from '@/lib/types'
+import * as userSettingsService from '@/services/user-settings-service'
 
 import { SeatAssignmentDialog } from '../seat-assignment-dialog'
 
@@ -10,12 +11,19 @@ jest.mock('@/services/team-service', () => ({
   unassignSeat: jest.fn(),
 }))
 
+jest.mock('@/services/user-settings-service', () => ({
+  getDisplayNamesForMembers: jest.fn(),
+}))
+
 // Mock the hooks
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
     toast: jest.fn(),
   }),
 }))
+
+const mockGetDisplayNamesForMembers =
+  userSettingsService.getDisplayNamesForMembers as jest.Mock
 
 const mockMembers: TeamMember[] = [
   {
@@ -75,6 +83,7 @@ describe('SeatAssignmentDialog', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetDisplayNamesForMembers.mockResolvedValue(new Map())
   })
 
   it('renders the dialog with seat assignment information', () => {
@@ -91,16 +100,35 @@ describe('SeatAssignmentDialog', () => {
     expect(screen.getByText('5')).toBeInTheDocument() // Total seats
   })
 
-  it('shows seat status for each member', () => {
+  it('shows seat status for each member', async () => {
     render(<SeatAssignmentDialog {...defaultProps} />)
 
-    // Member without seat assignment
-    expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+    // getDisplayNameForMember returns '' by default, so masked email is shown
+    await waitFor(() => {
+      expect(
+        screen.getAllByText('mem***@example.com').length,
+      ).toBeGreaterThanOrEqual(1)
+    })
     expect(screen.getByText('teams.noSeatAssigned')).toBeInTheDocument()
-
-    // Member with seat assignment
-    expect(screen.getByText('member2@example.com')).toBeInTheDocument()
     expect(screen.getAllByText('teams.seatAssigned')).toHaveLength(2) // member2 and owner
+  })
+
+  it('shows displayName when getDisplayNamesForMembers returns names', async () => {
+    mockGetDisplayNamesForMembers.mockResolvedValue(
+      new Map([
+        ['member1', 'Member One'],
+        ['member2', 'Member Two'],
+        ['owner1', 'Owner One'],
+      ]),
+    )
+
+    render(<SeatAssignmentDialog {...defaultProps} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Member One')).toBeInTheDocument()
+      expect(screen.getByText('Member Two')).toBeInTheDocument()
+      expect(screen.getByText('Owner One')).toBeInTheDocument()
+    })
   })
 
   it('disables assign button when no seats available', () => {
@@ -141,8 +169,8 @@ describe('SeatAssignmentDialog', () => {
   it('shows owner seat required message for owners with assigned seats', () => {
     render(<SeatAssignmentDialog {...defaultProps} />)
 
-    // Owner should show "Owner seat required" instead of unassign button
-    expect(screen.getByText('owner1@example.com')).toBeInTheDocument()
+    // Owner should show "Owner seat required" instead of unassign button (masked email when no memberDisplayNames)
+    expect(screen.getByText('own***@example.com')).toBeInTheDocument()
     expect(screen.getByText('teams.ownerSeatRequired')).toBeInTheDocument()
   })
 })

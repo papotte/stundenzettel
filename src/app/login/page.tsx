@@ -104,6 +104,7 @@ export default function LoginPage() {
       setPendingAuth(false)
       handleSignIn()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleSignIn is omitted to avoid refiring when its identity changes each render; effect runs only when pendingAuth, email, or password change.
   }, [pendingAuth, email, password])
 
   const useMocks = process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'

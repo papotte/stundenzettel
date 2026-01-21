@@ -127,13 +127,12 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
       })
 
       const results = await Promise.all(fetchPromises)
-      const updatedSummaries = new Map(memberSummaries)
 
-      results.forEach(({ memberId, summary }) => {
-        updatedSummaries.set(memberId, summary)
+      setMemberSummaries((prev) => {
+        const next = new Map(prev)
+        results.forEach(({ memberId, summary }) => next.set(memberId, summary))
+        return next
       })
-
-      setMemberSummaries(updatedSummaries)
     }
 
     if (members.length > 0) {
@@ -143,7 +142,9 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
 
   const sortedSummaries = useMemo(() => {
     return Array.from(memberSummaries.values()).sort((a, b) =>
-      a.member.email.localeCompare(b.member.email),
+      (a.userSettings?.displayName ?? a.member.email)
+        .trim()
+        .localeCompare((b.userSettings?.displayName ?? b.member.email).trim()),
     )
   }, [memberSummaries])
 

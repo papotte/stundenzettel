@@ -23,9 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, TeamMember } from '@/lib/types'
+import { maskEmail } from '@/lib/utils'
 import { assignSeat, unassignSeat } from '@/services/team-service'
 
 interface SeatAssignmentDialogProps {
@@ -51,6 +53,7 @@ export function SeatAssignmentDialog({
   const format = useFormatter()
   const { toast } = useToast()
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
+  const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
 
   const totalSeats = subscription?.quantity || 0
   const assignedSeats = members.filter((m) => m.seatAssignment?.isActive).length
@@ -220,7 +223,9 @@ export function SeatAssignmentDialog({
                 {members.map((member) => (
                   <TableRow key={member.id}>
                     <TableCell>
-                      <div className="font-medium">{member.email}</div>
+                      <div className="font-medium">
+                        {displayNames.get(member.id) || maskEmail(member.email)}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">

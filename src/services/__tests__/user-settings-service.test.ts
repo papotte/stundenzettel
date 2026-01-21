@@ -135,4 +135,87 @@ describe('User Settings Service', () => {
       )
     })
   })
+
+  describe('getDisplayNameForMember', () => {
+    it('returns displayName when document exists', async () => {
+      const mockDocRef = {}
+      const mockDocSnap = {
+        exists: () => true,
+        data: () => ({ displayName: '  Jane Doe  ' }),
+      }
+
+      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getDisplayNameForMember('user-1')
+
+      expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef)
+      expect(mockSetDoc).not.toHaveBeenCalled()
+      expect(result).toBe('Jane Doe')
+    })
+
+    it('returns empty string when document does not exist', async () => {
+      const mockDocRef = {}
+      const mockDocSnap = { exists: () => false }
+
+      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
+      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getDisplayNameForMember('user-1')
+
+      expect(result).toBe('')
+    })
+
+    it('returns empty string when userId is empty', async () => {
+      const result = await userSettingsService.getDisplayNameForMember('')
+
+      expect(mockGetDoc).not.toHaveBeenCalled()
+      expect(result).toBe('')
+    })
+
+    it('returns empty string on getDoc error', async () => {
+      mockDoc.mockReturnValue({} as DocumentReference)
+      mockGetDoc.mockRejectedValue(new Error('Permission denied'))
+
+      const result = await userSettingsService.getDisplayNameForMember('user-1')
+
+      expect(result).toBe('')
+    })
+  })
+
+  describe('getDisplayNamesForMembers', () => {
+    it('returns empty Map when memberIds is empty', async () => {
+      const result = await userSettingsService.getDisplayNamesForMembers([])
+
+      expect(result).toEqual(new Map())
+      expect(mockGetDoc).not.toHaveBeenCalled()
+    })
+
+    it('returns Map of id to displayName by calling getDisplayNameForMember for each id', async () => {
+      const refWithId = (id: string) =>
+        ({ _id: id }) as unknown as DocumentReference
+      mockDoc.mockImplementation((_db: unknown, _c: string, id: string) =>
+        refWithId(id),
+      )
+      mockGetDoc.mockImplementation((ref: unknown) => {
+        const id = (ref as { _id?: string })._id
+        return Promise.resolve({
+          exists: () => true,
+          data: () => ({
+            displayName:
+              id === 'user-1' ? 'Alice' : id === 'user-2' ? 'Bob' : '',
+          }),
+        } as unknown as DocumentSnapshot)
+      })
+
+      const result = await userSettingsService.getDisplayNamesForMembers([
+        'user-1',
+        'user-2',
+      ])
+
+      expect(result.get('user-1')).toBe('Alice')
+      expect(result.get('user-2')).toBe('Bob')
+      expect(mockGetDoc).toHaveBeenCalledTimes(2)
+    })
+  })
 })

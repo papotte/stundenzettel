@@ -70,6 +70,7 @@ jest.mock('@/services/time-entry-service', () => ({
 
 jest.mock('@/services/user-settings-service', () => ({
   getUserSettings: jest.fn(),
+  getDisplayNamesForMembers: jest.fn().mockResolvedValue(new Map()),
 }))
 
 jest.mock('@/lib/excel-export', () => ({
