@@ -1,3 +1,10 @@
+## [1.20.3](https://github.com/papotte/stundenzettel/compare/v1.20.2...v1.20.3) (2026-01-21)
+
+
+### Bug Fixes
+
+* setup Java on e2e-tests.yml ([3cc9c27](https://github.com/papotte/stundenzettel/commit/3cc9c27e978ee895bbc0a4860ff714fae3d29a57))
+
 ## [1.20.2](https://github.com/papotte/stundenzettel/compare/v1.20.1...v1.20.2) (2026-01-21)
 
 
