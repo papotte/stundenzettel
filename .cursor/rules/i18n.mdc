@@ -1,0 +1,53 @@
+---
+description: i18n with next-intl – all user-facing text in en, de, es. Use when adding or changing UI copy or translations.
+globs: ["src/messages/**", "src/i18n.ts", "src/lib/i18n/**"]
+---
+
+# i18n (next-intl)
+
+## Rule
+
+**All user-facing messages must be translated** via `next-intl`. No hardcoded user-visible strings in components or pages. **Every key must exist in English, German, and Spanish:** `src/messages/en/`, `src/messages/de/`, `src/messages/es/`.
+
+## Languages
+
+- **en** – English (default)
+- **de** – German (Deutsch)
+- **es** – Spanish (Español)
+
+## Usage in code
+
+- **`useTranslations()`** (client) or **`getTranslations`** (server) from `next-intl`; then `t('namespace.key')` or `t('namespace.key', { var: value })` for interpolation.
+- **Dates and times:** `useFormatter()` and `format.dateTime(value, 'long' | 'short' | 'shortTime' | 'month' | 'monthYear' | 'weekday')` from `src/lib/i18n/formats.ts`.
+
+## Namespaces and files
+
+Keys use `namespace.key`. Namespaces and their files (same name in `en/`, `de/`, `es/`):
+
+- `common` → common.json  
+- `nav` → nav.json  
+- `landing` → landing.json  
+- `login` → login.json  
+- `tracker` → tracker.json  
+- `export` → export.json  
+- `settings` → settings.json  
+- `teams` → teams.json  
+- `reports` → reports.json  
+- `subscription` → subscription.json  
+- `special_locations` → special-locations.json  
+- `time_entry_card` → time-entry-card.json  
+- `time_entry_form` → time-entry-form.json  
+- `toasts` → toasts.json  
+
+If `src/i18n.ts` does not list a namespace, add it there and create the `.json` in all three locale folders.
+
+## Adding or changing a key
+
+1. Add or edit the key in **`src/messages/en/`** in the right namespace file (English as source).
+2. Add or edit the **same key** in **`src/messages/de/`** and **`src/messages/es/`** in the same file.
+3. Use `t('namespace.key')` in the component. For a new namespace, register it in `src/i18n.ts` and add the three JSON files.
+
+## More
+
+- **`docs/i18n-setup.md`** – Full setup, `useFormatter`, new namespaces, new languages, testing.
+- **`src/services/locale.ts`** – Locale persistence. **`language-select.tsx`** – Language switcher.

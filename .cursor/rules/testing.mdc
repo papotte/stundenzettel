@@ -1,0 +1,34 @@
+---
+description: Testing conventions for unit tests (Jest) and E2E tests (Playwright)
+globs: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "e2e/**/*", "**/__tests__/**", "jest.*", "playwright.*"]
+---
+
+# Testing
+
+## Philosophy
+
+- **Coverage:** Aim for **>80%** coverage on any file you change or add. Run `npm run test:ci` to check.
+- **Fewer, stronger cases:** Prefer a small set of tests that cover meaningful behavior over many narrow, repetitive cases. Focus on branches, edge cases, and integration points that matter.
+- **Prefer unit over E2E:** Use Jest for logic, components, hooks, and services. Add E2E only when the flow must be validated in a real browser (e.g. auth, checkout, multi-step forms).
+- **E2E for happy path:** For **new or changed** features, add or update E2E tests so the **happy path** is covered. E2E should catch regressions in critical user flows.
+
+## Unit tests (Jest)
+
+- Location: `**/__tests__/*.test.{ts,tsx}` or colocated `*.test.{ts,tsx}`
+- Config: `jest.config.ts`, `jest.setup.tsx`
+- Run: `npm test` or `npm run test:watch`
+- CI: `npm run test:ci`
+- Use `src/test-utils/` for mocks (auth, Firebase, Stripe)
+
+## E2E tests (Playwright)
+
+- Location: `e2e/**/*.spec.ts`
+- Config: `playwright.config.ts`
+- **Prerequisite:** dev server on port 9003: `npm run dev:test`
+- Run: `npm run test:e2e` or `npm run test:e2e:debug`
+- With emulators: `npm run test:e2e:ci` (starts emulators, runs tests, stops)
+
+## Before commit
+
+- Run `npm test`; confirm coverage stays above 80% for touched files.
+- For new or changed features: add or update E2E for the happy path, then run `npm run test:e2e` (with `npm run dev:test` in another terminal).

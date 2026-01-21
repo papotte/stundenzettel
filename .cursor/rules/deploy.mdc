@@ -1,0 +1,28 @@
+---
+description: Deployment and CI for Firebase (App Hosting, Functions, Firestore). Use @deploy when changing deploy config, CI, or release process.
+---
+
+# Deploy and CI
+
+## Firebase (`firebase.json`)
+
+- **Firestore:** `firestore.rules`, `firestore.indexes.json`; database `timewise` in config.
+- **App Hosting:** `apphosting` block; `rootDir: /`, ignores `node_modules`, `.git`, `functions`. `apphosting.yaml` in project root: `runConfig` (Cloud Run), `env` with `variable`/`secret` for `NEXT_PUBLIC_*`, `STRIPE_*`, `RESEND_*`, `GOOGLE_MAPS_*`, etc.
+- **Functions:** `functions` block; `source: "functions"`. Built with `npm run functions:build`; deploy with `firebase deploy --only functions` or `npm run functions:deploy`.
+- **Emulators:** `emulators` for auth, firestore, functions, ui; ports in `firebase.json`.
+
+## What gets deployed where
+
+- **App Hosting (Next.js):** Built with `npm run build`; deployed via `firebase deploy` (includes apphosting). **Do not manually deploy App Hosting** for production; CI does it.
+- **Functions:** Deployed with `firebase deploy --only functions`. CI deploys on release; for dev/staging you can run that manually.
+- **Firestore rules/indexes:** `firebase deploy --only firestore:rules`, `firebase deploy --only firestore:indexes`. CI may deploy on release; for local/dev, run manually after editing.
+
+## CI (`.github/workflows/`)
+
+- **`deploy.yml`:** Triggered on `release: published` (and some `deploy/*` branches). Runs build, `functions:build`, then `firebase deploy` (App Hosting + Functions). Uses `FIREBASE_TOKEN`, `GCP_SA_KEY`, Stripe secrets. See README for required GitHub secrets.
+- **`ci.yml`:** PRs; lint, test, build. **`main.yml`:** Push to main; full checks + semantic-release. **`e2e-tests.yml`**, **`lint-and-format.yml`**, **`unit-tests.yml`** as per repo.
+
+## Secrets
+
+- **App Hosting:** Set in Firebase (`firebase apphosting:secrets:set NAME`) or via App Hosting UI; listed in `apphosting.yaml` as `secret: NAME`.
+- **GitHub Actions:** `FIREBASE_TOKEN`, `GCP_SA_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, etc. See README and `deploy.yml`.

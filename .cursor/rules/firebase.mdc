@@ -1,0 +1,32 @@
+---
+description: Firebase, Firestore, and Cloud Functions conventions
+globs: ["functions/**", "**/firebase*.ts", "**/firestore*.ts", "firestore.rules", "firestore.indexes.json", "src/lib/firebase.ts"]
+---
+
+# Firebase and Firestore
+
+## Client (Next.js)
+
+- **`src/lib/firebase.ts`** – Exports `db` (Firestore) and `auth`. Uses `NEXT_PUBLIC_ENVIRONMENT`: `test` and `development` connect to **emulators** (Firestore 8080, Auth 9099); `production` uses real Firebase. Database ID: `test-database` for test, or `NEXT_PUBLIC_FIREBASE_DATABASE_ID` or default `''`.
+
+## Services
+
+- **Firestore impls:** `*-service.firestore.ts` (e.g. `time-entry-service.firestore.ts`) hold Firestore logic; main `*-service.ts` delegates. Services use `db` from `@/lib/firebase` (client) or `getFirestore` from `firebase-admin` (Functions).
+
+## Cloud Functions (`functions/`)
+
+- **Entry:** `functions/src/index.ts`. Use **firebase-functions v2**: `onRequest` from `firebase-functions/v2/https`, `onDocumentCreated` / `onDocumentUpdated` from `firebase-functions/v2/firestore`. Use `firebase-functions/logger` (`info`, `error`, `warn`).
+- **Firebase Admin:** `initializeApp()`, `getFirestore(databaseId)`. Use a lazy `getDb()` that respects `NEXT_PUBLIC_ENVIRONMENT` and `NEXT_PUBLIC_FIREBASE_DATABASE_ID` (e.g. `test-database` for test).
+- **Config:** `secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', …]`, `region: 'europe-west1'`. For `onRequest` with raw body (e.g. Stripe webhooks), use `(req as any).rawBody` for signature verification.
+- **Build:** `npm run functions:build`; watch: `npm run functions:build:watch`. Deploy: `npm run functions:deploy` or `firebase deploy --only functions`.
+
+## Firestore rules and indexes
+
+- **`firestore.rules`** – Deploy with `firebase deploy --only firestore:rules`. CI deploys on release; for local/dev use deploy manually.
+- **`firestore.indexes.json`** – Composite indexes. Deploy with `firebase deploy --only firestore:indexes` or as part of firestore deploy.
+
+## Emulators
+
+- **Ports:** Firestore 8080, Auth 9099, Functions 9001, UI 4000.
+- **Commands:** `npm run emulators:start` (with import/export to `emulator-data/`), `npm run emulators:fresh`, `npm run emulator:seed`, `npm run emulator:seed:ci`. E2E: `npm run test:e2e:ci` starts emulators, runs Playwright, then stops.
+- **Docs:** `docs/FIRESTORE_MIGRATION.md` for emulator setup and usage.

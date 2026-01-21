@@ -16,6 +16,7 @@
   - [CI/CD with GitHub Actions](#cicd-with-github-actions)
 - **Other**
   - [Internationalization (i18n)](#internationalization--i18n-)
+  - [Working with AI companions](#working-with-ai-companions)
   - [Troubleshooting](#troubleshooting)
 
 A Next.js application for effortless time tracking, designed for Firebase Studio.
@@ -412,6 +413,19 @@ return <h1>{t('common.appName')}</h1>
 ```
 
 **For complete documentation:** See [docs/i18n-setup.md](./docs/i18n-setup.md)
+
+---
+
+## Working with AI companions
+
+The repo includes config so AI assistants (e.g. **Cursor**, **GitHub Copilot**) behave consistently with the project:
+
+- **`.github/copilot-instructions.md`** – Setup, commands, conventions, and validation scenarios. Used by GitHub Copilot; also the main reference for Cursor and other tools.
+- **`.cursor/rules/`**, **`.cursorrules`** (Cursor) – Project rules: `project-context` (always on); `testing`, `pull-requests`, `api`, `firebase`, `stripe`, `i18n` (auto-attached when editing those areas); `migrations`, `deploy` (manual: @-mention when needed). **`.cursor/tasks/create-pull-request.md`** describes how to generate a PR description from `.github/pull_request_template.md` using the diff against `origin/main`.
+- **`.cursorignore`** (Cursor) – Excludes `node_modules`, build output, tests artifacts, env files, and secrets from indexing and AI context.
+- **`.vscode/`** – `settings.json` (format-on-save, Prettier, ESLint, search exclusions) and `extensions.json` (recommended: ESLint, Prettier, Tailwind, Firebase, Playwright). Applies in Cursor and VS Code.
+
+For full setup and commands, see [.github/copilot-instructions.md](./.github/copilot-instructions.md). In Cursor, install the recommended extensions when prompted.
 
 ---
 

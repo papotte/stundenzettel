@@ -1,0 +1,40 @@
+---
+description: Project context and conventions for TimeWise Tracker (Stundenzettel)
+alwaysApply: true
+---
+
+# TimeWise Tracker – Project Context
+
+TimeWise Tracker is a **Next.js 15** time-tracking app with **Firebase** (Firestore, Functions, App Hosting) and **Stripe**. It supports individual and team tracking with subscription management.
+
+## Requirements
+
+- **Node.js 22** – `package.json` enforces it. Do not use older versions.
+- **Key commands before commit:** `npm run format`, `npm run lint`, `npm run functions:lint`, `npm run typecheck`, `npm test`
+
+## Pull requests
+
+- **Always** use `.github/pull_request_template.md` when creating PR descriptions.
+- Use the **Create Pull Request** task in `.cursor/tasks/create-pull-request.md` to generate a description from the template.
+- Compare against `origin/main` when describing changes.
+
+## Conventions
+
+- **Commits & PR titles:** conventional commits only: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `perf:`, `test:`, `build:`, `ci:`, `chore:`, `revert:`. Required for semantic-release.
+- **i18n:** All user-facing text goes through `next-intl`. No hardcoded UI strings. Every key must exist in **en, de, and es** (`src/messages/{en,de,es}/`). See `.cursor/rules/i18n.mdc` and `docs/i18n-setup.md`.
+
+## Structure
+
+- `src/app/` – Next.js App Router
+- `src/components/` – React components (incl. `ui/`, `team/`)
+- `src/lib/` – utils, Firebase, auth, time helpers
+- `src/hooks/`, `src/services/` – React hooks and API/Firebase services
+- `functions/` – Firebase Cloud Functions
+- `e2e/` – Playwright E2E tests
+- `docs/` – project docs
+
+## More detail
+
+- **Full setup, commands, validation:** `.github/copilot-instructions.md`
+- **Payments:** `docs/PAYMENT_SETUP.md`
+- **Teams & subscriptions:** `docs/TEAM_AND_SUBSCRIPTION.md`

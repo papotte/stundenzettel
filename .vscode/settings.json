@@ -5,5 +5,37 @@
   "playwright.reuseBrowser": false,
   "playwright.showTrace": false,
   "testing.automaticallyOpenPeekView": "never",
-  "jest.runMode": "on-demand"
+  "jest.runMode": "on-demand",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "files.associations": {
+    "*.mdc": "markdown"
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/emulator-data": true,
+    "**/playwright-report": true,
+    "**/test-results": true,
+    "**/.next": true
+  }
 }

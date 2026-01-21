@@ -1,0 +1,19 @@
+---
+description: Firestore rules, indexes, emulator seeding, and one-off data scripts. Use @migrations when changing schema, rules, or emulator data.
+---
+
+# Migrations
+
+## Firestore rules and indexes
+
+- **Rules:** Edit **`firestore.rules`**; deploy with `firebase deploy --only firestore:rules`. Document non-obvious access changes in a PR or in `docs/` as needed.
+- **Indexes:** Edit **`firestore.indexes.json`** for composite indexes; deploy with `firebase deploy --only firestore:indexes` (or as part of firestore deploy). Document new indexes if non-obvious.
+
+## Emulator and seeding
+
+- **Emulator data:** `emulator-data/` is in `.gitignore`. Use `npm run emulators:start` (import/export to `emulator-data/`), `npm run emulators:fresh` for a clean start.
+- **Seeding:** `scripts/seed-emulator.js`; `npm run emulator:seed` or `npm run emulator:seed:ci` for CI. See **`docs/FIRESTORE_MIGRATION.md`** for emulator setup and flow.
+
+## One-off data scripts
+
+- Scripts in **`scripts/`** (e.g. for Firestore or Stripe) are run from the project root. Use Firebase Admin or the appropriate SDK; do not commit secrets. Document what the script does and how to run it in the PR or in `scripts/README.md`.

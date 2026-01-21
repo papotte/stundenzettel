@@ -49,7 +49,6 @@ next-env.d.ts
 # project IDX
 /.firebase/
 /.idx/
-/.vscode/
 /*-debug.log
 /google-application-credentials.json
 

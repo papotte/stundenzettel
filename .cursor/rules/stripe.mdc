@@ -1,0 +1,28 @@
+---
+description: Stripe integration patterns – services, API routes, webhooks, and products/prices
+globs: ["**/stripe/**", "**/payment*", "**/subscription*", "src/app/api/stripe/**", "src/app/api/create-checkout-session/**", "src/app/api/create-customer-portal-session/**", "src/app/api/create-team-checkout-session/**", "src/app/api/sync-team-with-stripe/**", "src/app/api/subscriptions/**"]
+---
+
+# Stripe
+
+## Services (`src/services/stripe/`)
+
+- **Exports:** `checkout`, `team-checkout`, `customer-portal`, `products`, `subscriptions`, `user-sync`, `utils`. Import from `@/services/stripe`.
+- **Client:** `new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-06-30.basil' })`. Use the same `apiVersion` in Functions.
+- **Customer metadata:** `firebase_uid` (required for webhooks); `team_id` for team subscriptions. Set when creating/updating customers and in checkout/team-checkout.
+- **Price IDs:** From env: `NEXT_PUBLIC_STRIPE_INDIVIDUAL_MONTHLY_PRICE_ID`, `NEXT_PUBLIC_STRIPE_TEAM_MONTHLY_PRICE_ID`, etc. Do not hardcode. Use `getPriceTrialInfo(priceId)` from `utils` for trial info; `NEXT_PUBLIC_STRIPE_TRIAL_ENABLED` can disable trials.
+
+## API routes
+
+- **Checkout / portal / team / sync:** `create-checkout-session`, `create-customer-portal-session`, `create-team-checkout-session`, `sync-team-with-stripe`, `stripe/products`, `subscriptions/[userId]`. They accept `userId`, `userEmail`, `priceId`, `teamId`, etc. in the body; validate and call the corresponding service. Return `{ error }` with 400/500 on failure.
+
+## Webhook (Functions)
+
+- **Handler:** `stripeWebhook` in `functions/src/index.ts`. Uses `onRequest` with `cors: false`, `secrets: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'NEXT_PUBLIC_FIREBASE_DATABASE_ID']`, `region: 'europe-west1'`.
+- **Verification:** `stripe.webhooks.constructEvent((req as any).rawBody, sig, endpointSecret)`. Require `stripe-signature` header; return 400 if missing or invalid.
+- **Events:** `customer.subscription.created|updated|deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`. Use `customer.metadata.firebase_uid` and `team_id` to route to `users/{uid}/subscription` or `teams/{teamId}/subscription` and `payments` subcollections.
+
+## Test vs live
+
+- **Test keys:** `pk_test_`, `sk_test_`, `whsec_` (test webhook secret). Use for dev and emulators.
+- **Products/prices:** Create in Stripe Dashboard (test and live). Reference via env only. See `docs/PAYMENT_SETUP.md` and `scripts/SUBSCRIPTION_TESTING_GUIDE.md`.

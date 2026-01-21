@@ -1,0 +1,7 @@
+# TimeWise Tracker – Cursor
+
+Use **.cursor/rules/** for project rules (`.mdc` files). `project-context` is always on; `api`, `firebase`, `stripe`, `i18n`, `testing`, `pull-requests` apply by path; `migrations` and `deploy` are for @-mention when needed.
+
+For full setup, commands, and validation scenarios, see **.github/copilot-instructions.md**.
+
+**PRs:** Always use `.github/pull_request_template.md`; see `.cursor/tasks/create-pull-request.md` for the "Create Pull Request" workflow.

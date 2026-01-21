@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+package-lock.json
+
+# Build and output
+.next/
+out/
+build/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+google-application-credentials.json
+
+# Firebase
+.firebase/
+.idx/
+emulator-data/
+firebase-export-*/
+functions/firebase-debug.log
+
+# IDE and debug
+.idea/
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*-debug.log
+
+# Misc
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
