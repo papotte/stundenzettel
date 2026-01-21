@@ -1,3 +1,15 @@
+# [1.20.0](https://github.com/papotte/stundenzettel/compare/v1.19.0...v1.20.0) (2026-01-21)
+
+
+### Bug Fixes
+
+* mask user emails ([30624b1](https://github.com/papotte/stundenzettel/commit/30624b168ba51d99d8e6c0e453af59975f33a618))
+
+
+### Features
+
+* add password visibility toggle to login/registration forms ([#148](https://github.com/papotte/stundenzettel/issues/148)) ([dfc3302](https://github.com/papotte/stundenzettel/commit/dfc330278b2e1f4ecb9382e1a5a1df5a747dd456))
+
 # [1.19.0](https://github.com/papotte/stundenzettel/compare/v1.18.0...v1.19.0) (2026-01-21)
 
 
