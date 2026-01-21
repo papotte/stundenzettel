@@ -87,9 +87,13 @@ jest.mock('next/server', () => ({
 const messages = {
   landing: {
     features: {
+      keyFeatures: 'Key Features',
+      headerTitle: 'Everything you need',
+      headerDescription:
+        'TimeWise Tracker is packed with features designed to make your time tracking as effortless and accurate as possible.',
       list: {
-        feature1: 'Feature 1',
-        feature2: 'Feature 2',
+        feature1: { title: 'Feature 1', desc: 'Desc 1' },
+        feature2: { title: 'Feature 2', desc: 'Desc 2' },
       },
     },
     faqs: [],

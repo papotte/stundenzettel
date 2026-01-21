@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { Button, SubscriptionGuardButton } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 
 import TimeEntryForm from './time-entry-form'

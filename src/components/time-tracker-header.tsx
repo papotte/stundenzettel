@@ -4,7 +4,7 @@ import { FileSpreadsheet } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
-import { SubscriptionGuardButton } from '@/components/ui/button'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 
 import TimeWiseIcon from './time-wise-icon'
 import UserMenu from './user-menu'

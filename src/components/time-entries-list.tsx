@@ -3,9 +3,9 @@ import React from 'react'
 import { isSameDay } from 'date-fns'
 import { useTranslations } from 'next-intl'
 
-import { SubscriptionGuardButton } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { formatHoursAndMinutes } from '@/lib/utils'
 
