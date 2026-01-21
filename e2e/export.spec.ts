@@ -49,9 +49,13 @@ test.describe('Export Page', () => {
     expect(await download.path()).toBeTruthy()
     expect(download.suggestedFilename()).toMatch(/\.xlsx$/)
 
-    const currentMonth = await page.locator('h2').textContent()
+    const currentMonth = await page
+      .getByTestId('export-preview-month')
+      .textContent()
     await page.getByTestId('export-preview-next-month-button').click()
-    const nextMonth = await page.locator('h2').textContent()
+    const nextMonth = await page
+      .getByTestId('export-preview-month')
+      .textContent()
     expect(currentMonth).not.toEqual(nextMonth)
   })
 
