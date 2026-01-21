@@ -1,8 +1,11 @@
-import { getStripeProducts } from '@/services/stripe'
+import { getStripeProducts } from '@/services/stripe/products'
 import {
   getMockStripeInstance,
   setupStripeEnv,
 } from '@/test-utils/stripe-mocks'
+
+// Avoid loading Next.js cache runtime in Jest (TextEncoder, etc.)
+jest.mock('next/cache', () => ({ cacheLife: () => {}, cacheTag: () => {} }))
 
 // Mock Stripe module with shared mock instance
 jest.mock('stripe', () => {

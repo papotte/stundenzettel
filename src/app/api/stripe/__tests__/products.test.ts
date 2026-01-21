@@ -1,14 +1,16 @@
-import * as stripeProductsService from '@/services/stripe/products'
+import type { StripeProduct } from '@/services/stripe/products'
+import * as stripeProducts from '@/services/stripe/products'
 
 import { GET } from '../products/route'
 
-// Mock the Stripe products service
+// Mock the Stripe products service (route uses getCachedStripeProducts)
 jest.mock('@/services/stripe/products', () => ({
+  getCachedStripeProducts: jest.fn(),
   getStripeProducts: jest.fn(),
 }))
 
-const mockGetStripeProducts = jest.mocked(
-  stripeProductsService.getStripeProducts,
+const mockGetCachedStripeProducts = jest.mocked(
+  stripeProducts.getCachedStripeProducts,
 )
 
 describe('/api/stripe/products', () => {
@@ -51,35 +53,37 @@ describe('/api/stripe/products', () => {
             },
           ],
         },
-      ] as stripeProductsService.StripeProduct[]
+      ] as StripeProduct[]
 
-      mockGetStripeProducts.mockResolvedValue(mockProducts)
+      mockGetCachedStripeProducts.mockResolvedValue(mockProducts)
 
       const response = await GET()
 
-      expect(mockGetStripeProducts).toHaveBeenCalledWith()
+      expect(mockGetCachedStripeProducts).toHaveBeenCalledWith()
       expect(response.status).toBe(200)
       const responseData = await response.json()
       expect(responseData).toEqual(mockProducts)
     })
 
     it('should return empty array when no products exist', async () => {
-      mockGetStripeProducts.mockResolvedValue([])
+      mockGetCachedStripeProducts.mockResolvedValue([])
 
       const response = await GET()
 
-      expect(mockGetStripeProducts).toHaveBeenCalledWith()
+      expect(mockGetCachedStripeProducts).toHaveBeenCalledWith()
       expect(response.status).toBe(200)
       const responseData = await response.json()
       expect(responseData).toEqual([])
     })
 
     it('should handle service errors gracefully', async () => {
-      mockGetStripeProducts.mockRejectedValue(new Error('Stripe API error'))
+      mockGetCachedStripeProducts.mockRejectedValue(
+        new Error('Stripe API error'),
+      )
 
       const response = await GET()
 
-      expect(mockGetStripeProducts).toHaveBeenCalledWith()
+      expect(mockGetCachedStripeProducts).toHaveBeenCalledWith()
       expect(response.status).toBe(500)
       const responseData = await response.json()
       expect(responseData).toEqual({
@@ -88,11 +92,11 @@ describe('/api/stripe/products', () => {
     })
 
     it('should handle unknown errors', async () => {
-      mockGetStripeProducts.mockRejectedValue('Unknown error')
+      mockGetCachedStripeProducts.mockRejectedValue('Unknown error')
 
       const response = await GET()
 
-      expect(mockGetStripeProducts).toHaveBeenCalledWith()
+      expect(mockGetCachedStripeProducts).toHaveBeenCalledWith()
       expect(response.status).toBe(500)
       const responseData = await response.json()
       expect(responseData).toEqual({
@@ -102,11 +106,11 @@ describe('/api/stripe/products', () => {
 
     it('should handle errors without message property', async () => {
       const errorWithoutMessage = {}
-      mockGetStripeProducts.mockRejectedValue(errorWithoutMessage)
+      mockGetCachedStripeProducts.mockRejectedValue(errorWithoutMessage)
 
       const response = await GET()
 
-      expect(mockGetStripeProducts).toHaveBeenCalledWith()
+      expect(mockGetCachedStripeProducts).toHaveBeenCalledWith()
       expect(response.status).toBe(500)
       const responseData = await response.json()
       expect(responseData).toEqual({
@@ -115,11 +119,11 @@ describe('/api/stripe/products', () => {
     })
 
     it('should handle null error', async () => {
-      mockGetStripeProducts.mockRejectedValue(null)
+      mockGetCachedStripeProducts.mockRejectedValue(null)
 
       const response = await GET()
 
-      expect(mockGetStripeProducts).toHaveBeenCalledWith()
+      expect(mockGetCachedStripeProducts).toHaveBeenCalledWith()
       expect(response.status).toBe(500)
       const responseData = await response.json()
       expect(responseData).toEqual({

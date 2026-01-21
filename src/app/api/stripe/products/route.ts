@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 
-import { getStripeProducts } from '@/services/stripe/products'
+import { getCachedStripeProducts } from '@/services/stripe/products'
 
 export async function GET() {
   try {
-    const products = await getStripeProducts()
+    const products = await getCachedStripeProducts()
     return NextResponse.json(products)
   } catch (error: unknown) {
     const errorMessage =
