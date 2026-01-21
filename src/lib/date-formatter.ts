@@ -21,6 +21,7 @@ const formatMap = {
   month: 'MMMM', // January
   monthYear: 'MMMM yyyy', // January 2024
   yearMonth: 'yyyy/M', // 2024/01
+  yearMonthISO: 'yyyy-MM', // 2024-01 (ISO format for URL params)
   weekday: 'EEE', // Mon
 } as const
 

@@ -35,6 +35,7 @@ interface TimesheetPreviewProps {
   getLocationDisplayName: (location: string) => string
   onEdit: (entry: TimeEntry) => void
   onAdd: (date: Date) => void
+  readOnly?: boolean
 }
 
 export default function TimesheetPreview({
@@ -45,6 +46,7 @@ export default function TimesheetPreview({
   getLocationDisplayName,
   onEdit,
   onAdd,
+  readOnly = false,
 }: TimesheetPreviewProps) {
   const t = useTranslations()
   const format = useFormatter()
@@ -206,15 +208,17 @@ export default function TimesheetPreview({
                           </TableCell>
                           <TableCell className="group relative cursor-default border-r border-black text-right align-middle print:p-1">
                             {format.dateTime(day, 'short')}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 print:hidden"
-                              onClick={() => onAdd(day)}
-                            >
-                              <Plus className="h-4 w-4" />
-                              <span className="sr-only">Add entry</span>
-                            </Button>
+                            {!readOnly && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 print:hidden"
+                                onClick={() => onAdd(day)}
+                              >
+                                <Plus className="h-4 w-4" />
+                                <span className="sr-only">Add entry</span>
+                              </Button>
+                            )}
                           </TableCell>
                           <TableCell className="border-r border-black text-left text-muted-foreground print:p-1"></TableCell>
                           <TableCell className="text-right print:p-1"></TableCell>
@@ -272,8 +276,10 @@ export default function TimesheetPreview({
                       return (
                         <TableRow
                           key={entry.id}
-                          className="cursor-pointer border-b border-black last:border-b-0 hover:bg-muted/50"
-                          onClick={() => onEdit(entry)}
+                          className={`border-b border-black last:border-b-0 ${
+                            readOnly ? '' : 'cursor-pointer hover:bg-muted/50'
+                          }`}
+                          onClick={readOnly ? undefined : () => onEdit(entry)}
                           data-testid={dayTestId}
                         >
                           {entryIndex === 0 && (
@@ -287,23 +293,29 @@ export default function TimesheetPreview({
                           )}
                           {entryIndex === 0 && (
                             <TableCell
-                              onClick={(e) => e.stopPropagation()}
+                              onClick={
+                                readOnly
+                                  ? undefined
+                                  : (e) => e.stopPropagation()
+                              }
                               rowSpan={dayEntries.length}
                               className="group relative cursor-default border-r border-black text-right align-middle print:p-1"
                             >
                               {format.dateTime(day, 'short')}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 print:hidden"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onAdd(day)
-                                }}
-                              >
-                                <Plus className="h-4 w-4" />
-                                <span className="sr-only">Add entry</span>
-                              </Button>
+                              {!readOnly && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 print:hidden"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onAdd(day)
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                  <span className="sr-only">Add entry</span>
+                                </Button>
+                              )}
                             </TableCell>
                           )}
                           <TableCell className="border-r border-black text-left print:p-1">

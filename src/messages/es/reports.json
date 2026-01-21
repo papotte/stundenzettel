@@ -1,0 +1,21 @@
+{
+  "title": "Informes del equipo",
+  "subtitle": "Ver y exportar hojas de tiempo de los miembros del equipo",
+  "monthSelector": "Seleccionar mes",
+  "memberName": "Miembro",
+  "hoursWorked": "Horas trabajadas",
+  "hoursLeft": "Horas restantes",
+  "percentage": "Porcentaje",
+  "viewReport": "Ver informe",
+  "backToReports": "Volver a informes",
+  "noData": "No hay datos disponibles",
+  "unauthorized": "Debe ser administrador o propietario del equipo para ver informes",
+  "tab": "Informes",
+  "tabDescription": "Ver y exportar hojas de tiempo de los miembros del equipo",
+  "loadingMembers": "Cargando miembros del equipo...",
+  "loadingMemberData": "Cargando datos del miembro...",
+  "noMembers": "No se encontraron miembros del equipo",
+  "selectMember": "Seleccione un miembro del equipo para ver su informe",
+  "viewGrid": "Vista de cuadrícula",
+  "viewList": "Vista de lista"
+}

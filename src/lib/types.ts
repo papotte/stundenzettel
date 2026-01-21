@@ -127,6 +127,16 @@ export interface TeamInvitation {
   status: 'pending' | 'accepted' | 'expired'
 }
 
+export interface MemberSummary {
+  member: TeamMember
+  hoursWorked: number
+  overtime: number
+  percentage: number
+  isLoading: boolean
+  userSettings: UserSettings | null
+  entries: TimeEntry[]
+}
+
 // User Profile with Subscription
 export interface UserProfile extends AuthenticatedUser {
   subscription?: Subscription

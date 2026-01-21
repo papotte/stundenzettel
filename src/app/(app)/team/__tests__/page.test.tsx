@@ -20,6 +20,8 @@ import {
   getUserInvitations,
   getUserTeam,
 } from '@/services/team-service'
+import { getTimeEntries } from '@/services/time-entry-service'
+import { getUserSettings } from '@/services/user-settings-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import TeamPage from '../page'
@@ -59,6 +61,19 @@ jest.mock('@/hooks/use-user-invitations', () => ({
   useUserInvitations: () => ({
     refreshInvitations: jest.fn(),
   }),
+}))
+
+// Mock services needed by team reports components
+jest.mock('@/services/time-entry-service', () => ({
+  getTimeEntries: jest.fn(),
+}))
+
+jest.mock('@/services/user-settings-service', () => ({
+  getUserSettings: jest.fn(),
+}))
+
+jest.mock('@/lib/excel-export', () => ({
+  exportToExcel: jest.fn(),
 }))
 
 const mockRouter = {
@@ -156,6 +171,13 @@ describe('TeamPage', () => {
     ;(getTeamInvitations as jest.Mock).mockResolvedValue([])
     ;(getUserInvitations as jest.Mock).mockResolvedValue([])
     ;(getTeamSubscription as jest.Mock).mockResolvedValue(null)
+    ;(getTimeEntries as jest.Mock).mockResolvedValue([])
+    ;(getUserSettings as jest.Mock).mockResolvedValue({
+      displayName: 'Test User',
+      expectedMonthlyHours: 160,
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 90,
+    })
   })
 
   describe('Authentication', () => {
