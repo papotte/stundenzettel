@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/papotte/stundenzettel/compare/v1.18.0...v1.19.0) (2026-01-21)
+
+
+### Features
+
+* add Team Reports to admin view ([#157](https://github.com/papotte/stundenzettel/issues/157)) ([4842036](https://github.com/papotte/stundenzettel/commit/4842036897a1ad5a75ac69d27753b95980dd96c0))
+
 # [1.18.0](https://github.com/papotte/stundenzettel/compare/v1.17.3...v1.18.0) (2026-01-21)
 
 
