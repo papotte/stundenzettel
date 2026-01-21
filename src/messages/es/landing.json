@@ -41,6 +41,7 @@
     "title": "Elige tu plan",
     "subtitle": "Selecciona el plan perfecto para tus necesidades de seguimiento de tiempo",
     "loadingPlans": "Cargando planes...",
+    "noPlans": "No hay planes de precios disponibles.",
     "monthly": "Mensual",
     "yearly": "Anual",
     "save20": "Ahorra 20%",

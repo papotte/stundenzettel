@@ -5,23 +5,17 @@ import userEvent from '@testing-library/user-event'
 
 import type { PricingPlan } from '@/lib/types'
 // Mock the services
-import {
-  _resetPricingPlansCacheForTest,
-  getPricingPlans,
-  paymentService,
-} from '@/services/payment-service'
+import { paymentService } from '@/services/payment-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import PricingSection from '../pricing-section'
 
 // Mock the payment service
 jest.mock('@/services/payment-service', () => ({
-  getPricingPlans: jest.fn(),
   paymentService: {
     createCheckoutSession: jest.fn(),
     redirectToCheckout: jest.fn(),
   },
-  _resetPricingPlansCacheForTest: jest.fn(),
 }))
 
 // Mock window.location
@@ -35,9 +29,6 @@ Object.defineProperty(window, 'location', {
   writable: true,
 })
 
-const mockGetPricingPlans = getPricingPlans as jest.MockedFunction<
-  typeof getPricingPlans
->
 const mockCreateCheckoutSession =
   paymentService.createCheckoutSession as jest.MockedFunction<
     typeof paymentService.createCheckoutSession
@@ -103,54 +94,32 @@ describe('PricingSection', () => {
     mockAuthContext.loading = false
     mockLocation.href = ''
     mockLocation.search = ''
-    _resetPricingPlansCacheForTest()
   })
 
   describe('Plan Loading', () => {
-    it('shows loading state while fetching plans', async () => {
-      mockGetPricingPlans.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      )
-
+    it('shows empty state when no plans', () => {
       renderWithProviders(<PricingSection />)
 
-      expect(
-        screen.getByText('landing.pricing.loadingPlans'),
-      ).toBeInTheDocument()
-      expect(screen.getByTestId('loading-icon')).toBeInTheDocument()
+      expect(screen.getByText('landing.pricing.noPlans')).toBeInTheDocument()
     })
 
-    it('displays pricing plans when loaded successfully', async () => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
-
-      renderWithProviders(<PricingSection />)
+    it('displays pricing plans when plans is provided', async () => {
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
         expect(screen.getByText('Team Monthly')).toBeInTheDocument()
       })
     })
-
-    it('handles plan loading errors gracefully', async () => {
-      mockGetPricingPlans.mockRejectedValue(new Error('Failed to load plans'))
-
-      renderWithProviders(<PricingSection />)
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText('landing.pricing.loadingPlans'),
-        ).not.toBeInTheDocument()
-      })
-    })
   })
 
   describe('Billing Toggle', () => {
-    beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
-    })
-
     it('shows monthly plans by default', async () => {
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -160,7 +129,9 @@ describe('PricingSection', () => {
 
     it('toggles between monthly and yearly plans', async () => {
       const user = userEvent.setup()
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -191,7 +162,9 @@ describe('PricingSection', () => {
 
     it('shows save badge when yearly is selected', async () => {
       const user = userEvent.setup()
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -210,15 +183,13 @@ describe('PricingSection', () => {
   })
 
   describe('Subscription Flow', () => {
-    beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
-    })
-
     it('redirects unauthenticated users to login when subscribing', async () => {
       const user = userEvent.setup()
       mockAuthContext.user = null
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -246,7 +217,9 @@ describe('PricingSection', () => {
       })
       mockRedirectToCheckout.mockResolvedValue(undefined)
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -280,7 +253,9 @@ describe('PricingSection', () => {
       })
       mockCreateCheckoutSession.mockRejectedValue(new Error('Checkout failed'))
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -303,7 +278,9 @@ describe('PricingSection', () => {
         email: 'test@example.com',
       })
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Team Monthly')).toBeInTheDocument()
@@ -319,12 +296,10 @@ describe('PricingSection', () => {
   })
 
   describe('Component Variants', () => {
-    beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
-    })
-
     it('hides header when showHeader is false', async () => {
-      renderWithProviders(<PricingSection showHeader={false} />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} showHeader={false} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -339,7 +314,9 @@ describe('PricingSection', () => {
     })
 
     it('hides FAQ when showFAQ is false', async () => {
-      renderWithProviders(<PricingSection showFAQ={false} />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} showFAQ={false} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -362,7 +339,9 @@ describe('PricingSection', () => {
         () => new Promise(() => {}), // Never resolves
       )
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -388,7 +367,9 @@ describe('PricingSection', () => {
         email: 'test@example.com',
       })
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Team Monthly')).toBeInTheDocument()
@@ -413,7 +394,9 @@ describe('PricingSection', () => {
       })
       mockCreateCheckoutSession.mockRejectedValue(new Error('Payment failed'))
 
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -436,12 +419,10 @@ describe('PricingSection', () => {
   })
 
   describe('Accessibility', () => {
-    beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
-    })
-
     it('has proper ARIA labels for billing toggle', async () => {
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()
@@ -459,7 +440,9 @@ describe('PricingSection', () => {
     })
 
     it('has proper button roles for subscription actions', async () => {
-      renderWithProviders(<PricingSection />)
+      renderWithProviders(
+        <PricingSection plans={mockPricingPlans} />,
+      )
 
       await waitFor(() => {
         expect(screen.getByText('Individual Monthly')).toBeInTheDocument()

@@ -41,6 +41,7 @@
     "title": "Choose Your Plan",
     "subtitle": "Select the perfect plan for your time tracking needs",
     "loadingPlans": "Loading plans...",
+    "noPlans": "No pricing plans available.",
     "monthly": "Monthly",
     "yearly": "Yearly",
     "save20": "Save 20%",

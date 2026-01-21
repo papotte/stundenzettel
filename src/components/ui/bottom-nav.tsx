@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { SubscriptionGuardButton } from '@/components/ui/button'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 
 const navItems = [
   {

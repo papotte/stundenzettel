@@ -3,7 +3,7 @@ import React from 'react'
 import { isSameDay } from 'date-fns'
 import { useTranslations } from 'next-intl'
 
-import { SubscriptionGuardButton } from '@/components/ui/button'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'

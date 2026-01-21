@@ -8,7 +8,8 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-import { Button, SubscriptionGuardButton } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,

@@ -60,7 +60,7 @@ Use the `SubscriptionGuardButton` component anywhere you want a button to be ena
 **Example:**
 
 ```tsx
-import { SubscriptionGuardButton } from '@/components/ui/button'
+import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 
 ;<SubscriptionGuardButton onClick={handleExport}>
   <DownloadIcon /> Export

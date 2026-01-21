@@ -41,6 +41,7 @@
     "title": "Wählen Sie Ihren Tarif",
     "subtitle": "Wählen Sie den perfekten Tarif für Ihre Zeiterfassungsbedürfnisse",
     "loadingPlans": "Tarife werden geladen...",
+    "noPlans": "Keine Tarife verfügbar.",
     "monthly": "Monatlich",
     "yearly": "Jährlich",
     "save20": "20% sparen",
