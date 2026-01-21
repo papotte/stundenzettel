@@ -1,3 +1,10 @@
+## [1.20.1](https://github.com/papotte/stundenzettel/compare/v1.20.0...v1.20.1) (2026-01-21)
+
+
+### Bug Fixes
+
+* use user's Display Name when displaying them in team, if exists ([#158](https://github.com/papotte/stundenzettel/issues/158)) ([ef77b9f](https://github.com/papotte/stundenzettel/commit/ef77b9fdb6f22d91d2e75f291619866e57776d4c))
+
 # [1.20.0](https://github.com/papotte/stundenzettel/compare/v1.19.0...v1.20.0) (2026-01-21)
 
 
