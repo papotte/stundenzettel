@@ -29,6 +29,7 @@ export function useMemberDisplayNames(memberIds: string[]) {
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- memberIdsKey is a stable serialization of memberIds; using memberIds would refire every render when the parent passes a new array ref (e.g. from .map()).
   }, [memberIdsKey])
 
   return { displayNames }
