@@ -6,9 +6,8 @@
   "scripts": {
     "dev": "next dev -p 9002",
     "dev:test": "NODE_ENV=test NEXT_PUBLIC_ENVIRONMENT=test next dev -p 9003",
-    "build": "next build",
-    "start": "next start",
-    "start:prod": "NODE_ENV=production NEXT_PUBLIC_ENVIRONMENT=production next dev -p 9004",
+    "build": "NEXT_PUBLIC_ENVIRONMENT=production next build --webpack",
+    "start": "next start -p 9004",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write \"**/*.{ts,tsx,js,md,json,yml,yaml}\" --ignore-path .prettierignore",
