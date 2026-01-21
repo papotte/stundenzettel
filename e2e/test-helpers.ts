@@ -6,10 +6,10 @@ import {
   addDoc,
   collection,
   doc,
+  getFirestore,
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore'
-import { getFirestore } from 'firebase/firestore'
 
 // Helper function to create a new manual entry for the currently selected day
 // ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
@@ -66,7 +66,9 @@ export const navigateToTeamPage = async (page: Page) => {
 export const navigateToMonth = async (page: Page, targetDate: Date) => {
   // Get current month from the page
   const getCurrentMonth = async (): Promise<Date | null> => {
-    const monthText = await page.locator('h2').textContent()
+    const monthText = await page
+      .getByTestId('export-preview-month')
+      .textContent()
     if (!monthText) return null
 
     try {

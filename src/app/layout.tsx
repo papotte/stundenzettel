@@ -1,8 +1,11 @@
+import { Suspense } from 'react'
+
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale } from 'next-intl/server'
 import { Lora, PT_Sans } from 'next/font/google'
 
+import { HtmlLang } from '@/components/html-lang'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 
@@ -26,14 +29,30 @@ export const metadata: Metadata = {
   description: 'Track your work hours effortlessly',
 }
 
-export default async function RootLayout({
+async function LocaleAwareRoot({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale()
+  return (
+    <>
+      <HtmlLang locale={locale} />
+      <AuthProvider>
+        <NextIntlClientProvider locale={locale}>
+          {children}
+          <Toaster />
+        </NextIntlClientProvider>
+      </AuthProvider>
+    </>
+  )
+}
+
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const locale = await getLocale()
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.png" sizes="any" />
         <link
@@ -53,12 +72,9 @@ export default async function RootLayout({
       <body
         className={`font-body antialiased ${lora.variable} ${ptSans.variable}`}
       >
-        <AuthProvider>
-          <NextIntlClientProvider>
-            {children}
-            <Toaster />
-          </NextIntlClientProvider>
-        </AuthProvider>
+        <Suspense fallback={null}>
+          <LocaleAwareRoot>{children}</LocaleAwareRoot>
+        </Suspense>
       </body>
     </html>
   )
