@@ -214,6 +214,47 @@ describe('LoginPage', () => {
       expect(mockPush).not.toHaveBeenCalled()
     })
 
+    it('toggles password visibility on sign-in form', async () => {
+      const user = userEvent.setup()
+      render(<LoginPage />)
+
+      const passwordInput = screen.getByTestId('password-signin')
+      const toggleButton = screen.getByTestId('toggle-password-signin')
+
+      // Initially password should be hidden
+      expect(passwordInput).toHaveAttribute('type', 'password')
+
+      // Click toggle button to show password
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'text')
+
+      // Click toggle button again to hide password
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'password')
+    })
+
+    it('toggles password visibility on sign-up form', async () => {
+      const user = userEvent.setup()
+      render(<LoginPage />)
+
+      // Switch to sign-up tab
+      await user.click(screen.getByRole('tab', { name: 'login.signUpTab' }))
+
+      const passwordInput = screen.getByTestId('password-signup')
+      const toggleButton = screen.getByTestId('toggle-password-signup')
+
+      // Initially password should be hidden
+      expect(passwordInput).toHaveAttribute('type', 'password')
+
+      // Click toggle button to show password
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'text')
+
+      // Click toggle button again to hide password
+      await user.click(toggleButton)
+      expect(passwordInput).toHaveAttribute('type', 'password')
+    })
+
     it('redirects to returnUrl after successful login', async () => {
       const user = userEvent.setup()
       mockSignInWithEmailAndPassword.mockResolvedValue({})
