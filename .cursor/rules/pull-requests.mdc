@@ -1,0 +1,17 @@
+---
+description: How to create pull request descriptions using the project template
+globs: [".github/**", ".cursor/tasks/**"]
+---
+
+# Pull request descriptions
+
+- **Template:** `.github/pull_request_template.md` – use it for every PR.
+- **Task:** Use the **Create Pull Request** instructions in `.cursor/tasks/create-pull-request.md` to generate a filled-out description.
+
+## Rules (from the task)
+
+- Compare against `origin/main` (`git diff origin/main...HEAD`, `git log origin/main..HEAD`).
+- Follow the template structure exactly; output a single markdown block for copy-paste.
+- Do **not** add "Files Changed" or file counts.
+- Do **not** list i18n keys/files unless it’s a major localization refactor.
+- Do **not** add a "Technical Changes" section for feature PRs; for refactors with little user impact, technical changes are fine.

@@ -1,0 +1,32 @@
+---
+description: Conventions for Next.js API routes in src/app/api/
+globs: ["src/app/api/**"]
+---
+
+# API routes (src/app/api/)
+
+## Structure
+
+- One **route handler per HTTP method**: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` in `route.ts`.
+- Use **`NextRequest`** and **`NextResponse`** from `next/server`.
+- **Dynamic segments:** `params` is a `Promise` – `await params` before use (e.g. `{ params }: { params: Promise<{ userId: string }> }`).
+
+## Request and response
+
+- **Body:** `await request.json()`; validate required fields and return `NextResponse.json({ error: '...' }, { status: 400 })` when missing or invalid.
+- **Success:** `return NextResponse.json(data)`.
+- **Errors:** `try/catch`; return `NextResponse.json({ error: message }, { status })`. Use `status` 400 for bad input, 401 for auth failures, 500 for server errors. Prefer a generic message for 500; avoid leaking internals.
+
+## Auth
+
+- **Firebase ID token:** Use `verifyAuthToken(request)` from `@/lib/auth-middleware`. If it returns `null`, return `createUnauthorizedResponse()`.
+- **Team-scoped:** Use `verifyTeamAccess(teamId, userId, requiredRole?)` or `verifyTeamOwnership(teamId, userId)` from `@/lib/team-auth` when the route is team-scoped.
+- Some routes receive `userId` / `firebaseUid` in the body from an already-authenticated client; ensure the caller is trusted or add server-side auth.
+
+## Services
+
+- Keep handlers thin: validate input, call a function from `@/services/*` (or `@/lib/*`), return the result. No business logic in the route file.
+
+## Tests
+
+- Colocate **`__tests__/route.test.ts`** next to `route.ts`. Mock services. Cover: missing/invalid input (400), success, and error paths (500).
