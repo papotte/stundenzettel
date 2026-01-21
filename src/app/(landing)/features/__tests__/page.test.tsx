@@ -7,6 +7,6 @@ describe('FeaturesPage', () => {
   it('renders the Features page', () => {
     render(<FeaturesPage />)
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-    expect(screen.getByText('landing.features.headerTitle')).toBeInTheDocument()
+    expect(screen.getByText('Everything you need')).toBeInTheDocument()
   })
 })

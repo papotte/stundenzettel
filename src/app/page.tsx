@@ -1,26 +1,16 @@
-'use client'
-
-import { useMessages, useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 
 import LandingIllustration from '@/components/images/landing-illustration'
+import LandingFaqAccordion from '@/components/landing-faq-accordion'
+import LandingFeaturesSection from '@/components/landing-features-section'
 import LandingLayout from '@/components/landing-layout'
 import PricingSection from '@/components/pricing-section'
 import SmartLink from '@/components/smart-link'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 
-export default function LandingPage() {
-  const t = useTranslations()
-
-  const messages = useMessages()
-  const features = Object.keys(messages.landing.features.list)
-  const faqs = Object.keys(messages.landing.faqs)
+export default async function LandingPage() {
+  const t = await getTranslations()
 
   return (
     <LandingLayout>
@@ -59,41 +49,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="w-full bg-muted py-12 md:py-24 ">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-                {t('landing.features.keyFeatures')}
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                {t('landing.features.headerTitle')}
-              </h2>
-              <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                {t('landing.features.headerDescription')}
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 sm:grid-cols-2 md:gap-12 lg:grid-cols-2">
-            {features.map((key) => (
-              <div key={key} className="flex items-start gap-4">
-                {/* You can use a static icon array or a switch if you want icons */}
-                <div className="h-8 w-8 flex-shrink-0 text-primary">
-                  {/* icon here if needed */}
-                </div>
-                <div className="grid gap-1">
-                  <h3 className="text-lg font-bold">
-                    {t(`landing.features.list.${key}.title`)}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t(`landing.features.list.${key}.desc`)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LandingFeaturesSection />
 
       {/* Pricing Section */}
       <PricingSection variant="landing" showFAQ={false} />
@@ -107,19 +63,7 @@ export default function LandingPage() {
             </h2>
           </div>
           <div className="mx-auto mt-8 max-w-3xl">
-            <Accordion type="single" collapsible className="w-full">
-              {Array.isArray(faqs) &&
-                faqs.map((key) => (
-                  <AccordionItem key={key} value={`item-${key}`}>
-                    <AccordionTrigger>
-                      {t(`landing.faqs.${key}.question`)}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {t(`landing.faqs.${key}.answer`)}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-            </Accordion>
+            <LandingFaqAccordion />
           </div>
         </div>
       </section>
