@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/papotte/stundenzettel/compare/v1.17.3...v1.18.0) (2026-01-21)
+
+
+### Features
+
+* allow linking existing subscription to a team ([#153](https://github.com/papotte/stundenzettel/issues/153)) ([4587e3d](https://github.com/papotte/stundenzettel/commit/4587e3d1ce773801fb1f32dbcbba8ee1474e6e37))
+
 ## [1.17.3](https://github.com/papotte/stundenzettel/compare/v1.17.2...v1.17.3) (2025-12-07)
 
 
