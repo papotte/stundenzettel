@@ -1,3 +1,11 @@
+## [1.20.4](https://github.com/papotte/stundenzettel/compare/v1.20.3...v1.20.4) (2026-01-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @react-email/render to v2 ([#175](https://github.com/papotte/stundenzettel/issues/175)) ([583a0f3](https://github.com/papotte/stundenzettel/commit/583a0f3f6669f5d829cfae130282d83fbdef4a82))
+* **deps:** update dependency firebase-functions to v7 ([#176](https://github.com/papotte/stundenzettel/issues/176)) ([e9e68ef](https://github.com/papotte/stundenzettel/commit/e9e68ef495e5e390bfd184ed9d087ca3628a09ad))
+
 ## [1.20.3](https://github.com/papotte/stundenzettel/compare/v1.20.2...v1.20.3) (2026-01-21)
 
 
