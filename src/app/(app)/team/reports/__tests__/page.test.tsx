@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { verifyTeamAccess } from '@/lib/team-auth'
 import { getTeamMembers, getUserTeam } from '@/services/team-service'
+import { getTimeEntries } from '@/services/time-entry-service'
+import * as userSettingsService from '@/services/user-settings-service'
 
 import TeamReportsPage from '../page'
 
@@ -14,6 +16,8 @@ jest.mock('@/hooks/use-auth', () => ({
 }))
 jest.mock('@/lib/team-auth')
 jest.mock('@/services/team-service')
+jest.mock('@/services/time-entry-service')
+jest.mock('@/services/user-settings-service')
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
   useSearchParams: jest.fn(),
@@ -107,6 +111,21 @@ describe('TeamReportsPage', () => {
         invitedBy: 'user-1',
       },
     ])
+    ;(getTimeEntries as jest.Mock).mockResolvedValue([])
+    ;(userSettingsService.getUserSettings as jest.Mock).mockResolvedValue({
+      defaultWorkHours: 8,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
+      language: 'en',
+      displayName: '',
+      companyName: '',
+      companyEmail: '',
+      companyPhone1: '',
+      companyPhone2: '',
+      companyFax: '',
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 90,
+    })
 
     render(<TeamReportsPage />)
 
@@ -117,7 +136,56 @@ describe('TeamReportsPage', () => {
       expect(screen.getByText('reports.title')).toBeInTheDocument()
     })
 
-    // Should render the grid content for the team member (email shown in card)
+    // With displayName empty, fallback to masked email
     expect(await screen.findByText('adm***@example.com')).toBeInTheDocument()
+  })
+
+  it('renders displayName in grid when user has displayName set', async () => {
+    const mockUser = { uid: 'user-1', email: 'admin@example.com' }
+    ;(useAuth as jest.Mock).mockReturnValue({
+      user: mockUser,
+      loading: false,
+    })
+    ;(getUserTeam as jest.Mock).mockResolvedValue({
+      id: 'team-1',
+      name: 'Test Team',
+      ownerId: 'user-1',
+    })
+    ;(verifyTeamAccess as jest.Mock).mockResolvedValue({
+      authorized: true,
+      userRole: 'admin',
+    })
+    ;(getTeamMembers as jest.Mock).mockResolvedValue([
+      {
+        id: 'user-1',
+        email: 'admin@example.com',
+        role: 'admin',
+        joinedAt: new Date(),
+        invitedBy: 'user-1',
+      },
+    ])
+    ;(getTimeEntries as jest.Mock).mockResolvedValue([])
+    ;(userSettingsService.getUserSettings as jest.Mock).mockResolvedValue({
+      defaultWorkHours: 8,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
+      language: 'en',
+      displayName: 'Admin User',
+      companyName: '',
+      companyEmail: '',
+      companyPhone1: '',
+      companyPhone2: '',
+      companyFax: '',
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 90,
+    })
+
+    render(<TeamReportsPage />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('reports-month')).toBeInTheDocument()
+    })
+
+    expect(await screen.findByText('Admin User')).toBeInTheDocument()
   })
 })

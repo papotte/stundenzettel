@@ -14,6 +14,7 @@ import {
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
+import { maskEmail } from '@/lib/utils'
 
 interface TeamReportsListProps {
   members: TeamMember[]
@@ -96,7 +97,8 @@ export function TeamReportsList({
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-48" />
                     ) : (
-                      summary.member.email
+                      (summary.userSettings?.displayName ?? '').trim() ||
+                      maskEmail(summary.member.email)
                     )}
                   </TableCell>
                   <TableCell className="text-right">

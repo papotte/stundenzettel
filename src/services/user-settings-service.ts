@@ -28,11 +28,49 @@ export const getUserSettings = async (
 
   if (docSnap.exists()) {
     return { ...defaultSettings, ...docSnap.data() } as UserSettings
-  } else {
-    // If no settings exist, create them with default values
-    await setUserSettings(userId, defaultSettings)
-    return defaultSettings
   }
+  // If no settings exist, create them with default values
+  await setUserSettings(userId, defaultSettings)
+  return defaultSettings
+}
+
+/**
+ * Fetches only displayName for a team member. Use when an admin/owner needs to show
+ * another member's name. Does not write; returns '' if doc missing or on error.
+ */
+export const getDisplayNameForMember = async (
+  userId: string,
+): Promise<string> => {
+  if (!userId) return ''
+  try {
+    const docRef = doc(db, 'users', userId, 'settings', 'general')
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+      const name = (docSnap.data().displayName as string | undefined) ?? ''
+      return name.trim()
+    }
+    return ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Fetches displayName for each member using getDisplayNameForMember. Returns a Map
+ * of memberId -> displayName (or ''). Use when an admin/owner needs to show
+ * multiple members' names (e.g. team-members-list, seat-assignment-dialog).
+ */
+export const getDisplayNamesForMembers = async (
+  memberIds: string[],
+): Promise<Map<string, string>> => {
+  if (memberIds.length === 0) return new Map()
+  const results = await Promise.all(
+    memberIds.map(async (id) => ({
+      id,
+      name: await getDisplayNameForMember(id),
+    })),
+  )
+  return new Map(results.map((r) => [r.id, r.name]))
 }
 
 export const setUserSettings = async (

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
+import { render, screen, waitFor, within } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import type { TeamMember } from '@/lib/types'
@@ -50,6 +50,12 @@ const mockUserSettings = {
   passengerCompensationPercent: 90,
 }
 
+// displayName returned by getUserSettings; when set, member column shows this instead of maskEmail
+const defaultDisplayNames: Record<string, string> = {
+  'user-1': 'Alice',
+  'user-2': 'Bob',
+}
+
 describe('TeamReportsList', () => {
   const mockOnMemberClick = jest.fn()
   const selectedMonth = new Date('2024-01-15')
@@ -57,7 +63,12 @@ describe('TeamReportsList', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(getTimeEntries as jest.Mock).mockResolvedValue([])
-    ;(getUserSettings as jest.Mock).mockResolvedValue(mockUserSettings)
+    ;(getUserSettings as jest.Mock).mockImplementation((userId: string) =>
+      Promise.resolve({
+        ...mockUserSettings,
+        displayName: defaultDisplayNames[userId],
+      }),
+    )
   })
 
   it('renders loading state initially', () => {
@@ -88,8 +99,8 @@ describe('TeamReportsList', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
-      expect(screen.getByText('member2@example.com')).toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+      expect(screen.getByText('Bob')).toBeInTheDocument()
     })
   })
 
@@ -151,7 +162,7 @@ describe('TeamReportsList', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
     })
   })
 
@@ -172,7 +183,7 @@ describe('TeamReportsList', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
     })
   })
 
@@ -191,7 +202,7 @@ describe('TeamReportsList', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
     })
 
     const user = userEvent.setup()
@@ -238,7 +249,7 @@ describe('TeamReportsList', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
     })
 
     // Only January entries should be counted
@@ -262,7 +273,8 @@ describe('TeamReportsList', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+        // No displayName when settings are null → show maskEmail(member.email)
+        expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
         // Should show 0.00h for expected hours when settings are missing
         // Use getAllByText since there might be multiple 0.00h values
         const expectedHoursElements = screen.getAllByText(/0\.00h/)
@@ -309,6 +321,12 @@ describe('TeamReportsList', () => {
       },
     ]
     ;(getTimeEntries as jest.Mock).mockResolvedValue([])
+    ;(getUserSettings as jest.Mock).mockImplementation((userId: string) =>
+      Promise.resolve({
+        ...mockUserSettings,
+        displayName: userId === 'user-1' ? 'Alpha' : 'Zebra',
+      }),
+    )
 
     render(
       <TeamReportsList
@@ -321,10 +339,8 @@ describe('TeamReportsList', () => {
     await waitFor(() => {
       const rows = screen.getAllByTestId(/member-row-/)
       expect(rows).toHaveLength(2)
+      expect(within(rows[0]).getByText('Alpha')).toBeInTheDocument()
+      expect(within(rows[1]).getByText('Zebra')).toBeInTheDocument()
     })
-
-    const emails = screen.getAllByText(/@example\.com/)
-    expect(emails[0]).toHaveTextContent('alpha@example.com')
-    expect(emails[1]).toHaveTextContent('zebra@example.com')
   })
 })

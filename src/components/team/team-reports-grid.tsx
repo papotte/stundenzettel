@@ -53,7 +53,8 @@ export function TeamReportsGrid({
             ) : (
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg">
-                  {maskEmail(summary.member.email)}
+                  {(summary.userSettings?.displayName ?? '').trim() ||
+                    maskEmail(summary.member.email)}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">

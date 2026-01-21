@@ -143,7 +143,9 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
 
   const sortedSummaries = useMemo(() => {
     return Array.from(memberSummaries.values()).sort((a, b) =>
-      a.member.email.localeCompare(b.member.email),
+      (a.userSettings?.displayName ?? a.member.email)
+        .trim()
+        .localeCompare((b.userSettings?.displayName ?? b.member.email).trim()),
     )
   }, [memberSummaries])
 

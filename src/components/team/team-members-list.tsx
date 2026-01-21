@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, TeamMember } from '@/lib/types'
@@ -64,6 +65,7 @@ export function TeamMembersList({
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter()
+  const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
 
   const canManageMembers =
     currentUserRole === 'owner' || currentUserRole === 'admin'
@@ -203,7 +205,9 @@ export function TeamMembersList({
             {members.map((member) => (
               <TableRow key={member.id}>
                 <TableCell>
-                  <div className="font-medium">{maskEmail(member.email)}</div>
+                  <div className="font-medium">
+                    {displayNames.get(member.id) || maskEmail(member.email)}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
