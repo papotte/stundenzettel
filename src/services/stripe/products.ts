@@ -1,4 +1,3 @@
-import { cacheLife, cacheTag } from 'next/cache'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -86,15 +85,4 @@ export async function getStripeProducts(): Promise<StripeProduct[]> {
     console.error('Error fetching Stripe products:', error)
     throw new Error('Failed to fetch products')
   }
-}
-
-/**
- * Cached Stripe products for use in API routes and server components.
- * Revalidate with revalidateTag('stripe-products') when products/prices change.
- */
-export async function getCachedStripeProducts(): Promise<StripeProduct[]> {
-  'use cache'
-  cacheLife('hours')
-  cacheTag('stripe-products')
-  return getStripeProducts()
 }

@@ -1,17 +1,14 @@
 import type { StripeProduct } from '@/services/stripe/products'
-import * as stripeProducts from '@/services/stripe/products'
+import { getCachedStripeProducts } from '@/services/stripe/stripe-cached'
 
 import { GET } from '../products/route'
 
-// Mock the Stripe products service (route uses getCachedStripeProducts)
-jest.mock('@/services/stripe/products', () => ({
+// Mock the Stripe cached service (route uses getCachedStripeProducts)
+jest.mock('@/services/stripe/stripe-cached', () => ({
   getCachedStripeProducts: jest.fn(),
-  getStripeProducts: jest.fn(),
 }))
 
-const mockGetCachedStripeProducts = jest.mocked(
-  stripeProducts.getCachedStripeProducts,
-)
+const mockGetCachedStripeProducts = jest.mocked(getCachedStripeProducts)
 
 describe('/api/stripe/products', () => {
   beforeEach(() => {

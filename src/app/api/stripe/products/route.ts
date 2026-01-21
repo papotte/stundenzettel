@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { getCachedStripeProducts } from '@/services/stripe/products'
+import { getCachedStripeProducts } from '@/services/stripe/stripe-cached'
 
 export async function GET() {
   try {
