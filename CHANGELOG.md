@@ -1,3 +1,10 @@
+## [1.20.5](https://github.com/papotte/stundenzettel/compare/v1.20.4...v1.20.5) (2026-01-21)
+
+
+### Bug Fixes
+
+* make landing page a server side component ([#177](https://github.com/papotte/stundenzettel/issues/177)) ([1e4387a](https://github.com/papotte/stundenzettel/commit/1e4387acad9f94f30ce41f08f813510dc8967004))
+
 ## [1.20.4](https://github.com/papotte/stundenzettel/compare/v1.20.3...v1.20.4) (2026-01-21)
 
 
