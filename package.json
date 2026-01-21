@@ -22,7 +22,7 @@
     "deploy": "firebase deploy",
     "deploy:app": "firebase deploy --only apphosting",
     "postinstall": "playwright install chromium",
-    "functions:lint": "eslint --ext .js,.ts functions/",
+    "functions:lint": "eslint functions/",
     "functions:build": "tsc -p functions/tsconfig.json",
     "functions:build:watch": "tsc -p functions/tsconfig.json --watch",
     "functions:serve": "npm run functions:build && firebase emulators:start --only functions",
@@ -87,6 +87,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@eslint/compat": "^2.0.1",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.45.3",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.0",
@@ -103,7 +106,7 @@
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
-    "eslint": "^8.56.0",
+    "eslint": "^9.39.2",
     "eslint-config-next": "^15.3.4",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-import": "^2.32.0",
