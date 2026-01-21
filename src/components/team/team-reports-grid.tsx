@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
+import { maskEmail } from '@/lib/utils'
 
 interface TeamReportsGridProps {
   members: TeamMember[]
@@ -52,7 +53,7 @@ export function TeamReportsGrid({
             ) : (
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg">
-                  {summary.member.email}
+                  {maskEmail(summary.member.email)}
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">

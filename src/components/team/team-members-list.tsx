@@ -32,6 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, TeamMember } from '@/lib/types'
+import { maskEmail } from '@/lib/utils'
 import {
   getTeamMembers,
   removeTeamMember,
@@ -163,13 +164,7 @@ export function TeamMembersList({
   const hasSeatAssigned = (member: TeamMember) => {
     return member.seatAssignment?.isActive === true
   }
-  function maskEmail(email: string): string {
-    const [localPart, domain] = email.split('@')
-    if (localPart.length <= 3) {
-      return `${localPart}***@${domain}`
-    }
-    return `${localPart.slice(0, 3)}***@${domain}`
-  }
+
   return (
     <div className="space-y-4">
       {/* Seat Assignment Header */}

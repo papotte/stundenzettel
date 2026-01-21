@@ -18,7 +18,7 @@ import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-import { compareEntriesByStartTime } from '@/lib/utils'
+import { compareEntriesByStartTime, maskEmail } from '@/lib/utils'
 import { getTimeEntries } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 
@@ -143,11 +143,12 @@ export function TeamMemberReportView({
     )
   }
 
+  const email = maskEmail(memberEmail)
   // Create a mock user object for display
   const mockUser = {
     uid: memberId,
-    email: memberEmail,
-    displayName: userSettings.displayName || memberEmail,
+    email: email,
+    displayName: userSettings.displayName || email,
   }
 
   return (

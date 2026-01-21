@@ -118,6 +118,6 @@ describe('TeamReportsPage', () => {
     })
 
     // Should render the grid content for the team member (email shown in card)
-    expect(await screen.findByText('admin@example.com')).toBeInTheDocument()
+    expect(await screen.findByText('adm***@example.com')).toBeInTheDocument()
   })
 })

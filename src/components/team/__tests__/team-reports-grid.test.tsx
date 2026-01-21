@@ -16,14 +16,14 @@ jest.mock('@/services/user-settings-service')
 const mockMembers: TeamMember[] = [
   {
     id: 'user-1',
-    email: 'member1@example.com',
+    email: 'member@example.com',
     role: 'member',
     joinedAt: new Date('2024-01-01'),
     invitedBy: 'admin-1',
   },
   {
     id: 'user-2',
-    email: 'member2@example.com',
+    email: 'another@example.com',
     role: 'member',
     joinedAt: new Date('2024-01-02'),
     invitedBy: 'admin-1',
@@ -91,8 +91,8 @@ describe('TeamReportsGrid', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
-      expect(screen.getByText('member2@example.com')).toBeInTheDocument()
+      expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
+      expect(screen.getByText('ano***@example.com')).toBeInTheDocument()
     })
   })
 
@@ -136,7 +136,7 @@ describe('TeamReportsGrid', () => {
     await waitFor(
       () => {
         // Should display hours worked - check for member email first to ensure data loaded
-        expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+        expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
         // Then check for hours worked value (should be 8.00h for one 8-hour day)
         const hoursWorkedElements = screen.getAllByText(/8\.00h/)
         expect(hoursWorkedElements.length).toBeGreaterThan(0)
@@ -164,7 +164,7 @@ describe('TeamReportsGrid', () => {
     await waitFor(
       () => {
         // Should display overtime - check for member email first
-        expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+        expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
         // Overtime should be negative (less than expected 160h)
         const overtimeElement = screen.getByText(/-136\.00h/)
         expect(overtimeElement).toBeInTheDocument()
@@ -213,7 +213,7 @@ describe('TeamReportsGrid', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+      expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
     })
 
     const user = userEvent.setup()
@@ -260,7 +260,7 @@ describe('TeamReportsGrid', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+      expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
     })
 
     // Only January entries should be counted
@@ -284,7 +284,7 @@ describe('TeamReportsGrid', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('member1@example.com')).toBeInTheDocument()
+        expect(screen.getByText('mem***@example.com')).toBeInTheDocument()
         // Should show 0.00h for expected hours when settings are missing
         // Use getAllByText since there might be multiple 0.00h values
         const expectedHoursElements = screen.getAllByText(/0\.00h/)
@@ -346,7 +346,7 @@ describe('TeamReportsGrid', () => {
     })
 
     const emails = screen.getAllByText(/@example\.com/)
-    expect(emails[0]).toHaveTextContent('alpha@example.com')
-    expect(emails[1]).toHaveTextContent('zebra@example.com')
+    expect(emails[0]).toHaveTextContent('alp***@example.com')
+    expect(emails[1]).toHaveTextContent('zeb***@example.com')
   })
 })

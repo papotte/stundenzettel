@@ -15,6 +15,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function maskEmail(email: string): string {
+  const [localPart, domain] = email.split('@')
+  if (localPart.length <= 3) {
+    return `${localPart}***@${domain}`
+  }
+  return `${localPart.slice(0, 3)}***@${domain}`
+}
+
 export function normalizeDate(date: Date): Date {
   return new Date(
     date.getFullYear(),
