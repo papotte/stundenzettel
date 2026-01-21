@@ -107,7 +107,6 @@ export default function TeamPage() {
         router.replace(`${pathname}?${params.toString()}`)
       }, 1500)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, pathname, toast, t, router])
 
   const loadTeamData = useCallback(async () => {
