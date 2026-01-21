@@ -78,7 +78,7 @@ export class StripeService {
             // Check if this price has a trial period
             const hasTrialPeriod = Boolean(
               price.recurring?.trial_period_days &&
-                price.recurring.trial_period_days > 0,
+              price.recurring.trial_period_days > 0,
             )
             const trialDays = price.recurring?.trial_period_days || undefined
 

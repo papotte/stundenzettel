@@ -89,8 +89,7 @@ export function PasswordInput<T extends FieldValues>({
 }
 
 // Standalone password input that doesn't require react-hook-form
-interface StandalonePasswordInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface StandalonePasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   showPassword: boolean
   onToggleVisibility: () => void
   'data-testid'?: string
