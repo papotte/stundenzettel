@@ -49,6 +49,10 @@
     "coverage/",
     "public/",
     "build/",
-    "functions/lib"
+    "functions/lib",
+    "e2e/",
+    "scripts/",
+    "jest.setup.tsx",
+    "tailwind.config.ts"
   ]
 }

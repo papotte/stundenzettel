@@ -6,10 +6,10 @@ import {
   addDoc,
   collection,
   doc,
+  getFirestore,
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore'
-import { getFirestore } from 'firebase/firestore'
 
 // Helper function to create a new manual entry for the currently selected day
 // ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
