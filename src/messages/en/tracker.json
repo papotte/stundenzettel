@@ -25,5 +25,9 @@
   "headerSignOutTooltip": "Sign Out",
   "clearDataAlertTitle": "Are you absolutely sure?",
   "clearDataAlertDescription": "This action cannot be undone. This will permanently delete all your time tracking data from the database.",
-  "clearDataAlertConfirm": "Yes, delete everything"
+  "clearDataAlertConfirm": "Yes, delete everything",
+  "copyFromYesterday": "Copy from yesterday",
+  "copyDayTo": "Copy to…",
+  "copyDayToTitle": "Copy all entries to",
+  "copyDayToConfirm": "Copy"
 }

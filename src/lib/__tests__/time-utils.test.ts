@@ -8,6 +8,7 @@ import {
   calculateWeekCompensatedTime,
   calculateWeekPassengerTime,
   parseTimeString,
+  shiftEntryToDate,
 } from '../time-utils'
 
 describe('parseTimeString', () => {
@@ -620,5 +621,83 @@ describe('calculateExpectedMonthlyHours', () => {
     }
     const result = calculateExpectedMonthlyHours(userSettings)
     expect(result).toBe(200)
+  })
+})
+
+describe('shiftEntryToDate', () => {
+  it('shifts interval entry to target date preserving times', () => {
+    const sourceDate = new Date(2024, 0, 15) // Jan 15, 2024
+    const entry: TimeEntry = {
+      id: '1',
+      userId: 'u1',
+      location: 'Office',
+      startTime: set(sourceDate, {
+        hours: 9,
+        minutes: 30,
+        seconds: 0,
+        milliseconds: 0,
+      }),
+      endTime: set(sourceDate, {
+        hours: 17,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      }),
+      pauseDuration: 30,
+      driverTimeHours: 1,
+      passengerTimeHours: 0.5,
+    }
+    const targetDate = new Date(2024, 2, 20) // Mar 20, 2024
+
+    const result = shiftEntryToDate(entry, targetDate)
+
+    expect('id' in result).toBe(false)
+    expect('userId' in result).toBe(false)
+    expect(result.location).toBe('Office')
+    expect(result.pauseDuration).toBe(30)
+    expect(result.driverTimeHours).toBe(1)
+    expect(result.passengerTimeHours).toBe(0.5)
+    expect(result.startTime.getFullYear()).toBe(2024)
+    expect(result.startTime.getMonth()).toBe(2)
+    expect(result.startTime.getDate()).toBe(20)
+    expect(result.startTime.getHours()).toBe(9)
+    expect(result.startTime.getMinutes()).toBe(30)
+    expect(result.endTime).toBeDefined()
+    expect(result.endTime!.getFullYear()).toBe(2024)
+    expect(result.endTime!.getMonth()).toBe(2)
+    expect(result.endTime!.getDate()).toBe(20)
+    expect(result.endTime!.getHours()).toBe(17)
+    expect(result.endTime!.getMinutes()).toBe(0)
+    expect(typeof result.durationMinutes).toBe('undefined')
+  })
+
+  it('shifts duration-only entry to target date at midday', () => {
+    const sourceDate = new Date(2024, 0, 15)
+    const entry: TimeEntry = {
+      id: '2',
+      userId: 'u1',
+      location: 'Home',
+      startTime: set(sourceDate, {
+        hours: 12,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      }),
+      durationMinutes: 480,
+    }
+    const targetDate = new Date(2024, 5, 10) // Jun 10, 2024
+
+    const result = shiftEntryToDate(entry, targetDate)
+
+    expect('id' in result).toBe(false)
+    expect('userId' in result).toBe(false)
+    expect(result.location).toBe('Home')
+    expect(result.durationMinutes).toBe(480)
+    expect(result.startTime.getFullYear()).toBe(2024)
+    expect(result.startTime.getMonth()).toBe(5)
+    expect(result.startTime.getDate()).toBe(10)
+    expect(result.startTime.getHours()).toBe(12)
+    expect(result.startTime.getMinutes()).toBe(0)
+    expect(result.endTime).toBeUndefined()
   })
 })

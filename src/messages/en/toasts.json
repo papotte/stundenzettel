@@ -19,5 +19,13 @@
   "configurationErrorTitle": "Configuration Error",
   "configurationErrorDescription": "Firebase is not configured correctly. Please check your environment variables.",
   "databaseErrorTitle": "Database Connection Error",
-  "databaseConnectionError": "Could not connect to the database. Please see the 'Troubleshooting' section in the README.md file."
+  "databaseConnectionError": "Could not connect to the database. Please see the 'Troubleshooting' section in the README.md file.",
+  "entriesCopiedFromYesterdayTitle": "Entries copied",
+  "entriesCopiedFromYesterdayDescription": "{count} entries copied from yesterday.",
+  "entryCopiedTitle": "Entry copied",
+  "entryCopiedDescription": "\"{location}\" copied to the selected date.",
+  "entriesCopiedToTitle": "Entries copied",
+  "entriesCopiedToDescription": "{count} entries copied to {date}.",
+  "copyFailedTitle": "Copy failed",
+  "copyFailedDescription": "There was a problem copying your entries."
 }

@@ -6,5 +6,7 @@
   "deleteAlertConfirm": "Delete",
   "pauseLabel": "{minutes}m pause",
   "drivingLabel": "{hours}h driving",
-  "passengerLabel": "{hours}h passenger"
+  "passengerLabel": "{hours}h passenger",
+  "copyToLabel": "Copy to…",
+  "copyToTitle": "Copy entry to"
 }

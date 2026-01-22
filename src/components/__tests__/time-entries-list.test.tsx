@@ -7,10 +7,14 @@ import { TimeEntry } from '@/lib/types'
 
 const baseContext = {
   selectedDate: new Date('2024-07-29') as Date | undefined,
+  entries: [] as Partial<TimeEntry>[],
   isLoading: false,
   filteredEntries: [] as Partial<TimeEntry>[],
   handleEditEntry: jest.fn(),
   handleDeleteEntry: jest.fn(),
+  handleCopyFromYesterday: jest.fn(),
+  handleCopyEntryTo: jest.fn(),
+  handleCopyDayTo: jest.fn(),
   dailyTotal: 0,
   openNewEntryForm: jest.fn(),
   formattedSelectedDate: '2024-07-29',

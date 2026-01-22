@@ -1,12 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import {
   BedDouble,
   CarFront,
   Clock,
   Coffee,
+  Copy,
   Edit,
   Hourglass,
   Landmark,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
+import { CopyToDatePicker } from '@/components/copy-to-date-picker'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +41,7 @@ interface TimeEntryCardProps {
   entry: TimeEntry
   onEdit: (entry: TimeEntry) => void
   onDelete: (id: string) => void
+  onCopyTo?: (entry: TimeEntry, targetDate: Date) => void
   driverCompensationPercent?: number // optional, default 100
   passengerCompensationPercent?: number // optional, default 100
 }
@@ -54,11 +57,16 @@ export default function TimeEntryCard({
   entry,
   onEdit,
   onDelete,
+  onCopyTo,
   driverCompensationPercent = 100,
   passengerCompensationPercent = 100,
 }: TimeEntryCardProps) {
   const t = useTranslations()
   const format = useFormatter().dateTime
+  const [copyPickerOpen, setCopyPickerOpen] = useState(false)
+  const [copyTargetDate, setCopyTargetDate] = useState<Date | undefined>(
+    undefined,
+  )
 
   const isSpecial = SPECIAL_LOCATION_KEYS.includes(
     entry.location as SpecialLocationKey,
@@ -105,6 +113,29 @@ export default function TimeEntryCard({
                   {t('time_entry_card.editLabel')}
                 </span>
               </Button>
+              {onCopyTo && (
+                <CopyToDatePicker
+                  open={copyPickerOpen}
+                  onOpenChange={setCopyPickerOpen}
+                  targetDate={copyTargetDate}
+                  onTargetDateChange={setCopyTargetDate}
+                  onConfirm={() => {
+                    if (copyTargetDate) {
+                      onCopyTo(entry, copyTargetDate)
+                      setCopyTargetDate(undefined)
+                    }
+                  }}
+                  confirmLabel={t('common.copy')}
+                  title={t('time_entry_card.copyToTitle')}
+                >
+                  <Button variant="ghost" size="icon">
+                    <Copy className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t('time_entry_card.copyToLabel')}
+                    </span>
+                  </Button>
+                </CopyToDatePicker>
+              )}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -214,6 +245,29 @@ export default function TimeEntryCard({
               <Edit className="h-4 w-4" />
               <span className="sr-only">{t('time_entry_card.editLabel')}</span>
             </Button>
+            {onCopyTo && (
+              <CopyToDatePicker
+                open={copyPickerOpen}
+                onOpenChange={setCopyPickerOpen}
+                targetDate={copyTargetDate}
+                onTargetDateChange={setCopyTargetDate}
+                onConfirm={() => {
+                  if (copyTargetDate) {
+                    onCopyTo(entry, copyTargetDate)
+                    setCopyTargetDate(undefined)
+                  }
+                }}
+                confirmLabel={t('common.copy')}
+                title={t('time_entry_card.copyToTitle')}
+              >
+                <Button variant="ghost" size="icon">
+                  <Copy className="h-4 w-4" />
+                  <span className="sr-only">
+                    {t('time_entry_card.copyToLabel')}
+                  </span>
+                </Button>
+              </CopyToDatePicker>
+            )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
