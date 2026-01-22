@@ -16,8 +16,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import LoadingIcon from '@/components/ui/loading-icon'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
-import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { subscriptionService } from '@/services/subscription-service'
 
 interface SubscriptionGuardProps {
@@ -119,7 +119,7 @@ export default function SubscriptionGuard({
   const t = useTranslations()
 
   const { hasValidSubscription, loading, subscription } =
-    useSubscriptionStatus(user)
+    useSubscriptionContext()
 
   if (loading) {
     return (

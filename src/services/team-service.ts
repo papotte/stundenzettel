@@ -552,6 +552,20 @@ export async function declineTeamInvitation(
   await updateDoc(docRef, { status: 'expired' })
 }
 
+// Get team owner ID
+export async function getTeamOwner(teamId: string): Promise<string | null> {
+  try {
+    const teamDoc = await getDoc(doc(db, 'teams', teamId))
+    if (teamDoc.exists()) {
+      const data = teamDoc.data()
+      return data.ownerId || null
+    }
+    return null
+  } catch (error: unknown) {
+    return handleFirebaseError(error, 'fetch team owner')
+  }
+}
+
 // User's team (single)
 export async function getUserTeam(userId: string): Promise<Team | null> {
   try {

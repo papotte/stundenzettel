@@ -9,12 +9,13 @@ import { authScenarios } from '@/test-utils/auth-mocks'
 
 // Mocks
 // Mock subscription so SubscriptionGuard treats user as subscribed
-jest.mock('@/hooks/use-subscription-status', () => ({
-  useSubscriptionStatus: () => ({
+jest.mock('@/context/subscription-context', () => ({
+  useSubscriptionContext: () => ({
     hasValidSubscription: true,
     loading: false,
     error: null,
     subscription: { status: 'active' },
+    invalidateSubscription: jest.fn(),
   }),
 }))
 jest.mock('@/services/subscription-service', () => ({

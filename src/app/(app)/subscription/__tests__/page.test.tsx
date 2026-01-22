@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 
 import { useRouter } from 'next/navigation'
 
-import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
@@ -17,10 +17,14 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }))
 
-// Mock services
+// Mock subscription context
+jest.mock('@/context/subscription-context', () => ({
+  useSubscriptionContext: jest.fn(),
+}))
+
+// Mock subscription service (for isInTrial, etc.)
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
-    getUserSubscription: jest.fn(),
     isInTrial: jest.fn(),
     getTrialEndDate: jest.fn(),
     getDaysRemainingInTrial: jest.fn(),
@@ -47,7 +51,14 @@ const mockRouter = {
   replace: jest.fn(),
 }
 
-const mockSubscriptionService = jest.mocked(subscriptionService)
+const mockUseSubscriptionContext =
+  useSubscriptionContext as jest.MockedFunction<typeof useSubscriptionContext>
+const mockIsInTrial = subscriptionService.isInTrial as jest.Mock
+const mockGetTrialEndDate = subscriptionService.getTrialEndDate as jest.Mock
+const mockGetDaysRemainingInTrial =
+  subscriptionService.getDaysRemainingInTrial as jest.Mock
+const mockIsTrialExpiringSoon =
+  subscriptionService.isTrialExpiringSoon as jest.Mock
 
 // Use centralized auth mock
 const mockAuthContext = createMockAuthContext()
@@ -63,7 +74,23 @@ describe('SubscriptionPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
-    __clearSubscriptionCacheForTests()
+
+    // Default mock implementations
+    mockIsInTrial.mockReturnValue(false)
+    mockGetTrialEndDate.mockReturnValue(null)
+    mockGetDaysRemainingInTrial.mockReturnValue(null)
+    mockIsTrialExpiringSoon.mockReturnValue(false)
+
+    // Default context mock - no subscription, not loading
+    mockUseSubscriptionContext.mockReturnValue({
+      hasValidSubscription: false,
+      loading: false,
+      error: null,
+      subscription: null,
+      ownerId: null,
+      invalidateSubscription: jest.fn(),
+    })
+
     // Reset auth context to authenticated state
     mockAuthContext.user = createMockUser()
     mockAuthContext.loading = false
@@ -71,6 +98,7 @@ describe('SubscriptionPage', () => {
 
   it('redirects to login when user is not authenticated', async () => {
     mockAuthContext.user = null
+    mockAuthContext.loading = false
 
     renderWithProviders(<SubscriptionPage />)
 
@@ -81,9 +109,8 @@ describe('SubscriptionPage', () => {
     })
   })
 
-  it('shows loading skeleton when auth is loading', () => {
+  it('shows loading skeleton when loading', () => {
     mockAuthContext.loading = true
-    mockAuthContext.user = null
 
     renderWithProviders(<SubscriptionPage />)
 
@@ -91,18 +118,22 @@ describe('SubscriptionPage', () => {
   })
 
   it('shows no subscription state when user has no subscription', async () => {
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+    mockUseSubscriptionContext.mockReturnValue({
+      hasValidSubscription: false,
+      loading: false,
+      error: null,
+      subscription: null,
+      ownerId: null,
+      invalidateSubscription: jest.fn(),
+    })
 
     renderWithProviders(<SubscriptionPage />)
 
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText('subscription.noSubscription'),
-        ).toBeInTheDocument()
-      },
-      { timeout: 3000 },
-    )
+    await waitFor(() => {
+      expect(
+        screen.getByText('subscription.noSubscription'),
+      ).toBeInTheDocument()
+    })
   })
 
   it('shows active subscription details', async () => {
@@ -117,23 +148,32 @@ describe('SubscriptionPage', () => {
       updatedAt: new Date(),
     }
 
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(
-      mockSubscription,
-    )
+    mockUseSubscriptionContext.mockReturnValue({
+      hasValidSubscription: true,
+      loading: false,
+      error: null,
+      subscription: mockSubscription,
+      ownerId: 'test-user-id',
+      invalidateSubscription: jest.fn(),
+    })
 
     renderWithProviders(<SubscriptionPage />)
 
-    await waitFor(
-      () => {
-        expect(screen.getByText('subscription.currentPlan')).toBeInTheDocument()
-      },
-      { timeout: 3000 },
-    )
+    await waitFor(() => {
+      expect(screen.getByText('subscription.currentPlan')).toBeInTheDocument()
+    })
   })
 
   it('handles upgrade button click', async () => {
     const user = userEvent.setup()
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+    mockUseSubscriptionContext.mockReturnValue({
+      hasValidSubscription: false,
+      loading: false,
+      error: null,
+      subscription: null,
+      ownerId: null,
+      invalidateSubscription: jest.fn(),
+    })
 
     // Mock window.location
     const originalLocation = window.location
@@ -144,12 +184,9 @@ describe('SubscriptionPage', () => {
 
     renderWithProviders(<SubscriptionPage />)
 
-    await waitFor(
-      () => {
-        expect(screen.getByText('subscription.upgrade')).toBeInTheDocument()
-      },
-      { timeout: 3000 },
-    )
+    await waitFor(() => {
+      expect(screen.getByText('subscription.upgrade')).toBeInTheDocument()
+    })
 
     await user.click(screen.getByText('subscription.upgrade'))
 
@@ -160,20 +197,5 @@ describe('SubscriptionPage', () => {
       value: originalLocation,
       writable: true,
     })
-  })
-
-  it('calls subscription service with correct user ID', async () => {
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
-
-    renderWithProviders(<SubscriptionPage />)
-
-    await waitFor(
-      () => {
-        expect(
-          mockSubscriptionService.getUserSubscription,
-        ).toHaveBeenCalledWith('test-user-id')
-      },
-      { timeout: 3000 },
-    )
   })
 })

@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { addMonths, subMonths } from 'date-fns'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import { exportToExcel } from '@/lib/excel-export'
 import { subscriptionService } from '@/services/subscription-service'
 import { getTimeEntries } from '@/services/time-entry-service'
@@ -39,9 +39,9 @@ jest.mock('@/services/subscription-service', () => ({
   },
 }))
 
-// Mock the subscription status hook
-jest.mock('@/hooks/use-subscription-status', () => ({
-  useSubscriptionStatus: jest.fn(),
+// Mock the subscription context
+jest.mock('@/context/subscription-context', () => ({
+  useSubscriptionContext: jest.fn(),
 }))
 
 const mockGetTimeEntries = getTimeEntries as jest.MockedFunction<
@@ -57,9 +57,8 @@ const mockGetUserSubscription =
   subscriptionService.getUserSubscription as jest.MockedFunction<
     typeof subscriptionService.getUserSubscription
   >
-const mockUseSubscriptionStatus = useSubscriptionStatus as jest.MockedFunction<
-  typeof useSubscriptionStatus
->
+const mockUseSubscriptionContext =
+  useSubscriptionContext as jest.MockedFunction<typeof useSubscriptionContext>
 
 // Mock the toast hook
 const mockToast = jest.fn()
@@ -142,14 +141,19 @@ describe('ExportPreview', () => {
       priceId: 'price_123',
       updatedAt: new Date(),
     }
-    mockGetUserSubscription.mockResolvedValue(mockSubscription)
+    mockGetUserSubscription.mockResolvedValue({
+      subscription: mockSubscription,
+      ownerId: 'test-user-id',
+    })
 
-    // Mock subscription status hook to return valid subscription
-    mockUseSubscriptionStatus.mockReturnValue({
+    // Mock subscription context to return valid subscription
+    mockUseSubscriptionContext.mockReturnValue({
       hasValidSubscription: true,
       loading: false,
       error: null,
       subscription: mockSubscription,
+      ownerId: 'test-user-id',
+      invalidateSubscription: jest.fn(),
     })
   })
 

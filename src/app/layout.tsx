@@ -8,6 +8,7 @@ import { Lora, PT_Sans } from 'next/font/google'
 import { HtmlLang } from '@/components/html-lang'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
+import { SubscriptionProvider } from '@/context/subscription-context'
 
 import './globals.css'
 
@@ -37,10 +38,12 @@ async function LocaleAwareRoot({
     <>
       <HtmlLang locale={locale} />
       <AuthProvider>
-        <NextIntlClientProvider locale={locale}>
-          {children}
-          <Toaster />
-        </NextIntlClientProvider>
+        <SubscriptionProvider>
+          <NextIntlClientProvider locale={locale}>
+            {children}
+            <Toaster />
+          </NextIntlClientProvider>
+        </SubscriptionProvider>
       </AuthProvider>
     </>
   )
