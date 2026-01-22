@@ -3,6 +3,10 @@ import { useEffect, useRef, useState } from 'react'
 import { getSubscriptionForUserAction } from '@/app/actions/get-subscription'
 import type { Subscription } from '@/lib/types'
 
+const isE2E =
+  process.env.NEXT_PUBLIC_ENVIRONMENT === 'test' &&
+  typeof process.env.JEST_WORKER_ID === 'undefined'
+
 interface UseSubscriptionStatusResult {
   hasValidSubscription: boolean | null
   loading: boolean
@@ -61,7 +65,29 @@ export function useSubscriptionStatus(
     setError(null)
 
     let mounted = true
-    getSubscriptionForUserAction(user.uid)
+
+    const fetchSubscription = (): Promise<{
+      hasValidSubscription: boolean
+      subscription: Subscription | null
+    }> => {
+      if (isE2E) {
+        return fetch(`/api/subscriptions/${user.uid}`).then(async (res) => {
+          const data = res.ok
+            ? ((await res.json()) as Subscription | Record<string, never>)
+            : {}
+          const sub =
+            data && typeof data === 'object' && 'status' in data
+              ? (data as Subscription)
+              : null
+          const valid =
+            !!sub && (sub.status === 'active' || sub.status === 'trialing')
+          return { hasValidSubscription: valid, subscription: sub }
+        })
+      }
+      return getSubscriptionForUserAction(user.uid)
+    }
+
+    fetchSubscription()
       .then((result) => {
         if (!mounted) return
         setHasValidSubscription(result.hasValidSubscription)

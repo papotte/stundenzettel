@@ -148,7 +148,7 @@ export const verifySubscriptionGuard = async (page: Page) => {
 export const mockApiResponse = async (
   page: Page,
   urlPattern: string,
-  response: { status: number; body: any },
+  response: { status: number; body: unknown },
 ) => {
   await page.route(urlPattern, (route) => {
     route.fulfill({
@@ -402,6 +402,17 @@ export const addUserSubscription = async (
   })
 
   return subscriptionData
+}
+
+/**
+ * Mock no subscription (API returns {}). Overrides the default mock.
+ * Use in tests that expect subscription guard (e.g. /protected without subscription).
+ */
+export const mockNoSubscription = async (page: Page) => {
+  await mockApiResponse(page, '**/api/subscriptions/**', {
+    status: 200,
+    body: {},
+  })
 }
 
 // Helper function to add an active subscription (most common use case)

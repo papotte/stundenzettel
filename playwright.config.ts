@@ -88,7 +88,7 @@ const config: PlaywrightTestConfig = {
   webServer: {
     command: 'npm run dev:test',
     url: 'http://localhost:9003',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: process.env.CI !== 'true',
     timeout: 120 * 1000,
   },
 }
