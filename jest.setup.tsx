@@ -53,16 +53,6 @@ jest.mock('next/cache', () => ({
   revalidateTag: jest.fn(),
 }))
 
-// Default to no subscription so components work without per-file mocks.
-jest.mock('@/hooks/use-subscription-status', () => ({
-  useSubscriptionStatus: () => ({
-    hasValidSubscription: false,
-    loading: false,
-    error: null,
-    subscription: null,
-  }),
-}))
-
 // Export for use in tests
 export { defaultMockAuth }
 

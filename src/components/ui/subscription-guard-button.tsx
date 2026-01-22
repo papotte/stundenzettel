@@ -13,10 +13,9 @@ export function SubscriptionGuardButton({
   ...props
 }: ButtonProps) {
   const { user } = useAuth()
-  const { hasValidSubscription, loading } = useSubscriptionStatus(user)
+  const { hasValidSubscription } = useSubscriptionStatus(user)
 
   const disabled =
-    loading ||
     hasValidSubscription === null ||
     !hasValidSubscription ||
     props.disabled
