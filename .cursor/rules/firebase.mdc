@@ -11,7 +11,7 @@ globs: ["functions/**", "**/firebase*.ts", "**/firestore*.ts", "firestore.rules"
 
 ## Services
 
-- **Firestore impls:** `*-service.firestore.ts` (e.g. `time-entry-service.firestore.ts`) hold Firestore logic; main `*-service.ts` delegates. Services use `db` from `@/lib/firebase` (client) or `getFirestore` from `firebase-admin` (Functions).
+- **Service implementations:** All service files (e.g. `time-entry-service.ts`) contain Firestore logic directly. Services use `db` from `@/lib/firebase` (client) or `getFirestore` from `firebase-admin` (Functions).
 
 ## Cloud Functions (`functions/`)
 
