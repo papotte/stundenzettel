@@ -12,12 +12,13 @@ jest.mock('@/hooks/use-auth', () => ({
     signOut: jest.fn(),
   }),
 }))
-jest.mock('@/hooks/use-subscription-status', () => ({
-  useSubscriptionStatus: () => ({
+jest.mock('@/context/subscription-context', () => ({
+  useSubscriptionContext: () => ({
     hasValidSubscription: true,
     loading: false,
     error: null,
     subscription: { status: 'active' },
+    invalidateSubscription: jest.fn(),
   }),
 }))
 

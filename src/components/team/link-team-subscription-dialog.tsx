@@ -108,9 +108,8 @@ export function LinkTeamSubscriptionDialog({
           throw new Error('Not authenticated')
         }
         // Use SubscriptionService which calls the working /api/subscriptions/:userId endpoint
-        const subscription = await subscriptionService.getUserSubscription(
-          user.uid,
-        )
+        const result = await subscriptionService.getUserSubscription(user.uid)
+        const subscription = result.subscription
 
         const linkable: SubscriptionWithEligibleStatus[] = []
 
@@ -162,9 +161,8 @@ export function LinkTeamSubscriptionDialog({
     setIsLinking(true)
     try {
       // Get the subscription again to ensure we have the latest data
-      const subscription = await subscriptionService.getUserSubscription(
-        user.uid,
-      )
+      const result = await subscriptionService.getUserSubscription(user.uid)
+      const subscription = result.subscription
       if (!subscription || subscription.stripeSubscriptionId !== selectedId) {
         throw new Error('Subscription not found')
       }

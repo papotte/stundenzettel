@@ -24,8 +24,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
-import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import { paymentService } from '@/services/payment-service'
@@ -39,10 +39,12 @@ export default function SubscriptionPage() {
   const format = useFormatter().dateTime
   const {
     subscription,
+    ownerId,
     loading: subLoading,
     error,
-  } = useSubscriptionStatus(user)
+  } = useSubscriptionContext()
   const pageLoading = subLoading
+  const isSubscriptionOwner = user?.uid === ownerId
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -227,14 +229,16 @@ export default function SubscriptionPage() {
                   </div>
                 )}
 
-                <div className="pt-4 border-t space-y-3">
-                  <Button onClick={handleManageBilling} className="w-full">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    {isInTrial
-                      ? t('subscription.addPaymentMethod')
-                      : t('subscription.manageBilling')}
-                  </Button>
-                </div>
+                {isSubscriptionOwner && (
+                  <div className="pt-4 border-t space-y-3">
+                    <Button onClick={handleManageBilling} className="w-full">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {isInTrial
+                        ? t('subscription.addPaymentMethod')
+                        : t('subscription.manageBilling')}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

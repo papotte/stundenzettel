@@ -2,8 +2,7 @@
 
 import { ProBadge } from '@/components/ui/badge'
 import { Button, type ButtonProps } from '@/components/ui/button'
-import { useAuth } from '@/hooks/use-auth'
-import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import { cn } from '@/lib/utils'
 
 // Button that is only enabled for subscribed users, shows ProBadge if not
@@ -12,8 +11,7 @@ export function SubscriptionGuardButton({
   className,
   ...props
 }: ButtonProps) {
-  const { user } = useAuth()
-  const { hasValidSubscription, loading } = useSubscriptionStatus(user)
+  const { hasValidSubscription, loading } = useSubscriptionContext()
 
   const disabled =
     loading ||

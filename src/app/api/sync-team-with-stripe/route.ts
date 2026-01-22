@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       firebaseUid,
       teamId,
     })
-    revalidateTag('subscription')
+    revalidateTag('subscription', 'max')
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
     const errorMessage =

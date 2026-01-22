@@ -30,8 +30,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
-import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 
 interface UserMenuProps {
@@ -47,7 +47,7 @@ export default function UserMenu({
 }: UserMenuProps) {
   const t = useTranslations()
   const { signOut, user } = useAuth()
-  const { hasValidSubscription } = useSubscriptionStatus(user)
+  const { hasValidSubscription } = useSubscriptionContext()
   const { hasPendingInvitations, invitations } = useUserInvitations()
 
   const handleSignOut = async () => {

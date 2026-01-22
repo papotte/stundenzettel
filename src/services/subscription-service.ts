@@ -4,7 +4,12 @@ import { getTeamSubscription, getUserTeam } from '@/services/team-service'
 // Cache for subscription data - now includes team info in the key
 const subscriptionCache = new Map<
   string,
-  { subscription: Subscription | null; hasValid: boolean; cacheExpiry: number }
+  {
+    subscription: Subscription | null
+    ownerId: string
+    hasValid: boolean
+    cacheExpiry: number
+  }
 >()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
@@ -20,13 +25,34 @@ export class SubscriptionService {
     return SubscriptionService.instance
   }
 
-  async getUserSubscription(userId: string): Promise<Subscription | null> {
+  private setCacheAndReturn(
+    userId: string,
+    subscription: Subscription | null,
+    ownerId: string,
+    hasValid: boolean,
+    cacheExpiry: number,
+  ): { subscription: Subscription | null; ownerId: string } {
+    subscriptionCache.set(userId, {
+      subscription,
+      ownerId,
+      hasValid,
+      cacheExpiry,
+    })
+    return { subscription, ownerId }
+  }
+
+  async getUserSubscription(
+    userId: string,
+  ): Promise<{ subscription: Subscription | null; ownerId: string }> {
     const now = Date.now()
 
     // Check cache first
     const cached = subscriptionCache.get(userId)
     if (cached && now < cached.cacheExpiry) {
-      return cached.subscription
+      return {
+        subscription: cached.subscription,
+        ownerId: cached.ownerId as string,
+      }
     }
 
     try {
@@ -39,12 +65,13 @@ export class SubscriptionService {
           const valid =
             subscription.status === 'active' ||
             subscription.status === 'trialing'
-          subscriptionCache.set(userId, {
+          return this.setCacheAndReturn(
+            userId,
             subscription,
-            hasValid: valid,
-            cacheExpiry: now + CACHE_DURATION,
-          })
-          return subscription
+            userId,
+            valid,
+            now + CACHE_DURATION,
+          )
         }
       }
 
@@ -56,36 +83,33 @@ export class SubscriptionService {
           const valid =
             teamSubscription.status === 'active' ||
             teamSubscription.status === 'trialing'
-          subscriptionCache.set(userId, {
-            subscription: teamSubscription,
-            hasValid: valid,
-            cacheExpiry: now + CACHE_DURATION,
-          })
-          return teamSubscription
+          return this.setCacheAndReturn(
+            userId,
+            teamSubscription,
+            userTeam.ownerId,
+            valid,
+            now + CACHE_DURATION,
+          )
         }
       }
 
       // No subscription found (individual or team)
-      subscriptionCache.set(userId, {
-        subscription: null,
-        hasValid: false,
-        cacheExpiry: now + CACHE_DURATION,
-      })
-      return null
+      throw new Error('No subscription found')
     } catch (error) {
       console.error('Error fetching subscription:', error)
       // Cache the error result to prevent repeated failed requests
-      subscriptionCache.set(userId, {
-        subscription: null,
-        hasValid: false,
-        cacheExpiry: now + CACHE_DURATION,
-      })
-      return null
+      return this.setCacheAndReturn(
+        userId,
+        null,
+        userId,
+        false,
+        now + CACHE_DURATION,
+      )
     }
   }
 
   async hasActiveSubscription(userEmail: string): Promise<boolean> {
-    const subscription = await this.getUserSubscription(userEmail)
+    const { subscription } = await this.getUserSubscription(userEmail)
     return subscription?.status === 'active'
   }
 

@@ -18,7 +18,7 @@ import {
 
 import type { TimeEntry } from '@/lib/types'
 
-import * as firestoreService from '../time-entry-service.firestore'
+import * as timeEntryService from '../time-entry-service'
 
 // Mock Firebase Firestore
 jest.mock('firebase/firestore', () => ({
@@ -55,7 +55,7 @@ const mockQuery = query as jest.MockedFunction<typeof query>
 const mockUpdateDoc = updateDoc as jest.MockedFunction<typeof updateDoc>
 const mockWriteBatch = writeBatch as jest.MockedFunction<typeof writeBatch>
 
-describe('Time Entry Service Firestore Implementation', () => {
+describe('Time Entry Service', () => {
   const mockUserId = 'test-user-123'
   const mockEntryId = 'entry-123'
   const mockCollectionRef = {} as CollectionReference
@@ -85,7 +85,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as DocumentReference
       mockAddDoc.mockResolvedValue(mockDocRefWithId)
 
-      const result = await firestoreService.addTimeEntry(mockEntry)
+      const result = await timeEntryService.addTimeEntry(mockEntry)
 
       // Verify correct collection path
       expect(mockCollection).toHaveBeenCalledWith(
@@ -107,7 +107,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       const entryWithoutUserId = { ...mockEntry, userId: '' }
 
       await expect(
-        firestoreService.addTimeEntry(entryWithoutUserId),
+        timeEntryService.addTimeEntry(entryWithoutUserId),
       ).rejects.toThrow('User not authenticated')
     })
 
@@ -117,7 +117,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as DocumentReference
       mockAddDoc.mockResolvedValue(mockDocRefWithId)
 
-      await firestoreService.addTimeEntry(mockEntry)
+      await timeEntryService.addTimeEntry(mockEntry)
 
       // Verify Timestamp.fromDate was called for dates
       expect(mockAddDoc).toHaveBeenCalledWith(mockCollectionRef, {
@@ -136,7 +136,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as DocumentReference
       mockAddDoc.mockResolvedValue(mockDocRefWithId)
 
-      await firestoreService.addTimeEntry(entryWithoutEndTime)
+      await timeEntryService.addTimeEntry(entryWithoutEndTime)
 
       expect(mockAddDoc).toHaveBeenCalledWith(mockCollectionRef, {
         userId: mockUserId,
@@ -164,7 +164,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as DocumentReference
       mockAddDoc.mockResolvedValue(mockDocRefWithId)
 
-      await firestoreService.addTimeEntry(fullEntry)
+      await timeEntryService.addTimeEntry(fullEntry)
 
       expect(mockAddDoc).toHaveBeenCalledWith(mockCollectionRef, {
         userId: mockUserId,
@@ -189,7 +189,7 @@ describe('Time Entry Service Firestore Implementation', () => {
     it('should update a time entry in the correct Firestore document', async () => {
       mockUpdateDoc.mockResolvedValue(undefined)
 
-      await firestoreService.updateTimeEntry(mockEntryId, mockUpdateData)
+      await timeEntryService.updateTimeEntry(mockEntryId, mockUpdateData)
 
       // Verify correct document path
       expect(mockDoc).toHaveBeenCalledWith(
@@ -210,7 +210,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       const updateDataWithoutUserId = { ...mockUpdateData, userId: '' }
 
       await expect(
-        firestoreService.updateTimeEntry(mockEntryId, updateDataWithoutUserId),
+        timeEntryService.updateTimeEntry(mockEntryId, updateDataWithoutUserId),
       ).rejects.toThrow('User not authenticated')
     })
 
@@ -221,7 +221,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       }
       mockUpdateDoc.mockResolvedValue(undefined)
 
-      await firestoreService.updateTimeEntry(mockEntryId, partialUpdate)
+      await timeEntryService.updateTimeEntry(mockEntryId, partialUpdate)
 
       expect(mockUpdateDoc).toHaveBeenCalledWith(mockDocRef, {
         userId: mockUserId,
@@ -236,7 +236,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       }
       mockUpdateDoc.mockResolvedValue(undefined)
 
-      await firestoreService.updateTimeEntry(
+      await timeEntryService.updateTimeEntry(
         mockEntryId,
         updateDataWithUndefinedEndTime,
       )
@@ -253,7 +253,7 @@ describe('Time Entry Service Firestore Implementation', () => {
     it('should delete a time entry from the correct Firestore document', async () => {
       mockDeleteDoc.mockResolvedValue(undefined)
 
-      await firestoreService.deleteTimeEntry(mockUserId, mockEntryId)
+      await timeEntryService.deleteTimeEntry(mockUserId, mockEntryId)
 
       // Verify correct document path
       expect(mockDoc).toHaveBeenCalledWith(
@@ -268,14 +268,14 @@ describe('Time Entry Service Firestore Implementation', () => {
 
     it('should throw error when userId is missing', async () => {
       await expect(
-        firestoreService.deleteTimeEntry('', mockEntryId),
+        timeEntryService.deleteTimeEntry('', mockEntryId),
       ).rejects.toThrow('User not authenticated')
     })
   })
 
   describe('getTimeEntries', () => {
     it('should return empty array when userId is missing', async () => {
-      const result = await firestoreService.getTimeEntries('')
+      const result = await timeEntryService.getTimeEntries('')
 
       expect(result).toEqual([])
       expect(mockCollection).not.toHaveBeenCalled()
@@ -288,7 +288,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as QuerySnapshot
       mockGetDocs.mockResolvedValue(mockQuerySnapshot)
 
-      const result = await firestoreService.getTimeEntries(mockUserId)
+      const result = await timeEntryService.getTimeEntries(mockUserId)
 
       // Verify correct collection path and query structure
       expect(mockCollection).toHaveBeenCalledWith(
@@ -326,7 +326,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as QuerySnapshot)
       mockWriteBatch.mockReturnValue(mockBatch)
 
-      await firestoreService.deleteAllTimeEntries(mockUserId)
+      await timeEntryService.deleteAllTimeEntries(mockUserId)
 
       // Verify correct collection path and batch operations
       expect(mockCollection).toHaveBeenCalledWith(
@@ -347,7 +347,7 @@ describe('Time Entry Service Firestore Implementation', () => {
         empty: true,
       } as unknown as QuerySnapshot)
 
-      await firestoreService.deleteAllTimeEntries(mockUserId)
+      await timeEntryService.deleteAllTimeEntries(mockUserId)
 
       expect(mockCollection).toHaveBeenCalledWith(
         {},
@@ -360,7 +360,7 @@ describe('Time Entry Service Firestore Implementation', () => {
     })
 
     it('should throw error when userId is missing', async () => {
-      await expect(firestoreService.deleteAllTimeEntries('')).rejects.toThrow(
+      await expect(timeEntryService.deleteAllTimeEntries('')).rejects.toThrow(
         'User not authenticated',
       )
     })
@@ -380,7 +380,7 @@ describe('Time Entry Service Firestore Implementation', () => {
       } as unknown as DocumentReference
       mockAddDoc.mockResolvedValue(mockDocRefWithId)
 
-      await firestoreService.addTimeEntry(mockEntry)
+      await timeEntryService.addTimeEntry(mockEntry)
 
       // Verify that the service handles the conversion internally
       expect(mockAddDoc).toHaveBeenCalledWith(mockCollectionRef, {

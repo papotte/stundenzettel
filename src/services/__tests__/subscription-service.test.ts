@@ -38,9 +38,10 @@ describe('SubscriptionService', () => {
         json: async () => mockSubscription,
       })
 
-      const result = await subscriptionService.getUserSubscription('user123')
+      const { subscription } =
+        await subscriptionService.getUserSubscription('user123')
 
-      expect(result).toEqual(mockSubscription)
+      expect(subscription).toEqual(mockSubscription)
       expect(global.fetch).toHaveBeenCalledWith('/api/subscriptions/user123')
       expect(mockGetUserTeam).not.toHaveBeenCalled()
     })
@@ -78,9 +79,10 @@ describe('SubscriptionService', () => {
       mockGetUserTeam.mockResolvedValueOnce(mockTeam)
       mockGetTeamSubscription.mockResolvedValueOnce(mockTeamSubscription)
 
-      const result = await subscriptionService.getUserSubscription('user123')
+      const { subscription } =
+        await subscriptionService.getUserSubscription('user123')
 
-      expect(result).toEqual(mockTeamSubscription)
+      expect(subscription).toEqual(mockTeamSubscription)
       expect(global.fetch).toHaveBeenCalledWith('/api/subscriptions/user123')
       expect(mockGetUserTeam).toHaveBeenCalledWith('user123')
       expect(mockGetTeamSubscription).toHaveBeenCalledWith('team123')
@@ -96,9 +98,10 @@ describe('SubscriptionService', () => {
       // Mock no team membership
       mockGetUserTeam.mockResolvedValueOnce(null)
 
-      const result = await subscriptionService.getUserSubscription('user123')
+      const { subscription } =
+        await subscriptionService.getUserSubscription('user123')
 
-      expect(result).toBeNull()
+      expect(subscription).toBeNull()
       expect(global.fetch).toHaveBeenCalledWith('/api/subscriptions/user123')
       expect(mockGetUserTeam).toHaveBeenCalledWith('user123')
       expect(mockGetTeamSubscription).not.toHaveBeenCalled()
@@ -124,9 +127,10 @@ describe('SubscriptionService', () => {
       mockGetUserTeam.mockResolvedValueOnce(mockTeam)
       mockGetTeamSubscription.mockResolvedValueOnce(null)
 
-      const result = await subscriptionService.getUserSubscription('user123')
+      const { subscription } =
+        await subscriptionService.getUserSubscription('user123')
 
-      expect(result).toBeNull()
+      expect(subscription).toBeNull()
       expect(global.fetch).toHaveBeenCalledWith('/api/subscriptions/user123')
       expect(mockGetUserTeam).toHaveBeenCalledWith('user123')
       expect(mockGetTeamSubscription).toHaveBeenCalledWith('team123')
@@ -135,9 +139,10 @@ describe('SubscriptionService', () => {
     it('should handle API errors gracefully', async () => {
       ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('API Error'))
 
-      const result = await subscriptionService.getUserSubscription('user123')
+      const { subscription } =
+        await subscriptionService.getUserSubscription('user123')
 
-      expect(result).toBeNull()
+      expect(subscription).toBeNull()
       expect(global.fetch).toHaveBeenCalledWith('/api/subscriptions/user123')
       expect(mockGetUserTeam).not.toHaveBeenCalled()
     })
@@ -162,13 +167,15 @@ describe('SubscriptionService', () => {
       })
 
       // First call
-      const result1 = await subscriptionService.getUserSubscription('user123')
-      expect(result1).toEqual(mockSubscription)
+      const { subscription: subscription1 } =
+        await subscriptionService.getUserSubscription('user123')
+      expect(subscription1).toEqual(mockSubscription)
       expect(global.fetch).toHaveBeenCalledTimes(1)
 
       // Second call should use cache
-      const result2 = await subscriptionService.getUserSubscription('user123')
-      expect(result2).toEqual(mockSubscription)
+      const { subscription: subscription2 } =
+        await subscriptionService.getUserSubscription('user123')
+      expect(subscription2).toEqual(mockSubscription)
       expect(global.fetch).toHaveBeenCalledTimes(1) // Still only called once
     })
   })
