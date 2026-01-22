@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/papotte/stundenzettel/compare/v1.21.0...v1.22.0) (2026-01-22)
+
+
+### Features
+
+* use subscription context for improved performance ([#181](https://github.com/papotte/stundenzettel/issues/181)) ([eaf9088](https://github.com/papotte/stundenzettel/commit/eaf90881f407d74d9e85d571dde56fd129be3388))
+
 # [1.21.0](https://github.com/papotte/stundenzettel/compare/v1.20.5...v1.21.0) (2026-01-22)
 
 
