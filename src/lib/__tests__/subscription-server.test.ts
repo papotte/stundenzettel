@@ -47,254 +47,180 @@ describe('subscription-server', () => {
     })
 
     describe('individual subscription scenarios', () => {
-      it('should return valid subscription when user has active individual subscription', async () => {
-        const mockSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_123',
-          stripeCustomerId: 'cus_123',
-          status: 'active',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_123',
-          quantity: 1,
-          updatedAt: new Date('2024-01-01'),
-          planName: 'Individual Plan',
-          planDescription: 'Individual subscription',
-        }
+      it.each([
+        ['active', true],
+        ['trialing', true],
+        ['canceled', false],
+        ['past_due', false],
+      ])(
+        'should return subscription with valid=%s when user has %s individual subscription',
+        async (status, isValid) => {
+          const mockSubscription: Subscription = {
+            stripeSubscriptionId: 'sub_123',
+            stripeCustomerId: 'cus_123',
+            status: status as Subscription['status'],
+            currentPeriodStart: new Date('2024-01-01'),
+            cancelAtPeriodEnd: false,
+            priceId: 'price_123',
+            quantity: 1,
+            updatedAt: new Date('2024-01-01'),
+            planName: 'Individual Plan',
+            planDescription: 'Individual subscription',
+            ...(status === 'trialing' && {
+              trialEnd: new Date('2024-01-15'),
+            }),
+          }
 
-        mockGetUserSubscription.mockResolvedValue(mockSubscription)
+          mockGetUserSubscription.mockResolvedValue(mockSubscription)
 
-        const result = await getSubscriptionForUser(mockUserId)
+          const result = await getSubscriptionForUser(mockUserId)
 
-        expect(result).toEqual({
-          hasValidSubscription: true,
-          subscription: mockSubscription,
-        })
-        expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetUserTeam).not.toHaveBeenCalled()
-      })
-
-      it('should return valid subscription when user has trialing individual subscription', async () => {
-        const mockSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_123',
-          stripeCustomerId: 'cus_123',
-          status: 'trialing',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_123',
-          quantity: 1,
-          updatedAt: new Date('2024-01-01'),
-          planName: 'Individual Plan',
-          planDescription: 'Individual subscription',
-          trialEnd: new Date('2024-01-15'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(mockSubscription)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: true,
-          subscription: mockSubscription,
-        })
-        expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
-      })
-
-      it('should return invalid subscription when user has canceled individual subscription', async () => {
-        const mockSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_123',
-          stripeCustomerId: 'cus_123',
-          status: 'canceled',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_123',
-          quantity: 1,
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(mockSubscription)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: mockSubscription,
-        })
-        expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
-      })
-
-      it('should return invalid subscription when user has past_due individual subscription', async () => {
-        const mockSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_123',
-          stripeCustomerId: 'cus_123',
-          status: 'past_due',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_123',
-          quantity: 1,
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(mockSubscription)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: mockSubscription,
-        })
-      })
+          expect(result).toEqual({
+            hasValidSubscription: isValid,
+            subscription: mockSubscription,
+          })
+          expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
+          if (status === 'active') {
+            expect(mockGetUserTeam).not.toHaveBeenCalled()
+          }
+        },
+      )
     })
 
     describe('team subscription fallback scenarios', () => {
-      it('should return team subscription when no individual subscription but user has team with active subscription', async () => {
-        const mockTeam: Team = {
-          id: mockTeamId,
-          name: 'Test Team',
-          ownerId: 'owner-123',
-          createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01'),
+      const mockTeam: Team = {
+        id: mockTeamId,
+        name: 'Test Team',
+        ownerId: 'owner-123',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+      }
+
+      it.each([
+        ['active', true],
+        ['trialing', true],
+        ['canceled', false],
+      ])(
+        'should return team subscription with valid=%s when no individual subscription but user has team with %s subscription',
+        async (status, isValid) => {
+          const mockTeamSubscription: Subscription = {
+            stripeSubscriptionId: 'sub_team_123',
+            stripeCustomerId: 'cus_team_123',
+            status: status as Subscription['status'],
+            currentPeriodStart: new Date('2024-01-01'),
+            cancelAtPeriodEnd: false,
+            priceId: 'price_team_123',
+            quantity: 5,
+            updatedAt: new Date('2024-01-01'),
+            planName: 'Team Plan',
+            planDescription: 'Team subscription',
+            ...(status === 'trialing' && {
+              trialEnd: new Date('2024-01-15'),
+            }),
+          }
+
+          mockGetUserSubscription.mockResolvedValue(undefined)
+          mockGetUserTeam.mockResolvedValue(mockTeam)
+          mockGetTeamSubscription.mockResolvedValue(mockTeamSubscription)
+
+          const result = await getSubscriptionForUser(mockUserId)
+
+          expect(result).toEqual({
+            hasValidSubscription: isValid,
+            subscription: mockTeamSubscription,
+          })
+          expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
+          expect(mockGetUserTeam).toHaveBeenCalledWith(mockUserId)
+          expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeamId)
+        },
+      )
+
+      it('should return no subscription when no individual subscription and user has no team or no team subscription', async () => {
+        const testCases = [
+          {
+            name: 'user has no team',
+            team: null,
+            teamSubscription: null,
+            expectTeamSubscriptionCall: false,
+          },
+          {
+            name: 'user has team but no team subscription',
+            team: mockTeam,
+            teamSubscription: null,
+            expectTeamSubscriptionCall: true,
+          },
+        ]
+
+        for (const testCase of testCases) {
+          mockGetUserSubscription.mockResolvedValue(undefined)
+          mockGetUserTeam.mockResolvedValue(testCase.team)
+          if (testCase.expectTeamSubscriptionCall) {
+            mockGetTeamSubscription.mockResolvedValue(testCase.teamSubscription)
+          }
+
+          const result = await getSubscriptionForUser(mockUserId)
+
+          expect(result).toEqual({
+            hasValidSubscription: false,
+            subscription: null,
+          })
+          expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
+          expect(mockGetUserTeam).toHaveBeenCalledWith(mockUserId)
+          if (testCase.expectTeamSubscriptionCall) {
+            expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeamId)
+          } else {
+            expect(mockGetTeamSubscription).not.toHaveBeenCalled()
+          }
+
+          jest.clearAllMocks()
         }
-
-        const mockTeamSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_team_123',
-          stripeCustomerId: 'cus_team_123',
-          status: 'active',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_team_123',
-          quantity: 5,
-          updatedAt: new Date('2024-01-01'),
-          planName: 'Team Plan',
-          planDescription: 'Team subscription',
-        }
-
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockResolvedValue(mockTeam)
-        mockGetTeamSubscription.mockResolvedValue(mockTeamSubscription)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: true,
-          subscription: mockTeamSubscription,
-        })
-        expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetUserTeam).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeamId)
-      })
-
-      it('should return team subscription when no individual subscription but user has team with trialing subscription', async () => {
-        const mockTeam: Team = {
-          id: mockTeamId,
-          name: 'Test Team',
-          ownerId: 'owner-123',
-          createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        const mockTeamSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_team_123',
-          stripeCustomerId: 'cus_team_123',
-          status: 'trialing',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_team_123',
-          quantity: 5,
-          updatedAt: new Date('2024-01-01'),
-          planName: 'Team Plan',
-          planDescription: 'Team subscription',
-          trialEnd: new Date('2024-01-15'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockResolvedValue(mockTeam)
-        mockGetTeamSubscription.mockResolvedValue(mockTeamSubscription)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: true,
-          subscription: mockTeamSubscription,
-        })
-        expect(mockGetUserTeam).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeamId)
-      })
-
-      it('should return invalid team subscription when no individual subscription but user has team with canceled subscription', async () => {
-        const mockTeam: Team = {
-          id: mockTeamId,
-          name: 'Test Team',
-          ownerId: 'owner-123',
-          createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        const mockTeamSubscription: Subscription = {
-          stripeSubscriptionId: 'sub_team_123',
-          stripeCustomerId: 'cus_team_123',
-          status: 'canceled',
-          currentPeriodStart: new Date('2024-01-01'),
-          cancelAtPeriodEnd: false,
-          priceId: 'price_team_123',
-          quantity: 5,
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockResolvedValue(mockTeam)
-        mockGetTeamSubscription.mockResolvedValue(mockTeamSubscription)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: mockTeamSubscription,
-        })
-      })
-
-      it('should return no subscription when no individual subscription and user has no team', async () => {
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockResolvedValue(null)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: null,
-        })
-        expect(mockGetUserSubscription).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetUserTeam).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetTeamSubscription).not.toHaveBeenCalled()
-      })
-
-      it('should return no subscription when no individual subscription, user has team but no team subscription', async () => {
-        const mockTeam: Team = {
-          id: mockTeamId,
-          name: 'Test Team',
-          ownerId: 'owner-123',
-          createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockResolvedValue(mockTeam)
-        mockGetTeamSubscription.mockResolvedValue(null)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: null,
-        })
-        expect(mockGetUserTeam).toHaveBeenCalledWith(mockUserId)
-        expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeamId)
       })
     })
 
     describe('error handling', () => {
-      it('should return no subscription when getUserSubscription throws an error', async () => {
-        const error = new Error('Stripe API error')
-        mockGetUserSubscription.mockRejectedValue(error)
+      it.each([
+        {
+          name: 'getUserSubscription throws an error',
+          setup: () => {
+            mockGetUserSubscription.mockRejectedValue(
+              new Error('Stripe API error'),
+            )
+          },
+        },
+        {
+          name: 'getUserTeam throws an error',
+          setup: () => {
+            mockGetUserSubscription.mockResolvedValue(undefined)
+            mockGetUserTeam.mockRejectedValue(new Error('Team service error'))
+          },
+        },
+        {
+          name: 'getTeamSubscription throws an error',
+          setup: () => {
+            const mockTeam: Team = {
+              id: mockTeamId,
+              name: 'Test Team',
+              ownerId: 'owner-123',
+              createdAt: new Date('2024-01-01'),
+              updatedAt: new Date('2024-01-01'),
+            }
+            mockGetUserSubscription.mockResolvedValue(undefined)
+            mockGetUserTeam.mockResolvedValue(mockTeam)
+            mockGetTeamSubscription.mockRejectedValue(
+              new Error('Team subscription error'),
+            )
+          },
+        },
+        {
+          name: 'network error occurs',
+          setup: () => {
+            mockGetUserSubscription.mockRejectedValue(
+              new Error('Network error'),
+            )
+          },
+        },
+      ])('should return no subscription when $name', async ({ setup }) => {
+        setup()
 
         const result = await getSubscriptionForUser(mockUserId)
 
@@ -302,65 +228,7 @@ describe('subscription-server', () => {
           hasValidSubscription: false,
           subscription: null,
         })
-        expect(mockConsoleError).toHaveBeenCalledWith(
-          'Error fetching subscription:',
-          error,
-        )
-      })
-
-      it('should return no subscription when getUserTeam throws an error', async () => {
-        const error = new Error('Team service error')
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockRejectedValue(error)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: null,
-        })
-        expect(mockConsoleError).toHaveBeenCalledWith(
-          'Error fetching subscription:',
-          error,
-        )
-      })
-
-      it('should return no subscription when getTeamSubscription throws an error', async () => {
-        const error = new Error('Team subscription error')
-        const mockTeam: Team = {
-          id: mockTeamId,
-          name: 'Test Team',
-          ownerId: 'owner-123',
-          createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01'),
-        }
-
-        mockGetUserSubscription.mockResolvedValue(null)
-        mockGetUserTeam.mockResolvedValue(mockTeam)
-        mockGetTeamSubscription.mockRejectedValue(error)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: null,
-        })
-        expect(mockConsoleError).toHaveBeenCalledWith(
-          'Error fetching subscription:',
-          error,
-        )
-      })
-
-      it('should handle network errors gracefully', async () => {
-        const error = new Error('Network error')
-        mockGetUserSubscription.mockRejectedValue(error)
-
-        const result = await getSubscriptionForUser(mockUserId)
-
-        expect(result).toEqual({
-          hasValidSubscription: false,
-          subscription: null,
-        })
+        expect(mockConsoleError).toHaveBeenCalled()
       })
     })
   })
