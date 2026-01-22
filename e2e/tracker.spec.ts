@@ -189,6 +189,84 @@ test.describe('Core Tracker Functionality', () => {
     })
   })
 
+  test.describe('Copy / Duplicate Entries', () => {
+    test('should copy all entries from yesterday into today', async ({
+      page,
+    }) => {
+      await page.getByRole('button', { name: 'Previous day' }).click()
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      const location = 'Yesterday Entry'
+      await addManualEntry(page, location, '09:00', '12:00')
+      await expect(page.locator(`[data-location="${location}"]`)).toBeVisible()
+
+      await page.getByRole('button', { name: 'Next day' }).click()
+      await expect(page.getByTestId('copy-from-yesterday-button')).toBeVisible()
+      await page.getByTestId('copy-from-yesterday-button').click()
+
+      await expect(page.locator(`[data-location="${location}"]`)).toBeVisible({
+        timeout: 5000,
+      })
+    })
+
+    test('should copy a single entry to another day via Copy to…', async ({
+      page,
+    }) => {
+      const location = 'To Copy Single'
+      await addManualEntry(page, location, '10:00', '11:00')
+      const card = page.locator(`[data-location="${location}"]`)
+      await expect(card).toBeVisible()
+
+      await card.getByRole('button', { name: 'Copy to…' }).click()
+      const popover = page.getByTestId('copy-to-date-picker-popover')
+      await expect(popover).toBeVisible()
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      const dayNum = yesterday.getDate()
+      await popover
+        .getByRole('button', { name: String(dayNum) })
+        .first()
+        .click()
+      await popover.getByRole('button', { name: 'Copy' }).click()
+      await expect(popover).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'Previous day' }).click()
+      await expect(page.locator(`[data-location="${location}"]`)).toBeVisible({
+        timeout: 5000,
+      })
+    })
+
+    test('should copy all entries of the day to another date via Copy to…', async ({
+      page,
+    }) => {
+      await addManualEntry(page, 'Day Copy A', '09:00', '10:00')
+      await addManualEntry(page, 'Day Copy B', '11:00', '12:00')
+      await expect(page.locator('[data-location="Day Copy A"]')).toBeVisible()
+      await expect(page.locator('[data-location="Day Copy B"]')).toBeVisible()
+
+      await page.getByTestId('copy-day-to-button').click()
+      const popover = page.getByTestId('copy-to-date-picker-popover')
+      await expect(popover).toBeVisible()
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      const dayNum = yesterday.getDate()
+      await popover
+        .getByRole('button', { name: String(dayNum) })
+        .first()
+        .click()
+      await popover.getByRole('button', { name: 'Copy' }).click()
+      await expect(popover).not.toBeVisible()
+
+      await page.getByRole('button', { name: 'Previous day' }).click()
+      await expect(page.locator('[data-location="Day Copy A"]')).toBeVisible({
+        timeout: 5000,
+      })
+      await expect(page.locator('[data-location="Day Copy B"]')).toBeVisible({
+        timeout: 5000,
+      })
+    })
+  })
+
   test.describe('Layout', () => {
     test('should show top nav and main; bottom nav on mobile', async ({
       page,

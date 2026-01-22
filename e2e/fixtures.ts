@@ -6,6 +6,7 @@ import {
   createTestUser,
   deleteTestUser,
 } from './auth-utils'
+import { addActiveSubscription } from './subscription-helpers'
 
 const RESEND_STUB = { id: 'e2e-stub' }
 
@@ -43,6 +44,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
           })
         : route.continue(),
     )
+    // Default active subscription so most tests work without override. Use
+    // addUserSubscription, addTrialSubscription, mockNoSubscription, etc. to override.
+    await addActiveSubscription(page)
     await use(page)
   },
 

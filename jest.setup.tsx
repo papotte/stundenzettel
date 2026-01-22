@@ -46,6 +46,23 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => defaultMockAuth,
 }))
 
+// Avoid loading next/cache (use cache, etc.) in Node—uses TextEncoder.
+jest.mock('next/cache', () => ({
+  cacheLife: jest.fn(),
+  cacheTag: jest.fn(),
+  revalidateTag: jest.fn(),
+}))
+
+// Default to no subscription so components work without per-file mocks.
+jest.mock('@/hooks/use-subscription-status', () => ({
+  useSubscriptionStatus: () => ({
+    hasValidSubscription: false,
+    loading: false,
+    error: null,
+    subscription: null,
+  }),
+}))
+
 // Export for use in tests
 export { defaultMockAuth }
 

@@ -19,5 +19,13 @@
   "configurationErrorTitle": "Konfigurationsfehler",
   "configurationErrorDescription": "Firebase ist nicht korrekt konfiguriert. Bitte überprüfen Sie Ihre Umgebungsvariablen.",
   "databaseErrorTitle": "Datenbank-Verbindungsfehler",
-  "databaseConnectionError": "Verbindung zur Datenbank fehlgeschlagen. Bitte lesen Sie den Abschnitt 'Fehlerbehebung' in der README.md-Datei."
+  "databaseConnectionError": "Verbindung zur Datenbank fehlgeschlagen. Bitte lesen Sie den Abschnitt 'Fehlerbehebung' in der README.md-Datei.",
+  "entriesCopiedFromYesterdayTitle": "Einträge kopiert",
+  "entriesCopiedFromYesterdayDescription": "{count} Einträge von gestern kopiert.",
+  "entryCopiedTitle": "Eintrag kopiert",
+  "entryCopiedDescription": "\"{location}\" wurde ins gewählte Datum kopiert.",
+  "entriesCopiedToTitle": "Einträge kopiert",
+  "entriesCopiedToDescription": "{count} Einträge nach {date} kopiert.",
+  "copyFailedTitle": "Kopieren fehlgeschlagen",
+  "copyFailedDescription": "Beim Kopieren Ihrer Einträge ist ein Problem aufgetreten."
 }

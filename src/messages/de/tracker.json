@@ -25,5 +25,9 @@
   "headerSignOutTooltip": "Abmelden",
   "clearDataAlertTitle": "Sind Sie absolut sicher?",
   "clearDataAlertDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle Ihre Zeiterfassungsdaten endgültig aus der Datenbank gelöscht.",
-  "clearDataAlertConfirm": "Ja, alles löschen"
+  "clearDataAlertConfirm": "Ja, alles löschen",
+  "copyFromYesterday": "Von gestern kopieren",
+  "copyDayTo": "Kopieren nach…",
+  "copyDayToTitle": "Alle Einträge kopieren nach",
+  "copyDayToConfirm": "Kopieren"
 }

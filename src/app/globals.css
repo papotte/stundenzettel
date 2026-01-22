@@ -1,3 +1,5 @@
+@import 'react-day-picker/style.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,6 +45,7 @@ body {
     --sidebar-ring: 203 100% 41%;
     --table-header: 210 100% 80%;
   }
+
   .dark {
     --background: 140 10% 12%;
     --foreground: 140 15% 88%;
@@ -84,6 +87,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -102,4 +106,15 @@ body {
 
 .firebase-emulator-warning {
   position: relative !important;
+}
+
+/* Override Day Picker defaults; must come after RDP import above. */
+.rdp-root {
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-accent-background-color: hsl(var(--primary) / 0.15);
+}
+
+.rdp-chevron {
+  stroke: var(--rdp-accent-color);
+  fill: transparent;
 }

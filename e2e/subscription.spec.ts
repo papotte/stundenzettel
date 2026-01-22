@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures'
 import {
+  mockNoSubscription,
   mockTrialSubscription,
   verifySubscriptionGuard,
 } from './subscription-helpers'
@@ -12,6 +13,7 @@ test.describe('Subscription Guard', () => {
   test('should redirect to pricing when choose plan is clicked', async ({
     page,
   }) => {
+    await mockNoSubscription(page)
     await page.goto('/protected')
     await verifySubscriptionGuard(page)
     await page.getByRole('button', { name: /Choose a Plan/ }).click()
@@ -21,6 +23,7 @@ test.describe('Subscription Guard', () => {
   test('should redirect to subscription when manage subscription is clicked', async ({
     page,
   }) => {
+    await mockNoSubscription(page)
     await page.goto('/protected')
     await page.getByRole('button', { name: /Manage Subscription/ }).click()
     await page.waitForURL('/subscription')

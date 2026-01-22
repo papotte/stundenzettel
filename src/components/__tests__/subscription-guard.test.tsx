@@ -3,13 +3,18 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
+import { getSubscriptionForUserAction } from '@/app/actions/get-subscription'
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import SubscriptionGuard from '../subscription-guard'
 
-// Mock the subscription service
+jest.unmock('@/hooks/use-subscription-status')
+
+jest.mock('@/app/actions/get-subscription', () => ({
+  getSubscriptionForUserAction: jest.fn(),
+}))
+
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
@@ -41,8 +46,8 @@ const renderWithProviders = (component: React.ReactElement) => {
 }
 
 describe('SubscriptionGuard', () => {
-  const mockGetUserSubscription =
-    subscriptionService.getUserSubscription as jest.Mock
+  const mockGetSubscriptionForUserAction =
+    getSubscriptionForUserAction as jest.Mock
   const mockIsInTrial = subscriptionService.isInTrial as jest.Mock
   const mockGetDaysRemainingInTrial =
     subscriptionService.getDaysRemainingInTrial as jest.Mock
@@ -54,7 +59,6 @@ describe('SubscriptionGuard', () => {
     mockAuthContext.user = null
     mockAuthContext.loading = false
     mockLocation.href = ''
-    __clearSubscriptionCacheForTests()
 
     // Default mock implementations
     mockIsInTrial.mockReturnValue(false)
@@ -68,7 +72,7 @@ describe('SubscriptionGuard', () => {
         uid: 'user123',
         email: 'test@example.com',
       })
-      mockGetUserSubscription.mockImplementation(
+      mockGetSubscriptionForUserAction.mockImplementation(
         () => new Promise(() => {}), // Never resolves
       )
 
@@ -87,7 +91,10 @@ describe('SubscriptionGuard', () => {
   describe('Unauthenticated Users', () => {
     it('shows login required message for unauthenticated users', async () => {
       mockAuthContext.user = null
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -113,7 +120,10 @@ describe('SubscriptionGuard', () => {
     it('redirects to login when login button is clicked', async () => {
       const user = userEvent.setup()
       mockAuthContext.user = null
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -145,7 +155,10 @@ describe('SubscriptionGuard', () => {
     })
 
     it('shows subscription required message for users without subscription', async () => {
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -175,7 +188,10 @@ describe('SubscriptionGuard', () => {
 
     it('redirects to pricing when choose plan button is clicked', async () => {
       const user = userEvent.setup()
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -199,7 +215,10 @@ describe('SubscriptionGuard', () => {
 
     it('redirects to subscription page when manage subscription button is clicked', async () => {
       const user = userEvent.setup()
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -243,7 +262,10 @@ describe('SubscriptionGuard', () => {
         updatedAt: new Date(),
       }
 
-      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: true,
+        subscription: mockSubscription,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -274,7 +296,10 @@ describe('SubscriptionGuard', () => {
         updatedAt: new Date(),
       }
 
-      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: true,
+        subscription: mockSubscription,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -298,7 +323,10 @@ describe('SubscriptionGuard', () => {
         updatedAt: new Date(),
       }
 
-      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: true,
+        subscription: mockSubscription,
+      })
       mockIsInTrial.mockReturnValue(true)
       mockGetDaysRemainingInTrial.mockReturnValue(5)
       mockIsTrialExpiringSoon.mockReturnValue(false)
@@ -326,7 +354,10 @@ describe('SubscriptionGuard', () => {
         updatedAt: new Date(),
       }
 
-      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: true,
+        subscription: mockSubscription,
+      })
       mockIsInTrial.mockReturnValue(true)
       mockGetDaysRemainingInTrial.mockReturnValue(5)
       mockIsTrialExpiringSoon.mockReturnValue(false)
@@ -354,7 +385,10 @@ describe('SubscriptionGuard', () => {
         updatedAt: new Date(),
       }
 
-      mockGetUserSubscription.mockResolvedValue(mockSubscription)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: mockSubscription,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -380,7 +414,9 @@ describe('SubscriptionGuard', () => {
     })
 
     it('handles subscription service errors gracefully', async () => {
-      mockGetUserSubscription.mockRejectedValue(new Error('Service error'))
+      mockGetSubscriptionForUserAction.mockRejectedValue(
+        new Error('Service error'),
+      )
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -397,7 +433,9 @@ describe('SubscriptionGuard', () => {
     })
 
     it('handles network errors gracefully', async () => {
-      mockGetUserSubscription.mockRejectedValue(new Error('Network error'))
+      mockGetSubscriptionForUserAction.mockRejectedValue(
+        new Error('Network error'),
+      )
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -419,7 +457,10 @@ describe('SubscriptionGuard', () => {
         uid: 'user123',
         email: 'test@example.com',
       })
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
     })
 
     it('renders custom fallback content when provided', async () => {
@@ -465,7 +506,10 @@ describe('SubscriptionGuard', () => {
     })
 
     it('calls subscription service with correct user ID', async () => {
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -474,12 +518,15 @@ describe('SubscriptionGuard', () => {
       )
 
       await waitFor(() => {
-        expect(mockGetUserSubscription).toHaveBeenCalledWith('user123')
+        expect(mockGetSubscriptionForUserAction).toHaveBeenCalledWith('user123')
       })
     })
 
     it('calls subscription service only once per user', async () => {
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
 
       renderWithProviders(
         <SubscriptionGuard>
@@ -488,7 +535,7 @@ describe('SubscriptionGuard', () => {
       )
 
       await waitFor(() => {
-        expect(mockGetUserSubscription).toHaveBeenCalledTimes(1)
+        expect(mockGetSubscriptionForUserAction).toHaveBeenCalledTimes(1)
       })
     })
   })
@@ -499,7 +546,10 @@ describe('SubscriptionGuard', () => {
         uid: 'user123',
         email: 'test@example.com',
       })
-      mockGetUserSubscription.mockResolvedValue(null)
+      mockGetSubscriptionForUserAction.mockResolvedValue({
+        hasValidSubscription: false,
+        subscription: null,
+      })
     })
 
     it('has proper ARIA attributes for login required state', async () => {

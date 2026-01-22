@@ -4,7 +4,6 @@ import * as stripeService from '@/services/stripe'
 
 import { POST } from '../sync-team-with-stripe/route'
 
-// Mock the Stripe service
 jest.mock('@/services/stripe', () => ({
   syncTeamWithStripe: jest.fn(),
 }))

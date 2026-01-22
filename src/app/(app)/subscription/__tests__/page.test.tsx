@@ -5,19 +5,22 @@ import userEvent from '@testing-library/user-event'
 
 import { useRouter } from 'next/navigation'
 
-import { __clearSubscriptionCacheForTests } from '@/hooks/use-subscription-status'
+import { getSubscriptionForUserAction } from '@/app/actions/get-subscription'
 import type { Subscription } from '@/lib/types'
-import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import SubscriptionPage from '../page'
 
-// Mock Next.js router
+jest.unmock('@/hooks/use-subscription-status')
+
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }))
 
-// Mock services
+jest.mock('@/app/actions/get-subscription', () => ({
+  getSubscriptionForUserAction: jest.fn(),
+}))
+
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
@@ -47,8 +50,6 @@ const mockRouter = {
   replace: jest.fn(),
 }
 
-const mockSubscriptionService = jest.mocked(subscriptionService)
-
 // Use centralized auth mock
 const mockAuthContext = createMockAuthContext()
 jest.mock('@/hooks/use-auth', () => ({
@@ -63,7 +64,6 @@ describe('SubscriptionPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
-    __clearSubscriptionCacheForTests()
     // Reset auth context to authenticated state
     mockAuthContext.user = createMockUser()
     mockAuthContext.loading = false
@@ -91,7 +91,10 @@ describe('SubscriptionPage', () => {
   })
 
   it('shows no subscription state when user has no subscription', async () => {
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+    ;(getSubscriptionForUserAction as jest.Mock).mockResolvedValue({
+      hasValidSubscription: false,
+      subscription: null,
+    })
 
     renderWithProviders(<SubscriptionPage />)
 
@@ -117,9 +120,10 @@ describe('SubscriptionPage', () => {
       updatedAt: new Date(),
     }
 
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(
-      mockSubscription,
-    )
+    ;(getSubscriptionForUserAction as jest.Mock).mockResolvedValue({
+      hasValidSubscription: true,
+      subscription: mockSubscription,
+    })
 
     renderWithProviders(<SubscriptionPage />)
 
@@ -133,7 +137,10 @@ describe('SubscriptionPage', () => {
 
   it('handles upgrade button click', async () => {
     const user = userEvent.setup()
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+    ;(getSubscriptionForUserAction as jest.Mock).mockResolvedValue({
+      hasValidSubscription: false,
+      subscription: null,
+    })
 
     // Mock window.location
     const originalLocation = window.location
@@ -163,15 +170,18 @@ describe('SubscriptionPage', () => {
   })
 
   it('calls subscription service with correct user ID', async () => {
-    mockSubscriptionService.getUserSubscription.mockResolvedValue(null)
+    ;(getSubscriptionForUserAction as jest.Mock).mockResolvedValue({
+      hasValidSubscription: false,
+      subscription: null,
+    })
 
     renderWithProviders(<SubscriptionPage />)
 
     await waitFor(
       () => {
-        expect(
-          mockSubscriptionService.getUserSubscription,
-        ).toHaveBeenCalledWith('test-user-id')
+        expect(getSubscriptionForUserAction).toHaveBeenCalledWith(
+          'test-user-id',
+        )
       },
       { timeout: 3000 },
     )

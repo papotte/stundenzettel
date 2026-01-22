@@ -19,5 +19,13 @@
   "configurationErrorTitle": "Error de configuración",
   "configurationErrorDescription": "Firebase no está configurado correctamente. Por favor verifica tus variables de entorno.",
   "databaseErrorTitle": "Error de conexión a base de datos",
-  "databaseConnectionError": "No se pudo conectar a la base de datos. Por favor consulta la sección 'Troubleshooting' en el archivo README.md."
+  "databaseConnectionError": "No se pudo conectar a la base de datos. Por favor consulta la sección 'Troubleshooting' en el archivo README.md.",
+  "entriesCopiedFromYesterdayTitle": "Entradas copiadas",
+  "entriesCopiedFromYesterdayDescription": "{count} entradas copiadas de ayer.",
+  "entryCopiedTitle": "Entrada copiada",
+  "entryCopiedDescription": "\"{location}\" copiada a la fecha seleccionada.",
+  "entriesCopiedToTitle": "Entradas copiadas",
+  "entriesCopiedToDescription": "{count} entradas copiadas a {date}.",
+  "copyFailedTitle": "Error al copiar",
+  "copyFailedDescription": "Hubo un problema al copiar tus entradas."
 }

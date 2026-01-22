@@ -1,10 +1,20 @@
 import React from 'react'
 
-import { fireEvent, render, screen } from '@jest-setup'
+import { fireEvent, render, screen, waitFor } from '@jest-setup'
+import { within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import type { TimeEntry } from '@/lib/types'
 
 import TimeEntryCard from '../time-entry-card'
+
+/** Day cells use aria-label like "Thursday, January 15th, 2026". Nav buttons use "Go to the ...". */
+function getCalendarDayButtons(container: HTMLElement) {
+  const buttons = within(container).getAllByRole('button')
+  return buttons.filter(
+    (el) => !el.getAttribute('aria-label')?.startsWith('Go to the'),
+  )
+}
 
 describe('TimeEntryCard', () => {
   const onEdit = jest.fn()
@@ -185,5 +195,77 @@ describe('TimeEntryCard', () => {
 
     expect(onDelete).toHaveBeenCalledTimes(1)
     expect(onDelete).toHaveBeenCalledWith(baseEntry.id)
+  })
+
+  describe('onCopyTo / Copy to…', () => {
+    const onCopyTo = jest.fn()
+
+    beforeEach(() => {
+      onCopyTo.mockClear()
+    })
+
+    it('does not render copy button when onCopyTo is omitted', () => {
+      render(
+        <TimeEntryCard entry={baseEntry} onEdit={onEdit} onDelete={onDelete} />,
+      )
+      expect(
+        screen.queryByRole('button', { name: 'time_entry_card.copyToLabel' }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders copy button when onCopyTo is provided', () => {
+      render(
+        <TimeEntryCard
+          entry={baseEntry}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onCopyTo={onCopyTo}
+        />,
+      )
+      expect(
+        screen.getByRole('button', { name: 'time_entry_card.copyToLabel' }),
+      ).toBeInTheDocument()
+    })
+
+    it('opens picker, selects date, confirms copy and calls onCopyTo with entry and target date', async () => {
+      const user = userEvent.setup()
+      render(
+        <TimeEntryCard
+          entry={baseEntry}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onCopyTo={onCopyTo}
+        />,
+      )
+
+      await user.click(
+        screen.getByRole('button', { name: 'time_entry_card.copyToLabel' }),
+      )
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('copy-to-date-picker-popover'),
+        ).toBeInTheDocument()
+      })
+      expect(
+        screen.getByText('time_entry_card.copyToTitle'),
+      ).toBeInTheDocument()
+
+      const popover = screen.getByTestId('copy-to-date-picker-popover')
+      const dayButtons = getCalendarDayButtons(popover)
+      expect(dayButtons.length).toBeGreaterThan(0)
+      await user.click(dayButtons[0]!)
+
+      const confirmButton = screen.getByRole('button', { name: 'common.copy' })
+      await user.click(confirmButton)
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('copy-to-date-picker-popover'),
+        ).not.toBeInTheDocument()
+      })
+      expect(onCopyTo).toHaveBeenCalledTimes(1)
+      expect(onCopyTo).toHaveBeenCalledWith(baseEntry, expect.any(Date))
+    })
   })
 })

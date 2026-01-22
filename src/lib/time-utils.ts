@@ -1,8 +1,60 @@
 // time-utils.ts
 // Utilities for time and compensation calculations shared across preview, export, and time tracking logic.
-import { differenceInMinutes, isSameMonth } from 'date-fns'
+import { differenceInMinutes, isSameMonth, set } from 'date-fns'
 
 import type { TimeEntry, UserSettings } from './types'
+
+/**
+ * Clones a TimeEntry onto a target date, preserving clock times.
+ * Returns an entry without id or userId; caller adds userId when calling addTimeEntry.
+ * - Interval entries: startTime and endTime are moved to targetDate with same hours/minutes.
+ * - Duration-only entries: startTime set to targetDate at 12:00; durationMinutes kept; endTime omitted.
+ */
+export function shiftEntryToDate(
+  entry: TimeEntry,
+  targetDate: Date,
+): Omit<TimeEntry, 'id' | 'userId'> {
+  const base = {
+    location: entry.location,
+    pauseDuration: entry.pauseDuration ?? 0,
+    driverTimeHours: entry.driverTimeHours,
+    passengerTimeHours: entry.passengerTimeHours,
+  }
+
+  if (typeof entry.durationMinutes === 'number') {
+    return {
+      ...base,
+      startTime: set(targetDate, {
+        hours: 12,
+        minutes: 0,
+        seconds: 0,
+        milliseconds: 0,
+      }),
+      durationMinutes: entry.durationMinutes,
+    }
+  }
+
+  const startTime = set(targetDate, {
+    hours: entry.startTime.getHours(),
+    minutes: entry.startTime.getMinutes(),
+    seconds: 0,
+    milliseconds: 0,
+  })
+  const endTime = entry.endTime
+    ? set(targetDate, {
+        hours: entry.endTime.getHours(),
+        minutes: entry.endTime.getMinutes(),
+        seconds: 0,
+        milliseconds: 0,
+      })
+    : undefined
+
+  return {
+    ...base,
+    startTime,
+    endTime,
+  }
+}
 
 /**
  * Parses a time string (HH:mm) into a Date object using a fixed date to avoid timezone issues.

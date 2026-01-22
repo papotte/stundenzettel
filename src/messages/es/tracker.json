@@ -25,5 +25,9 @@
   "headerSignOutTooltip": "Cerrar sesión",
   "clearDataAlertTitle": "¿Estás completamente seguro?",
   "clearDataAlertDescription": "Esta acción no se puede deshacer. Esto eliminará permanentemente todos tus datos de seguimiento de tiempo de la base de datos.",
-  "clearDataAlertConfirm": "Sí, eliminar todo"
+  "clearDataAlertConfirm": "Sí, eliminar todo",
+  "copyFromYesterday": "Copiar desde ayer",
+  "copyDayTo": "Copiar a…",
+  "copyDayToTitle": "Copiar todas las entradas a",
+  "copyDayToConfirm": "Copiar"
 }

@@ -17,7 +17,10 @@ import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
-import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
+import {
+  calculateTotalCompensatedMinutes,
+  shiftEntryToDate,
+} from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'
 import {
@@ -333,6 +336,102 @@ export function useTimeTracker(user: { uid: string } | null) {
     }
   }
 
+  const handleCopyFromYesterday = async () => {
+    if (!user || !selectedDate) return
+    if (!isSameDay(selectedDate, new Date())) return
+    const yesterday = subDays(selectedDate, 1)
+    const yesterdayEntries = entries.filter(
+      (e) => e.startTime && isSameDay(e.startTime, yesterday),
+    )
+    if (yesterdayEntries.length === 0) return
+    try {
+      const newEntries: TimeEntry[] = []
+      for (const entry of yesterdayEntries) {
+        const shifted = shiftEntryToDate(entry, selectedDate)
+        const withUser = { ...shifted, userId: user.uid }
+        const newId = await addTimeEntry(withUser)
+        newEntries.push({ ...withUser, id: newId })
+      }
+      setEntries((prev) =>
+        [...newEntries, ...prev].sort(compareEntriesByStartTime),
+      )
+      toast({
+        title: t('toasts.entriesCopiedFromYesterdayTitle') ?? '',
+        description:
+          t('toasts.entriesCopiedFromYesterdayDescription', {
+            count: newEntries.length,
+          }) ?? '',
+      })
+    } catch (error) {
+      console.error('Error copying from yesterday:', error)
+      toast({
+        title: t('toasts.copyFailedTitle') ?? '',
+        description: t('toasts.copyFailedDescription') ?? '',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleCopyEntryTo = async (entry: TimeEntry, targetDate: Date) => {
+    if (!user) return
+    try {
+      const shifted = shiftEntryToDate(entry, targetDate)
+      const withUser = { ...shifted, userId: user.uid }
+      const newId = await addTimeEntry(withUser)
+      const newEntry = { ...withUser, id: newId }
+      setEntries((prev) => [newEntry, ...prev].sort(compareEntriesByStartTime))
+      toast({
+        title: t('toasts.entryCopiedTitle') ?? '',
+        description:
+          t('toasts.entryCopiedDescription', {
+            location: entry.location,
+          }) ?? '',
+      })
+    } catch (error) {
+      console.error('Error copying entry:', error)
+      toast({
+        title: t('toasts.copyFailedTitle') ?? '',
+        description: t('toasts.copyFailedDescription') ?? '',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleCopyDayTo = async (targetDate: Date) => {
+    if (!user || !selectedDate) return
+    const dayEntries = entries.filter(
+      (e) => e.startTime && isSameDay(e.startTime, selectedDate),
+    )
+    if (dayEntries.length === 0) return
+    try {
+      const newEntries: TimeEntry[] = []
+      for (const entry of dayEntries) {
+        const shifted = shiftEntryToDate(entry, targetDate)
+        const withUser = { ...shifted, userId: user.uid }
+        const newId = await addTimeEntry(withUser)
+        newEntries.push({ ...withUser, id: newId })
+      }
+      setEntries((prev) =>
+        [...newEntries, ...prev].sort(compareEntriesByStartTime),
+      )
+      toast({
+        title: t('toasts.entriesCopiedToTitle') ?? '',
+        description:
+          t('toasts.entriesCopiedToDescription', {
+            count: newEntries.length,
+            date: format(targetDate, 'long'),
+          }) ?? '',
+      })
+    } catch (error) {
+      console.error('Error copying day:', error)
+      toast({
+        title: t('toasts.copyFailedTitle') ?? '',
+        description: t('toasts.copyFailedDescription') ?? '',
+        variant: 'destructive',
+      })
+    }
+  }
+
   const handlePreviousDay = () => {
     if (selectedDate) {
       setSelectedDate(subDays(selectedDate, 1))
@@ -429,6 +528,9 @@ export function useTimeTracker(user: { uid: string } | null) {
     handleClearData,
     handleAddSpecialEntry,
     handleGetCurrentLocation,
+    handleCopyFromYesterday,
+    handleCopyEntryTo,
+    handleCopyDayTo,
     handlePreviousDay,
     handleNextDay,
     filteredEntries,
