@@ -1,3 +1,4 @@
+import { revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { syncTeamWithStripe } from '@/services/stripe'
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
       firebaseUid,
       teamId,
     })
+    revalidateTag('subscription', 'max')
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
     const errorMessage =
