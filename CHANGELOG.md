@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/papotte/stundenzettel/compare/v1.20.5...v1.21.0) (2026-01-22)
+
+
+### Features
+
+* add copy entries functionality ([#180](https://github.com/papotte/stundenzettel/issues/180)) ([2ce1dfd](https://github.com/papotte/stundenzettel/commit/2ce1dfd0bc695b952946c7890dc0ffb5c0e60485))
+
 ## [1.20.5](https://github.com/papotte/stundenzettel/compare/v1.20.4...v1.20.5) (2026-01-21)
 
 
