@@ -212,12 +212,14 @@ export default function TeamReportsPage() {
 
             {selectedMember ? (
               <TeamMemberReportView
+                teamId={team.id}
                 memberId={selectedMember.id}
                 memberEmail={selectedMember.email}
                 selectedMonth={selectedMonth}
               />
             ) : (
               <TeamReportsGrid
+                teamId={team.id}
                 members={members}
                 selectedMonth={selectedMonth}
                 onMemberClick={handleMemberClick}

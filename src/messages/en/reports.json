@@ -17,5 +17,7 @@
   "noMembers": "No team members found",
   "selectMember": "Select a team member to view their report",
   "viewGrid": "Grid view",
-  "viewList": "List view"
+  "viewList": "List view",
+  "notPublished": "Not published",
+  "notPublishedDetail": "This month has not been published by the member"
 }

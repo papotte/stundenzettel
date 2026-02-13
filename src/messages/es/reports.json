@@ -17,5 +17,7 @@
   "noMembers": "No se encontraron miembros del equipo",
   "selectMember": "Seleccione un miembro del equipo para ver su informe",
   "viewGrid": "Vista de cuadrícula",
-  "viewList": "Vista de lista"
+  "viewList": "Vista de lista",
+  "notPublished": "No publicado",
+  "notPublishedDetail": "Este mes no ha sido publicado por el miembro."
 }

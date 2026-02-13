@@ -19,18 +19,19 @@ import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime, maskEmail } from '@/lib/utils'
-import { getTimeEntries } from '@/services/time-entry-service'
-import { getUserSettings } from '@/services/user-settings-service'
+import { getPublishedMonth } from '@/services/published-export-service'
 
 import TimesheetPreview from '../timesheet-preview'
 
 interface TeamMemberReportViewProps {
+  teamId: string | null
   memberId: string
   memberEmail: string
   selectedMonth: Date
 }
 
 export function TeamMemberReportView({
+  teamId,
   memberId,
   memberEmail,
   selectedMonth,
@@ -40,25 +41,40 @@ export function TeamMemberReportView({
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [notPublished, setNotPublished] = useState(false)
+
+  const monthKey = format.dateTime(selectedMonth, 'yearMonthISO')
 
   useEffect(() => {
+    if (!teamId) {
+      setNotPublished(true)
+      setIsLoading(false)
+      return
+    }
     const fetchData = async () => {
       setIsLoading(true)
+      setNotPublished(false)
       try {
-        const [fetchedEntries, settings] = await Promise.all([
-          getTimeEntries(memberId),
-          getUserSettings(memberId),
-        ])
-        setEntries(fetchedEntries)
-        setUserSettings(settings)
+        const data = await getPublishedMonth(teamId, memberId, monthKey)
+        if (data) {
+          setEntries(data.entries)
+          setUserSettings(data.userSettings)
+        } else {
+          setNotPublished(true)
+          setEntries([])
+          setUserSettings(null)
+        }
       } catch (error) {
-        console.error('Failed to load member data:', error)
+        console.error('Failed to load member report:', error)
+        setNotPublished(true)
+        setEntries([])
+        setUserSettings(null)
       } finally {
         setIsLoading(false)
       }
     }
     fetchData()
-  }, [memberId])
+  }, [teamId, memberId, monthKey])
 
   const getEntriesForDay = useCallback(
     (day: Date) => {
@@ -88,7 +104,6 @@ export function TeamMemberReportView({
   const handleExport = async () => {
     if (!selectedMonth || !userSettings) return
 
-    // Create a mock user object for export
     const mockUser = {
       uid: memberId,
       email: memberEmail,
@@ -107,16 +122,10 @@ export function TeamMemberReportView({
     })
   }
 
-  // No-op handlers for read-only mode
-  const handleEditEntry = useCallback(() => {
-    // Read-only mode - no editing
-  }, [])
+  const handleEditEntry = useCallback(() => {}, [])
+  const handleAddNewEntry = useCallback(() => {}, [])
 
-  const handleAddNewEntry = useCallback(() => {
-    // Read-only mode - no adding
-  }, [])
-
-  if (isLoading || !userSettings) {
+  if (isLoading) {
     return (
       <div
         className="bg-white print:border-none print:shadow-none"
@@ -143,8 +152,20 @@ export function TeamMemberReportView({
     )
   }
 
+  if (notPublished || !userSettings) {
+    return (
+      <div
+        className="bg-white p-6 print:border-none print:shadow-none"
+        data-testid="member-report-view-card"
+      >
+        <p className="text-muted-foreground text-center">
+          {t('reports.notPublishedDetail')}
+        </p>
+      </div>
+    )
+  }
+
   const email = maskEmail(memberEmail)
-  // Create a mock user object for display
   const mockUser = {
     uid: memberId,
     email: email,

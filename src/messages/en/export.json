@@ -20,5 +20,9 @@
   "footerOvertime": "Overtime:",
   "headerMileage": "Mileage/Expenses",
   "signatureLine": "Signature:",
-  "noDataHint": "No data available for export in this month."
+  "noDataHint": "No data available for export in this month.",
+  "publish": "Publish",
+  "publishedOn": "Published on {date}",
+  "publishForTeamHint": "Join a team to publish for your team admin",
+  "publishSuccess": "Timesheet published"
 }

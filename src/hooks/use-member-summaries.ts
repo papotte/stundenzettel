@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { isSameDay, isSameMonth } from 'date-fns'
+import { isSameDay } from 'date-fns'
 
 import {
   calculateExpectedMonthlyHours,
@@ -9,10 +9,19 @@ import {
 } from '@/lib/time-utils'
 import type { MemberSummary, TeamMember, TimeEntry } from '@/lib/types'
 import { compareEntriesByStartTime, getWeeksForMonth } from '@/lib/utils'
-import { getTimeEntries } from '@/services/time-entry-service'
-import { getUserSettings } from '@/services/user-settings-service'
+import { getPublishedMonth } from '@/services/published-export-service'
 
-export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
+function formatMonthKey(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}`
+}
+
+export function useMemberSummaries(
+  teamId: string | null,
+  members: TeamMember[],
+  selectedMonth: Date,
+) {
   const [memberSummaries, setMemberSummaries] = useState<
     Map<string, MemberSummary>
   >(new Map())
@@ -24,10 +33,16 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
   }, [])
 
   useEffect(() => {
+    if (!teamId || members.length === 0) {
+      setMemberSummaries(new Map())
+      return
+    }
+
+    const monthKey = formatMonthKey(selectedMonth)
+
     const fetchMemberData = async () => {
       const summaries = new Map<string, MemberSummary>()
 
-      // Initialize all members with loading state
       members.forEach((member) => {
         summaries.set(member.id, {
           member,
@@ -37,26 +52,33 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
           isLoading: true,
           userSettings: null,
           entries: [],
+          isPublished: false,
         })
       })
 
       setMemberSummaries(summaries)
 
-      // Fetch data for all members in parallel
       const fetchPromises = members.map(async (member) => {
         try {
-          const [entries, userSettings] = await Promise.all([
-            getTimeEntries(member.id),
-            getUserSettings(member.id),
-          ])
+          const data = await getPublishedMonth(teamId, member.id, monthKey)
 
-          // Filter entries for the selected month
-          const monthEntries = entries.filter(
-            (entry) =>
-              entry.startTime && isSameMonth(entry.startTime, selectedMonth),
-          )
+          if (!data) {
+            return {
+              memberId: member.id,
+              summary: {
+                member,
+                hoursWorked: 0,
+                overtime: 0,
+                percentage: 0,
+                isLoading: false,
+                userSettings: null,
+                entries: [],
+                isPublished: false,
+              },
+            }
+          }
 
-          // Calculate hours worked
+          const { entries: monthEntries, userSettings } = data
           const weeks = getWeeksForMonth(selectedMonth)
           const getEntriesForDayFn = (day: Date) =>
             getEntriesForDay(monthEntries, day)
@@ -90,8 +112,6 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
             passengerHours * (passengerCompPercent / 100)
 
           const totalHoursWorked = compensatedHours + compensatedPassengerHours
-
-          // Calculate expected hours and overtime
           const expectedHours = calculateExpectedMonthlyHours(userSettings)
           const overtime = totalHoursWorked - expectedHours
           const percentage =
@@ -107,10 +127,14 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
               isLoading: false,
               userSettings,
               entries: monthEntries,
+              isPublished: true,
             },
           }
         } catch (error) {
-          console.error(`Error fetching data for member ${member.id}:`, error)
+          console.error(
+            `Error fetching published data for member ${member.id}:`,
+            error,
+          )
           return {
             memberId: member.id,
             summary: {
@@ -121,6 +145,7 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
               isLoading: false,
               userSettings: null,
               entries: [],
+              isPublished: false,
             },
           }
         }
@@ -135,10 +160,8 @@ export function useMemberSummaries(members: TeamMember[], selectedMonth: Date) {
       })
     }
 
-    if (members.length > 0) {
-      fetchMemberData()
-    }
-  }, [members, selectedMonth, getEntriesForDay])
+    fetchMemberData()
+  }, [teamId, members, selectedMonth, getEntriesForDay])
 
   const sortedSummaries = useMemo(() => {
     return Array.from(memberSummaries.values()).sort((a, b) =>

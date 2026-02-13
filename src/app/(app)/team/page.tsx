@@ -441,7 +441,7 @@ export default function TeamPage() {
 
               {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
                 <TabsContent value="reports">
-                  <TeamReportsTab members={members} />
+                  <TeamReportsTab teamId={team?.id ?? null} members={members} />
                 </TabsContent>
               )}
 
