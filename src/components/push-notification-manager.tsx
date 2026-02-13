@@ -9,6 +9,7 @@ import {
   unsubscribeUser,
 } from '@/app/actions/push-notifications'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 import {
   Card,
   CardContent,
@@ -36,15 +37,21 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
  */
 export function PushNotificationManager() {
   const t = useTranslations('settings')
+  const tToasts = useTranslations('toasts')
+  const { toast } = useToast()
   const [isSupported, setIsSupported] = useState(false)
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null,
   )
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
-      registerServiceWorker()
+      registerServiceWorker().catch((err) => {
+        console.error('Service worker registration failed:', err)
+        setIsSupported(false)
+      })
     }
   }, [])
 
@@ -63,22 +70,46 @@ export function PushNotificationManager() {
       console.error('NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set')
       return
     }
-    const registration = await navigator.serviceWorker.ready
-    const sub = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
-    })
-    setSubscription(sub)
-    const serializedSub = JSON.parse(
-      JSON.stringify(sub),
-    ) as PushSubscriptionJSON
-    await subscribeUser(serializedSub)
+    setIsLoading(true)
+    try {
+      const registration = await navigator.serviceWorker.ready
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+      })
+      const serializedSub = JSON.parse(
+        JSON.stringify(sub),
+      ) as PushSubscriptionJSON
+      await subscribeUser(serializedSub)
+      setSubscription(sub)
+    } catch (err) {
+      console.error('Push subscribe failed:', err)
+      toast({
+        title: tToasts('pushSubscribeFailedTitle'),
+        description: tToasts('pushSubscribeFailedDescription'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   async function unsubscribeFromPush() {
-    await subscription?.unsubscribe()
-    setSubscription(null)
-    await unsubscribeUser()
+    setIsLoading(true)
+    try {
+      await subscription?.unsubscribe()
+      await unsubscribeUser()
+      setSubscription(null)
+    } catch (err) {
+      console.error('Push unsubscribe failed:', err)
+      toast({
+        title: tToasts('pushUnsubscribeFailedTitle'),
+        description: tToasts('pushUnsubscribeFailedDescription'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!isSupported) {
@@ -110,6 +141,7 @@ export function PushNotificationManager() {
                 variant="outline"
                 size="sm"
                 onClick={unsubscribeFromPush}
+                disabled={isLoading}
               >
                 {t('pushUnsubscribe')}
               </Button>
@@ -119,7 +151,12 @@ export function PushNotificationManager() {
               <p className="text-sm text-muted-foreground">
                 {t('pushNotSubscribed')}
               </p>
-              <Button type="button" size="sm" onClick={subscribeToPush}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={subscribeToPush}
+                disabled={isLoading}
+              >
                 {t('pushSubscribe')}
               </Button>
             </>

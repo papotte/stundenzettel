@@ -27,5 +27,9 @@
   "entriesCopiedToTitle": "Einträge kopiert",
   "entriesCopiedToDescription": "{count} Einträge nach {date} kopiert.",
   "copyFailedTitle": "Kopieren fehlgeschlagen",
-  "copyFailedDescription": "Beim Kopieren Ihrer Einträge ist ein Problem aufgetreten."
+  "copyFailedDescription": "Beim Kopieren Ihrer Einträge ist ein Problem aufgetreten.",
+  "pushSubscribeFailedTitle": "Benachrichtigungen aktivieren fehlgeschlagen",
+  "pushSubscribeFailedDescription": "Berechtigung wurde verweigert oder etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
+  "pushUnsubscribeFailedTitle": "Benachrichtigungen deaktivieren fehlgeschlagen",
+  "pushUnsubscribeFailedDescription": "Benachrichtigungen konnten nicht deaktiviert werden. Bitte versuchen Sie es erneut."
 }
