@@ -49,10 +49,10 @@ self.addEventListener('notificationclick', (event) => {
           const client =
             clientList.find((c) => c.visibilityState === 'visible') ||
             clientList[0]
-          client.navigate(url)
-          client.focus()
-        } else if (self.clients.openWindow) {
-          self.clients.openWindow(self.location.origin + url)
+          return client.navigate(url).then(() => client.focus())
+        }
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(self.location.origin + url)
         }
       }),
   )

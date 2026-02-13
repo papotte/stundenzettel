@@ -9,7 +9,6 @@ import {
   unsubscribeUser,
 } from '@/app/actions/push-notifications'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
 import {
   Card,
   CardContent,
@@ -17,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useToast } from '@/hooks/use-toast'
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
