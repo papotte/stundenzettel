@@ -2,8 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { addMonths, isSameDay, subMonths } from 'date-fns'
-import { ChevronLeft, ChevronRight, Download, Printer } from 'lucide-react'
+import { addMonths, isSameDay, isSameMonth, subMonths } from 'date-fns'
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Printer,
+  Send,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
@@ -22,6 +28,11 @@ import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'
+import {
+  getPublishedMonth,
+  publishMonthForTeam,
+} from '@/services/published-export-service'
+import { getUserTeam } from '@/services/team-service'
 import {
   addTimeEntry,
   getTimeEntries,
@@ -44,18 +55,25 @@ export default function ExportPreview() {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [newEntryDate, setNewEntryDate] = useState<Date | null>(null)
+  const [userTeam, setUserTeam] = useState<{ id: string } | null>(null)
+  const [publishedAt, setPublishedAt] = useState<Date | null | undefined>(
+    undefined,
+  )
+  const [isPublishing, setIsPublishing] = useState(false)
 
   useEffect(() => {
     if (!user) return
     const fetchAndSetEntries = async () => {
       setIsLoading(true)
       try {
-        const [fetchedEntries, settings] = await Promise.all([
+        const [fetchedEntries, settings, team] = await Promise.all([
           getTimeEntries(user.uid),
           getUserSettings(user.uid),
+          getUserTeam(user.uid),
         ])
         setEntries(fetchedEntries)
         setUserSettings(settings)
+        setUserTeam(team)
       } catch (error) {
         console.error('Failed to load initial data from Firestore.', error)
       }
@@ -64,6 +82,23 @@ export default function ExportPreview() {
     }
     fetchAndSetEntries()
   }, [user])
+
+  const monthKey = selectedMonth
+    ? format.dateTime(selectedMonth, 'yearMonthISO')
+    : ''
+  useEffect(() => {
+    if (!user || !userTeam || !monthKey) {
+      setPublishedAt(userTeam ? null : undefined)
+      return
+    }
+    let cancelled = false
+    getPublishedMonth(userTeam.id, user.uid, monthKey).then((data) => {
+      if (!cancelled) setPublishedAt(data?.publishedAt ?? null)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [user, userTeam, monthKey])
 
   const getEntriesForDay = useCallback(
     (day: Date) => {
@@ -102,6 +137,37 @@ export default function ExportPreview() {
       format,
     })
   }
+
+  const handlePublish = useCallback(async () => {
+    if (!user || !userTeam || !userSettings || !selectedMonth) return
+    const monthKeyPublish = format.dateTime(selectedMonth, 'yearMonthISO')
+    const entriesForMonth = entries.filter(
+      (e) => e.startTime && isSameMonth(e.startTime, selectedMonth),
+    )
+    setIsPublishing(true)
+    try {
+      await publishMonthForTeam(
+        userTeam.id,
+        user.uid,
+        monthKeyPublish,
+        entriesForMonth,
+        userSettings,
+      )
+      setPublishedAt(new Date())
+      toast({
+        title: t('export.publishSuccess'),
+      })
+    } catch (error) {
+      console.error('Failed to publish month:', error)
+      toast({
+        title: t('common.error'),
+        description: t('toasts.saveFailedDescription'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsPublishing(false)
+    }
+  }, [user, userTeam, userSettings, selectedMonth, entries, format, t, toast])
 
   const handleEditEntry = useCallback((entry: TimeEntry) => {
     setEditingEntry(entry)
@@ -275,6 +341,70 @@ export default function ExportPreview() {
                   </TooltipContent>
                 )}
               </Tooltip>
+              {userTeam &&
+                (publishedAt ? (
+                  <span
+                    className="text-muted-foreground text-sm"
+                    data-testid="export-preview-published-on"
+                  >
+                    {t('export.publishedOn', {
+                      date: format.dateTime(publishedAt, 'short'),
+                    })}
+                  </span>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="outline"
+                          onClick={handlePublish}
+                          disabled={
+                            isPublishing ||
+                            !entries.some(
+                              (e) =>
+                                e.startTime &&
+                                isSameMonth(e.startTime, selectedMonth),
+                            )
+                          }
+                          data-testid="export-preview-publish-button"
+                        >
+                          <Send className="mr-2 h-4 w-4" />
+                          {t('export.publish')}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!entries.some(
+                      (e) =>
+                        e.startTime && isSameMonth(e.startTime, selectedMonth),
+                    ) && (
+                      <TooltipContent side="top">
+                        {t('export.noDataHint', {
+                          defaultValue:
+                            'No data available for export in this month.',
+                        })}
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                ))}
+              {!userTeam && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="outline"
+                        disabled
+                        data-testid="export-preview-publish-button"
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        {t('export.publish')}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {t('export.publishForTeamHint')}
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
 

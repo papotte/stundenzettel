@@ -17,18 +17,21 @@ import type { TeamMember } from '@/lib/types'
 import { maskEmail } from '@/lib/utils'
 
 interface TeamReportsListProps {
+  teamId: string | null
   members: TeamMember[]
   selectedMonth: Date
   onMemberClick: (memberId: string) => void
 }
 
 export function TeamReportsList({
+  teamId,
   members,
   selectedMonth,
   onMemberClick,
 }: TeamReportsListProps) {
   const t = useTranslations()
   const { sortedSummaries, memberSummaries } = useMemberSummaries(
+    teamId,
     members,
     selectedMonth,
   )
@@ -98,12 +101,15 @@ export function TeamReportsList({
                       <Skeleton className="h-4 w-48" />
                     ) : (
                       (summary.userSettings?.displayName ?? '').trim() ||
-                      maskEmail(summary.member.email)
+                      maskEmail(summary.member.email) ||
+                      summary.member.email
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : summary.userSettings ? (
                       calculateExpectedMonthlyHours(
                         summary.userSettings,
@@ -115,6 +121,8 @@ export function TeamReportsList({
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : (
                       `${summary.hoursWorked.toFixed(2)}h`
                     )}
@@ -122,6 +130,8 @@ export function TeamReportsList({
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : (
                       <span
                         className={
@@ -140,6 +150,8 @@ export function TeamReportsList({
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : (
                       `${summary.percentage.toFixed(1)}%`
                     )}

@@ -10,18 +10,20 @@ import type { TeamMember } from '@/lib/types'
 import { maskEmail } from '@/lib/utils'
 
 interface TeamReportsGridProps {
+  teamId: string | null
   members: TeamMember[]
   selectedMonth: Date
   onMemberClick: (memberId: string) => void
 }
 
 export function TeamReportsGrid({
+  teamId,
   members,
   selectedMonth,
   onMemberClick,
 }: TeamReportsGridProps) {
   const t = useTranslations()
-  const { sortedSummaries } = useMemberSummaries(members, selectedMonth)
+  const { sortedSummaries } = useMemberSummaries(teamId, members, selectedMonth)
 
   if (members.length === 0) {
     return (
@@ -54,55 +56,64 @@ export function TeamReportsGrid({
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg">
                   {(summary.userSettings?.displayName ?? '').trim() ||
-                    maskEmail(summary.member.email)}
+                    maskEmail(summary.member.email) ||
+                    summary.member.email}
                 </h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {t('export.footerExpectedHours')}:
-                    </span>
-                    <span className="font-medium">
-                      {summary.userSettings
-                        ? calculateExpectedMonthlyHours(
-                            summary.userSettings,
-                          ).toFixed(2)
-                        : '0.00'}
-                      h
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {t('reports.hoursWorked')}:
-                    </span>
-                    <span className="font-medium">
-                      {summary.hoursWorked.toFixed(2)}h
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {t('export.footerOvertime')}:
-                    </span>
-                    <span
-                      className={`font-medium ${
-                        summary.overtime > 0
-                          ? 'text-green-600'
-                          : summary.overtime < 0
-                            ? 'text-red-600'
-                            : ''
-                      }`}
-                    >
-                      {summary.overtime > 0 ? '+' : ''}
-                      {summary.overtime.toFixed(2)}h
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      {t('reports.percentage')}:
-                    </span>
-                    <span className="font-medium">
-                      {summary.percentage.toFixed(1)}%
-                    </span>
-                  </div>
+                  {summary.isPublished ? (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t('export.footerExpectedHours')}:
+                        </span>
+                        <span className="font-medium">
+                          {summary.userSettings
+                            ? calculateExpectedMonthlyHours(
+                                summary.userSettings,
+                              ).toFixed(2)
+                            : '0.00'}
+                          h
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t('reports.hoursWorked')}:
+                        </span>
+                        <span className="font-medium">
+                          {summary.hoursWorked.toFixed(2)}h
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t('export.footerOvertime')}:
+                        </span>
+                        <span
+                          className={`font-medium ${
+                            summary.overtime > 0
+                              ? 'text-green-600'
+                              : summary.overtime < 0
+                                ? 'text-red-600'
+                                : ''
+                          }`}
+                        >
+                          {summary.overtime > 0 ? '+' : ''}
+                          {summary.overtime.toFixed(2)}h
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {t('reports.percentage')}:
+                        </span>
+                        <span className="font-medium">
+                          {summary.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">
+                      {t('reports.notPublished')}
+                    </p>
+                  )}
                 </div>
               </div>
             )}

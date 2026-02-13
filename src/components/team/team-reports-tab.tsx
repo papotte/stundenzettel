@@ -26,10 +26,11 @@ import { useFormatter } from '@/lib/date-formatter'
 import type { TeamMember } from '@/lib/types'
 
 interface TeamReportsTabProps {
+  teamId: string | null
   members: TeamMember[]
 }
 
-export function TeamReportsTab({ members }: TeamReportsTabProps) {
+export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
   const t = useTranslations()
   const format = useFormatter()
   const [reportsViewMode, setReportsViewMode] = useState<'grid' | 'list'>(
@@ -114,6 +115,7 @@ export function TeamReportsTab({ members }: TeamReportsTabProps) {
           </div>
           {reportsViewMode === 'grid' ? (
             <TeamReportsGrid
+              teamId={teamId}
               members={members}
               selectedMonth={reportsSelectedMonth}
               onMemberClick={(memberId) => {
@@ -123,6 +125,7 @@ export function TeamReportsTab({ members }: TeamReportsTabProps) {
             />
           ) : (
             <TeamReportsList
+              teamId={teamId}
               members={members}
               selectedMonth={reportsSelectedMonth}
               onMemberClick={(memberId) => {
@@ -158,6 +161,7 @@ export function TeamReportsTab({ members }: TeamReportsTabProps) {
             </DialogHeader>
             {selectedMemberId && (
               <TeamMemberReportView
+                teamId={teamId}
                 memberId={selectedMemberId}
                 memberEmail={
                   members.find((m) => m.id === selectedMemberId)?.email || ''

@@ -17,6 +17,7 @@ export default function TeamMemberReportPage() {
   const [isAuthorized, setIsAuthorized] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [memberEmail, setMemberEmail] = useState<string>('')
+  const [teamId, setTeamId] = useState<string | null>(null)
 
   const memberId = params.memberId as string
   const monthParam = searchParams.get('month')
@@ -32,6 +33,7 @@ export default function TeamMemberReportPage() {
         const userTeam = await getUserTeam(user.uid)
         if (!userTeam) {
           setIsAuthorized(false)
+          setTeamId(null)
           return
         }
 
@@ -41,13 +43,14 @@ export default function TeamMemberReportPage() {
           'admin',
         )
         setIsAuthorized(authResult.authorized)
+        setTeamId(userTeam.id)
 
-        // Get member email from URL or use memberId as fallback
         const emailParam = searchParams.get('email')
         setMemberEmail(emailParam || memberId)
       } catch (error) {
         console.error('Failed to verify access:', error)
         setIsAuthorized(false)
+        setTeamId(null)
       } finally {
         setIsLoading(false)
       }
@@ -96,6 +99,7 @@ export default function TeamMemberReportPage() {
     <div className="min-h-screen bg-white p-4 sm:p-8 print:p-0">
       <div className="mx-auto max-w-7xl">
         <TeamMemberReportView
+          teamId={teamId}
           memberId={memberId}
           memberEmail={memberEmail}
           selectedMonth={selectedMonth}

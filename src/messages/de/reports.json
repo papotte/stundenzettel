@@ -17,5 +17,7 @@
   "noMembers": "Keine Teammitglieder gefunden",
   "selectMember": "Wählen Sie ein Teammitglied aus, um dessen Bericht anzuzeigen",
   "viewGrid": "Rasteransicht",
-  "viewList": "Listenansicht"
+  "viewList": "Listenansicht",
+  "notPublished": "Nicht freigegeben",
+  "notPublishedDetail": "Dieser Monat wurde vom Mitglied noch nicht freigegeben."
 }
