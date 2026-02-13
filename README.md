@@ -408,6 +408,7 @@ This project supports **English** and **German** languages using [next-intl](htt
 
 ```tsx
 import { useTranslations } from 'next-intl'
+
 const t = useTranslations()
 return <h1>{t('common.appName')}</h1>
 ```
