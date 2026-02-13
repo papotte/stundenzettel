@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import LanguageSelect from '@/components/language-select'
+import { PushNotificationManager } from '@/components/push-notification-manager'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -412,6 +413,10 @@ export default function PreferencesPage() {
             </Card>
           </form>
         </Form>
+
+        <div className="mt-6">
+          <PushNotificationManager />
+        </div>
       </div>
     </div>
   )

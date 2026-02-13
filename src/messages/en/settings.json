@@ -97,5 +97,16 @@
   "deleteAccountProcessing": "Deleting account...",
   "deleteAccountSuccess": "Account deleted successfully",
   "deleteAccountError": "Failed to delete account",
-  "deleteAccountInvalidPassword": "Invalid password. Please try again."
+  "deleteAccountInvalidPassword": "Invalid password. Please try again.",
+  "pushNotifications": "Push Notifications",
+  "pushNotificationsDescription": "Receive notifications in your browser or on your device when the app is installed. (Coming soon)",
+  "pushSubscribe": "Enable notifications",
+  "pushUnsubscribe": "Disable notifications",
+  "pushSubscribed": "You are subscribed to push notifications.",
+  "pushNotSubscribed": "Enable notifications to receive updates.",
+  "pushNotSupported": "Push notifications are not supported in this browser.",
+  "installPromptTitle": "Install App",
+  "installPromptDescription": "Add to your home screen for quick access.",
+  "installPromptButton": "Add to Home Screen",
+  "installPromptIOSInstructions": "To install this app on your device, tap the share button and then \"Add to Home Screen\"."
 }

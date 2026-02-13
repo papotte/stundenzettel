@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
+import { InstallPrompt } from '@/components/install-prompt'
 import LanguageSwitcher from '@/components/language-switcher'
 import TimeWiseIcon from '@/components/time-wise-icon'
 import ColorfulBackground from '@/components/ui/colorful-background'
@@ -56,6 +57,7 @@ export default function LandingLayout({
         </nav>
       </header>
       <ColorfulBackground className="flex-1 flex flex-col">
+        <InstallPrompt />
         {children}
       </ColorfulBackground>
       <footer data-testid="footer">

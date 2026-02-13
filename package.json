@@ -4,7 +4,7 @@
   "private": false,
   "license": "MPL-2.0",
   "scripts": {
-    "dev": "next dev -p 9002",
+    "dev": "next dev -p 9002 --experimental-https",
     "dev:test": "NODE_ENV=test NEXT_PUBLIC_ENVIRONMENT=test next dev -p 9003",
     "build": "NEXT_PUBLIC_ENVIRONMENT=production next build --webpack",
     "start": "next start -p 9004",
@@ -84,6 +84,7 @@
     "stripe": "18.3.0",
     "tailwind-merge": "3.4.0",
     "tailwindcss-animate": "^1.0.7",
+    "web-push": "^3.6.7",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -104,6 +105,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/web-push": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^8.35.1",
     "@typescript-eslint/parser": "^8.35.1",
     "eslint": "^9.39.2",
