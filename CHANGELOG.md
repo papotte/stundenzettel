@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/papotte/stundenzettel/compare/v1.22.0...v1.22.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* issues with dates and weeks in tests ([9e74ba4](https://github.com/papotte/stundenzettel/commit/9e74ba4d8c8b7f9752841a2b49efcb1782208dfb))
+
 # [1.22.0](https://github.com/papotte/stundenzettel/compare/v1.21.0...v1.22.0) (2026-01-22)
 
 
