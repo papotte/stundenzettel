@@ -14,7 +14,7 @@ test.describe('Export Page', () => {
     await page.waitForURL('/tracker')
 
     const week = getWeekOfMonth(new Date(), { weekStartsOn: 1 })
-    weekIndex = week - 1 // Adjust for zero-based index
+    weekIndex = week // Adjust for zero-based index
   })
 
   test('should display entries, allow Excel download, and navigate months', async ({
@@ -147,7 +147,7 @@ test.describe('Export Page', () => {
     )
 
     const preview = page.locator('.printable-area')
-    await expect(preview.getByTestId('timesheet-week-0-total')).toContainText(
+    await expect(preview.getByTestId('timesheet-week-1-total')).toContainText(
       '8.00',
     )
     await expect(preview.getByText(julyLocation)).not.toBeVisible()

@@ -20,7 +20,9 @@ export const addManualEntry = async (
   startTime: string,
   endTime: string,
 ) => {
-  await page.getByRole('button', { name: 'Add' }).first().click()
+  const addButton = page.getByRole('button', { name: 'Add' }).first()
+  await expect(addButton).toBeEnabled()
+  await addButton.click()
   const form = page.locator(
     'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
   )
@@ -40,7 +42,9 @@ export const addDurationEntry = async (
   location: string,
   duration: number, // in minutes
 ) => {
-  await page.getByRole('button', { name: 'Add' }).first().click()
+  const addButton = page.getByRole('button', { name: 'Add' }).first()
+  await expect(addButton).toBeEnabled()
+  await addButton.click()
   const form = page.locator(
     'div[role="dialog"]:has(h2:has-text("Add Time Entry"))',
   )
@@ -141,11 +145,15 @@ export const addExportEntry = async (
   const dd = String(targetDate.getDate()).padStart(2, '0')
   const dateId = `timesheet-day-${yyyy}-${mm}-${dd}`
 
-  // Find the row for the specific date and click the add button
+  // Find the row for the specific date and click the add button.
+  // Use .first() because when a day has multiple entries there are multiple rows with the same test id.
   const dayRow = page.getByTestId(dateId)
-  const addButton = dayRow.getByRole('button', {
-    name: /Add entry|Add/,
-  })
+  const addButton = dayRow
+    .getByRole('button', {
+      name: /Add entry/,
+    })
+    .first()
+  await expect(addButton).toBeEnabled()
   await addButton.click()
 
   // Fill out the form

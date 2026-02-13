@@ -2,7 +2,12 @@
 
 import React, { useCallback, useMemo } from 'react'
 
-import { differenceInMinutes, getDay, isSameMonth } from 'date-fns'
+import {
+  differenceInMinutes,
+  getDay,
+  getWeekOfMonth,
+  isSameMonth,
+} from 'date-fns'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -99,24 +104,30 @@ export default function TimesheetPreview({
 
       <main id="pdf-main-section">
         {relevantWeeks.map((week: Date[], weekIndex: number) => {
+          const weekFiltered = week.filter((day) =>
+            isSameMonth(day, selectedMonth),
+          )
           // At the end of each week, add a totals row styled as in the screenshot
           // Use the shared utility for compensated week total
           const weekCompTotal = calculateWeekCompensatedTime(
-            week,
+            weekFiltered,
             getEntriesForDay,
             userSettings,
             selectedMonth,
           )
           const weekPassengerTotal = calculateWeekPassengerTime(
-            week,
+            weekFiltered,
             getEntriesForDay,
             selectedMonth,
           )
+          const weekNumber = getWeekOfMonth(weekFiltered[0], {
+            weekStartsOn: 1,
+          })
           return (
             <div
               key={weekIndex}
               className="mb-6 print:mb-3"
-              data-testid={`timesheet-week-${weekIndex}`}
+              data-testid={`timesheet-week-${weekNumber}`}
             >
               <Table className="border-collapse border border-black">
                 <TableHeader>
@@ -378,13 +389,13 @@ export default function TimesheetPreview({
                     <div className="flex flex-1 gap-8 border-b-2 border-black pb-1">
                       <div
                         className="flex-1 text-right print:pb-0.5"
-                        data-testid={`timesheet-week-${weekIndex}-total`}
+                        data-testid={`timesheet-week-${weekNumber}-total`}
                       >
                         {weekCompTotal.toFixed(2)}
                       </div>
                       <div
                         className="flex-1 text-right print:pb-0.5"
-                        data-testid={`timesheet-week-${weekIndex}-passenger`}
+                        data-testid={`timesheet-week-${weekNumber}-passenger`}
                       >
                         {weekPassengerTotal.toFixed(2)}
                       </div>
