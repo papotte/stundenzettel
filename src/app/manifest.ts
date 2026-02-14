@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'TimeWise Tracker',
     short_name: 'TimeWise',
     description: 'Track your work hours effortlessly',
-    start_url: '/',
+    start_url: '/tracker',
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#0f172a',
