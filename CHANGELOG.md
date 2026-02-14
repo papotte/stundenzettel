@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/papotte/stundenzettel/compare/v1.22.1...v1.23.0) (2026-02-14)
+
+
+### Features
+
+* add pwa support ([#183](https://github.com/papotte/stundenzettel/issues/183)) ([869c8e1](https://github.com/papotte/stundenzettel/commit/869c8e108e11a9c073527fbe26764c7a0d8d5eb9))
+
 ## [1.22.1](https://github.com/papotte/stundenzettel/compare/v1.22.0...v1.22.1) (2026-02-13)
 
 
