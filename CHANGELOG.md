@@ -1,3 +1,10 @@
+## [1.23.1](https://github.com/papotte/stundenzettel/compare/v1.23.0...v1.23.1) (2026-02-14)
+
+
+### Bug Fixes
+
+* make installable app start at /tracker ([838892d](https://github.com/papotte/stundenzettel/commit/838892d9261a51358eec3fd7ff9902592ccaca06))
+
 # [1.23.0](https://github.com/papotte/stundenzettel/compare/v1.22.1...v1.23.0) (2026-02-14)
 
 
