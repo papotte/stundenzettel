@@ -56,3 +56,5 @@ next-env.d.ts
 /emulator-data/
 /functions/firebase-debug.log
 /firebase-export-*/
+
+certificates

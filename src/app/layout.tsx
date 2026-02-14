@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server'
 import { Lora, PT_Sans } from 'next/font/google'
 
 import { HtmlLang } from '@/components/html-lang'
+import { PwaRegister } from '@/components/pwa-register'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
 import { SubscriptionProvider } from '@/context/subscription-context'
@@ -40,6 +41,7 @@ async function LocaleAwareRoot({
       <AuthProvider>
         <SubscriptionProvider>
           <NextIntlClientProvider locale={locale}>
+            <PwaRegister />
             {children}
             <Toaster />
           </NextIntlClientProvider>
@@ -57,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="theme-color" content="#0f172a" />
         <link rel="icon" href="/favicon.png" sizes="any" />
         <link
           rel="icon"

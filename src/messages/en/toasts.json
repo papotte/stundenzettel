@@ -27,5 +27,9 @@
   "entriesCopiedToTitle": "Entries copied",
   "entriesCopiedToDescription": "{count} entries copied to {date}.",
   "copyFailedTitle": "Copy failed",
-  "copyFailedDescription": "There was a problem copying your entries."
+  "copyFailedDescription": "There was a problem copying your entries.",
+  "pushSubscribeFailedTitle": "Enable notifications failed",
+  "pushSubscribeFailedDescription": "Permission was denied or something went wrong. Please try again.",
+  "pushUnsubscribeFailedTitle": "Disable notifications failed",
+  "pushUnsubscribeFailedDescription": "Could not disable notifications. Please try again."
 }

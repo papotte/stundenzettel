@@ -27,5 +27,9 @@
   "entriesCopiedToTitle": "Entradas copiadas",
   "entriesCopiedToDescription": "{count} entradas copiadas a {date}.",
   "copyFailedTitle": "Error al copiar",
-  "copyFailedDescription": "Hubo un problema al copiar tus entradas."
+  "copyFailedDescription": "Hubo un problema al copiar tus entradas.",
+  "pushSubscribeFailedTitle": "Error al activar notificaciones",
+  "pushSubscribeFailedDescription": "Se denegó el permiso o algo salió mal. Por favor, inténtalo de nuevo.",
+  "pushUnsubscribeFailedTitle": "Error al desactivar notificaciones",
+  "pushUnsubscribeFailedDescription": "No se pudieron desactivar las notificaciones. Por favor, inténtalo de nuevo."
 }

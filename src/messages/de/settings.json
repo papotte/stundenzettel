@@ -97,5 +97,16 @@
   "deleteAccountProcessing": "Konto wird gelöscht...",
   "deleteAccountSuccess": "Konto erfolgreich gelöscht",
   "deleteAccountError": "Konto konnte nicht gelöscht werden",
-  "deleteAccountInvalidPassword": "Ungültiges Passwort. Bitte versuchen Sie es erneut."
+  "deleteAccountInvalidPassword": "Ungültiges Passwort. Bitte versuchen Sie es erneut.",
+  "pushNotifications": "Push-Benachrichtigungen",
+  "pushNotificationsDescription": "Benachrichtigungen im Browser oder auf dem Gerät erhalten, wenn die App installiert ist. (Demnächst)",
+  "pushSubscribe": "Benachrichtigungen aktivieren",
+  "pushUnsubscribe": "Benachrichtigungen deaktivieren",
+  "pushSubscribed": "Sie erhalten Push-Benachrichtigungen.",
+  "pushNotSubscribed": "Aktivieren Sie Benachrichtigungen, um Updates zu erhalten.",
+  "pushNotSupported": "Push-Benachrichtigungen werden in diesem Browser nicht unterstützt.",
+  "installPromptTitle": "App installieren",
+  "installPromptDescription": "Zum Startbildschirm hinzufügen für schnellen Zugriff.",
+  "installPromptButton": "Zum Startbildschirm",
+  "installPromptIOSInstructions": "Um die App auf Ihrem iOS-Gerät zu installieren, tippen Sie auf die Teilen-Schaltfläche und dann auf \"Zum Home-Bildschirm\"."
 }

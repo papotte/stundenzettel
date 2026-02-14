@@ -97,5 +97,16 @@
   "deleteAccountProcessing": "Eliminando cuenta...",
   "deleteAccountSuccess": "Cuenta eliminada exitosamente",
   "deleteAccountError": "Error al eliminar la cuenta",
-  "deleteAccountInvalidPassword": "Contraseña inválida. Por favor, inténtalo de nuevo."
+  "deleteAccountInvalidPassword": "Contraseña inválida. Por favor, inténtalo de nuevo.",
+  "pushNotifications": "Notificaciones push",
+  "pushNotificationsDescription": "Recibe notificaciones en el navegador o en tu dispositivo cuando la app está instalada. (Próximamente)",
+  "pushSubscribe": "Activar notificaciones",
+  "pushUnsubscribe": "Desactivar notificaciones",
+  "pushSubscribed": "Estás suscrito a las notificaciones push.",
+  "pushNotSubscribed": "Activa las notificaciones para recibir actualizaciones.",
+  "pushNotSupported": "Las notificaciones push no están soportadas en este navegador.",
+  "installPromptTitle": "Instalar aplicación",
+  "installPromptDescription": "Añade a la pantalla de inicio para acceder rápido.",
+  "installPromptButton": "Añadir a la pantalla de inicio",
+  "installPromptIOSInstructions": "Para instalar la aplicación en tu dispositivo iOS, pulsa el botón compartir y luego \"Añadir a la pantalla de inicio\"."
 }
