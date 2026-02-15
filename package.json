@@ -35,7 +35,17 @@
     "emulators:stop": "node scripts/stop-emulators.js",
     "emulators:export": "firebase emulators:export ./emulator-data",
     "emulator:seed:ci": "node scripts/seed-emulator.js --ci",
-    "emulator:seed": "node scripts/seed-emulator.js"
+    "emulator:seed": "node scripts/seed-emulator.js",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{md,json,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.0",
@@ -118,8 +128,10 @@
     "firebase-admin": "^13.4.0",
     "firebase-functions-test": "^3.1.0",
     "firebase-tools": "^15.0.0",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
+    "lint-staged": "^16.2.7",
     "postcss": "^8",
     "prettier": "^3.8.0",
     "prettier-plugin-tailwindcss": "^0.7.0",
