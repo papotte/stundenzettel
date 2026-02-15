@@ -55,7 +55,7 @@ jobs:
 
       - name: Download coverage artifact from base
         if: ${{ inputs.compare-coverage }}
-        uses: dawidd6/action-download-artifact@v12
+        uses: dawidd6/action-download-artifact@v14
         with:
           workflow: ${{ inputs.base-workflow }}
           branch: ${{ inputs.base-branch }}
