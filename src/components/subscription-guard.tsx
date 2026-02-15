@@ -70,22 +70,10 @@ function SubscriptionFallback({
   }
   // type === 'subscription'
   return (
-    <div className="flex h-screen items-center justify-center bg-background">
+    <div className="flex mt-24 items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              aria-label={t('common.back')}
-            >
-              <Link href="/tracker">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
-          </div>
+          <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
           <CardDescription>
             {t('subscription.requiredDescription')}
           </CardDescription>

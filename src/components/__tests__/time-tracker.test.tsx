@@ -39,14 +39,6 @@ jest.mock('../summary-card', () => {
   return SummaryCardMock
 })
 
-jest.mock('../time-tracker-header', () => {
-  function TimeTrackerHeaderMock() {
-    return <div data-testid="header-bar" />
-  }
-  TimeTrackerHeaderMock.displayName = 'TimeTrackerHeaderMock'
-  return TimeTrackerHeaderMock
-})
-
 const mockUser = {
   uid: 'user-1',
   displayName: 'Test User',
@@ -75,9 +67,8 @@ function renderWithProviders(
 }
 
 describe('TimeTracker (integration)', () => {
-  it('renders all main panels and header', () => {
+  it('renders all main panels', () => {
     renderWithProviders(<TimeTracker />)
-    expect(screen.getByTestId('header-bar')).toBeInTheDocument()
     expect(screen.getByTestId('live-timer-panel')).toBeInTheDocument()
     expect(screen.getByTestId('daily-actions-panel')).toBeInTheDocument()
     expect(screen.getByTestId('time-entries-panel')).toBeInTheDocument()
@@ -92,7 +83,7 @@ describe('TimeTracker (integration)', () => {
 
   it('handles null user gracefully', () => {
     renderWithProviders(<TimeTracker />, { ...mockAuthContext, user: null })
-    expect(screen.getByTestId('header-bar')).toBeInTheDocument()
+    expect(screen.getByTestId('live-timer-panel')).toBeInTheDocument()
   })
 
   // Add more tests as needed for error states, context changes, etc.

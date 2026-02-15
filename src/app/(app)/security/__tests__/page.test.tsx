@@ -91,7 +91,6 @@ describe('SecurityPage', () => {
       expect(
         screen.getByText('settings.securityDescription'),
       ).toBeInTheDocument()
-      expect(screen.getByText('settings.backToTracker')).toBeInTheDocument()
     })
 
     it('shows change password section for users with password authentication', async () => {
@@ -428,17 +427,6 @@ describe('SecurityPage', () => {
           variant: 'destructive',
         })
       })
-    })
-
-    it('navigates back to tracker', async () => {
-      renderWithProviders(<SecurityPage />)
-      await waitFor(() => {
-        expect(screen.getByText('settings.security')).toBeInTheDocument()
-      })
-      const backButton = screen.getByRole('link', {
-        name: /settings\.backToTracker/i,
-      })
-      expect(backButton).toHaveAttribute('href', '/tracker')
     })
   })
 })
