@@ -323,7 +323,7 @@ export default function TeamPage() {
                       {team.description || t('teams.noDescriptionProvided')}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-col md:flex-row">
                     {(currentUserRole === 'owner' ||
                       currentUserRole === 'admin') && (
                       <InviteMemberDialog
