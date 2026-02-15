@@ -220,7 +220,8 @@ describe('UserMenu', () => {
       renderWithTooltipProvider(<UserMenu />)
 
       const menuButton = screen.getByRole('button')
-      expect(menuButton).toHaveClass('rounded-full')
+      // Burger menu trigger uses rounded-md (avatar variant was removed)
+      expect(menuButton).toHaveClass('rounded-md')
       expect(menuButton).toHaveClass('hover:bg-green-600')
       expect(menuButton).toHaveClass('hover:text-white')
       expect(menuButton).toHaveClass('transition-colors')

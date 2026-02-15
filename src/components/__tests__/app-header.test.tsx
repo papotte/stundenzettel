@@ -2,20 +2,11 @@ import React from 'react'
 
 import { render, screen } from '@jest-setup'
 
-import TimeTrackerHeader from '@/components/time-tracker-header'
+import AppHeader from '@/components/app-header'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { createMockAuthContext } from '@/test-utils/auth-mocks'
 
-// Mock the context
-const handleClearData = jest.fn()
 const signOut = jest.fn()
-jest.mock('@/context/time-tracker-context', () => ({
-  useTimeTrackerContext: () => ({
-    handleClearData,
-  }),
-}))
-
-// Use centralized auth mock
 const mockAuthContext = createMockAuthContext({
   signOut,
   user: { uid: '123', displayName: 'Test User', email: 'test@example.com' },
@@ -24,9 +15,16 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
 
-describe('TimeTrackerHeader', () => {
+jest.mock('@/context/subscription-context', () => ({
+  useSubscriptionContext: () => ({ hasValidSubscription: true }),
+}))
+
+jest.mock('@/hooks/use-user-invitations', () => ({
+  useUserInvitations: () => ({ hasPendingInvitations: false, invitations: [] }),
+}))
+
+describe('AppHeader', () => {
   beforeEach(() => {
-    handleClearData.mockClear()
     signOut.mockClear()
   })
 
@@ -34,10 +32,16 @@ describe('TimeTrackerHeader', () => {
     return render(<TooltipProvider>{ui}</TooltipProvider>)
   }
 
-  it('renders all buttons and links', () => {
-    renderWithProvider(<TimeTrackerHeader />)
+  it('renders app name, export link, and menu button', () => {
+    renderWithProvider(<AppHeader />)
     expect(screen.getByText('common.appName')).toBeInTheDocument()
     expect(screen.getByText('tracker.headerExportLink')).toBeInTheDocument()
     expect(screen.getByTestId('user-menu-btn')).toBeInTheDocument()
+  })
+
+  it('links app name to tracker', () => {
+    renderWithProvider(<AppHeader />)
+    const homeLink = screen.getByRole('link', { name: /common\.home/i })
+    expect(homeLink).toHaveAttribute('href', '/tracker')
   })
 })

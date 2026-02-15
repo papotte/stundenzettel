@@ -4,14 +4,12 @@ import { useEffect } from 'react'
 
 import {
   AlertTriangle,
-  ArrowLeft,
   Clock,
   CreditCard,
   Crown,
   ExternalLink,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { Badge } from '@/components/ui/badge'
@@ -116,13 +114,6 @@ export default function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
       <div className="mx-auto max-w-2xl">
-        <Button asChild variant="outline" className="mb-8">
-          <Link href="/tracker">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('settings.backToTracker')}
-          </Link>
-        </Button>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

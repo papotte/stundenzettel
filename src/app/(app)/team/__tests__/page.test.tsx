@@ -466,27 +466,6 @@ describe('TeamPage', () => {
     })
   })
 
-  describe('Navigation', () => {
-    it('shows back to tracker button', async () => {
-      renderWithProviders(<TeamPage />)
-
-      await waitFor(() => {
-        expect(screen.getByText('settings.backToTracker')).toBeInTheDocument()
-      })
-    })
-
-    it('back button links to tracker page', async () => {
-      renderWithProviders(<TeamPage />)
-
-      await waitFor(() => {
-        const backButton = screen.getByRole('link', {
-          name: /settings\.backToTracker/i,
-        })
-        expect(backButton).toHaveAttribute('href', '/tracker')
-      })
-    })
-  })
-
   describe('Error Handling', () => {
     it('handles service errors gracefully', async () => {
       ;(getUserTeam as jest.Mock).mockRejectedValue(new Error('Service error'))
@@ -495,7 +474,7 @@ describe('TeamPage', () => {
 
       await waitFor(() => {
         // Should still show the page structure even if data loading fails
-        expect(screen.getByText('settings.backToTracker')).toBeInTheDocument()
+        expect(screen.getByText('teams.title')).toBeInTheDocument()
       })
     })
 

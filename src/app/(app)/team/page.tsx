@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  ArrowLeft,
   CreditCard,
   FileSpreadsheet,
   Mail,
@@ -12,7 +11,6 @@ import {
   Users,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import { CreateTeamDialog } from '@/components/team/create-team-dialog'
@@ -254,13 +252,6 @@ export default function TeamPage() {
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
       <div className="mx-auto max-w-4xl">
-        <Button asChild variant="outline" className="mb-8">
-          <Link href="/tracker">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('settings.backToTracker')}
-          </Link>
-        </Button>
-
         {!team ? (
           // No team - show create team option and pending invitations
           <div className="space-y-6">
@@ -332,7 +323,7 @@ export default function TeamPage() {
                       {team.description || t('teams.noDescriptionProvided')}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-col md:flex-row">
                     {(currentUserRole === 'owner' ||
                       currentUserRole === 'admin') && (
                       <InviteMemberDialog
