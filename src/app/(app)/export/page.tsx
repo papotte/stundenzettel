@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 
-import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 
 import ExportPreview from '@/components/export-preview'
