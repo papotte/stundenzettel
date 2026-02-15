@@ -23,11 +23,22 @@ export const getUserSettings = async (
   userId: string,
 ): Promise<UserSettings> => {
   if (!userId) return defaultSettings
-  const docRef = doc(db, 'users', userId, 'settings', 'general')
-  const docSnap = await getDoc(docRef)
+  const [settingsSnap, userSnap] = await Promise.all([
+    getDoc(doc(db, 'users', userId, 'settings', 'general')),
+    getDoc(doc(db, 'users', userId)),
+  ])
 
-  if (docSnap.exists()) {
-    return { ...defaultSettings, ...docSnap.data() } as UserSettings
+  if (settingsSnap.exists()) {
+    const settings = {
+      ...defaultSettings,
+      ...settingsSnap.data(),
+    } as UserSettings
+    // displayName lives on user doc (public); prefer it when present
+    if (userSnap.exists()) {
+      const raw = userSnap.data()?.displayName
+      settings.displayName = (typeof raw === 'string' ? raw : '').trim()
+    }
+    return settings
   }
   // If no settings exist, create them with default values
   await setUserSettings(userId, defaultSettings)
@@ -35,22 +46,25 @@ export const getUserSettings = async (
 }
 
 /**
- * Fetches only displayName for a team member. Use when an admin/owner needs to show
- * another member's name. Does not write; returns '' if doc missing or on error.
+ * Fetches displayName from the user document (public, anyone can read).
+ * Returns '' if doc missing or on error.
  */
 export const getDisplayNameForMember = async (
   userId: string,
 ): Promise<string> => {
   if (!userId) return ''
   try {
-    const docRef = doc(db, 'users', userId, 'settings', 'general')
+    const docRef = doc(db, 'users', userId)
     const docSnap = await getDoc(docRef)
+    console.log('docRef for user id', userId, docSnap.data())
     if (docSnap.exists()) {
+      console.log('docSnap.data()', docSnap.data())
       const name = (docSnap.data().displayName as string | undefined) ?? ''
       return name.trim()
     }
     return ''
-  } catch {
+  } catch (e) {
+    console.error('Error getting displayName for member', userId, e)
     return ''
   }
 }
@@ -64,6 +78,7 @@ export const getDisplayNamesForMembers = async (
   memberIds: string[],
 ): Promise<Map<string, string>> => {
   if (memberIds.length === 0) return new Map()
+  console.log('getDisplayNamesForMembers', memberIds)
   const results = await Promise.all(
     memberIds.map(async (id) => ({
       id,
@@ -86,4 +101,14 @@ export const setUserSettings = async (
 
   const docRef = doc(db, 'users', userId, 'settings', 'general')
   await setDoc(docRef, cleanSettings, { merge: true })
+
+  // Keep displayName on user document for public read (team lists, etc.)
+  if ('displayName' in cleanSettings) {
+    const userRef = doc(db, 'users', userId)
+    await setDoc(
+      userRef,
+      { displayName: cleanSettings.displayName ?? '' },
+      { merge: true },
+    )
+  }
 }

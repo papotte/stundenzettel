@@ -1,6 +1,22 @@
 # Scripts Directory
 
-This directory contains debugging and utility scripts for the Stripe integration. These are **development tools** for manual testing and debugging, not proper automated tests.
+This directory contains debugging, utility, and migration scripts. These are **development tools** for manual testing, debugging, and data migrations, not proper automated tests.
+
+## Migrations
+
+### `migrate-display-name-to-user-doc.js`
+
+**Purpose**: Copy `displayName` from `users/{userId}/settings/general` to `users/{userId}` for public read access (team lists, etc.).
+
+**Prerequisites**: `google-application-credentials.json` in project root (or `GOOGLE_APPLICATION_CREDENTIALS` env var)
+
+**Usage**:
+
+```bash
+node scripts/migrate-display-name-to-user-doc.js
+```
+
+**When to run**: After deploying the display-name-on-user-doc change. Run once to backfill existing users who already have a display name in settings.
 
 ## ⚠️ Important Note
 

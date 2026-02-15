@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
 
 interface UserMenuProps {
@@ -45,8 +46,12 @@ export default function UserMenu({
 }: UserMenuProps) {
   const t = useTranslations()
   const { signOut, user } = useAuth()
+  const { displayNames } = useMemberDisplayNames(user ? [user.uid] : [])
   const { hasValidSubscription } = useSubscriptionContext()
   const { hasPendingInvitations, invitations } = useUserInvitations()
+
+  const displayName =
+    (user && displayNames.get(user.uid)) || user?.displayName || user?.email
 
   const handleSignOut = async () => {
     await signOut()
@@ -91,9 +96,7 @@ export default function UserMenu({
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">
-                {user?.displayName || user?.email}
-              </p>
+              <p className="text-sm font-medium leading-none">{displayName}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email}
               </p>
