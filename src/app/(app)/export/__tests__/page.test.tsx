@@ -77,13 +77,10 @@ describe('ExportPage', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('renders ExportPreview and back button if authenticated', () => {
+  it('renders ExportPreview if authenticated', () => {
     Object.assign(mockAuthContext, authScenarios.authenticated({ uid: '123' }))
     render(<ExportPage />)
     expect(screen.getByTestId('export-preview')).toBeInTheDocument()
     expect(screen.getByTestId('time-tracker-provider')).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: 'settings.backToTracker' }),
-    ).toBeInTheDocument()
   })
 })

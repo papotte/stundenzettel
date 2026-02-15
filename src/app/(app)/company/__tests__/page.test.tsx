@@ -120,7 +120,6 @@ describe('CompanyPage', () => {
       expect(
         screen.getByText('settings.companyDescription'),
       ).toBeInTheDocument()
-      expect(screen.getByText('settings.backToTracker')).toBeInTheDocument()
     })
 
     it('loads company settings and populates form', async () => {
@@ -292,19 +291,6 @@ describe('CompanyPage', () => {
       }
 
       expect(screen.getByText('common.saving')).toBeInTheDocument()
-    })
-
-    it('navigates back to tracker', async () => {
-      renderWithProviders(<CompanyPage />)
-
-      await waitFor(() => {
-        expect(screen.getByText('settings.company')).toBeInTheDocument()
-      })
-
-      const backButton = screen.getByRole('link', {
-        name: /settings\.backToTracker/i,
-      })
-      expect(backButton).toHaveAttribute('href', '/tracker')
     })
   })
 

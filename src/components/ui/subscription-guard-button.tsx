@@ -19,15 +19,24 @@ export function SubscriptionGuardButton({
     !hasValidSubscription ||
     props.disabled
 
-  const wrapperClassName = cn('relative inline-flex', className)
-  const innerClassName =
-    props.asChild && disabled ? 'opacity-50 pointer-events-none' : undefined
+  const disabledClasses = disabled
+    ? 'opacity-50 pointer-events-none'
+    : undefined
+  const buttonClassName = cn(
+    props.asChild,
+    disabledClasses,
+    className,
+    'relative',
+  )
 
   return (
-    <span className={wrapperClassName}>
-      <Button {...props} className={innerClassName} disabled={disabled}>
-        {children}
-      </Button>
+    <Button
+      {...props}
+      className={buttonClassName}
+      disabled={disabled}
+      variant="nav"
+    >
+      {children}{' '}
       {!hasValidSubscription && (
         <a
           href="/subscription"
@@ -38,6 +47,6 @@ export function SubscriptionGuardButton({
           <ProBadge />
         </a>
       )}
-    </span>
+    </Button>
   )
 }

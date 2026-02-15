@@ -112,7 +112,6 @@ describe('PreferencesPage', () => {
       expect(
         screen.getByText('settings.preferencesDescription'),
       ).toBeInTheDocument()
-      expect(screen.getByText('settings.backToTracker')).toBeInTheDocument()
       expect(screen.getByTestId('saveButton')).toBeInTheDocument()
     })
 
@@ -305,19 +304,6 @@ describe('PreferencesPage', () => {
         const errorElement = screen.getByText(/Cannot be more than 10 hours/i)
         expect(errorElement).toBeInTheDocument()
       })
-    })
-
-    it('navigates back to tracker', async () => {
-      renderWithProviders(<PreferencesPage />)
-
-      await waitFor(() => {
-        expect(screen.getByText('settings.preferences')).toBeInTheDocument()
-      })
-
-      const backButton = screen.getByRole('link', {
-        name: /settings\.backToTracker/i,
-      })
-      expect(backButton).toHaveAttribute('href', '/tracker')
     })
   })
 

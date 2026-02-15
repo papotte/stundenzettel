@@ -92,20 +92,17 @@ export class SubscriptionService {
           )
         }
       }
-
       // No subscription found (individual or team)
-      throw new Error('No subscription found')
     } catch (error) {
       console.error('Error fetching subscription:', error)
-      // Cache the error result to prevent repeated failed requests
-      return this.setCacheAndReturn(
-        userId,
-        null,
-        userId,
-        false,
-        now + CACHE_DURATION,
-      )
     }
+    return this.setCacheAndReturn(
+      userId,
+      null,
+      userId,
+      false,
+      now + CACHE_DURATION,
+    )
   }
 
   async hasActiveSubscription(userEmail: string): Promise<boolean> {

@@ -4,15 +4,14 @@ import {
   Building2,
   CreditCard,
   LogOut,
+  Menu,
   Settings,
   Shield,
-  User,
   Users,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge, ProBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,7 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { NotificationBadge } from '@/components/ui/notification-badge'
 import {
   Tooltip,
   TooltipContent,
@@ -80,14 +78,9 @@ export default function UserMenu({
                 data-testid="user-menu-btn"
                 variant={variant}
                 size={size}
-                className={`relative rounded-full hover:bg-green-600 hover:text-white transition-colors ${className}`}
+                className={`rounded-md hover:bg-green-600 hover:text-white transition-colors ${className}`}
               >
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-transparent">
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <NotificationBadge showDot={hasPendingInvitations} />
+                <Menu className="h-6 w-6" aria-hidden />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>

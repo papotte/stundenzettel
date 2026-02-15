@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 
 import {
   AlertTriangle,
-  ArrowLeft,
   Eye,
   EyeOff,
   Loader2,
@@ -12,7 +11,6 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import PasswordChangeDialog from '@/components/password-change-dialog'
@@ -238,13 +236,6 @@ export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
       <div className="mx-auto max-w-2xl">
-        <Button asChild variant="outline" className="mb-8">
-          <Link href="/tracker">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('settings.backToTracker')}
-          </Link>
-        </Button>
-
         <div className="space-y-6">
           <Card>
             <CardHeader>
