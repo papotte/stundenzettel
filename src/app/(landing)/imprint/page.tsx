@@ -1,21 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
+
+import { useIsClient } from '@/hooks/use-is-client'
 
 const ImprintEn = dynamic(() => import('@/../content/legal/imprint.en.mdx'))
 const ImprintDe = dynamic(() => import('@/../content/legal/imprint.de.mdx'))
 
 export default function ImprintPage() {
   const language = useLocale()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const isClient = useIsClient()
 
-  if (!mounted) return null
+  if (!isClient) return null
 
   const Content = language === 'de' ? ImprintDe : ImprintEn
   const testId = language === 'de' ? 'imprint-de-article' : 'imprint-en-article'

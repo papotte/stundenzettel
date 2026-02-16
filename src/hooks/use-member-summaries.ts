@@ -17,14 +17,15 @@ function formatMonthKey(date: Date): string {
   return `${y}-${m}`
 }
 
+const EMPTY_SUMMARIES = new Map<string, MemberSummary>()
+
 export function useMemberSummaries(
   teamId: string | null,
   members: TeamMember[],
   selectedMonth: Date,
 ) {
-  const [memberSummaries, setMemberSummaries] = useState<
-    Map<string, MemberSummary>
-  >(new Map())
+  const [memberSummaries, setMemberSummaries] =
+    useState<Map<string, MemberSummary>>(EMPTY_SUMMARIES)
 
   const getEntriesForDay = useCallback((entries: TimeEntry[], day: Date) => {
     return entries
@@ -32,11 +33,11 @@ export function useMemberSummaries(
       .sort(compareEntriesByStartTime)
   }, [])
 
+  const hasInput = Boolean(teamId && members.length > 0)
+  const effectiveSummaries = hasInput ? memberSummaries : EMPTY_SUMMARIES
+
   useEffect(() => {
-    if (!teamId || members.length === 0) {
-      setMemberSummaries(new Map())
-      return
-    }
+    if (!teamId || members.length === 0) return
 
     const monthKey = formatMonthKey(selectedMonth)
 
@@ -164,12 +165,12 @@ export function useMemberSummaries(
   }, [teamId, members, selectedMonth, getEntriesForDay])
 
   const sortedSummaries = useMemo(() => {
-    return Array.from(memberSummaries.values()).sort((a, b) =>
+    return Array.from(effectiveSummaries.values()).sort((a, b) =>
       (a.userSettings?.displayName ?? a.member.email)
         .trim()
         .localeCompare((b.userSettings?.displayName ?? b.member.email).trim()),
     )
-  }, [memberSummaries])
+  }, [effectiveSummaries])
 
-  return { sortedSummaries, memberSummaries }
+  return { sortedSummaries, memberSummaries: effectiveSummaries }
 }

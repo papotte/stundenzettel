@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.warn(
         'Firebase Auth is not initialized. Skipping auth state listener.',
       )
-      setLoading(false)
+      queueMicrotask(() => setLoading(false))
       return
     }
 
