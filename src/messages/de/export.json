@@ -20,5 +20,13 @@
   "footerOvertime": "Überstunden:",
   "headerMileage": "km eig. PKW/Verpfl.",
   "signatureLine": "Unterschrift:",
-  "noDataHint": "Keine Daten für den Export in diesem Monat verfügbar."
+  "noDataHint": "Keine Daten für den Export in diesem Monat verfügbar.",
+  "publish": "Freigeben",
+  "publishedOn": "Freigegeben am {date}",
+  "publishForTeamHint": "Tritt einem Team bei, um für deinen Team-Admin freizugeben.",
+  "publishSuccess": "Stundenzettel freigegeben",
+  "publishUpdate": "Aktualisieren",
+  "publishOverwriteTitle": "Freigegebenen Bericht überschreiben?",
+  "publishOverwriteDescription": "Die bestehenden veröffentlichten Daten werden durch deinen aktuellen Stundenzettel ersetzt. Fortfahren?",
+  "publishOverwriteConfirm": "Überschreiben"
 }

@@ -17,6 +17,10 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
 
+jest.mock('@/hooks/use-member-display-names', () => ({
+  useMemberDisplayNames: () => ({ displayNames: new Map() }),
+}))
+
 // Mock the toast hook
 jest.mock('@/hooks/use-toast', () => ({
   useToast: () => ({

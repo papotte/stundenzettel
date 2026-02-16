@@ -22,16 +22,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useFormatter } from '@/lib/date-formatter'
 import type { TeamMember } from '@/lib/types'
+import { maskEmail } from '@/lib/utils'
 
 interface TeamReportsTabProps {
+  teamId: string | null
   members: TeamMember[]
 }
 
-export function TeamReportsTab({ members }: TeamReportsTabProps) {
+export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
   const t = useTranslations()
   const format = useFormatter()
+  const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
   const [reportsViewMode, setReportsViewMode] = useState<'grid' | 'list'>(
     'grid',
   )
@@ -114,6 +118,7 @@ export function TeamReportsTab({ members }: TeamReportsTabProps) {
           </div>
           {reportsViewMode === 'grid' ? (
             <TeamReportsGrid
+              teamId={teamId}
               members={members}
               selectedMonth={reportsSelectedMonth}
               onMemberClick={(memberId) => {
@@ -123,6 +128,7 @@ export function TeamReportsTab({ members }: TeamReportsTabProps) {
             />
           ) : (
             <TeamReportsList
+              teamId={teamId}
               members={members}
               selectedMonth={reportsSelectedMonth}
               onMemberClick={(memberId) => {
@@ -149,15 +155,23 @@ export function TeamReportsTab({ members }: TeamReportsTabProps) {
             <DialogHeader className="hidden">
               <DialogTitle className="sr-only">
                 {selectedMemberId
-                  ? `${t('reports.viewReport')} - ${
-                      members.find((m) => m.id === selectedMemberId)?.email ||
-                      ''
-                    }`
+                  ? (() => {
+                      const member = members.find(
+                        (m) => m.id === selectedMemberId,
+                      )
+                      const name =
+                        displayNames.get(selectedMemberId) ||
+                        (member?.email ? maskEmail(member.email) : '') ||
+                        member?.email ||
+                        ''
+                      return `${t('reports.viewReport')} - ${name}`
+                    })()
                   : t('reports.title')}
               </DialogTitle>
             </DialogHeader>
             {selectedMemberId && (
               <TeamMemberReportView
+                teamId={teamId}
                 memberId={selectedMemberId}
                 memberEmail={
                   members.find((m) => m.id === selectedMemberId)?.email || ''

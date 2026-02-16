@@ -20,5 +20,13 @@
   "footerOvertime": "Horas extra:",
   "headerMileage": "Kilometraje/Gastos",
   "signatureLine": "Firma:",
-  "noDataHint": "No hay datos disponibles para exportar en este mes."
+  "noDataHint": "No hay datos disponibles para exportar en este mes.",
+  "publish": "Publicar",
+  "publishedOn": "Publicado el {date}",
+  "publishForTeamHint": "Únete a un equipo para publicar para tu administrador.",
+  "publishSuccess": "Informe publicado",
+  "publishUpdate": "Actualizar",
+  "publishOverwriteTitle": "¿Sobrescribir informe publicado?",
+  "publishOverwriteDescription": "Esto reemplazará los datos publicados existentes con tu informe actual. ¿Deseas continuar?",
+  "publishOverwriteConfirm": "Sobrescribir"
 }

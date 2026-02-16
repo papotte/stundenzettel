@@ -11,24 +11,29 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
 import { maskEmail } from '@/lib/utils'
 
 interface TeamReportsListProps {
+  teamId: string | null
   members: TeamMember[]
   selectedMonth: Date
   onMemberClick: (memberId: string) => void
 }
 
 export function TeamReportsList({
+  teamId,
   members,
   selectedMonth,
   onMemberClick,
 }: TeamReportsListProps) {
   const t = useTranslations()
+  const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
   const { sortedSummaries, memberSummaries } = useMemberSummaries(
+    teamId,
     members,
     selectedMonth,
   )
@@ -97,13 +102,17 @@ export function TeamReportsList({
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-48" />
                     ) : (
+                      displayNames.get(summary.member.id) ||
                       (summary.userSettings?.displayName ?? '').trim() ||
-                      maskEmail(summary.member.email)
+                      maskEmail(summary.member.email) ||
+                      summary.member.email
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : summary.userSettings ? (
                       calculateExpectedMonthlyHours(
                         summary.userSettings,
@@ -115,6 +124,8 @@ export function TeamReportsList({
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : (
                       `${summary.hoursWorked.toFixed(2)}h`
                     )}
@@ -122,6 +133,8 @@ export function TeamReportsList({
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : (
                       <span
                         className={
@@ -140,6 +153,8 @@ export function TeamReportsList({
                   <TableCell className="text-right">
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-16 ml-auto" />
+                    ) : !summary.isPublished ? (
+                      t('reports.notPublished')
                     ) : (
                       `${summary.percentage.toFixed(1)}%`
                     )}

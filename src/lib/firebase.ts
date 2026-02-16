@@ -33,7 +33,8 @@ const getDatabaseId = (): string => {
     return customDatabaseId
   }
 
-  return '' // Empty string means default database
+  // Default to 'timewise' to match firebase.json (rules and indexes are deployed there)
+  return 'timewise'
 }
 
 // Always initialize Firebase (no more mock mode for database)

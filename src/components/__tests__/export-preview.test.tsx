@@ -8,7 +8,9 @@ import { addMonths, subMonths } from 'date-fns'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useSubscriptionContext } from '@/context/subscription-context'
 import { exportToExcel } from '@/lib/excel-export'
+import { getPublishedMonth } from '@/services/published-export-service'
 import { subscriptionService } from '@/services/subscription-service'
+import { getUserTeam } from '@/services/team-service'
 import { getTimeEntries } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 import { createMockAuthContext } from '@/test-utils/auth-mocks'
@@ -24,6 +26,15 @@ jest.mock('@/services/time-entry-service', () => ({
 // Mock the user settings service
 jest.mock('@/services/user-settings-service', () => ({
   getUserSettings: jest.fn(),
+}))
+
+// Mock team and published export (for Publish button state)
+jest.mock('@/services/team-service', () => ({
+  getUserTeam: jest.fn(),
+}))
+jest.mock('@/services/published-export-service', () => ({
+  getPublishedMonth: jest.fn(),
+  publishMonthForTeam: jest.fn().mockResolvedValue(undefined),
 }))
 
 // Mock the excel export
@@ -49,6 +60,10 @@ const mockGetTimeEntries = getTimeEntries as jest.MockedFunction<
 >
 const mockGetUserSettings = getUserSettings as jest.MockedFunction<
   typeof getUserSettings
+>
+const mockGetUserTeam = getUserTeam as jest.MockedFunction<typeof getUserTeam>
+const mockGetPublishedMonth = getPublishedMonth as jest.MockedFunction<
+  typeof getPublishedMonth
 >
 const mockExportToExcel = exportToExcel as jest.MockedFunction<
   typeof exportToExcel
@@ -130,6 +145,8 @@ describe('ExportPreview', () => {
     // Set up default service responses
     mockGetTimeEntries.mockResolvedValue(mockTimeEntries)
     mockGetUserSettings.mockResolvedValue(mockUserSettings)
+    mockGetUserTeam.mockResolvedValue(null)
+    mockGetPublishedMonth.mockResolvedValue(null)
 
     // Mock subscription service to return a valid subscription
     const mockSubscription = {

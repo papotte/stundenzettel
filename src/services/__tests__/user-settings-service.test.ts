@@ -50,26 +50,42 @@ describe('User Settings Service', () => {
     })
 
     it('getUserSettings returns default settings when document does not exist', async () => {
-      const mockDocRef = {}
+      const mockSettingsRef = {}
+      const mockUserRef = {}
       const mockDocSnap = { exists: () => false }
 
-      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
       mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
       mockSetDoc.mockResolvedValue(undefined)
 
       const result = await userSettingsService.getUserSettings('new-user')
 
-      expect(mockDoc).toHaveBeenCalledWith(
+      expect(mockDoc).toHaveBeenNthCalledWith(
+        1,
         {},
         'users',
         'new-user',
         'settings',
         'general',
       )
-      expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef)
-      expect(mockSetDoc).toHaveBeenCalledWith(mockDocRef, defaultSettings, {
-        merge: true,
-      })
+      expect(mockDoc).toHaveBeenNthCalledWith(2, {}, 'users', 'new-user')
+      expect(mockGetDoc).toHaveBeenCalledTimes(2)
+      expect(mockSetDoc).toHaveBeenNthCalledWith(
+        1,
+        mockSettingsRef,
+        defaultSettings,
+        { merge: true },
+      )
+      expect(mockSetDoc).toHaveBeenNthCalledWith(
+        2,
+        mockUserRef,
+        { displayName: '' },
+        { merge: true },
+      )
       expect(result).toEqual(defaultSettings)
     })
 
@@ -79,26 +95,62 @@ describe('User Settings Service', () => {
         companyName: 'Acme Inc.',
         defaultWorkHours: 7,
       }
-      const mockDocRef = {}
-      const mockDocSnap = {
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
         exists: () => true,
         data: () => customSettings,
       }
+      const mockUserSnap = { exists: () => false }
 
-      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
-      mockGetDoc.mockResolvedValue(mockDocSnap as unknown as DocumentSnapshot)
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
 
       const result = await userSettingsService.getUserSettings('existing-user')
 
-      expect(mockDoc).toHaveBeenCalledWith(
+      expect(mockDoc).toHaveBeenNthCalledWith(
+        1,
         {},
         'users',
         'existing-user',
         'settings',
         'general',
       )
-      expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef)
+      expect(mockDoc).toHaveBeenNthCalledWith(2, {}, 'users', 'existing-user')
+      expect(mockGetDoc).toHaveBeenCalledTimes(2)
       expect(result).toEqual({ ...defaultSettings, ...customSettings })
+    })
+
+    it('getUserSettings prefers displayName from user doc when present', async () => {
+      const customSettings = {
+        language: 'en',
+        displayName: 'From Settings',
+      }
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => customSettings,
+      }
+      const mockUserSnap = {
+        exists: () => true,
+        data: () => ({ displayName: '  From User Doc  ' }),
+      }
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getUserSettings('existing-user')
+
+      expect(result.displayName).toBe('From User Doc')
     })
 
     it('setUserSettings calls setDoc with correct parameters', async () => {
@@ -111,22 +163,36 @@ describe('User Settings Service', () => {
         passengerCompensationPercent: 70,
       }
 
-      const mockDocRef = {}
-      mockDoc.mockReturnValue(mockDocRef as DocumentReference)
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
       mockSetDoc.mockResolvedValue(undefined)
 
       await userSettingsService.setUserSettings('user-123', settingsToSet)
 
-      expect(mockDoc).toHaveBeenCalledWith(
+      expect(mockDoc).toHaveBeenNthCalledWith(
+        1,
         {},
         'users',
         'user-123',
         'settings',
         'general',
       )
-      expect(mockSetDoc).toHaveBeenCalledWith(mockDocRef, settingsToSet, {
-        merge: true,
-      })
+      expect(mockDoc).toHaveBeenNthCalledWith(2, {}, 'users', 'user-123')
+      expect(mockSetDoc).toHaveBeenNthCalledWith(
+        1,
+        mockSettingsRef,
+        settingsToSet,
+        { merge: true },
+      )
+      expect(mockSetDoc).toHaveBeenNthCalledWith(
+        2,
+        mockUserRef,
+        { displayName: 'Export Name' },
+        { merge: true },
+      )
     })
 
     it('setUserSettings throws error when no user ID provided', async () => {
@@ -149,6 +215,7 @@ describe('User Settings Service', () => {
 
       const result = await userSettingsService.getDisplayNameForMember('user-1')
 
+      expect(mockDoc).toHaveBeenCalledWith({}, 'users', 'user-1')
       expect(mockGetDoc).toHaveBeenCalledWith(mockDocRef)
       expect(mockSetDoc).not.toHaveBeenCalled()
       expect(result).toBe('Jane Doe')

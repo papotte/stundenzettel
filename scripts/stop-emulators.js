@@ -7,6 +7,24 @@ const execAsync = promisify(exec)
 
 async function stopEmulators() {
   try {
+    // Export data first (export-on-exit often fails on SIGTERM/SIGINT)
+    console.log('📤 Exporting emulator data...')
+    try {
+      await execAsync('firebase emulators:export ./emulator-data', {
+        cwd: process.cwd(),
+      })
+      console.log('✅ Emulator data exported to ./emulator-data')
+    } catch (exportErr) {
+      if (
+        exportErr.stderr?.includes('Could not reach') ||
+        exportErr.message?.includes('ECONNREFUSED')
+      ) {
+        console.log('⚠️  Emulators not running, nothing to export')
+      } else {
+        console.warn('⚠️  Export failed:', exportErr.message)
+      }
+    }
+
     console.log('🛑 Stopping Firebase emulators...')
 
     // Find Firebase emulator processes

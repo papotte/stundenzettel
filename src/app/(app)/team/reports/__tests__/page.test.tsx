@@ -4,9 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 import { useAuth } from '@/hooks/use-auth'
 import { verifyTeamAccess } from '@/lib/team-auth'
+import { getPublishedMonth } from '@/services/published-export-service'
 import { getTeamMembers, getUserTeam } from '@/services/team-service'
-import { getTimeEntries } from '@/services/time-entry-service'
-import * as userSettingsService from '@/services/user-settings-service'
 
 import TeamReportsPage from '../page'
 
@@ -16,8 +15,7 @@ jest.mock('@/hooks/use-auth', () => ({
 }))
 jest.mock('@/lib/team-auth')
 jest.mock('@/services/team-service')
-jest.mock('@/services/time-entry-service')
-jest.mock('@/services/user-settings-service')
+jest.mock('@/services/published-export-service')
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
   useSearchParams: jest.fn(),
@@ -111,8 +109,7 @@ describe('TeamReportsPage', () => {
         invitedBy: 'user-1',
       },
     ])
-    ;(getTimeEntries as jest.Mock).mockResolvedValue([])
-    ;(userSettingsService.getUserSettings as jest.Mock).mockResolvedValue({
+    const userSettingsEmpty = {
       defaultWorkHours: 8,
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
@@ -125,18 +122,20 @@ describe('TeamReportsPage', () => {
       companyFax: '',
       driverCompensationPercent: 100,
       passengerCompensationPercent: 90,
+    }
+    ;(getPublishedMonth as jest.Mock).mockResolvedValue({
+      publishedAt: new Date(),
+      entries: [],
+      userSettings: userSettingsEmpty,
     })
 
     render(<TeamReportsPage />)
 
-    // Wait for the reports page to finish loading and show the month header and title
     await waitFor(() => {
       expect(screen.getByTestId('reports-month')).toBeInTheDocument()
-      // Title may be the translation key or the resolved string depending on test i18n setup
       expect(screen.getByText('reports.title')).toBeInTheDocument()
     })
 
-    // With displayName empty, fallback to masked email
     expect(await screen.findByText('adm***@example.com')).toBeInTheDocument()
   })
 
@@ -164,20 +163,23 @@ describe('TeamReportsPage', () => {
         invitedBy: 'user-1',
       },
     ])
-    ;(getTimeEntries as jest.Mock).mockResolvedValue([])
-    ;(userSettingsService.getUserSettings as jest.Mock).mockResolvedValue({
-      defaultWorkHours: 8,
-      defaultStartTime: '09:00',
-      defaultEndTime: '17:00',
-      language: 'en',
-      displayName: 'Admin User',
-      companyName: '',
-      companyEmail: '',
-      companyPhone1: '',
-      companyPhone2: '',
-      companyFax: '',
-      driverCompensationPercent: 100,
-      passengerCompensationPercent: 90,
+    ;(getPublishedMonth as jest.Mock).mockResolvedValue({
+      publishedAt: new Date(),
+      entries: [],
+      userSettings: {
+        defaultWorkHours: 8,
+        defaultStartTime: '09:00',
+        defaultEndTime: '17:00',
+        language: 'en',
+        displayName: 'Admin User',
+        companyName: '',
+        companyEmail: '',
+        companyPhone1: '',
+        companyPhone2: '',
+        companyFax: '',
+        driverCompensationPercent: 100,
+        passengerCompensationPercent: 90,
+      },
     })
 
     render(<TeamReportsPage />)

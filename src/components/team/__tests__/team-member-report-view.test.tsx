@@ -3,14 +3,15 @@ import React from 'react'
 import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
-import { getTimeEntries } from '@/services/time-entry-service'
-import { getUserSettings } from '@/services/user-settings-service'
+import { getPublishedMonth } from '@/services/published-export-service'
 
 import { TeamMemberReportView } from '../team-member-report-view'
 
 // Mock dependencies
-jest.mock('@/services/time-entry-service')
-jest.mock('@/services/user-settings-service')
+jest.mock('@/services/published-export-service')
+jest.mock('@/hooks/use-member-display-names', () => ({
+  useMemberDisplayNames: () => ({ displayNames: new Map() }),
+}))
 jest.mock('@/lib/excel-export', () => ({
   exportToExcel: jest.fn(),
 }))
@@ -37,16 +38,22 @@ const mockUserSettings = {
   passengerCompensationPercent: 90,
 }
 
+const mockPublishedData = {
+  publishedAt: new Date('2024-01-20'),
+  entries: mockTimeEntries,
+  userSettings: mockUserSettings,
+}
+
 describe('TeamMemberReportView', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(getTimeEntries as jest.Mock).mockResolvedValue(mockTimeEntries)
-    ;(getUserSettings as jest.Mock).mockResolvedValue(mockUserSettings)
+    ;(getPublishedMonth as jest.Mock).mockResolvedValue(mockPublishedData)
   })
 
   it('renders loading state initially', () => {
     render(
       <TeamMemberReportView
+        teamId="team-1"
         memberId="user-1"
         memberEmail="member@example.com"
         selectedMonth={new Date('2024-01-01')}
@@ -61,6 +68,7 @@ describe('TeamMemberReportView', () => {
   it('renders timesheet after loading', async () => {
     render(
       <TeamMemberReportView
+        teamId="team-1"
         memberId="user-1"
         memberEmail="member@example.com"
         selectedMonth={new Date('2024-01-01')}
@@ -73,10 +81,14 @@ describe('TeamMemberReportView', () => {
   })
 
   it('disables export buttons when no entries', async () => {
-    ;(getTimeEntries as jest.Mock).mockResolvedValue([])
+    ;(getPublishedMonth as jest.Mock).mockResolvedValue({
+      ...mockPublishedData,
+      entries: [],
+    })
 
     render(
       <TeamMemberReportView
+        teamId="team-1"
         memberId="user-1"
         memberEmail="member@example.com"
         selectedMonth={new Date('2024-01-01')}
@@ -92,6 +104,7 @@ describe('TeamMemberReportView', () => {
   it('enables export buttons when entries exist', async () => {
     render(
       <TeamMemberReportView
+        teamId="team-1"
         memberId="user-1"
         memberEmail="member@example.com"
         selectedMonth={new Date('2024-01-01')}
@@ -111,6 +124,7 @@ describe('TeamMemberReportView', () => {
 
     render(
       <TeamMemberReportView
+        teamId="team-1"
         memberId="user-1"
         memberEmail="member@example.com"
         selectedMonth={new Date('2024-01-01')}
@@ -131,5 +145,22 @@ describe('TeamMemberReportView', () => {
     )
 
     windowOpenSpy.mockRestore()
+  })
+
+  it('shows not published message when getPublishedMonth returns null', async () => {
+    ;(getPublishedMonth as jest.Mock).mockResolvedValue(null)
+
+    render(
+      <TeamMemberReportView
+        teamId="team-1"
+        memberId="user-1"
+        memberEmail="member@example.com"
+        selectedMonth={new Date('2024-01-01')}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('reports.notPublishedDetail')).toBeInTheDocument()
+    })
   })
 })

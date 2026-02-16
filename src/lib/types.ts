@@ -135,6 +135,8 @@ export interface MemberSummary {
   isLoading: boolean
   userSettings: UserSettings | null
   entries: TimeEntry[]
+  /** True when the member has published this month; false when not published. */
+  isPublished: boolean
 }
 
 // User Profile with Subscription

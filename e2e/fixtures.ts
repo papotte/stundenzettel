@@ -94,10 +94,10 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
       await page.getByRole('textbox', { name: 'Password' }).fill(workerPassword)
       await page.getByTestId('login-signin-button').click()
 
-      // Only redirect to tracker if explicitly requested (default behavior)
+      // Wait for the app to redirect on success (router.push) instead of forcing
+      // navigation, so auth state is ready when we land on the target page
       if (redirectToTracker) {
-        await page.goto('/tracker')
-        await page.waitForURL('/tracker')
+        await page.waitForURL('/tracker', { timeout: 15000 })
       }
     })
   },

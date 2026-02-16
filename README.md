@@ -188,9 +188,8 @@ GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
 The application automatically selects the appropriate Firestore database based on the `NEXT_PUBLIC_ENVIRONMENT` setting:
 
-- **`test`**: Uses `test-database`
-- **`development`**: Uses `dev-database`
-- **`production`**: Uses the default `(default)` database
+- **`test`**: Uses `test-database` (emulator)
+- **`development`** / **`production`**: Uses `timewise` (matches `firebase.json`)
 - **Custom**: Set `NEXT_PUBLIC_FIREBASE_DATABASE_ID` to override the automatic selection
 
 ### 3. Run the Development Server
