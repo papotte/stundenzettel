@@ -186,23 +186,19 @@ export const testAuthRedirect = async (page: Page, protectedPath: string) => {
   expect(currentUrl).toContain(protectedPath.replace('/', ''))
 }
 
-// Helper function to create a complete test setup (team + invitation) directly in the database
-export const createTestTeamWithInvitation = async (
+// Helper function to create a team with only the owner (no invitation) directly in the database
+export const createTestTeam = async (
   teamName: string,
-  teamDescription: string,
   ownerId: string,
   ownerEmail: string,
-  inviteeEmail: string,
-  inviteeRole: 'member' | 'admin' = 'member',
-): Promise<{ teamId: string; invitationId: string }> => {
+  description: string = '',
+): Promise<{ teamId: string }> => {
   try {
-    // Get Firestore instance (same as in auth-utils.ts)
     const db = getFirestore(getApps()[0], 'test-database')
 
-    // Create team directly in database
     const teamData = {
       name: teamName,
-      description: teamDescription,
+      description,
       ownerId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -211,7 +207,6 @@ export const createTestTeamWithInvitation = async (
     const teamDocRef = await addDoc(collection(db, 'teams'), teamData)
     const teamId = teamDocRef.id
 
-    // Add owner as first member
     const memberData = {
       email: ownerEmail,
       role: 'owner',
@@ -225,13 +220,37 @@ export const createTestTeamWithInvitation = async (
     }
 
     await setDoc(doc(db, 'teams', teamId, 'members', ownerId), memberData)
-
-    // Create user-team mapping for owner
     await setDoc(doc(db, 'user-teams', ownerId), {
       teamId,
       role: 'owner',
       joinedAt: serverTimestamp(),
     })
+
+    return { teamId }
+  } catch (error) {
+    console.error('Failed to create test team:', error)
+    throw error
+  }
+}
+
+// Helper function to create a complete test setup (team + invitation) directly in the database
+export const createTestTeamWithInvitation = async (
+  teamName: string,
+  teamDescription: string,
+  ownerId: string,
+  ownerEmail: string,
+  inviteeEmail: string,
+  inviteeRole: 'member' | 'admin' = 'member',
+): Promise<{ teamId: string; invitationId: string }> => {
+  try {
+    const { teamId } = await createTestTeam(
+      teamName,
+      ownerId,
+      ownerEmail,
+      teamDescription,
+    )
+
+    const db = getFirestore(getApps()[0], 'test-database')
 
     // Create invitation directly in database
     const expiresAt = new Date()
