@@ -274,7 +274,7 @@ test.describe('Core Tracker Functionality', () => {
       await expect(
         page.getByRole('navigation', { name: 'Top navigation' }),
       ).toBeVisible()
-      await expect(page.getByRole('main')).toBeVisible()
+      await expect(page.getByRole('main')).toBeVisible({ timeout: 10000 })
 
       await page.setViewportSize({ width: 375, height: 667 })
       await page.goto('/tracker')

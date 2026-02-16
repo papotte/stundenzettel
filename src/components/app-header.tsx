@@ -29,7 +29,7 @@ export default function AppHeader() {
       <div
         className="ml-auto flex items-center gap-2"
         role="navigation"
-        aria-label={t('tracker.headerUserMenuTooltip')}
+        aria-label="Top navigation"
       >
         <SubscriptionGuardButton variant="outline" className="hidden md:flex">
           <Link href="/export" className="flex">

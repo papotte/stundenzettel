@@ -66,9 +66,9 @@ test.describe('Checkout and Payment Flow', () => {
     test('should handle success and cancel redirect URLs', async ({ page }) => {
       await page.goto('/subscription?success=true')
       await page.waitForURL(/\/subscription\?success=true/, { timeout: 10000 })
-      await expect(
-        page.getByRole('link', { name: /Back to Tracker/ }),
-      ).toBeVisible({ timeout: 15000 })
+      await expect(page.getByRole('link', { name: 'Home' })).toBeVisible({
+        timeout: 15000,
+      })
       await expect(
         page.getByRole('heading', { name: /Manage Subscription/ }),
       ).toBeVisible()

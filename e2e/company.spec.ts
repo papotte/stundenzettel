@@ -55,7 +55,7 @@ test.describe('Company Page', () => {
       'Settings Saved',
     )
 
-    await page.getByRole('link', { name: 'Back to Tracker' }).click()
+    await page.getByRole('link', { name: 'Home' }).click()
     await page.waitForURL('/tracker')
     await expect(entryCard.getByText('03:24:00')).toBeVisible()
 

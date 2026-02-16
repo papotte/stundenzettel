@@ -28,7 +28,7 @@ test.describe('Preferences Page', () => {
       'Settings Saved',
     )
 
-    await page.getByRole('link', { name: 'Back to Tracker' }).click()
+    await page.getByRole('link', { name: 'Home' }).click()
     await page.waitForURL('/tracker')
 
     await page.getByRole('button', { name: 'Paid Time Off' }).click()
