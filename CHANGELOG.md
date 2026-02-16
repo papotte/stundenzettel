@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/papotte/stundenzettel/compare/v1.24.0...v1.24.1) (2026-02-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @stripe/stripe-js to v8 ([#193](https://github.com/papotte/stundenzettel/issues/193)) ([644f015](https://github.com/papotte/stundenzettel/commit/644f0150af17de16c6d729ce7bca4c8222205576))
+
 # [1.24.0](https://github.com/papotte/stundenzettel/compare/v1.23.2...v1.24.0) (2026-02-16)
 
 
