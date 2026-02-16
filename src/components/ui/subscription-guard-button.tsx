@@ -30,12 +30,7 @@ export function SubscriptionGuardButton({
   )
 
   return (
-    <Button
-      {...props}
-      className={buttonClassName}
-      disabled={disabled}
-      variant="nav"
-    >
+    <Button {...props} className={buttonClassName} disabled={disabled}>
       {children}{' '}
       {!hasValidSubscription && (
         <a
