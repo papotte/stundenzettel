@@ -73,7 +73,7 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@react-email/render": "2.0.4",
-    "@stripe/stripe-js": "^7.4.0",
+    "@stripe/stripe-js": "^8.0.0",
     "@tailwindcss/typography": "^0.5.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
