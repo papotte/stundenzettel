@@ -40,7 +40,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     ownerId: string
   }> | null>(null)
 
-  const fetchSubscription = async (userId: string) => {
+  const fetchSubscription = async (userEmail: string) => {
     // If there's already a fetch in progress, return that promise
     if (fetchPromiseRef.current) {
       return fetchPromiseRef.current
@@ -50,7 +50,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     setError(null)
 
     const promise = subscriptionService
-      .getUserSubscription(userId)
+      .getUserSubscription(userEmail)
       .then((result) => {
         const valid =
           !!result.subscription &&
@@ -115,7 +115,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     // Note: hasValidSubscription is checked but not in deps to avoid re-running
     // when subscription state changes after a successful fetch
     lastUserId.current = user.uid
-    fetchSubscription(user.uid).catch(() => {
+    fetchSubscription(user.email).catch(() => {
       // Error already handled in fetchSubscription
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

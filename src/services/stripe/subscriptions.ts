@@ -8,9 +8,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 })
 
 export async function getUserSubscription(
-  userId: string,
+  userEmail: string,
 ): Promise<Subscription | undefined> {
-  if (!userId) {
+  if (!userEmail) {
     throw new Error('User ID is required')
   }
 
@@ -18,9 +18,9 @@ export async function getUserSubscription(
   let customer: Stripe.Customer | undefined
 
   // Check if userId looks like an email
-  if (userId.includes('@')) {
+  if (userEmail.includes('@')) {
     const customersByEmail = await stripe.customers.list({
-      email: userId,
+      email: userEmail,
       limit: 1,
     })
     customer = customersByEmail.data[0]
@@ -31,11 +31,11 @@ export async function getUserSubscription(
     const customers = await stripe.customers.list({
       limit: 100, // Get more customers to search through
     })
-    customer = customers.data.find((c) => c.metadata.firebase_uid === userId)
+    customer = customers.data.find((c) => c.metadata.firebase_uid === userEmail)
   }
 
   if (!customer) {
-    console.error(`No customer found for userId: ${userId}`)
+    console.error(`No customer found for userId: ${userEmail}`)
     return undefined
   }
 

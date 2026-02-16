@@ -42,12 +42,12 @@ export class SubscriptionService {
   }
 
   async getUserSubscription(
-    userId: string,
+    userEmail: string,
   ): Promise<{ subscription: Subscription | null; ownerId: string }> {
     const now = Date.now()
 
     // Check cache first
-    const cached = subscriptionCache.get(userId)
+    const cached = subscriptionCache.get(userEmail)
     if (cached && now < cached.cacheExpiry) {
       return {
         subscription: cached.subscription,
@@ -57,7 +57,7 @@ export class SubscriptionService {
 
     try {
       // First, try to get individual subscription
-      const response = await fetch(`/api/subscriptions/${userId}`)
+      const response = await fetch(`/api/subscriptions/${userEmail}`)
 
       if (response.ok) {
         const subscription = await response.json()
@@ -66,9 +66,9 @@ export class SubscriptionService {
             subscription.status === 'active' ||
             subscription.status === 'trialing'
           return this.setCacheAndReturn(
-            userId,
+            userEmail,
             subscription,
-            userId,
+            userEmail,
             valid,
             now + CACHE_DURATION,
           )
@@ -76,7 +76,7 @@ export class SubscriptionService {
       }
 
       // If no individual subscription found, check if user is part of a team with subscription
-      const userTeam = await getUserTeam(userId)
+      const userTeam = await getUserTeam(userEmail)
       if (userTeam) {
         const teamSubscription = await getTeamSubscription(userTeam.id)
         if (teamSubscription) {
@@ -84,7 +84,7 @@ export class SubscriptionService {
             teamSubscription.status === 'active' ||
             teamSubscription.status === 'trialing'
           return this.setCacheAndReturn(
-            userId,
+            userEmail,
             teamSubscription,
             userTeam.ownerId,
             valid,
@@ -97,9 +97,9 @@ export class SubscriptionService {
       console.error('Error fetching subscription:', error)
     }
     return this.setCacheAndReturn(
-      userId,
+      userEmail,
       null,
-      userId,
+      userEmail,
       false,
       now + CACHE_DURATION,
     )
