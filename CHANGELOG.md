@@ -1,3 +1,10 @@
+## [1.24.2](https://github.com/papotte/stundenzettel/compare/v1.24.1...v1.24.2) (2026-02-16)
+
+
+### Bug Fixes
+
+* subscription guard button should not be nav by default ([a6423af](https://github.com/papotte/stundenzettel/commit/a6423afe94215aec43b501fb0d7edfa0be615ec9))
+
 ## [1.24.1](https://github.com/papotte/stundenzettel/compare/v1.24.0...v1.24.1) (2026-02-16)
 
 
