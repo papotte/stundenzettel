@@ -78,7 +78,7 @@ export default function BottomNav() {
                 {requiresSubscription ? (
                   <SubscriptionGuardButton
                     className="rounded-none p-0"
-                    variant="ghost"
+                    variant="nav"
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <NavLink
