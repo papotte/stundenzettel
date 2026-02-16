@@ -24,5 +24,9 @@
   "publish": "Publish",
   "publishedOn": "Published on {date}",
   "publishForTeamHint": "Join a team to publish for your team admin",
-  "publishSuccess": "Timesheet published"
+  "publishSuccess": "Timesheet published",
+  "publishUpdate": "Update",
+  "publishOverwriteTitle": "Overwrite published report?",
+  "publishOverwriteDescription": "This will replace the existing published data with your current timesheet. Do you want to continue?",
+  "publishOverwriteConfirm": "Overwrite"
 }

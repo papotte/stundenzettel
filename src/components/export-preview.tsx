@@ -3,24 +3,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { addMonths, isSameDay, isSameMonth, subMonths } from 'date-fns'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Printer,
-  Send,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
@@ -40,6 +29,7 @@ import {
 } from '@/services/time-entry-service'
 import { getUserSettings } from '@/services/user-settings-service'
 
+import { ExportPreviewActions } from './export-preview-actions'
 import TimeEntryForm from './time-entry-form'
 import TimesheetPreview from './timesheet-preview'
 
@@ -270,7 +260,7 @@ export default function ExportPreview() {
         data-testid="export-preview-card"
       >
         <CardContent className="p-4 sm:p-6 print:p-0">
-          <div className="mb-6 flex flex-col items-center justify-between sm:flex-row print:hidden">
+          <div className="mb-6 flex flex-col items-start justify-between sm:flex-row print:hidden">
             <div className="flex items-center gap-4">
               <Button
                 variant="outline"
@@ -295,117 +285,16 @@ export default function ExportPreview() {
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-            <div className="mt-4 flex flex-col items-center gap-2 sm:mt-0 md:flex-row">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button
-                      onClick={handleExport}
-                      data-testid="export-preview-export-button"
-                      disabled={entries.length === 0}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      {t('export.exportButton')}
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {entries.length === 0 && (
-                  <TooltipContent side="top">
-                    {t('export.noDataHint', {
-                      defaultValue:
-                        'No data available for export in this month.',
-                    })}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button
-                      onClick={handlePdfExport}
-                      variant="outline"
-                      data-testid="export-preview-pdf-button"
-                      disabled={entries.length === 0}
-                    >
-                      <Printer className="mr-2 h-4 w-4" />
-                      {t('export.exportPdfButton')}
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {entries.length === 0 && (
-                  <TooltipContent side="top">
-                    {t('export.noDataHint', {
-                      defaultValue:
-                        'No data available for export in this month.',
-                    })}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-              {userTeam &&
-                (publishedAt ? (
-                  <span
-                    className="text-muted-foreground text-sm"
-                    data-testid="export-preview-published-on"
-                  >
-                    {t('export.publishedOn', {
-                      date: format.dateTime(publishedAt, 'short'),
-                    })}
-                  </span>
-                ) : (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button
-                          variant="outline"
-                          onClick={handlePublish}
-                          disabled={
-                            isPublishing ||
-                            !entries.some(
-                              (e) =>
-                                e.startTime &&
-                                isSameMonth(e.startTime, selectedMonth),
-                            )
-                          }
-                          data-testid="export-preview-publish-button"
-                        >
-                          <Send className="mr-2 h-4 w-4" />
-                          {t('export.publish')}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    {!entries.some(
-                      (e) =>
-                        e.startTime && isSameMonth(e.startTime, selectedMonth),
-                    ) && (
-                      <TooltipContent side="top">
-                        {t('export.noDataHint', {
-                          defaultValue:
-                            'No data available for export in this month.',
-                        })}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                ))}
-              {!userTeam && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <Button
-                        variant="outline"
-                        disabled
-                        data-testid="export-preview-publish-button"
-                      >
-                        <Send className="mr-2 h-4 w-4" />
-                        {t('export.publish')}
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    {t('export.publishForTeamHint')}
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
+            <ExportPreviewActions
+              onExport={handleExport}
+              onPdfExport={handlePdfExport}
+              onPublish={handlePublish}
+              entries={entries}
+              selectedMonth={selectedMonth}
+              userTeam={userTeam}
+              publishedAt={publishedAt}
+              isPublishing={isPublishing}
+            />
           </div>
 
           <TimesheetPreview

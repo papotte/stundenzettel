@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
@@ -38,6 +39,7 @@ export function TeamMemberReportView({
 }: TeamMemberReportViewProps) {
   const t = useTranslations()
   const format = useFormatter()
+  const { displayNames } = useMemberDisplayNames([memberId])
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -104,10 +106,14 @@ export function TeamMemberReportView({
   const handleExport = async () => {
     if (!selectedMonth || !userSettings) return
 
+    const displayName =
+      displayNames.get(memberId) ||
+      (userSettings.displayName ?? '').trim() ||
+      memberEmail
     const mockUser = {
       uid: memberId,
       email: memberEmail,
-      displayName: userSettings.displayName || memberEmail,
+      displayName,
     }
 
     await exportToExcel({
@@ -166,10 +172,15 @@ export function TeamMemberReportView({
   }
 
   const email = maskEmail(memberEmail)
+  const displayName =
+    displayNames.get(memberId) ||
+    (userSettings.displayName ?? '').trim() ||
+    email ||
+    memberEmail
   const mockUser = {
     uid: memberId,
-    email: email,
-    displayName: userSettings.displayName || email,
+    email,
+    displayName,
   }
 
   return (

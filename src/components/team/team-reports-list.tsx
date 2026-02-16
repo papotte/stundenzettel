@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
@@ -30,6 +31,7 @@ export function TeamReportsList({
   onMemberClick,
 }: TeamReportsListProps) {
   const t = useTranslations()
+  const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
   const { sortedSummaries, memberSummaries } = useMemberSummaries(
     teamId,
     members,
@@ -100,6 +102,7 @@ export function TeamReportsList({
                     {summary.isLoading ? (
                       <Skeleton className="h-4 w-48" />
                     ) : (
+                      displayNames.get(summary.member.id) ||
                       (summary.userSettings?.displayName ?? '').trim() ||
                       maskEmail(summary.member.email) ||
                       summary.member.email

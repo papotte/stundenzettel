@@ -9,6 +9,9 @@ import { TeamMemberReportView } from '../team-member-report-view'
 
 // Mock dependencies
 jest.mock('@/services/published-export-service')
+jest.mock('@/hooks/use-member-display-names', () => ({
+  useMemberDisplayNames: () => ({ displayNames: new Map() }),
+}))
 jest.mock('@/lib/excel-export', () => ({
   exportToExcel: jest.fn(),
 }))

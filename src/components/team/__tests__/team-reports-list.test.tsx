@@ -3,13 +3,23 @@ import React from 'react'
 import { render, screen, waitFor, within } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import type { TeamMember } from '@/lib/types'
 import { getPublishedMonth } from '@/services/published-export-service'
 
 import { TeamReportsList } from '../team-reports-list'
 
+const mockUseMemberDisplayNames = useMemberDisplayNames as jest.MockedFunction<
+  typeof useMemberDisplayNames
+>
+
 // Mock dependencies
 jest.mock('@/services/published-export-service')
+jest.mock('@/hooks/use-member-display-names', () => ({
+  useMemberDisplayNames: jest.fn(() => ({
+    displayNames: new Map<string, string>(),
+  })),
+}))
 
 const mockMembers: TeamMember[] = [
   {
@@ -70,6 +80,9 @@ describe('TeamReportsList', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseMemberDisplayNames.mockReturnValue({
+      displayNames: new Map<string, string>(),
+    })
     ;(getPublishedMonth as jest.Mock).mockImplementation(
       (_t: string, memberId: string) =>
         Promise.resolve(
@@ -107,6 +120,43 @@ describe('TeamReportsList', () => {
             memberId === 'user-1' ? entries : [],
             mockUserSettings,
             defaultDisplayNames[memberId],
+          ),
+        ),
+    )
+
+    render(
+      <TeamReportsList
+        teamId={teamId}
+        members={mockMembers}
+        selectedMonth={selectedMonth}
+        onMemberClick={mockOnMemberClick}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+      expect(screen.getByText('Bob')).toBeInTheDocument()
+    })
+  })
+
+  it('shows display names from useMemberDisplayNames when set', async () => {
+    mockUseMemberDisplayNames.mockReturnValue({
+      displayNames: new Map([
+        ['user-1', 'Alice'],
+        ['user-2', 'Bob'],
+      ]),
+    })
+    const entries = [
+      createMockTimeEntry('entry-1', 'user-1', new Date('2024-01-15')),
+      createMockTimeEntry('entry-2', 'user-1', new Date('2024-01-16')),
+    ]
+    ;(getPublishedMonth as jest.Mock).mockImplementation(
+      (_t: string, memberId: string) =>
+        Promise.resolve(
+          mockPublishedData(
+            memberId === 'user-1' ? entries : [],
+            mockUserSettings,
+            undefined,
           ),
         ),
     )

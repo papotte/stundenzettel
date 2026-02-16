@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
@@ -23,6 +24,7 @@ export function TeamReportsGrid({
   onMemberClick,
 }: TeamReportsGridProps) {
   const t = useTranslations()
+  const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
   const { sortedSummaries } = useMemberSummaries(teamId, members, selectedMonth)
 
   if (members.length === 0) {
@@ -55,7 +57,8 @@ export function TeamReportsGrid({
             ) : (
               <div className="space-y-3">
                 <h3 className="font-semibold text-lg">
-                  {(summary.userSettings?.displayName ?? '').trim() ||
+                  {displayNames.get(summary.member.id) ||
+                    (summary.userSettings?.displayName ?? '').trim() ||
                     maskEmail(summary.member.email) ||
                     summary.member.email}
                 </h3>

@@ -56,9 +56,7 @@ export const getDisplayNameForMember = async (
   try {
     const docRef = doc(db, 'users', userId)
     const docSnap = await getDoc(docRef)
-    console.log('docRef for user id', userId, docSnap.data())
     if (docSnap.exists()) {
-      console.log('docSnap.data()', docSnap.data())
       const name = (docSnap.data().displayName as string | undefined) ?? ''
       return name.trim()
     }
@@ -78,7 +76,6 @@ export const getDisplayNamesForMembers = async (
   memberIds: string[],
 ): Promise<Map<string, string>> => {
   if (memberIds.length === 0) return new Map()
-  console.log('getDisplayNamesForMembers', memberIds)
   const results = await Promise.all(
     memberIds.map(async (id) => ({
       id,

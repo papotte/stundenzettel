@@ -34,6 +34,7 @@ jest.mock('@/services/team-service', () => ({
 }))
 jest.mock('@/services/published-export-service', () => ({
   getPublishedMonth: jest.fn(),
+  publishMonthForTeam: jest.fn().mockResolvedValue(undefined),
 }))
 
 // Mock the excel export
