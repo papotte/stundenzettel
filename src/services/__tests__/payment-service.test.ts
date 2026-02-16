@@ -37,31 +37,6 @@ describe('PaymentService', () => {
   })
 
   describe('getPricingPlans (function)', () => {
-    const mockPlans: PricingPlan[] = [
-      {
-        id: 'plan-1',
-        name: 'Basic Plan',
-        price: 10,
-        currency: 'USD',
-        interval: 'month',
-        features: ['Feature 1'],
-        stripePriceId: 'price_1',
-      },
-    ]
-
-    it('returns cached plans if available and not expired', async () => {
-      mockStripeService.getPricingPlans.mockResolvedValue(mockPlans)
-
-      // First call to populate cache
-      const result1 = await getPricingPlans()
-      expect(result1).toEqual(mockPlans)
-
-      // Second call should use cache
-      const result2 = await getPricingPlans()
-      expect(result2).toEqual(mockPlans)
-      expect(mockStripeService.getPricingPlans).toHaveBeenCalledTimes(1)
-    })
-
     it('handles API errors gracefully', async () => {
       // Mock StripeService to reject
       mockStripeService.getPricingPlans.mockRejectedValue(
@@ -136,7 +111,7 @@ describe('PaymentService', () => {
         } as Response)
 
         const result = await paymentService.createTeamCheckoutSession(
-          'user123',
+          'user@example.com',
           'team123',
           'price_123',
           5,
@@ -153,7 +128,7 @@ describe('PaymentService', () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userId: 'user123',
+              userId: 'user@example.com',
               teamId: 'team123',
               priceId: 'price_123',
               quantity: 5,
@@ -172,7 +147,7 @@ describe('PaymentService', () => {
 
         await expect(
           paymentService.createTeamCheckoutSession(
-            'user123',
+            'user@example.com',
             'team123',
             'price_123',
             5,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { AlertCircle, CreditCard } from 'lucide-react'
@@ -18,21 +18,20 @@ import {
 } from '@/components/ui/dialog'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
+import { usePricingPlans } from '@/hooks/use-pricing-plans'
 import { useToast } from '@/hooks/use-toast'
 import { db } from '@/lib/firebase'
 import type { Subscription } from '@/lib/types'
-import { getPricingPlans } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
 type EligibleStatus = 'active' | 'trialing' | 'past_due'
 
-// Type that narrows Subscription to only allow eligible statuses
 type SubscriptionWithEligibleStatus = Omit<Subscription, 'status'> & {
   status: EligibleStatus
 }
 
-// Type guard to check if a subscription has an eligible status
 function hasEligibleStatus(
   subscription: Subscription,
 ): subscription is SubscriptionWithEligibleStatus {
@@ -43,12 +42,10 @@ function hasEligibleStatus(
   )
 }
 
-// Safely converts a date value (Date, string, or Firestore Timestamp) to ISO string
 function toISOString(value: Date | string | null | undefined): string | null {
   if (!value) return null
   if (typeof value === 'string') return value
   if (value instanceof Date) return value.toISOString()
-  // Handle Firestore Timestamp
   if (
     typeof value === 'object' &&
     'toDate' in value &&
@@ -83,87 +80,49 @@ export function LinkTeamSubscriptionDialog({
   const t = useTranslations()
   const { toast } = useToast()
   const { user } = useAuth()
+  const { subscription, loading: subscriptionLoading } =
+    useSubscriptionContext()
+  const { data: pricingPlans = [], isLoading: plansLoading } = usePricingPlans({
+    enabled: open,
+  })
 
-  const [isLoading, setIsLoading] = useState(false)
   const [isLinking, setIsLinking] = useState(false)
-  const [subscriptions, setSubscriptions] = useState<
-    SubscriptionWithEligibleStatus[]
-  >([])
   const [selectedId, setSelectedId] = useState<string>('')
 
+  const subscriptions = useMemo((): SubscriptionWithEligibleStatus[] => {
+    if (!subscription || !hasEligibleStatus(subscription)) return []
+    const teamPlans = pricingPlans.filter((plan) => plan.maxUsers)
+    const teamPriceIds = new Set(teamPlans.map((plan) => plan.stripePriceId))
+    if (!teamPriceIds.has(subscription.priceId)) return []
+    return [subscription]
+  }, [subscription, pricingPlans])
+
+  const isLoading = open && (subscriptionLoading || plansLoading)
+
+  // When subscriptions change, keep selectedId in sync
+  const effectiveSelectedId =
+    selectedId &&
+    subscriptions.some((s) => s.stripeSubscriptionId === selectedId)
+      ? selectedId
+      : (subscriptions[0]?.stripeSubscriptionId ?? '')
+
   const selected = useMemo(
-    () => subscriptions.find((s) => s.stripeSubscriptionId === selectedId),
-    [subscriptions, selectedId],
+    () =>
+      subscriptions.find((s) => s.stripeSubscriptionId === effectiveSelectedId),
+    [subscriptions, effectiveSelectedId],
   )
 
-  useEffect(() => {
-    if (!open || !user?.uid) return
-
-    let cancelled = false
-
-    async function load() {
-      setIsLoading(true)
-      try {
-        if (!user?.uid) {
-          throw new Error('Not authenticated')
-        }
-        // Use SubscriptionService which calls the working /api/subscriptions/:userId endpoint
-        const result = await subscriptionService.getUserSubscription(user.uid)
-        const subscription = result.subscription
-
-        const linkable: SubscriptionWithEligibleStatus[] = []
-
-        // If subscription exists, check if it's eligible and a team plan
-        if (subscription) {
-          // Fetch pricing plans to determine which are team plans
-          const pricingPlans = await getPricingPlans()
-          const teamPlans = pricingPlans.filter((plan) => plan.maxUsers)
-          const teamPriceIds = new Set(
-            teamPlans.map((plan) => plan.stripePriceId),
-          )
-
-          // Only include if status is eligible AND it's a team plan (priceId matches a team plan)
-          if (
-            hasEligibleStatus(subscription) &&
-            teamPriceIds.has(subscription.priceId)
-          ) {
-            linkable.push(subscription)
-          }
-        }
-
-        if (cancelled) return
-        setSubscriptions(linkable)
-        setSelectedId(linkable[0]?.stripeSubscriptionId || '')
-      } catch (error) {
-        console.error(error)
-        toast({
-          title: t('common.error'),
-          description:
-            error instanceof Error
-              ? `${t('teams.failedToLoadLinkableSubscriptions')}: ${error.message}`
-              : t('teams.failedToLoadLinkableSubscriptions'),
-          variant: 'destructive',
-        })
-      } finally {
-        if (!cancelled) setIsLoading(false)
-      }
-    }
-
-    load()
-    return () => {
-      cancelled = true
-    }
-  }, [open, user, toast, t])
-
   const handleLink = async () => {
-    if (!selectedId || !user) return
+    if (!effectiveSelectedId || !user) return
 
     setIsLinking(true)
     try {
-      // Get the subscription again to ensure we have the latest data
       const result = await subscriptionService.getUserSubscription(user.uid)
       const subscription = result.subscription
-      if (!subscription || subscription.stripeSubscriptionId !== selectedId) {
+      if (
+        !subscription ||
+        subscription.stripeSubscriptionId !== effectiveSelectedId
+      ) {
         throw new Error('Subscription not found')
       }
 
@@ -171,7 +130,6 @@ export function LinkTeamSubscriptionDialog({
         throw new Error('Subscription status is not eligible')
       }
 
-      // Write the subscription data to the team's subscription doc
       const teamSubRef = doc(db, 'teams', teamId, 'subscription', 'current')
       await setDoc(
         teamSubRef,
@@ -244,7 +202,10 @@ export function LinkTeamSubscriptionDialog({
               </div>
             )}
 
-            <RadioGroup value={selectedId} onValueChange={setSelectedId}>
+            <RadioGroup
+              value={effectiveSelectedId}
+              onValueChange={setSelectedId}
+            >
               <div className="space-y-3">
                 {subscriptions.map((s) => (
                   <label

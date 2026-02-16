@@ -83,7 +83,7 @@ describe('TeamReportsGrid', () => {
     ;(getPublishedMonth as jest.Mock).mockResolvedValue(mockPublishedData([]))
   })
 
-  it('renders loading state initially', () => {
+  it('renders loading state initially', async () => {
     render(
       <TeamReportsGrid
         teamId={teamId}
@@ -93,7 +93,9 @@ describe('TeamReportsGrid', () => {
       />,
     )
 
-    expect(screen.getAllByTestId(/member-card-/)).toHaveLength(2)
+    await waitFor(() => {
+      expect(screen.getAllByTestId(/member-card-/)).toHaveLength(2)
+    })
   })
 
   it('renders member cards with summaries after loading', async () => {

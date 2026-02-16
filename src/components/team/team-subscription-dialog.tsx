@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { Check, CreditCard, Minus, Plus, Users } from 'lucide-react'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -20,10 +22,12 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
+import { usePricingPlans } from '@/hooks/use-pricing-plans'
 import { useToast } from '@/hooks/use-toast'
+import { queryKeys } from '@/lib/query-keys'
 import type { PricingPlan, Team } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
-import { getPricingPlans } from '@/services/payment-service'
+import { paymentService } from '@/services/payment-service'
 
 interface TeamSubscriptionDialogProps {
   open: boolean
@@ -44,38 +48,68 @@ export function TeamSubscriptionDialog({
   const format = useFormatter()
   const { toast } = useToast()
   const { user } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingPlans, setIsLoadingPlans] = useState(false)
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
+  const queryClient = useQueryClient()
+
+  const { data: allPlans = [], isLoading: isLoadingPlans } = usePricingPlans({
+    enabled: open,
+  })
+  const pricingPlans = allPlans.filter((plan) => plan.maxUsers)
+
   const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null)
   const [isYearly, setIsYearly] = useState(false)
   const [seats, setSeats] = useState(Math.max(currentMembersCount, 1))
 
-  const loadPricingPlans = useCallback(async () => {
-    setIsLoadingPlans(true)
-    try {
-      const plans = await getPricingPlans()
-      const teamPlans = plans.filter((plan) => plan.maxUsers)
-      setPricingPlans(teamPlans)
-    } catch (error) {
-      console.error('Error loading pricing plans:', error)
+  const teamCheckoutMutation = useMutation({
+    mutationFn: ({
+      userId,
+      teamId,
+      priceId,
+      quantity,
+      successUrl,
+      cancelUrl,
+      trialEnabled,
+      requirePaymentMethod,
+    }: {
+      userId: string
+      uidForInvalidation: string
+      teamId: string
+      priceId: string
+      quantity: number
+      successUrl: string
+      cancelUrl: string
+      trialEnabled: boolean
+      requirePaymentMethod: boolean
+    }) =>
+      paymentService.createTeamCheckoutSession(
+        userId,
+        teamId,
+        priceId,
+        quantity,
+        successUrl,
+        cancelUrl,
+        trialEnabled,
+        requirePaymentMethod,
+      ),
+    onSuccess: (data, variables) => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.subscription(variables.uidForInvalidation),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.teamPageData(variables.uidForInvalidation),
+      })
+      onOpenChange(false)
+      onSubscriptionCreated?.()
+      window.location.href = data.url
+    },
+    onError: (error) => {
+      console.error('Error creating team checkout session:', error)
       toast({
         title: t('common.error'),
-        description: t('teams.failedToLoadPricingPlans'),
+        description: t('teams.failedToUpgradeSubscription'),
         variant: 'destructive',
       })
-    } finally {
-      setIsLoadingPlans(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Load pricing plans when dialog opens
-  useEffect(() => {
-    if (open) {
-      loadPricingPlans()
-    }
-  }, [open, loadPricingPlans])
+    },
+  })
 
   // Update selected plan when billing frequency changes
   useEffect(() => {
@@ -119,47 +153,22 @@ export function TeamSubscriptionDialog({
     setSeats(Math.max(minSeats, Math.min(newSeats, maxSeats)))
   }
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = () => {
     if (!selectedPlan || !user) return
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/create-team-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: getUserId(user),
-          userEmail: user.email || '',
-          teamId: team.id,
-          priceId: selectedPlan.stripePriceId,
-          quantity: seats,
-          successUrl: `${window.location.origin}/team?success=true`,
-          cancelUrl: `${window.location.origin}/team?canceled=true`,
-          trialEnabled: selectedPlan.trialEnabled,
-          requirePaymentMethod: true,
-        }),
-      })
-
-      if (response.ok) {
-        const { url } = await response.json()
-        onOpenChange(false)
-        onSubscriptionCreated?.()
-        window.location.href = url
-      } else {
-        throw new Error('Failed to create checkout session')
-      }
-    } catch (error) {
-      console.error('Error creating team checkout session:', error)
-      toast({
-        title: t('common.error'),
-        description: t('teams.failedToUpgradeSubscription'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
-    }
+    const userIdForApi = getUserId(user)
+    if (!userIdForApi) return
+    const uid = user.uid ?? userIdForApi
+    teamCheckoutMutation.mutate({
+      userId: userIdForApi,
+      uidForInvalidation: uid,
+      teamId: team.id,
+      priceId: selectedPlan.stripePriceId,
+      quantity: seats,
+      successUrl: `${window.location.origin}/team?success=true`,
+      cancelUrl: `${window.location.origin}/team?canceled=true`,
+      trialEnabled: selectedPlan.trialEnabled ?? false,
+      requirePaymentMethod: true,
+    })
   }
 
   const availablePlans = pricingPlans.filter(
@@ -410,16 +419,18 @@ export function TeamSubscriptionDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isLoading}
+            disabled={teamCheckoutMutation.isPending}
           >
             {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubscribe}
-            disabled={isLoading || !selectedPlan}
+            disabled={teamCheckoutMutation.isPending || !selectedPlan}
           >
             <CreditCard className="mr-2 h-4 w-4" />
-            {isLoading ? t('common.loading') : t('teams.subscribeNow')}
+            {teamCheckoutMutation.isPending
+              ? t('common.loading')
+              : t('teams.subscribeNow')}
           </Button>
         </DialogFooter>
       </DialogContent>

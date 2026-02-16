@@ -95,7 +95,7 @@ describe('TeamReportsList', () => {
     )
   })
 
-  it('renders loading state initially', () => {
+  it('renders loading state initially', async () => {
     render(
       <TeamReportsList
         teamId={teamId}
@@ -105,7 +105,9 @@ describe('TeamReportsList', () => {
       />,
     )
 
-    expect(screen.getAllByTestId(/member-row-/)).toHaveLength(2)
+    await waitFor(() => {
+      expect(screen.getAllByTestId(/member-row-/)).toHaveLength(2)
+    })
   })
 
   it('renders table with member rows after loading', async () => {

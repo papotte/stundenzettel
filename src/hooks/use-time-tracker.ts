@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+
 import {
   addDays,
   endOfMonth,
@@ -17,12 +19,12 @@ import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
+import { queryKeys } from '@/lib/query-keys'
 import {
   calculateTotalCompensatedMinutes,
   shiftEntryToDate,
 } from '@/lib/time-utils'
-import type { TimeEntry, UserSettings } from '@/lib/types'
-import { compareEntriesByStartTime } from '@/lib/utils'
+import type { TimeEntry } from '@/lib/types'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -36,8 +38,45 @@ export function useTimeTracker(user: { uid: string } | null) {
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter().dateTime
-  const [entries, setEntries] = useState<TimeEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+
+  const {
+    data,
+    isLoading,
+    error: queryError,
+  } = useQuery({
+    queryKey: queryKeys.timeTrackerData(user?.uid ?? ''),
+    queryFn: async () => {
+      const [entries, userSettings] = await Promise.all([
+        getTimeEntries(user!.uid),
+        getUserSettings(user!.uid),
+      ])
+      return { entries, userSettings }
+    },
+    enabled: Boolean(user?.uid),
+  })
+
+  const entries = useMemo(() => data?.entries ?? [], [data?.entries])
+  const userSettings = data?.userSettings ?? null
+
+  useEffect(() => {
+    if (queryError) {
+      toast({
+        title: t('toasts.databaseErrorTitle') ?? '',
+        description: t('toasts.databaseConnectionError') ?? '',
+        variant: 'destructive',
+      })
+    }
+  }, [queryError, t, toast])
+
+  const setUserSettingsRefetch = useCallback(() => {
+    if (user?.uid) {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.timeTrackerData(user.uid),
+      })
+    }
+  }, [user?.uid, queryClient])
+
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [location, setLocation] = useState('')
@@ -45,34 +84,10 @@ export function useTimeTracker(user: { uid: string } | null) {
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
 
   useEffect(() => {
     setSelectedDate(new Date())
-    if (!user) return
-    const fetchInitialData = async () => {
-      setIsLoading(true)
-      try {
-        const [fetchedEntries, settings] = await Promise.all([
-          getTimeEntries(user.uid),
-          getUserSettings(user.uid),
-        ])
-        setEntries(fetchedEntries)
-        setUserSettings(settings)
-      } catch (error) {
-        console.error('Error fetching initial data:', error)
-        toast({
-          title: t('toasts.databaseErrorTitle') ?? '',
-          description: t('toasts.databaseConnectionError') ?? '',
-          variant: 'destructive',
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchInitialData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+  }, [])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -90,6 +105,14 @@ export function useTimeTracker(user: { uid: string } | null) {
     }
     return () => clearInterval(interval)
   }, [runningTimer])
+
+  const invalidateTimeTracker = useCallback(() => {
+    if (user?.uid) {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.timeTrackerData(user.uid),
+      })
+    }
+  }, [user?.uid, queryClient])
 
   const handleStartTimer = () => {
     if (!user) return
@@ -133,9 +156,6 @@ export function useTimeTracker(user: { uid: string } | null) {
       const existingEntry = entries.find((e) => e.id === entryWithUser.id)
       if (existingEntry) {
         await updateTimeEntry(entryWithUser.id, entryWithUser)
-        setEntries(
-          entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)),
-        )
         toast({
           title: t('toasts.entryUpdatedTitle') ?? '',
           description:
@@ -144,11 +164,7 @@ export function useTimeTracker(user: { uid: string } | null) {
             }) ?? '',
         })
       } else {
-        const newId = await addTimeEntry(entryWithUser)
-        const newEntry = { ...entryWithUser, id: newId }
-        setEntries((prev) =>
-          [newEntry, ...prev].sort(compareEntriesByStartTime),
-        )
+        await addTimeEntry(entryWithUser)
         toast({
           title: t('toasts.entryAddedTitle') ?? '',
           description:
@@ -157,6 +173,7 @@ export function useTimeTracker(user: { uid: string } | null) {
             }) ?? '',
         })
       }
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error saving entry:', error)
       toast({
@@ -176,11 +193,11 @@ export function useTimeTracker(user: { uid: string } | null) {
     if (!user) return
     try {
       await deleteTimeEntry(user.uid, id)
-      setEntries(entries.filter((entry) => entry.id !== id))
       toast({
         title: t('toasts.entryDeletedTitle') ?? '',
         variant: 'destructive',
       })
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error deleting entry:', error)
       toast({
@@ -195,7 +212,6 @@ export function useTimeTracker(user: { uid: string } | null) {
     if (!user) return
     try {
       await deleteAllTimeEntries(user.uid)
-      setEntries([])
       if (runningTimer) {
         setRunningTimer(null)
         setLocation('')
@@ -205,6 +221,7 @@ export function useTimeTracker(user: { uid: string } | null) {
         title: t('toasts.dataClearedTitle') ?? '',
         description: t('toasts.dataClearedDescription') ?? '',
       })
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error clearing data:', error)
       toast({
@@ -218,7 +235,6 @@ export function useTimeTracker(user: { uid: string } | null) {
   const handleAddSpecialEntry = async (locationKey: SpecialLocationKey) => {
     if (!selectedDate || !user) return
     const currentSettings = await getUserSettings(user.uid)
-    setUserSettings(currentSettings)
     const isTimeOffInLieu = locationKey === 'TIME_OFF_IN_LIEU'
     const hours = isTimeOffInLieu ? 0 : currentSettings.defaultWorkHours || 7
     const startTime = set(selectedDate, {
@@ -252,11 +268,7 @@ export function useTimeTracker(user: { uid: string } | null) {
     }
     try {
       const entryWithUser = { ...newEntry, userId: user.uid }
-      const newId = await addTimeEntry(entryWithUser)
-      const finalNewEntry = { ...entryWithUser, id: newId }
-      setEntries((prev) =>
-        [finalNewEntry, ...prev].sort(compareEntriesByStartTime),
-      )
+      await addTimeEntry(entryWithUser)
       toast({
         title: t('toasts.entryAddedTitle') ?? '',
         description:
@@ -265,6 +277,7 @@ export function useTimeTracker(user: { uid: string } | null) {
           }) ?? '',
         className: 'bg-accent text-accent-foreground',
       })
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error adding special entry:', error)
       toast({
@@ -345,23 +358,19 @@ export function useTimeTracker(user: { uid: string } | null) {
     )
     if (yesterdayEntries.length === 0) return
     try {
-      const newEntries: TimeEntry[] = []
       for (const entry of yesterdayEntries) {
         const shifted = shiftEntryToDate(entry, selectedDate)
         const withUser = { ...shifted, userId: user.uid }
-        const newId = await addTimeEntry(withUser)
-        newEntries.push({ ...withUser, id: newId })
+        await addTimeEntry(withUser)
       }
-      setEntries((prev) =>
-        [...newEntries, ...prev].sort(compareEntriesByStartTime),
-      )
       toast({
         title: t('toasts.entriesCopiedFromYesterdayTitle') ?? '',
         description:
           t('toasts.entriesCopiedFromYesterdayDescription', {
-            count: newEntries.length,
+            count: yesterdayEntries.length,
           }) ?? '',
       })
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error copying from yesterday:', error)
       toast({
@@ -377,9 +386,7 @@ export function useTimeTracker(user: { uid: string } | null) {
     try {
       const shifted = shiftEntryToDate(entry, targetDate)
       const withUser = { ...shifted, userId: user.uid }
-      const newId = await addTimeEntry(withUser)
-      const newEntry = { ...withUser, id: newId }
-      setEntries((prev) => [newEntry, ...prev].sort(compareEntriesByStartTime))
+      await addTimeEntry(withUser)
       toast({
         title: t('toasts.entryCopiedTitle') ?? '',
         description:
@@ -387,6 +394,7 @@ export function useTimeTracker(user: { uid: string } | null) {
             location: entry.location,
           }) ?? '',
       })
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error copying entry:', error)
       toast({
@@ -404,24 +412,20 @@ export function useTimeTracker(user: { uid: string } | null) {
     )
     if (dayEntries.length === 0) return
     try {
-      const newEntries: TimeEntry[] = []
       for (const entry of dayEntries) {
         const shifted = shiftEntryToDate(entry, targetDate)
         const withUser = { ...shifted, userId: user.uid }
-        const newId = await addTimeEntry(withUser)
-        newEntries.push({ ...withUser, id: newId })
+        await addTimeEntry(withUser)
       }
-      setEntries((prev) =>
-        [...newEntries, ...prev].sort(compareEntriesByStartTime),
-      )
       toast({
         title: t('toasts.entriesCopiedToTitle') ?? '',
         description:
           t('toasts.entriesCopiedToDescription', {
-            count: newEntries.length,
+            count: dayEntries.length,
             date: format(targetDate, 'long'),
           }) ?? '',
       })
+      invalidateTimeTracker()
     } catch (error) {
       console.error('Error copying day:', error)
       toast({
@@ -519,7 +523,7 @@ export function useTimeTracker(user: { uid: string } | null) {
     isFetchingLocation,
     setIsFetchingLocation,
     userSettings,
-    setUserSettings,
+    setUserSettings: setUserSettingsRefetch,
     handleStartTimer,
     handleStopTimer,
     handleSaveEntry,

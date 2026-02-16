@@ -4,19 +4,17 @@ import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import type { PricingPlan } from '@/lib/types'
-// Mock the services
-import {
-  _resetPricingPlansCacheForTest,
-  getPricingPlans,
-  paymentService,
-} from '@/services/payment-service'
+import { paymentService } from '@/services/payment-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import PricingSection from '../pricing-section'
 
-// Mock the payment service
+const mockUsePricingPlans = jest.fn()
+jest.mock('@/hooks/use-pricing-plans', () => ({
+  usePricingPlans: (...args: unknown[]) => mockUsePricingPlans(...args),
+}))
+
 jest.mock('@/services/payment-service', () => ({
-  getPricingPlans: jest.fn(),
   paymentService: {
     createCheckoutSession: jest.fn(),
     redirectToCheckout: jest.fn(),
@@ -35,9 +33,6 @@ Object.defineProperty(window, 'location', {
   writable: true,
 })
 
-const mockGetPricingPlans = getPricingPlans as jest.MockedFunction<
-  typeof getPricingPlans
->
 const mockCreateCheckoutSession =
   paymentService.createCheckoutSession as jest.MockedFunction<
     typeof paymentService.createCheckoutSession
@@ -103,14 +98,22 @@ describe('PricingSection', () => {
     mockAuthContext.loading = false
     mockLocation.href = ''
     mockLocation.search = ''
-    _resetPricingPlansCacheForTest()
+    mockUsePricingPlans.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+    })
   })
 
   describe('Plan Loading', () => {
     it('shows loading state while fetching plans', async () => {
-      mockGetPricingPlans.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      )
+      mockUsePricingPlans.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+        error: null,
+      })
 
       renderWithProviders(<PricingSection />)
 
@@ -121,7 +124,12 @@ describe('PricingSection', () => {
     })
 
     it('displays pricing plans when loaded successfully', async () => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
 
       renderWithProviders(<PricingSection />)
 
@@ -132,7 +140,12 @@ describe('PricingSection', () => {
     })
 
     it('handles plan loading errors gracefully', async () => {
-      mockGetPricingPlans.mockRejectedValue(new Error('Failed to load plans'))
+      mockUsePricingPlans.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
 
       renderWithProviders(<PricingSection />)
 
@@ -146,7 +159,12 @@ describe('PricingSection', () => {
 
   describe('Billing Toggle', () => {
     beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
     })
 
     it('shows monthly plans by default', async () => {
@@ -211,7 +229,12 @@ describe('PricingSection', () => {
 
   describe('Subscription Flow', () => {
     beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
     })
 
     it('redirects unauthenticated users to login when subscribing', async () => {
@@ -265,6 +288,7 @@ describe('PricingSection', () => {
           'http://localhost:3000/subscription?success=true',
           'http://localhost:3000/pricing?canceled=true',
           true,
+          undefined,
         )
         expect(mockRedirectToCheckout).toHaveBeenCalledWith(
           'https://checkout.stripe.com/test',
@@ -320,7 +344,12 @@ describe('PricingSection', () => {
 
   describe('Component Variants', () => {
     beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
     })
 
     it('hides header when showHeader is false', async () => {
@@ -354,6 +383,12 @@ describe('PricingSection', () => {
   describe('Loading States', () => {
     it('shows loading state for individual subscription button', async () => {
       const user = userEvent.setup()
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
       mockAuthContext.user = createMockUser({
         uid: 'user123',
         email: 'test@example.com',
@@ -383,6 +418,12 @@ describe('PricingSection', () => {
 
     it('shows loading state for team subscription button', async () => {
       const user = userEvent.setup()
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
       mockAuthContext.user = createMockUser({
         uid: 'user123',
         email: 'test@example.com',
@@ -407,6 +448,12 @@ describe('PricingSection', () => {
   describe('Error Handling', () => {
     it('handles checkout session creation errors gracefully', async () => {
       const user = userEvent.setup()
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
       mockAuthContext.user = createMockUser({
         uid: 'user123',
         email: 'test@example.com',
@@ -437,7 +484,12 @@ describe('PricingSection', () => {
 
   describe('Accessibility', () => {
     beforeEach(() => {
-      mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
+      mockUsePricingPlans.mockReturnValue({
+        data: mockPricingPlans,
+        isLoading: false,
+        isError: false,
+        error: null,
+      })
     })
 
     it('has proper ARIA labels for billing toggle', async () => {

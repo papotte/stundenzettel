@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { queryKeys } from '@/lib/query-keys'
 import type { PricingPlan } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
@@ -36,11 +37,42 @@ export default function TryForFreeButton({
   const { user } = useAuth()
   const { toast } = useToast()
   const t = useTranslations('landing')
+  const queryClient = useQueryClient()
 
-  const [loading, setLoading] = useState(false)
+  const mutation = useMutation({
+    mutationFn: () => {
+      const userId = getUserId(user!)
+      if (!userId) throw new Error('User ID is missing')
+      return paymentService.createCheckoutSession(
+        userId,
+        user!.email,
+        plan.stripePriceId,
+        `${window.location.origin}/subscription?success=true&trial=true`,
+        `${window.location.origin}/pricing?canceled=true`,
+        true,
+        false,
+      )
+    },
+    onSuccess: (data) => {
+      const userId = user ? getUserId(user) : null
+      if (userId) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.subscription(userId),
+        })
+      }
+      paymentService.redirectToCheckout(data.url)
+    },
+    onError: (error) => {
+      console.error('Error creating free trial session:', error)
+      toast({
+        title: t('pricing.errorTitle'),
+        description: t('pricing.errorDescription'),
+        variant: 'destructive',
+      })
+    },
+  })
 
-  const handleTryForFree = async () => {
-    // Double-check that the plan has trials enabled
+  const handleTryForFree = () => {
     if (!plan.trialEnabled) {
       toast({
         title: t('pricing.errorTitle'),
@@ -51,7 +83,6 @@ export default function TryForFreeButton({
     }
 
     if (!user) {
-      // Redirect to login with return URL to pricing page
       const returnUrl = encodeURIComponent(
         `${window.location.origin}/pricing?plan=${plan.id}&trial=true`,
       )
@@ -59,35 +90,7 @@ export default function TryForFreeButton({
       return
     }
 
-    setLoading(true)
-    try {
-      // Use email for mock users, uid for real users
-      const userId: string | undefined = getUserId(user)
-      if (!userId) {
-        throw new Error('User ID is missing (neither uid nor email found)')
-      }
-
-      const { url } = await paymentService.createCheckoutSession(
-        userId,
-        user.email,
-        plan.stripePriceId,
-        `${window.location.origin}/subscription?success=true&trial=true`,
-        `${window.location.origin}/pricing?canceled=true`,
-        true, // Enable trials
-        false, // Don't require payment method
-      )
-
-      await paymentService.redirectToCheckout(url)
-    } catch (error) {
-      console.error('Error creating free trial session:', error)
-      toast({
-        title: t('pricing.errorTitle'),
-        description: t('pricing.errorDescription'),
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
+    mutation.mutate()
   }
 
   return (
@@ -96,10 +99,10 @@ export default function TryForFreeButton({
       size={size}
       className={`${className} ${showIcon ? 'gap-2' : ''}`}
       onClick={handleTryForFree}
-      disabled={loading}
+      disabled={mutation.isPending}
     >
       {showIcon && <Sparkles className="h-4 w-4" />}
-      {loading ? t('pricing.processing') : t('pricing.tryForFree')}
+      {mutation.isPending ? t('pricing.processing') : t('pricing.tryForFree')}
     </Button>
   )
 }

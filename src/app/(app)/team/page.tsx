@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+
 import {
   CreditCard,
   FileSpreadsheet,
@@ -34,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { useUserInvitations } from '@/hooks/use-user-invitations'
+import { queryKeys } from '@/lib/query-keys'
 import type {
   Subscription,
   Team,
@@ -49,37 +52,85 @@ import {
   onTeamSubscriptionChange,
 } from '@/services/team-service'
 
+type TeamPageData = {
+  team: Team | null
+  members: TeamMember[]
+  invitations: TeamInvitation[]
+  subscription: Subscription | null
+  currentUserRole: 'owner' | 'admin' | 'member'
+  userInvitations: TeamInvitation[]
+}
+
+async function fetchTeamPageData(
+  userId: string,
+  userEmail: string,
+): Promise<TeamPageData> {
+  const userTeam = await getUserTeam(userId)
+  if (userTeam) {
+    const [teamMembers, teamInvitations, subscriptionData] = await Promise.all([
+      getTeamMembers(userTeam.id),
+      getTeamInvitations(userTeam.id),
+      getTeamSubscription(userTeam.id),
+    ])
+    const currentMember = teamMembers.find((m) => m.id === userId)
+    const currentUserRole = currentMember?.role ?? 'member'
+    return {
+      team: userTeam,
+      members: teamMembers,
+      invitations: teamInvitations,
+      subscription: subscriptionData,
+      currentUserRole,
+      userInvitations: [],
+    }
+  }
+  const pendingInvitations = await getUserInvitations(userEmail)
+  return {
+    team: null,
+    members: [],
+    invitations: [],
+    subscription: null,
+    currentUserRole: 'member',
+    userInvitations: pendingInvitations,
+  }
+}
+
 export default function TeamPage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const t = useTranslations()
+  const queryClient = useQueryClient()
 
   const { toast } = useToast()
   const { refreshInvitations } = useUserInvitations()
 
-  const [pageLoading, setPageLoading] = useState(true)
-  const [team, setTeam] = useState<Team | null>(null)
-  const [members, setMembers] = useState<TeamMember[]>([])
-  const [invitations, setInvitations] = useState<TeamInvitation[]>([])
-  const [userInvitations, setUserInvitations] = useState<TeamInvitation[]>([])
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [currentUserRole, setCurrentUserRole] = useState<
-    'owner' | 'admin' | 'member'
-  >('member')
+  const {
+    data,
+    isLoading: pageLoading,
+    isError: teamDataError,
+    refetch: refetchTeamData,
+  } = useQuery({
+    queryKey: queryKeys.teamPageData(user?.uid ?? ''),
+    queryFn: () => fetchTeamPageData(user!.uid, user!.email || ''),
+    enabled: Boolean(user?.uid),
+  })
+
+  const team = data?.team ?? null
+  const members = data?.members ?? []
+  const invitations = data?.invitations ?? []
+  const userInvitations = data?.userInvitations ?? []
+  const subscription = data?.subscription ?? null
+  const currentUserRole = data?.currentUserRole ?? 'member'
 
   const searchParams = useSearchParams()
   const pathname = usePathname()
-
-  // Use state for tab, but initialize to 'members' and update in useEffect
   const [selectedTab, setSelectedTab] = useState('members')
 
-  // On mount or when searchParams changes, check for ?success, ?cancelled, or ?tab=subscription
   useEffect(() => {
     const success = searchParams.get('success') === 'true'
     const cancelled = searchParams.get('cancelled') === 'true'
     const tab = searchParams.get('tab')
     if (success || cancelled || tab === 'subscription') {
-      setSelectedTab('subscription')
+      queueMicrotask(() => setSelectedTab('subscription'))
     }
     if (success) {
       toast({
@@ -87,7 +138,6 @@ export default function TeamPage() {
         description: t('landing.pricing.successToast'),
         variant: 'default',
       })
-      // Remove success/cancelled, add tab=subscription
       const params = new URLSearchParams(searchParams.toString())
       params.set('tab', 'subscription')
       setTimeout(() => {
@@ -107,68 +157,20 @@ export default function TeamPage() {
     }
   }, [searchParams, pathname, toast, t, router])
 
-  const loadTeamData = useCallback(async () => {
-    if (!user) return
-
-    try {
-      // Load user's team
-      const userTeam = await getUserTeam(user.uid)
-      if (userTeam) {
-        setTeam(userTeam)
-
-        // Load team members
-        const teamMembers = await getTeamMembers(userTeam.id)
-        setMembers(teamMembers)
-
-        // Find current user's role
-        const currentMember = teamMembers.find(
-          (m: TeamMember) => m.id === user.uid,
-        )
-        if (currentMember) {
-          setCurrentUserRole(currentMember.role)
-        }
-
-        // Load team invitations (if admin/owner)
-        const teamInvitations = await getTeamInvitations(userTeam.id)
-        setInvitations(teamInvitations)
-
-        // Load team subscription
-        const subscriptionData = await getTeamSubscription(userTeam.id)
-        setSubscription(subscriptionData)
-      } else {
-        // User doesn't have a team, load their pending invitations
-        const pendingInvitations = await getUserInvitations(user.email || '')
-        setUserInvitations(pendingInvitations)
-      }
-    } catch (error) {
-      console.error('Error loading team data:', error)
-      toast({
-        title: t('common.error'),
-        description: t('teams.failedToLoadTeamData'),
-        variant: 'destructive',
-      })
-    } finally {
-      setPageLoading(false)
-    }
-  }, [user, toast, t])
-
-  // Set up real-time subscription listener when team is loaded
   useEffect(() => {
-    if (!team?.id) return
-
-    // Set up real-time subscription listener
+    if (!team?.id || !user?.uid) return
     const unsubscribe = onTeamSubscriptionChange(
       team.id,
       (updatedSubscription) => {
-        setSubscription(updatedSubscription)
+        queryClient.setQueryData<TeamPageData>(
+          queryKeys.teamPageData(user.uid),
+          (prev) =>
+            prev ? { ...prev, subscription: updatedSubscription } : prev,
+        )
       },
     )
-
-    // Cleanup subscription on unmount or when team changes
-    return () => {
-      unsubscribe()
-    }
-  }, [team?.id])
+    return () => unsubscribe()
+  }, [team?.id, user?.uid, queryClient])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -177,62 +179,115 @@ export default function TeamPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      loadTeamData()
+    if (teamDataError) {
+      toast({
+        title: t('common.error'),
+        description: t('teams.failedToLoadTeamData'),
+        variant: 'destructive',
+      })
     }
-  }, [user, loadTeamData])
+  }, [teamDataError, toast, t])
 
-  const handleTeamCreated = (newTeam: Team) => {
-    setTeam(newTeam)
-    setCurrentUserRole('owner')
-    loadTeamData() // Reload to get complete data
-  }
+  const handleTeamCreated = useCallback(
+    (_newTeam: Team) => {
+      void refetchTeamData()
+    },
+    [refetchTeamData],
+  )
 
-  const handleMembersChange = (updatedMembers: TeamMember[]) => {
-    setMembers(updatedMembers)
-  }
+  const handleMembersChange = useCallback(
+    (updatedMembers: TeamMember[]) => {
+      if (!user?.uid) return
+      queryClient.setQueryData<TeamPageData>(
+        queryKeys.teamPageData(user.uid),
+        (prev) => (prev ? { ...prev, members: updatedMembers } : prev),
+      )
+    },
+    [user, queryClient],
+  )
 
-  const handleInvitationsChange = (updatedInvitations: TeamInvitation[]) => {
-    setInvitations(updatedInvitations)
-  }
+  const handleInvitationsChange = useCallback(
+    (updatedInvitations: TeamInvitation[]) => {
+      if (!user?.uid) return
+      queryClient.setQueryData<TeamPageData>(
+        queryKeys.teamPageData(user.uid),
+        (prev) => (prev ? { ...prev, invitations: updatedInvitations } : prev),
+      )
+    },
+    [user, queryClient],
+  )
 
-  const handleInvitationSent = (invitation: TeamInvitation) => {
-    setInvitations((prev) => [...prev, invitation])
-  }
+  const handleInvitationSent = useCallback(
+    (invitation: TeamInvitation) => {
+      if (!user?.uid) return
+      queryClient.setQueryData<TeamPageData>(
+        queryKeys.teamPageData(user.uid),
+        (prev) =>
+          prev
+            ? { ...prev, invitations: [...prev.invitations, invitation] }
+            : prev,
+      )
+    },
+    [user, queryClient],
+  )
 
-  const handleUserInvitationsChange = async (
-    updatedInvitations: TeamInvitation[],
-  ) => {
-    setUserInvitations(updatedInvitations)
-    // Refresh the global invitations state for the user menu
-    await refreshInvitations()
+  const handleUserInvitationsChange = useCallback(
+    async (updatedInvitations: TeamInvitation[]) => {
+      if (!user?.uid) return
+      await refreshInvitations()
+      queryClient.setQueryData<TeamPageData>(
+        queryKeys.teamPageData(user.uid),
+        (prev) =>
+          prev ? { ...prev, userInvitations: updatedInvitations } : prev,
+      )
+      if (updatedInvitations.length < userInvitations.length) {
+        void refetchTeamData()
+      }
+    },
+    [
+      user,
+      userInvitations.length,
+      queryClient,
+      refreshInvitations,
+      refetchTeamData,
+    ],
+  )
 
-    // If invitations were reduced (one was accepted), reload team data
-    // This handles the case where user accepts an invitation and joins a team
-    if (updatedInvitations.length < userInvitations.length) {
-      await loadTeamData()
-    }
-  }
+  const handleSubscriptionUpdate = useCallback(
+    (updatedSubscription: Subscription | null) => {
+      if (!user?.uid) return
+      queryClient.setQueryData<TeamPageData>(
+        queryKeys.teamPageData(user.uid),
+        (prev) =>
+          prev ? { ...prev, subscription: updatedSubscription } : prev,
+      )
+    },
+    [user, queryClient],
+  )
 
-  const handleSubscriptionUpdate = (
-    updatedSubscription: Subscription | null,
-  ) => {
-    setSubscription(updatedSubscription)
-  }
+  const handleTeamUpdated = useCallback(
+    (updatedTeam: Team) => {
+      if (!user?.uid) return
+      queryClient.setQueryData<TeamPageData>(
+        queryKeys.teamPageData(user.uid),
+        (prev) => (prev ? { ...prev, team: updatedTeam } : prev),
+      )
+    },
+    [user, queryClient],
+  )
 
-  const handleTeamUpdated = (updatedTeam: Team) => {
-    setTeam(updatedTeam)
-  }
-
-  const handleTeamDeleted = async () => {
-    // Reset local state immediately, then reload to reflect "no team" state + invitations.
-    setTeam(null)
-    setMembers([])
-    setInvitations([])
-    setSubscription(null)
-    setCurrentUserRole('member')
-    await loadTeamData()
-  }
+  const handleTeamDeleted = useCallback(async () => {
+    if (!user?.uid) return
+    queryClient.setQueryData<TeamPageData>(queryKeys.teamPageData(user.uid), {
+      team: null,
+      members: [],
+      invitations: [],
+      subscription: null,
+      currentUserRole: 'member',
+      userInvitations: [],
+    })
+    await refetchTeamData()
+  }, [user, queryClient, refetchTeamData])
 
   if (authLoading || pageLoading) {
     return (
@@ -253,7 +308,6 @@ export default function TeamPage() {
     <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
       <div className="mx-auto max-w-4xl">
         {!team ? (
-          // No team - show create team option and pending invitations
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -281,7 +335,6 @@ export default function TeamPage() {
               </CardContent>
             </Card>
 
-            {/* Show pending invitations if any */}
             {userInvitations.length > 0 && (
               <Card>
                 <CardHeader>
@@ -297,7 +350,7 @@ export default function TeamPage() {
                   <UserInvitationsList
                     invitations={userInvitations}
                     onInvitationsChange={handleUserInvitationsChange}
-                    onInvitationAccepted={loadTeamData}
+                    onInvitationAccepted={refetchTeamData}
                     currentUserEmail={user.email || ''}
                     currentUserId={user.uid}
                   />
@@ -306,7 +359,6 @@ export default function TeamPage() {
             )}
           </div>
         ) : (
-          // Has team - show team management interface
           <div className="space-y-6">
             <Card>
               <CardHeader>

@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 import { useTranslations } from 'next-intl'
 
 import BillingToggle from '@/components/pricing/billing-toggle'
@@ -9,10 +11,12 @@ import PricingCard from '@/components/pricing/pricing-card'
 import PricingFAQ from '@/components/pricing/pricing-faq'
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useAuth } from '@/hooks/use-auth'
+import { usePricingPlans } from '@/hooks/use-pricing-plans'
 import { useToast } from '@/hooks/use-toast'
+import { queryKeys } from '@/lib/query-keys'
 import type { PricingPlan } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
-import { getPricingPlans, paymentService } from '@/services/payment-service'
+import { paymentService } from '@/services/payment-service'
 
 interface PricingSectionProps {
   variant?: 'landing' | 'standalone'
@@ -30,33 +34,66 @@ export default function PricingSection({
   const { user } = useAuth()
   const { toast } = useToast()
   const t = useTranslations('landing')
+  const queryClient = useQueryClient()
 
   const [isYearly, setIsYearly] = useState(false)
-  const [loading, setLoading] = useState<string | null>(null)
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
-  const [isLoadingPlans, setIsLoadingPlans] = useState(true)
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const loadPricingPlans = async () => {
-      try {
-        const plans = await getPricingPlans()
-        setPricingPlans(plans)
-      } catch (error) {
-        console.error('Error loading pricing plans:', error)
-      } finally {
-        setIsLoadingPlans(false)
-      }
-    }
+  const { data: pricingPlans = [], isLoading: isLoadingPlans } =
+    usePricingPlans()
 
-    loadPricingPlans()
-  }, [])
+  const checkoutMutation = useMutation({
+    mutationFn: ({
+      userId,
+      userEmail,
+      priceId,
+      successUrl,
+      cancelUrl,
+      trialEnabled,
+      requirePaymentMethod,
+    }: {
+      userId: string
+      userEmail: string
+      priceId: string
+      successUrl: string
+      cancelUrl: string
+      trialEnabled: boolean
+      requirePaymentMethod?: boolean
+    }) =>
+      paymentService.createCheckoutSession(
+        userId,
+        userEmail,
+        priceId,
+        successUrl,
+        cancelUrl,
+        trialEnabled,
+        requirePaymentMethod,
+      ),
+    onSuccess: (_data, variables) => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.subscription(variables.userId),
+      })
+      paymentService.redirectToCheckout(_data.url)
+    },
+    onError: (error) => {
+      console.error('Error creating checkout session:', error)
+      toast({
+        title: t('pricing.errorTitle'),
+        description: t('pricing.errorDescription'),
+        variant: 'destructive',
+      })
+      setLoadingPlanId(null)
+    },
+    onSettled: () => {
+      setLoadingPlanId(null)
+    },
+  })
 
   // Check for plan selection from URL params (post-login flow)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const planId = urlParams.get('plan')
     if (planId) {
-      // Auto-scroll to the selected plan
       setTimeout(() => {
         const planElement = document.getElementById(`plan-${planId}`)
         if (planElement) {
@@ -72,7 +109,6 @@ export default function PricingSection({
 
   const handleSubscribe = async (plan: PricingPlan) => {
     if (!user) {
-      // Redirect to login with return URL to pricing page
       const returnUrl = encodeURIComponent(
         `${window.location.origin}/pricing?plan=${plan.id}`,
       )
@@ -80,63 +116,46 @@ export default function PricingSection({
       return
     }
 
-    setLoading(plan.id)
-    try {
-      // Use email for mock users, uid for real users
-      const userId: string | undefined = getUserId(user)
-      if (!userId) {
-        toast({
-          title: t('pricing.errorTitle'),
-          description: 'User ID is missing (neither uid nor email found).',
-          variant: 'destructive',
-        })
-        setLoading(null)
-        return
-      }
-
-      const { url } = await paymentService.createCheckoutSession(
-        userId,
-        user.email,
-        plan.stripePriceId,
-        `${window.location.origin}/subscription?success=true`,
-        `${window.location.origin}/pricing?canceled=true`,
-        true, // Enable trials by default
-      )
-
-      await paymentService.redirectToCheckout(url)
-    } catch (error) {
-      console.error('Error creating checkout session:', error)
+    const userId = getUserId(user)
+    if (!userId) {
       toast({
         title: t('pricing.errorTitle'),
-        description: t('pricing.errorDescription'),
+        description: 'User ID is missing (neither uid nor email found).',
         variant: 'destructive',
       })
-    } finally {
-      setLoading(null)
+      return
     }
+
+    setLoadingPlanId(plan.id)
+    checkoutMutation.mutate({
+      userId,
+      userEmail: user.email,
+      priceId: plan.stripePriceId,
+      successUrl: `${window.location.origin}/subscription?success=true`,
+      cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+      trialEnabled: true,
+    })
   }
-  const handleTeamSubscribe = async (plan: PricingPlan) => {
+
+  const handleTeamSubscribe = async (_plan: PricingPlan) => {
     if (!user) {
-      // Redirect to login with return URL to pricing page
       const returnUrl = encodeURIComponent(
-        `${window.location.origin}/pricing?plan=${plan.id}`,
+        `${window.location.origin}/pricing?plan=${_plan.id}`,
       )
       window.location.href = `/login?returnUrl=${returnUrl}`
       return
     }
-
-    // Redirect to team page for team plans
     window.location.href = '/team?tab=subscription'
   }
+
+  const loading = checkoutMutation.isPending ? loadingPlanId : null
 
   const containerClasses =
     variant === 'landing' ? 'w-full py-12 md:py-24 lg:py-32' : 'py-24 sm:py-32'
 
-  console.log('isLoadingPlans', isLoadingPlans)
   return (
     <div className={`${containerClasses} ${className}`}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        {/* Header */}
         {showHeader && (
           <div className="mx-auto max-w-2xl text-center mb-12">
             <h2
@@ -156,10 +175,8 @@ export default function PricingSection({
           </div>
         )}
 
-        {/* Billing Toggle */}
         <BillingToggle isYearly={isYearly} onToggle={setIsYearly} />
 
-        {/* Pricing Cards */}
         <div className="flex justify-center">
           {isLoadingPlans ? (
             <div className="flex flex-col items-center space-y-4 py-12">
@@ -185,7 +202,6 @@ export default function PricingSection({
             </div>
           )}
         </div>
-        {/* FAQ Section */}
         {showFAQ && <PricingFAQ />}
       </div>
     </div>

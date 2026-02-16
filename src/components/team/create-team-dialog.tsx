@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -30,6 +31,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
+import { queryKeys } from '@/lib/query-keys'
 import type { Team } from '@/lib/types'
 import { paymentService } from '@/services/payment-service'
 import { createTeam, getTeam } from '@/services/team-service'
@@ -54,6 +56,7 @@ export function CreateTeamDialog({
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
   const t = useTranslations()
+  const queryClient = useQueryClient()
 
   const form = useForm<TeamFormValues>({
     resolver: zodResolver(
@@ -83,6 +86,9 @@ export function CreateTeamDialog({
         // Sync team with Stripe
         try {
           await paymentService.syncTeamWithStripe(userEmail, userId, teamId)
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.teamPageData(userId),
+          })
         } catch (error) {
           // Log error but don't fail team creation
           console.error('Failed to sync team with Stripe:', error)

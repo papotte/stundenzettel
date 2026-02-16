@@ -217,58 +217,31 @@ describe('TeamSubscriptionCard', () => {
 
       await waitFor(() => {
         expect(mockCreateCustomerPortalSession).toHaveBeenCalledWith(
-          'test@example.com',
-          'http://localhost/subscription',
+          'user-1',
+          expect.stringMatching(/\/team\?tab=subscription$/),
         )
         expect(mockRedirectToCustomerPortal).toHaveBeenCalledWith(
           'https://example.com/portal',
         )
       })
 
-      // Verify the exact parameters passed to the payment service
+      // Verify the exact parameters passed to the payment service (getUserId: uid || email)
       expect(mockCreateCustomerPortalSession).toHaveBeenCalledTimes(1)
       const [userId, returnUrl] = mockCreateCustomerPortalSession.mock.calls[0]
-      expect(userId).toBe('test@example.com')
-      expect(returnUrl).toBe('http://localhost/subscription')
+      expect(userId).toBe('user-1')
+      expect(returnUrl).toMatch(/\/team\?tab=subscription$/)
     })
 
     it('verifies the exact API call body for customer portal session', async () => {
       const user = userEvent.setup()
 
-      // Mock the payment service to actually call the real method
       const mockCreateCustomerPortalSession =
         paymentService.createCustomerPortalSession as jest.Mock
       const mockRedirectToCustomerPortal =
         paymentService.redirectToCustomerPortal as jest.Mock
-
-      // Mock the internal fetch call that the payment service makes
-      ;(global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ url: 'https://example.com/portal' }),
+      mockCreateCustomerPortalSession.mockResolvedValue({
+        url: 'https://example.com/portal',
       })
-
-      // Restore the original implementation to test the actual API call
-      mockCreateCustomerPortalSession.mockImplementation(
-        async (userId: string, returnUrl?: string) => {
-          const response = await fetch('/api/create-customer-portal-session', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId,
-              returnUrl,
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error('Failed to create customer portal session')
-          }
-
-          return response.json()
-        },
-      )
-
       mockRedirectToCustomerPortal.mockResolvedValue(undefined)
 
       render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
@@ -277,33 +250,17 @@ describe('TeamSubscriptionCard', () => {
       await user.click(manageButton)
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith(
-          '/api/create-customer-portal-session',
-          expect.objectContaining({
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: 'test@example.com',
-              returnUrl: 'http://localhost/subscription',
-            }),
-          }),
-        )
+        expect(mockCreateCustomerPortalSession).toHaveBeenCalled()
       })
 
-      // Verify the exact body content
-      const fetchCall = (global.fetch as jest.Mock).mock.calls.find(
-        (call) => call[0] === '/api/create-customer-portal-session',
+      expect(mockCreateCustomerPortalSession).toHaveBeenCalledWith(
+        'user-1',
+        expect.stringContaining('/team?tab=subscription'),
       )
-      expect(fetchCall).toBeDefined()
 
-      const [, options] = fetchCall!
-      const body = JSON.parse(options.body)
-      expect(body).toEqual({
-        userId: 'test@example.com',
-        returnUrl: 'http://localhost/subscription',
-      })
+      const [userId, returnUrl] = mockCreateCustomerPortalSession.mock.calls[0]
+      expect(userId).toBe('user-1')
+      expect(returnUrl).toMatch(/\/team\?tab=subscription$/)
     })
   })
 

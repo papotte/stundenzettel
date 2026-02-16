@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useMemo } from 'react'
+
+import { useQuery } from '@tanstack/react-query'
 
 import { isSameDay } from 'date-fns'
 import { Download, Printer } from 'lucide-react'
@@ -18,7 +20,7 @@ import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
-import type { TimeEntry, UserSettings } from '@/lib/types'
+import { queryKeys } from '@/lib/query-keys'
 import { compareEntriesByStartTime, maskEmail } from '@/lib/utils'
 import { getPublishedMonth } from '@/services/published-export-service'
 
@@ -40,43 +42,18 @@ export function TeamMemberReportView({
   const t = useTranslations()
   const format = useFormatter()
   const { displayNames } = useMemberDisplayNames([memberId])
-  const [entries, setEntries] = useState<TimeEntry[]>([])
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [notPublished, setNotPublished] = useState(false)
 
   const monthKey = format.dateTime(selectedMonth, 'yearMonthISO')
 
-  useEffect(() => {
-    if (!teamId) {
-      setNotPublished(true)
-      setIsLoading(false)
-      return
-    }
-    const fetchData = async () => {
-      setIsLoading(true)
-      setNotPublished(false)
-      try {
-        const data = await getPublishedMonth(teamId, memberId, monthKey)
-        if (data) {
-          setEntries(data.entries)
-          setUserSettings(data.userSettings)
-        } else {
-          setNotPublished(true)
-          setEntries([])
-          setUserSettings(null)
-        }
-      } catch (error) {
-        console.error('Failed to load member report:', error)
-        setNotPublished(true)
-        setEntries([])
-        setUserSettings(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchData()
-  }, [teamId, memberId, monthKey])
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.publishedMonth(teamId ?? '', memberId, monthKey),
+    queryFn: () => getPublishedMonth(teamId!, memberId, monthKey),
+    enabled: Boolean(teamId),
+  })
+
+  const notPublished = !data
+  const entries = useMemo(() => data?.entries ?? [], [data?.entries])
+  const userSettings = data?.userSettings ?? null
 
   const getEntriesForDay = useCallback(
     (day: Date) => {

@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 import {
   AlertTriangle,
   Clock,
@@ -26,6 +28,8 @@ import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
+import { queryKeys } from '@/lib/query-keys'
+import { getUserId } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -35,6 +39,7 @@ export default function SubscriptionPage() {
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter().dateTime
+  const queryClient = useQueryClient()
   const {
     subscription,
     ownerId,
@@ -43,6 +48,33 @@ export default function SubscriptionPage() {
   } = useSubscriptionContext()
   const pageLoading = subLoading
   const isSubscriptionOwner = user?.uid === ownerId
+
+  const portalMutation = useMutation({
+    mutationFn: () => {
+      const userId = getUserId(user)
+      if (!userId) throw new Error('User ID is missing')
+      return paymentService.createCustomerPortalSession(
+        userId,
+        `${window.location.origin}/subscription`,
+      )
+    },
+    onSuccess: (data) => {
+      if (user?.uid) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.subscription(user.uid),
+        })
+      }
+      paymentService.redirectToCustomerPortal(data.url)
+    },
+    onError: (error) => {
+      console.error('Error creating customer portal session:', error)
+      toast({
+        title: t('subscription.errorPortalTitle'),
+        description: t('subscription.errorPortalDescription'),
+        variant: 'destructive',
+      })
+    },
+  })
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -60,23 +92,9 @@ export default function SubscriptionPage() {
     }
   }, [error, t, toast])
 
-  const handleManageBilling = async () => {
+  const handleManageBilling = () => {
     if (!user) return
-
-    try {
-      const { url } = await paymentService.createCustomerPortalSession(
-        user.email,
-        `${window.location.origin}/subscription`,
-      )
-      await paymentService.redirectToCustomerPortal(url)
-    } catch (error) {
-      console.error('Error creating customer portal session:', error)
-      toast({
-        title: t('subscription.errorPortalTitle'),
-        description: t('subscription.errorPortalDescription'),
-        variant: 'destructive',
-      })
-    }
+    portalMutation.mutate()
   }
 
   const handleUpgrade = () => {
@@ -222,11 +240,17 @@ export default function SubscriptionPage() {
 
                 {isSubscriptionOwner && (
                   <div className="pt-4 border-t space-y-3">
-                    <Button onClick={handleManageBilling} className="w-full">
+                    <Button
+                      onClick={handleManageBilling}
+                      className="w-full"
+                      disabled={portalMutation.isPending}
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      {isInTrial
-                        ? t('subscription.addPaymentMethod')
-                        : t('subscription.manageBilling')}
+                      {portalMutation.isPending
+                        ? t('common.loading')
+                        : isInTrial
+                          ? t('subscription.addPaymentMethod')
+                          : t('subscription.manageBilling')}
                     </Button>
                   </div>
                 )}

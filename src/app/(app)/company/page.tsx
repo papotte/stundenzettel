@@ -33,10 +33,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import {
-  getUserSettings,
-  setUserSettings,
-} from '@/services/user-settings-service'
+import { saveUserSettings, useUserSettings } from '@/hooks/use-user-settings'
 
 const companyFormSchema = z.object({
   companyName: z.string().optional(),
@@ -60,8 +57,13 @@ export default function CompanyPage() {
   const router = useRouter()
   const { toast } = useToast()
   const t = useTranslations()
+  const {
+    userSettings,
+    isLoading: settingsLoading,
+    error: settingsError,
+    invalidate,
+  } = useUserSettings(user)
 
-  const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
   const form = useForm<CompanyFormValues>({
@@ -85,49 +87,37 @@ export default function CompanyPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      const fetchData = async () => {
-        try {
-          const settings = await getUserSettings(user.uid)
-          form.reset({
-            companyName: settings.companyName || '',
-            companyEmail: settings.companyEmail || '',
-            companyPhone1: settings.companyPhone1 || '',
-            companyPhone2: settings.companyPhone2 || '',
-            companyFax: settings.companyFax || '',
-            driverCompensationPercent:
-              settings.driverCompensationPercent || 100,
-            passengerCompensationPercent:
-              settings.passengerCompensationPercent || 90,
-          })
-        } catch (error) {
-          console.error('Failed to fetch user settings', error)
-          toast({
-            title: t('settings.errorLoadingTitle'),
-            description: t('settings.errorLoadingDescription'),
-            variant: 'destructive',
-          })
-        } finally {
-          setPageLoading(false)
-        }
-      }
-      fetchData()
+    if (userSettings) {
+      form.reset({
+        companyName: userSettings.companyName || '',
+        companyEmail: userSettings.companyEmail || '',
+        companyPhone1: userSettings.companyPhone1 || '',
+        companyPhone2: userSettings.companyPhone2 || '',
+        companyFax: userSettings.companyFax || '',
+        driverCompensationPercent:
+          userSettings.driverCompensationPercent ?? 100,
+        passengerCompensationPercent:
+          userSettings.passengerCompensationPercent ?? 90,
+      })
     }
-    // Only depend on user and form.reset to avoid unnecessary resets
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, form.reset])
+  }, [userSettings, form])
+
+  useEffect(() => {
+    if (settingsError) {
+      toast({
+        title: t('settings.errorLoadingTitle'),
+        description: t('settings.errorLoadingDescription'),
+        variant: 'destructive',
+      })
+    }
+  }, [settingsError, toast, t])
 
   const onSubmit = async (data: CompanyFormValues) => {
     if (!user) return
     setIsSaving(true)
     try {
-      // Get current settings to preserve other fields
-      const currentSettings = await getUserSettings(user.uid)
-      const updatedSettings = {
-        ...currentSettings,
-        ...data,
-      }
-      await setUserSettings(user.uid, updatedSettings)
+      await saveUserSettings(user.uid, data)
+      invalidate()
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),
@@ -144,7 +134,7 @@ export default function CompanyPage() {
     }
   }
 
-  if (authLoading || pageLoading) {
+  if (authLoading || settingsLoading) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">

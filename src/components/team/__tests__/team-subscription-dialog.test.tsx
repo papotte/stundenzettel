@@ -4,9 +4,13 @@ import { fireEvent, render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import type { Team } from '@/lib/types'
-import { getPricingPlans } from '@/services/payment-service'
 
 import { TeamSubscriptionDialog } from '../team-subscription-dialog'
+
+const mockUsePricingPlans = jest.fn()
+jest.mock('@/hooks/use-pricing-plans', () => ({
+  usePricingPlans: (opts: { enabled?: boolean }) => mockUsePricingPlans(opts),
+}))
 
 // Mock the auth context
 jest.mock('@/hooks/use-auth', () => ({
@@ -28,9 +32,12 @@ jest.mock('@/hooks/use-toast', () => ({
 // Mock fetch
 global.fetch = jest.fn()
 
-// Mock the payment service
+const mockCreateTeamCheckoutSession = jest.fn()
 jest.mock('@/services/payment-service', () => ({
-  getPricingPlans: jest.fn(),
+  paymentService: {
+    createTeamCheckoutSession: (...args: unknown[]) =>
+      mockCreateTeamCheckoutSession(...args),
+  },
 }))
 
 const mockTeam: Team = {
@@ -81,11 +88,25 @@ describe('TeamSubscriptionDialog', () => {
       ok: true,
       json: async () => ({ url: 'https://checkout.stripe.com/test' }),
     })
-    // Ensure the mock resolves immediately
-    ;(getPricingPlans as jest.Mock).mockResolvedValue(mockPricingPlans)
+    mockCreateTeamCheckoutSession.mockResolvedValue({
+      sessionId: 'cs_test_123',
+      url: 'https://checkout.stripe.com/test',
+    })
+    mockUsePricingPlans.mockReturnValue({
+      data: mockPricingPlans,
+      isLoading: false,
+      isError: false,
+      error: null,
+    })
   })
 
   it('renders dialog with loading state initially', () => {
+    mockUsePricingPlans.mockReturnValue({
+      data: [],
+      isLoading: true,
+      isError: false,
+      error: null,
+    })
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
     expect(screen.getByText('teams.createTeamSubscription')).toBeInTheDocument()
@@ -95,7 +116,6 @@ describe('TeamSubscriptionDialog', () => {
   it('loads and displays pricing plans', async () => {
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    // Wait for the loading to complete and plans to be displayed
     await waitFor(
       () => {
         expect(screen.getByText('teams.selectPlan')).toBeInTheDocument()
@@ -103,10 +123,8 @@ describe('TeamSubscriptionDialog', () => {
       { timeout: 3000 },
     )
 
-    // Check if the mock was called
-    expect(getPricingPlans as jest.Mock).toHaveBeenCalled()
+    expect(mockUsePricingPlans).toHaveBeenCalledWith({ enabled: true })
 
-    // Initially shows monthly plans only
     expect(screen.getByText('Team Monthly')).toBeInTheDocument()
     expect(screen.queryByText('Team Yearly')).not.toBeInTheDocument()
   })
@@ -199,9 +217,12 @@ describe('TeamSubscriptionDialog', () => {
 
   it('creates checkout session when subscribe button is clicked', async () => {
     const user = userEvent.setup()
+    mockCreateTeamCheckoutSession.mockResolvedValue({
+      sessionId: 'cs_test_123',
+      url: 'https://checkout.stripe.com/test',
+    })
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    // Wait for the loading to complete and plans to be displayed
     await waitFor(
       () => {
         expect(screen.getByText('teams.subscribeNow')).toBeInTheDocument()
@@ -209,7 +230,6 @@ describe('TeamSubscriptionDialog', () => {
       { timeout: 3000 },
     )
 
-    // Wait for plan to be selected (it should be auto-selected)
     await waitFor(() => {
       expect(screen.getByText('teams.subscribeNow')).not.toBeDisabled()
     })
@@ -218,27 +238,19 @@ describe('TeamSubscriptionDialog', () => {
     await user.click(subscribeButton)
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        '/api/create-team-checkout-session',
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: 'user-1',
-            userEmail: 'test@example.com',
-            teamId: 'team-1',
-            priceId: 'price_team_monthly',
-            quantity: 3,
-            successUrl: 'http://localhost/team?success=true',
-            cancelUrl: 'http://localhost/team?canceled=true',
-            trialEnabled: true,
-            requirePaymentMethod: true,
-          }),
-        }),
-      )
+      expect(mockCreateTeamCheckoutSession).toHaveBeenCalledTimes(1)
     })
+
+    expect(mockCreateTeamCheckoutSession).toHaveBeenCalledWith(
+      'user-1',
+      'team-1',
+      'price_team_monthly',
+      3,
+      expect.stringMatching(/\/team\?success=true$/),
+      expect.stringMatching(/\/team\?canceled=true$/),
+      true,
+      true,
+    )
   })
 
   it('closes dialog when cancel button is clicked', async () => {
@@ -260,11 +272,15 @@ describe('TeamSubscriptionDialog', () => {
   })
 
   it('shows error message when no team plans are available', async () => {
-    ;(getPricingPlans as jest.Mock).mockResolvedValue([])
+    mockUsePricingPlans.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+    })
 
     render(<TeamSubscriptionDialog {...defaultProps} />)
 
-    // Wait for the loading to complete and error to be displayed
     await waitFor(
       () => {
         expect(

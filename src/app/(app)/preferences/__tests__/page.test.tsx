@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
+import { act, render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import type { UserSettings } from '@/lib/types'

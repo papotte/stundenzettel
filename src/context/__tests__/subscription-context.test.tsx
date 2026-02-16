@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { act, renderHook, waitFor } from '@jest-setup'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
@@ -10,6 +11,23 @@ import {
   SubscriptionProvider,
   useSubscriptionContext,
 } from '../subscription-context'
+
+function createQueryWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <SubscriptionProvider>{children}</SubscriptionProvider>
+      </QueryClientProvider>
+    )
+  }
+  return {
+    wrapper: Wrapper,
+    clearCache: () => queryClient.clear(),
+  }
+}
 
 // Unmock subscription context to test the real implementation
 jest.unmock('@/context/subscription-context')
@@ -36,9 +54,7 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <SubscriptionProvider>{children}</SubscriptionProvider>
-)
+const { wrapper, clearCache } = createQueryWrapper()
 
 describe('SubscriptionContext', () => {
   beforeEach(() => {
@@ -46,6 +62,7 @@ describe('SubscriptionContext', () => {
     mockAuthContext.user = null
     mockAuthContext.loading = false
     mockClearCache.mockReturnValue(undefined)
+    clearCache()
   })
 
   describe('useSubscriptionContext hook', () => {

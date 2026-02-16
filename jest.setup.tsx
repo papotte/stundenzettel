@@ -1,6 +1,7 @@
 // Learn more: https://github.com/testing-library/jest-dom
-import React from 'react'
+import React, { useState } from 'react'
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import '@testing-library/jest-dom'
 // Redefine `render` to always include NextIntlClientProvider
 import { RenderOptions, render as rtlRender } from '@testing-library/react'
@@ -8,6 +9,7 @@ import { RenderOptions, render as rtlRender } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
 
 import { formattingProps } from '@/lib/i18n/formats'
+import type { Subscription } from '@/lib/types'
 
 // Import Firebase mocks
 import './src/test-utils/firebase-mocks'
@@ -47,7 +49,14 @@ jest.mock('@/hooks/use-auth', () => ({
 }))
 
 // Global mock for useSubscriptionContext that can be overridden in individual tests
-const defaultMockSubscriptionContext = {
+const defaultMockSubscriptionContext: {
+  hasValidSubscription: boolean | null
+  loading: boolean
+  error: Error | null
+  subscription: Subscription | null
+  ownerId: string | null
+  invalidateSubscription: () => void
+} = {
   hasValidSubscription: null,
   loading: false,
   error: null,
@@ -123,21 +132,37 @@ const messages = {
   },
 }
 
+function QueryProvider({ children }: React.PropsWithChildren) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+        },
+      }),
+  )
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
+}
+
 export const AllTheProviders =
   (locale: string = 'en') =>
   ({ children }: React.PropsWithChildren) => {
     return (
-      <NextIntlClientProvider
-        locale={locale}
-        messages={messages}
-        formats={formattingProps}
-        onError={(_) => {}}
-        getMessageFallback={({ namespace, key }) =>
-          `${namespace != null ? namespace + '.' : ''}${key}`
-        }
-      >
-        {children}
-      </NextIntlClientProvider>
+      <QueryProvider>
+        <NextIntlClientProvider
+          locale={locale}
+          messages={messages}
+          formats={formattingProps}
+          onError={(_) => {}}
+          getMessageFallback={({ namespace, key }) =>
+            `${namespace != null ? namespace + '.' : ''}${key}`
+          }
+        >
+          {children}
+        </NextIntlClientProvider>
+      </QueryProvider>
     )
   }
 const customRender = (ui: React.ReactNode, options?: RenderOptions) =>

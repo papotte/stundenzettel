@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
 import {
   AlertCircle,
   AlertTriangle,
@@ -26,7 +28,9 @@ import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
+import { queryKeys } from '@/lib/query-keys'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
+import { getUserId } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
 
@@ -51,7 +55,6 @@ export function TeamSubscriptionCard({
   onMembersChange,
   currentUserRole,
 }: TeamSubscriptionCardProps) {
-  const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showSeatAssignmentDialog, setShowSeatAssignmentDialog] =
     useState(false)
@@ -59,6 +62,36 @@ export function TeamSubscriptionCard({
   const t = useTranslations()
   const format = useFormatter()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  const portalMutation = useMutation({
+    mutationFn: () => {
+      const userId = getUserId(user)
+      if (!userId) throw new Error('User ID is missing')
+      return paymentService.createCustomerPortalSession(
+        userId,
+        `${window.location.origin}/team?tab=subscription`,
+      )
+    },
+    onSuccess: (data) => {
+      if (user?.uid) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.subscription(user.uid),
+        })
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.teamPageData(user.uid),
+        })
+      }
+      paymentService.redirectToCustomerPortal(data.url)
+    },
+    onError: () => {
+      toast({
+        title: t('common.error'),
+        description: t('teams.failedToOpenSubscriptionManagement'),
+        variant: 'destructive',
+      })
+    },
+  })
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -107,28 +140,11 @@ export function TeamSubscriptionCard({
     }
   }
 
-  const handleManageSubscription = async () => {
-    setIsLoading(true)
-    try {
-      // Redirect to customer portal or pricing page
-      if (user && subscription) {
-        const { url } = await paymentService.createCustomerPortalSession(
-          user.email,
-          `${window.location.origin}/subscription`,
-        )
-        await paymentService.redirectToCustomerPortal(url)
-      } else {
-        // Redirect to pricing page for new subscription
-        window.location.href = '/pricing'
-      }
-    } catch {
-      toast({
-        title: t('common.error'),
-        description: t('teams.failedToOpenSubscriptionManagement'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
+  const handleManageSubscription = () => {
+    if (user && subscription) {
+      portalMutation.mutate()
+    } else {
+      window.location.href = '/pricing'
     }
   }
 
@@ -337,11 +353,11 @@ export function TeamSubscriptionCard({
                 <Button
                   variant="outline"
                   onClick={handleManageSubscription}
-                  disabled={isLoading}
+                  disabled={portalMutation.isPending}
                   className="flex-1"
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
-                  {isLoading
+                  {portalMutation.isPending
                     ? t('common.loading')
                     : t('subscription.manageBilling')}
                 </Button>

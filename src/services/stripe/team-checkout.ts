@@ -39,6 +39,9 @@ export async function createTeamCheckoutSession({
     throw new Error('Missing required parameters')
   }
 
+  // userId is the customer identifier (email) when sent from the client
+  const email = userEmail ?? userId
+
   // Validate that trials are enabled globally
   const globalTrialEnabled =
     process.env.NEXT_PUBLIC_STRIPE_TRIAL_ENABLED === 'true'
@@ -52,7 +55,7 @@ export async function createTeamCheckoutSession({
   // Create or retrieve customer
   let customer: Stripe.Customer
   const existingCustomers = await stripe.customers.list({
-    email: userEmail,
+    email,
     limit: 1,
   })
 
@@ -69,7 +72,7 @@ export async function createTeamCheckoutSession({
     }
   } else {
     customer = await stripe.customers.create({
-      email: userEmail,
+      email,
       metadata: {
         firebase_uid: userId,
         team_id: teamId,

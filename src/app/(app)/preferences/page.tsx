@@ -40,13 +40,10 @@ import {
 } from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { saveUserSettings, useUserSettings } from '@/hooks/use-user-settings'
 import { locales } from '@/i18n'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import { setUserLocale } from '@/services/locale'
-import {
-  getUserSettings,
-  setUserSettings,
-} from '@/services/user-settings-service'
 
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
@@ -76,7 +73,12 @@ export default function PreferencesPage() {
   const { toast } = useToast()
   const t = useTranslations()
   const language: string = useLocale()
-  const [pageLoading, setPageLoading] = useState(true)
+  const {
+    userSettings,
+    isLoading: settingsLoading,
+    error: settingsError,
+    invalidate,
+  } = useUserSettings(user)
   const [isSaving, setIsSaving] = useState(false)
   const [isExpectedHoursManuallySet, setIsExpectedHoursManuallySet] =
     useState(false)
@@ -101,12 +103,12 @@ export default function PreferencesPage() {
   useEffect(() => {
     // Only calculate when user manually changes defaultWorkHours (not during initial load)
     // and when expectedMonthlyHours hasn't been manually set by the user
-    if (defaultWorkHours && !pageLoading && !isExpectedHoursManuallySet) {
+    if (defaultWorkHours && !settingsLoading && !isExpectedHoursManuallySet) {
       // Use the utility function to calculate expected monthly hours
       const calculated = calculateExpectedMonthlyHours({ defaultWorkHours })
       form.setValue('expectedMonthlyHours', calculated)
     }
-  }, [defaultWorkHours, form, pageLoading, isExpectedHoursManuallySet])
+  }, [defaultWorkHours, form, settingsLoading, isExpectedHoursManuallySet])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -115,46 +117,39 @@ export default function PreferencesPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      const fetchData = async () => {
-        try {
-          const settings = await getUserSettings(user.uid)
-          form.reset(settings)
-
-          // Check if expectedMonthlyHours was manually set by the user
-          // If it exists and is different from the auto-calculated value, mark as manually set
-          if (settings.expectedMonthlyHours && settings.defaultWorkHours) {
-            const autoCalculated = calculateExpectedMonthlyHours({
-              defaultWorkHours: settings.defaultWorkHours,
-            })
-            if (
-              Math.abs(settings.expectedMonthlyHours - autoCalculated) > 0.1
-            ) {
-              setIsExpectedHoursManuallySet(true)
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch user settings', error)
-          toast({
-            title: t('settings.errorLoadingTitle'),
-            description: t('settings.errorLoadingDescription'),
-            variant: 'destructive',
-          })
-        } finally {
-          setPageLoading(false)
+    if (userSettings) {
+      form.reset(userSettings)
+      // Check if expectedMonthlyHours was manually set by the user
+      if (userSettings.expectedMonthlyHours && userSettings.defaultWorkHours) {
+        const autoCalculated = calculateExpectedMonthlyHours({
+          defaultWorkHours: userSettings.defaultWorkHours,
+        })
+        if (
+          Math.abs((userSettings.expectedMonthlyHours ?? 0) - autoCalculated) >
+          0.1
+        ) {
+          setIsExpectedHoursManuallySet(true)
         }
       }
-      fetchData()
     }
-    // Only depend on user and form.reset to avoid unnecessary resets
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, form.reset])
+  }, [userSettings, form])
+
+  useEffect(() => {
+    if (settingsError) {
+      toast({
+        title: t('settings.errorLoadingTitle'),
+        description: t('settings.errorLoadingDescription'),
+        variant: 'destructive',
+      })
+    }
+  }, [settingsError, toast, t])
 
   const onSubmit = async (data: PreferencesFormValues) => {
     if (!user) return
     setIsSaving(true)
     try {
-      await setUserSettings(user.uid, data)
+      await saveUserSettings(user.uid, data)
+      invalidate()
       await setUserLocale(data.language)
 
       // Update Resend contact if displayName is provided
@@ -192,7 +187,7 @@ export default function PreferencesPage() {
     }
   }
 
-  if (authLoading || pageLoading) {
+  if (authLoading || settingsLoading) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">

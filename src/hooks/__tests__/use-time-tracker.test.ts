@@ -136,10 +136,16 @@ describe('useTimeTracker', () => {
         endTime: end,
         pauseDuration: 30,
       }
-      jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([entry])
       const addSpy = jest
         .spyOn(timeEntryService, 'addTimeEntry')
         .mockResolvedValue('new-id')
+      jest
+        .spyOn(timeEntryService, 'getTimeEntries')
+        .mockResolvedValueOnce([entry])
+        .mockImplementation(async () => {
+          const added = addSpy.mock.calls[0]?.[0]
+          return added ? [entry, { ...added, id: 'new-id' }] : [entry]
+        })
 
       const result = renderTimeTracker()
       await waitFor(() => expect(result.current.isLoading).toBe(false))
@@ -148,6 +154,12 @@ describe('useTimeTracker', () => {
       await act(async () => {
         await result.current.handleCopyEntryTo(entry, targetDate)
       })
+
+      await waitFor(() =>
+        expect(result.current.entries.some((e) => e.id === 'new-id')).toBe(
+          true,
+        ),
+      )
 
       expect(addSpy).toHaveBeenCalledTimes(1)
       const added = addSpy.mock.calls[0][0]
@@ -197,11 +209,25 @@ describe('useTimeTracker', () => {
         startTime: dayStart,
         endTime: dayEnd,
       }
-      jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([e1, e2])
       const addSpy = jest
         .spyOn(timeEntryService, 'addTimeEntry')
         .mockResolvedValueOnce('id-a')
         .mockResolvedValueOnce('id-b')
+      jest
+        .spyOn(timeEntryService, 'getTimeEntries')
+        .mockResolvedValueOnce([e1, e2])
+        .mockImplementation(async () => {
+          const calls = addSpy.mock.calls
+          if (calls.length >= 2) {
+            return [
+              e1,
+              e2,
+              { ...calls[0][0], id: 'id-a' },
+              { ...calls[1][0], id: 'id-b' },
+            ]
+          }
+          return [e1, e2]
+        })
 
       const result = renderTimeTracker()
       await waitFor(() => expect(result.current.isLoading).toBe(false))
@@ -210,6 +236,8 @@ describe('useTimeTracker', () => {
       await act(async () => {
         await result.current.handleCopyDayTo(targetDate)
       })
+
+      await waitFor(() => expect(result.current.entries).toHaveLength(4))
 
       expect(addSpy).toHaveBeenCalledTimes(2)
       expect(result.current.entries).toHaveLength(4)
@@ -245,12 +273,18 @@ describe('useTimeTracker', () => {
         startTime: yesStart,
         endTime: yesEnd,
       }
-      jest
-        .spyOn(timeEntryService, 'getTimeEntries')
-        .mockResolvedValue([yesterdayEntry])
       const addSpy = jest
         .spyOn(timeEntryService, 'addTimeEntry')
         .mockResolvedValue('copied-id')
+      jest
+        .spyOn(timeEntryService, 'getTimeEntries')
+        .mockResolvedValueOnce([yesterdayEntry])
+        .mockImplementation(async () => {
+          const added = addSpy.mock.calls[0]?.[0]
+          return added
+            ? [yesterdayEntry, { ...added, id: 'copied-id' }]
+            : [yesterdayEntry]
+        })
 
       const result = renderTimeTracker()
       await waitFor(() => expect(result.current.isLoading).toBe(false))
@@ -260,6 +294,8 @@ describe('useTimeTracker', () => {
       await act(async () => {
         await result.current.handleCopyFromYesterday()
       })
+
+      await waitFor(() => expect(result.current.entries).toHaveLength(2))
 
       expect(addSpy).toHaveBeenCalledTimes(1)
       const added = addSpy.mock.calls[0][0]

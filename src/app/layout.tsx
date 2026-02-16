@@ -6,6 +6,7 @@ import { getLocale } from 'next-intl/server'
 import { Lora, PT_Sans } from 'next/font/google'
 
 import { HtmlLang } from '@/components/html-lang'
+import { QueryProvider } from '@/components/providers/query-provider'
 import { PwaRegister } from '@/components/pwa-register'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/context/auth-context'
@@ -38,15 +39,17 @@ async function LocaleAwareRoot({
   return (
     <>
       <HtmlLang locale={locale} />
-      <AuthProvider>
-        <SubscriptionProvider>
-          <NextIntlClientProvider locale={locale}>
-            <PwaRegister />
-            {children}
-            <Toaster />
-          </NextIntlClientProvider>
-        </SubscriptionProvider>
-      </AuthProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <SubscriptionProvider>
+            <NextIntlClientProvider locale={locale}>
+              <PwaRegister />
+              {children}
+              <Toaster />
+            </NextIntlClientProvider>
+          </SubscriptionProvider>
+        </AuthProvider>
+      </QueryProvider>
     </>
   )
 }

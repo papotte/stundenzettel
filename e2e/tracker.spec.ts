@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { expect, test } from './fixtures'
 import { addActiveSubscription } from './subscription-helpers'
 import { addDurationEntry, addManualEntry } from './test-helpers'
@@ -249,13 +250,18 @@ test.describe('Core Tracker Functionality', () => {
       await expect(popover).toBeVisible()
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
-      const dayNum = yesterday.getDate()
-      await popover
-        .getByRole('button', { name: String(dayNum) })
-        .first()
-        .click()
-      await popover.getByRole('button', { name: 'Copy' }).click()
+      // react-day-picker uses full-date aria-labels (e.g. "Sunday, February 15th, 2026")
+      const yesterdayLabel = format(yesterday, 'EEEE, MMMM do, yyyy')
+      await popover.getByRole('button', { name: yesterdayLabel }).click()
+      const copyBtn = popover.getByRole('button', { name: 'Copy' })
+      await copyBtn.scrollIntoViewIfNeeded()
+      await copyBtn.click()
       await expect(popover).not.toBeVisible()
+
+      // Wait for copy + refetch to complete before navigating away
+      await expect(
+        page.getByTestId('toast-title').filter({ hasText: 'Entries copied' }),
+      ).toBeVisible({ timeout: 5000 })
 
       await page.getByRole('button', { name: 'Previous day' }).click()
       await expect(page.locator('[data-location="Day Copy A"]')).toBeVisible({

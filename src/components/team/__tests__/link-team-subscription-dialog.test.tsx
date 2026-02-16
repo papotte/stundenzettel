@@ -1,18 +1,27 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
+import {
+  defaultMockSubscriptionContext,
+  render,
+  screen,
+  waitFor,
+} from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import type { DocumentReference } from 'firebase/firestore'
 import { doc, setDoc } from 'firebase/firestore'
 
 import type { Subscription } from '@/lib/types'
-import { getPricingPlans } from '@/services/payment-service'
 // Get mocked functions after mocks are set up
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import { LinkTeamSubscriptionDialog } from '../link-team-subscription-dialog'
+
+const mockUsePricingPlans = jest.fn()
+jest.mock('@/hooks/use-pricing-plans', () => ({
+  usePricingPlans: (opts: { enabled?: boolean }) => mockUsePricingPlans(opts),
+}))
 
 // Mock Firebase
 jest.mock('firebase/firestore', () => ({
@@ -26,10 +35,6 @@ jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
   },
-}))
-
-jest.mock('@/services/payment-service', () => ({
-  getPricingPlans: jest.fn(),
 }))
 
 // Mock toast
@@ -59,9 +64,6 @@ const mockGetUserSubscription =
   subscriptionService.getUserSubscription as jest.MockedFunction<
     typeof subscriptionService.getUserSubscription
   >
-const mockGetPricingPlans = getPricingPlans as jest.MockedFunction<
-  typeof getPricingPlans
->
 
 const defaultProps = {
   open: true,
@@ -101,15 +103,21 @@ describe('LinkTeamSubscriptionDialog', () => {
       uid: 'user-123',
       email: 'test@example.com',
     })
-    mockGetPricingPlans.mockResolvedValue([mockTeamPlan])
+    defaultMockSubscriptionContext.subscription = null
+    defaultMockSubscriptionContext.loading = false
+    defaultMockSubscriptionContext.error = null
+    mockUsePricingPlans.mockReturnValue({
+      data: [mockTeamPlan],
+      isLoading: false,
+      isError: false,
+      error: null,
+    })
     mockDoc.mockReturnValue({} as DocumentReference)
     mockSetDoc.mockResolvedValue(undefined)
   })
 
   it('renders dialog and shows loading state initially', () => {
-    mockGetUserSubscription.mockImplementation(
-      () => new Promise(() => {}), // Never resolves
-    )
+    defaultMockSubscriptionContext.loading = true
 
     render(<LinkTeamSubscriptionDialog {...defaultProps} />)
 
@@ -125,6 +133,8 @@ describe('LinkTeamSubscriptionDialog', () => {
       subscription: null,
       ownerId: 'user-123',
     })
+    defaultMockSubscriptionContext.subscription = null
+    defaultMockSubscriptionContext.loading = false
 
     render(<LinkTeamSubscriptionDialog {...defaultProps} />)
 
@@ -143,6 +153,8 @@ describe('LinkTeamSubscriptionDialog', () => {
       subscription: mockTeamSubscription,
       ownerId: 'user-123',
     })
+    defaultMockSubscriptionContext.subscription = mockTeamSubscription
+    defaultMockSubscriptionContext.loading = false
 
     const user = userEvent.setup()
     render(<LinkTeamSubscriptionDialog {...defaultProps} />)
@@ -177,6 +189,8 @@ describe('LinkTeamSubscriptionDialog', () => {
       subscription: pastDueSubscription,
       ownerId: 'user-123',
     })
+    defaultMockSubscriptionContext.subscription = pastDueSubscription
+    defaultMockSubscriptionContext.loading = false
 
     render(<LinkTeamSubscriptionDialog {...defaultProps} />)
 
@@ -188,15 +202,27 @@ describe('LinkTeamSubscriptionDialog', () => {
   })
 
   it('handles errors gracefully', async () => {
+    const user = userEvent.setup()
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {})
 
+    defaultMockSubscriptionContext.subscription = mockTeamSubscription
+    defaultMockSubscriptionContext.loading = false
     mockGetUserSubscription.mockRejectedValue(
       new Error('Failed to load subscription'),
     )
 
     render(<LinkTeamSubscriptionDialog {...defaultProps} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Team Plan')).toBeInTheDocument()
+    })
+
+    const linkButton = screen.getByRole('button', {
+      name: /teams.linkSubscription/i,
+    })
+    await user.click(linkButton)
 
     await waitFor(() => {
       expect(mockToast.toast).toHaveBeenCalledWith(
@@ -217,6 +243,8 @@ describe('LinkTeamSubscriptionDialog', () => {
       subscription: mockTeamSubscription,
       ownerId: 'user-123',
     })
+    defaultMockSubscriptionContext.subscription = mockTeamSubscription
+    defaultMockSubscriptionContext.loading = false
 
     render(<LinkTeamSubscriptionDialog {...defaultProps} />)
 

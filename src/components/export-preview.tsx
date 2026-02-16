@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { addMonths, isSameDay, isSameMonth, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -15,7 +17,8 @@ import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
-import type { TimeEntry, UserSettings } from '@/lib/types'
+import { queryKeys } from '@/lib/query-keys'
+import type { TimeEntry } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'
 import {
   getPublishedMonth,
@@ -38,57 +41,69 @@ export default function ExportPreview() {
   const t = useTranslations()
   const format = useFormatter()
   const { toast } = useToast()
-  const [entries, setEntries] = useState<TimeEntry[]>([])
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.exportPreviewData(user?.uid ?? ''),
+    queryFn: async () => {
+      const [fetchedEntries, settings, team] = await Promise.all([
+        getTimeEntries(user!.uid),
+        getUserSettings(user!.uid),
+        getUserTeam(user!.uid),
+      ])
+      return {
+        entries: fetchedEntries,
+        userSettings: settings,
+        userTeam: team,
+      }
+    },
+    enabled: Boolean(user?.uid),
+  })
+
+  const entries = useMemo(() => data?.entries ?? [], [data?.entries])
+  const userSettings = data?.userSettings ?? null
+  const userTeam = data?.userTeam ?? null
+
   const [selectedMonth, setSelectedMonth] = useState<Date>()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [newEntryDate, setNewEntryDate] = useState<Date | null>(null)
-  const [userTeam, setUserTeam] = useState<{ id: string } | null>(null)
-  const [publishedAt, setPublishedAt] = useState<Date | null | undefined>(
-    undefined,
-  )
   const [isPublishing, setIsPublishing] = useState(false)
 
   useEffect(() => {
-    if (!user) return
-    const fetchAndSetEntries = async () => {
-      setIsLoading(true)
-      try {
-        const [fetchedEntries, settings, team] = await Promise.all([
-          getTimeEntries(user.uid),
-          getUserSettings(user.uid),
-          getUserTeam(user.uid),
-        ])
-        setEntries(fetchedEntries)
-        setUserSettings(settings)
-        setUserTeam(team)
-      } catch (error) {
-        console.error('Failed to load initial data from Firestore.', error)
-      }
+    // Only set initial month when data first loads; avoid resetting when data refetches (e.g. after adding an entry)
+    if (data !== undefined && selectedMonth === undefined) {
       setSelectedMonth(new Date())
-      setIsLoading(false)
     }
-    fetchAndSetEntries()
-  }, [user])
+  }, [data, selectedMonth])
 
   const monthKey = selectedMonth
     ? format.dateTime(selectedMonth, 'yearMonthISO')
     : ''
-  useEffect(() => {
-    if (!user || !userTeam || !monthKey) {
-      setPublishedAt(userTeam ? null : undefined)
-      return
+
+  const { data: publishedData } = useQuery({
+    queryKey: queryKeys.publishedMonth(
+      userTeam?.id ?? '',
+      user?.uid ?? '',
+      monthKey,
+    ),
+    queryFn: () => getPublishedMonth(userTeam!.id, user!.uid, monthKey),
+    enabled: Boolean(user && userTeam && monthKey),
+  })
+
+  const publishedAt =
+    publishedData?.publishedAt ?? (userTeam && monthKey ? null : undefined)
+
+  const invalidateExportPreview = useCallback(() => {
+    if (user?.uid) {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.exportPreviewData(user.uid),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.timeTrackerData(user.uid),
+      })
     }
-    let cancelled = false
-    getPublishedMonth(userTeam.id, user.uid, monthKey).then((data) => {
-      if (!cancelled) setPublishedAt(data?.publishedAt ?? null)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [user, userTeam, monthKey])
+  }, [user?.uid, queryClient])
 
   const getEntriesForDay = useCallback(
     (day: Date) => {
@@ -143,7 +158,13 @@ export default function ExportPreview() {
         entriesForMonth,
         userSettings,
       )
-      setPublishedAt(new Date())
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.publishedMonth(
+          userTeam.id,
+          user.uid,
+          monthKeyPublish,
+        ),
+      })
       toast({
         title: t('export.publishSuccess'),
       })
@@ -157,7 +178,17 @@ export default function ExportPreview() {
     } finally {
       setIsPublishing(false)
     }
-  }, [user, userTeam, userSettings, selectedMonth, entries, format, t, toast])
+  }, [
+    user,
+    userTeam,
+    userSettings,
+    selectedMonth,
+    entries,
+    format,
+    t,
+    toast,
+    queryClient,
+  ])
 
   const handleEditEntry = useCallback((entry: TimeEntry) => {
     setEditingEntry(entry)
@@ -184,9 +215,6 @@ export default function ExportPreview() {
         const existingEntry = entries.find((e) => e.id === entryWithUser.id)
         if (existingEntry) {
           await updateTimeEntry(entryWithUser.id, entryWithUser)
-          setEntries(
-            entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)),
-          )
           toast({
             title: t('toasts.entryUpdatedTitle'),
             description: t('toasts.entryUpdatedDescription', {
@@ -194,11 +222,7 @@ export default function ExportPreview() {
             }),
           })
         } else {
-          const newId = await addTimeEntry(entryWithUser)
-          const newEntry = { ...entryWithUser, id: newId }
-          setEntries((prev) =>
-            [newEntry, ...prev].sort((a, b) => compareEntriesByStartTime(b, a)),
-          )
+          await addTimeEntry(entryWithUser)
           toast({
             title: t('toasts.entryAddedTitle'),
             description: t('toasts.entryAddedDescription', {
@@ -206,6 +230,7 @@ export default function ExportPreview() {
             }),
           })
         }
+        invalidateExportPreview()
       } catch (error) {
         console.error('Error saving entry:', error)
         toast({
@@ -215,7 +240,7 @@ export default function ExportPreview() {
         })
       }
     },
-    [user, entries, t, toast],
+    [user, entries, t, toast, invalidateExportPreview],
   )
 
   const handleCloseForm = () => {
