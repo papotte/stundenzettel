@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/papotte/stundenzettel/compare/v1.23.2...v1.24.0) (2026-02-16)
+
+
+### Features
+
+* user can publish export to team ([#191](https://github.com/papotte/stundenzettel/issues/191)) ([78772f8](https://github.com/papotte/stundenzettel/commit/78772f8e8aa3e67e92800395f6b279a826a59d14))
+
 ## [1.23.2](https://github.com/papotte/stundenzettel/compare/v1.23.1...v1.23.2) (2026-02-16)
 
 
