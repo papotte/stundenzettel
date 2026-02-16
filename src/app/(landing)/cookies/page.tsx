@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
+
+import { useIsClient } from '@/hooks/use-is-client'
 
 const CookiePolicyEn = dynamic(
   () => import('@/../content/legal/cookie-policy.en.mdx'),
@@ -14,12 +14,9 @@ const CookiePolicyDe = dynamic(
 
 export default function CookiePolicyPage() {
   const language = useLocale()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const isClient = useIsClient()
 
-  if (!mounted) return null
+  if (!isClient) return null
 
   const Content = language === 'de' ? CookiePolicyDe : CookiePolicyEn
   const testId =

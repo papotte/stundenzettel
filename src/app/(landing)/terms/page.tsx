@@ -1,21 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { useLocale } from 'next-intl'
 import dynamic from 'next/dynamic'
+
+import { useIsClient } from '@/hooks/use-is-client'
 
 const TermsEn = dynamic(() => import('@/../content/legal/terms.en.mdx'))
 const TermsDe = dynamic(() => import('@/../content/legal/terms.de.mdx'))
 
 export default function TermsPage() {
   const language = useLocale()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const isClient = useIsClient()
 
-  if (!mounted) return null
+  if (!isClient) return null
 
   const Content = language === 'de' ? TermsDe : TermsEn
   const testId = language === 'de' ? 'terms-de-article' : 'terms-en-article'
