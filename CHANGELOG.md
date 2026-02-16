@@ -1,3 +1,10 @@
+## [1.23.2](https://github.com/papotte/stundenzettel/compare/v1.23.1...v1.23.2) (2026-02-16)
+
+
+### Bug Fixes
+
+* e2e tests ([4e7a69b](https://github.com/papotte/stundenzettel/commit/4e7a69baac872ddd4a894e119e04ff7faeabc356))
+
 ## [1.23.1](https://github.com/papotte/stundenzettel/compare/v1.23.0...v1.23.1) (2026-02-14)
 
 
