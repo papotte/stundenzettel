@@ -1,6 +1,6 @@
 'use client'
 
-import { FileSpreadsheet, Home } from 'lucide-react'
+import { BarChart2, FileSpreadsheet, Home } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -21,6 +21,13 @@ const navItems = [
     labelKey: 'nav.bottom.export',
     labelDefault: 'Export',
     requiresSubscription: true,
+  },
+  {
+    href: '/stats',
+    icon: BarChart2,
+    labelKey: 'nav.bottom.stats',
+    labelDefault: 'Stats',
+    requiresSubscription: false,
   },
 ]
 

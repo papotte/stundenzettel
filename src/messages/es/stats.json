@@ -1,0 +1,12 @@
+{
+  "title": "Horas por proyecto",
+  "periodThisWeek": "Esta semana",
+  "periodLastWeek": "Semana pasada",
+  "periodThisMonth": "Este mes",
+  "periodLastMonth": "Mes pasado",
+  "periodThisYear": "Este año",
+  "project": "Proyecto",
+  "hours": "Horas",
+  "total": "Total",
+  "noData": "No hay entradas en este período"
+}

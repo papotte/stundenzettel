@@ -1,0 +1,12 @@
+{
+  "title": "Stunden nach Projekt",
+  "periodThisWeek": "Diese Woche",
+  "periodLastWeek": "Letzte Woche",
+  "periodThisMonth": "Dieser Monat",
+  "periodLastMonth": "Letzter Monat",
+  "periodThisYear": "Dieses Jahr",
+  "project": "Projekt",
+  "hours": "Stunden",
+  "total": "Gesamt",
+  "noData": "Keine Einträge in diesem Zeitraum"
+}

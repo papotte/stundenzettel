@@ -1,7 +1,8 @@
 {
   "bottom": {
     "home": "Home",
-    "export": "Preview & Export"
+    "export": "Preview & Export",
+    "stats": "Stats"
   },
   "top": {
     "features": "Features",
