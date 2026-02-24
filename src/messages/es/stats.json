@@ -1,5 +1,5 @@
 {
-  "title": "Horas por proyecto",
+  "title": "Estadísticas",
   "periodThisWeek": "Esta semana",
   "periodLastWeek": "Semana pasada",
   "periodThisMonth": "Este mes",
@@ -7,6 +7,15 @@
   "periodThisYear": "Este año",
   "project": "Proyecto",
   "hours": "Horas",
+  "hoursWorked": "Trabajado",
+  "hoursDriven": "Conducción",
+  "hoursPassenger": "Pasajero",
   "total": "Total",
-  "noData": "No hay entradas en este período"
+  "summaryTitle": "Resumen",
+  "summaryExpectedHours": "Horas esperadas",
+  "summaryTotalHours": "Horas totales",
+  "summaryOvertime": "Horas extra",
+  "summarySpecialEntries": "Entradas especiales",
+  "noData": "No hay entradas en este período",
+  "sectionProjects": "Horas por proyecto"
 }

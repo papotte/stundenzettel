@@ -1,12 +1,5 @@
 {
-  "bottom": {
-    "home": "Home",
-    "export": "Preview & Export",
-    "stats": "Stats"
-  },
-  "top": {
-    "features": "Features",
-    "pricing": "Pricing",
-    "login": "Log in"
-  }
+  "bottom": { "home": "Home", "export": "Preview & Export", "stats": "Stats" },
+  "top": { "features": "Features", "pricing": "Pricing", "login": "Log in" },
+  "topLabel": "Main navigation"
 }

@@ -23,9 +23,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
-import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
+import {
+  calculateExpectedMonthlyHours,
+  calculateTotalCompensatedMinutes,
+  calculateWorkMinutes,
+} from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
 
 export type StatsPeriod =
@@ -99,6 +112,18 @@ export default function StatsView() {
   const driverComp = userSettings?.driverCompensationPercent ?? 100
   const passengerComp = userSettings?.passengerCompensationPercent ?? 100
 
+  type ProjectRow = {
+    location: string
+    workHours: number
+    driverHours: number
+    passengerHours: number
+    sickLeaveHours: number
+    ptoHours: number
+    holidayHours: number
+    timeOffInLieuHours: number
+    totalHours: number
+  }
+
   const byProjectCorrect = useMemo(() => {
     const map = new Map<string, TimeEntry[]>()
     for (const entry of entriesInPeriod) {
@@ -106,23 +131,162 @@ export default function StatsView() {
       list.push(entry)
       map.set(entry.location, list)
     }
-    const result: { location: string; hours: number }[] = []
+    const result: ProjectRow[] = []
+    const regularEntries = (entries: TimeEntry[]) =>
+      entries.filter(
+        (e) =>
+          !SPECIAL_LOCATION_KEYS.includes(e.location as SpecialLocationKey),
+      )
     map.forEach((groupEntries, location) => {
-      const minutes = calculateTotalCompensatedMinutes(
+      const workMinutes = calculateWorkMinutes(regularEntries(groupEntries))
+      const driverHours = groupEntries.reduce(
+        (s, e) => s + (e.driverTimeHours ?? 0),
+        0,
+      )
+      const passengerHours = groupEntries.reduce(
+        (s, e) => s + (e.passengerTimeHours ?? 0),
+        0,
+      )
+      const totalMinutes = calculateTotalCompensatedMinutes(
         groupEntries,
         driverComp,
         passengerComp,
       )
-      result.push({ location, hours: minutes / 60 })
+      const totalHours = totalMinutes / 60
+      result.push({
+        location,
+        workHours: workMinutes / 60,
+        driverHours,
+        passengerHours,
+        sickLeaveHours: location === 'SICK_LEAVE' ? totalHours : 0,
+        ptoHours: location === 'PTO' ? totalHours : 0,
+        holidayHours: location === 'BANK_HOLIDAY' ? totalHours : 0,
+        timeOffInLieuHours: location === 'TIME_OFF_IN_LIEU' ? totalHours : 0,
+        totalHours,
+      })
     })
-    result.sort((a, b) => b.hours - a.hours)
+    result.sort((a, b) => b.totalHours - a.totalHours)
     return result
   }, [entriesInPeriod, driverComp, passengerComp])
 
-  const totalHours = useMemo(
-    () => byProjectCorrect.reduce((sum, row) => sum + row.hours, 0),
+  const totals = useMemo(
+    () =>
+      byProjectCorrect.reduce(
+        (acc, row) => ({
+          workHours: acc.workHours + row.workHours,
+          driverHours: acc.driverHours + row.driverHours,
+          passengerHours: acc.passengerHours + row.passengerHours,
+          sickLeaveHours: acc.sickLeaveHours + row.sickLeaveHours,
+          ptoHours: acc.ptoHours + row.ptoHours,
+          holidayHours: acc.holidayHours + row.holidayHours,
+          timeOffInLieuHours: acc.timeOffInLieuHours + row.timeOffInLieuHours,
+          totalHours: acc.totalHours + row.totalHours,
+        }),
+        {
+          workHours: 0,
+          driverHours: 0,
+          passengerHours: 0,
+          sickLeaveHours: 0,
+          ptoHours: 0,
+          holidayHours: 0,
+          timeOffInLieuHours: 0,
+          totalHours: 0,
+        },
+      ),
     [byProjectCorrect],
   )
+
+  const expectedHoursForPeriod = useMemo(() => {
+    if (!userSettings) return 0
+    const expectedMonthly = calculateExpectedMonthlyHours(userSettings)
+    switch (period) {
+      case 'thisWeek':
+      case 'lastWeek':
+        return (expectedMonthly * 12) / 52
+      case 'thisMonth':
+      case 'lastMonth':
+        return expectedMonthly
+      case 'thisYear':
+        return expectedMonthly * 12
+    }
+  }, [userSettings, period])
+
+  const overtimeHours = totals.totalHours - expectedHoursForPeriod
+  const showExpectedAndOvertime =
+    !!userSettings &&
+    (userSettings.expectedMonthlyHours != null ||
+      userSettings.defaultWorkHours != null)
+
+  const projectRows = useMemo(
+    () =>
+      byProjectCorrect.filter(
+        (row) =>
+          !SPECIAL_LOCATION_KEYS.includes(row.location as SpecialLocationKey),
+      ),
+    [byProjectCorrect],
+  )
+  const specialRows = useMemo(
+    () =>
+      byProjectCorrect.filter((row) =>
+        SPECIAL_LOCATION_KEYS.includes(row.location as SpecialLocationKey),
+      ),
+    [byProjectCorrect],
+  )
+
+  const projectTotals = useMemo(
+    () =>
+      projectRows.reduce(
+        (acc, row) => ({
+          workHours: acc.workHours + row.workHours,
+          driverHours: acc.driverHours + row.driverHours,
+          passengerHours: acc.passengerHours + row.passengerHours,
+          sickLeaveHours: acc.sickLeaveHours + row.sickLeaveHours,
+          ptoHours: acc.ptoHours + row.ptoHours,
+          holidayHours: acc.holidayHours + row.holidayHours,
+          timeOffInLieuHours: acc.timeOffInLieuHours + row.timeOffInLieuHours,
+          totalHours: acc.totalHours + row.totalHours,
+        }),
+        {
+          workHours: 0,
+          driverHours: 0,
+          passengerHours: 0,
+          sickLeaveHours: 0,
+          ptoHours: 0,
+          holidayHours: 0,
+          timeOffInLieuHours: 0,
+          totalHours: 0,
+        },
+      ),
+    [projectRows],
+  )
+  const specialTotals = useMemo(
+    () =>
+      specialRows.reduce(
+        (acc, row) => ({
+          workHours: acc.workHours + row.workHours,
+          driverHours: acc.driverHours + row.driverHours,
+          passengerHours: acc.passengerHours + row.passengerHours,
+          sickLeaveHours: acc.sickLeaveHours + row.sickLeaveHours,
+          ptoHours: acc.ptoHours + row.ptoHours,
+          holidayHours: acc.holidayHours + row.holidayHours,
+          timeOffInLieuHours: acc.timeOffInLieuHours + row.timeOffInLieuHours,
+          totalHours: acc.totalHours + row.totalHours,
+        }),
+        {
+          workHours: 0,
+          driverHours: 0,
+          passengerHours: 0,
+          sickLeaveHours: 0,
+          ptoHours: 0,
+          holidayHours: 0,
+          timeOffInLieuHours: 0,
+          totalHours: 0,
+        },
+      ),
+    [specialRows],
+  )
+
+  const hasAnyData = projectRows.length > 0
 
   if (isLoading) {
     return (
@@ -162,36 +326,146 @@ export default function StatsView() {
         </Select>
       </CardHeader>
       <CardContent>
-        {byProjectCorrect.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t('noData')}</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="pb-2 text-left font-medium">{t('project')}</th>
-                  <th className="pb-2 text-right font-medium">{t('hours')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {byProjectCorrect.map(({ location, hours }) => (
-                  <tr key={location} className="border-b last:border-0">
-                    <td className="py-2">{getLocationDisplayName(location)}</td>
-                    <td className="py-2 text-right tabular-nums">
-                      {hours.toFixed(1)} h
-                    </td>
-                  </tr>
-                ))}
-                <tr className="border-t-2 font-medium">
-                  <td className="pt-2">{t('total')}</td>
-                  <td className="pt-2 text-right tabular-nums">
-                    {totalHours.toFixed(1)} h
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div className="space-y-6">
+          <section
+            className="rounded-lg border bg-muted/30 p-4"
+            aria-labelledby="stats-summary-heading"
+          >
+            <h2
+              id="stats-summary-heading"
+              className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+            >
+              {t('summaryTitle')}
+            </h2>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+              {showExpectedAndOvertime && (
+                <>
+                  <dt className="text-muted-foreground">
+                    {t('summaryExpectedHours')}
+                  </dt>
+                  <dd className="tabular-nums font-medium">
+                    {expectedHoursForPeriod.toFixed(1)} h
+                  </dd>
+                </>
+              )}
+              <dt className="text-muted-foreground">
+                {t('summaryTotalHours')}
+              </dt>
+              <dd className="tabular-nums font-medium">
+                {totals.totalHours.toFixed(1)} h
+              </dd>
+              {showExpectedAndOvertime && (
+                <>
+                  <dt className="text-muted-foreground">
+                    {t('summaryOvertime')}
+                  </dt>
+                  <dd className="tabular-nums font-medium">
+                    {overtimeHours >= 0 ? '+' : ''}
+                    {overtimeHours.toFixed(1)} h
+                  </dd>
+                </>
+              )}
+              <dt className="text-muted-foreground">
+                {tSpecial('SICK_LEAVE')}
+              </dt>
+              <dd className="tabular-nums font-medium">
+                {specialTotals.sickLeaveHours.toFixed(1)} h
+              </dd>
+              <dt className="text-muted-foreground">{tSpecial('PTO')}</dt>
+              <dd className="tabular-nums font-medium">
+                {specialTotals.ptoHours.toFixed(1)} h
+              </dd>
+              <dt className="text-muted-foreground">
+                {tSpecial('BANK_HOLIDAY')}
+              </dt>
+              <dd className="tabular-nums font-medium">
+                {specialTotals.holidayHours.toFixed(1)} h
+              </dd>
+              <dt className="text-muted-foreground">
+                {tSpecial('TIME_OFF_IN_LIEU')}
+              </dt>
+              <dd className="tabular-nums font-medium">
+                {specialTotals.timeOffInLieuHours.toFixed(1)} h
+              </dd>
+            </dl>
+          </section>
+
+          {!hasAnyData ? (
+            <p className="text-muted-foreground text-sm">{t('noData')}</p>
+          ) : (
+            <section aria-labelledby="stats-projects-heading">
+              <h2
+                id="stats-projects-heading"
+                className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+              >
+                {t('sectionProjects')}
+              </h2>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('project')}</TableHead>
+                    <TableHead className="text-right">
+                      {t('hoursWorked')}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t('hoursDriven')}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t('hoursPassenger')}
+                    </TableHead>
+                    <TableHead className="text-right">{t('total')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {projectRows.map(
+                    ({
+                      location,
+                      workHours,
+                      driverHours,
+                      passengerHours,
+                      totalHours,
+                    }) => (
+                      <TableRow key={location}>
+                        <TableCell>
+                          {getLocationDisplayName(location)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {workHours.toFixed(1)} h
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {driverHours.toFixed(1)} h
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {passengerHours.toFixed(1)} h
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {totalHours.toFixed(1)} h
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell className="font-medium">{t('total')}</TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">
+                      {projectTotals.workHours.toFixed(1)} h
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">
+                      {projectTotals.driverHours.toFixed(1)} h
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">
+                      {projectTotals.passengerHours.toFixed(1)} h
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">
+                      {projectTotals.totalHours.toFixed(1)} h
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </section>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

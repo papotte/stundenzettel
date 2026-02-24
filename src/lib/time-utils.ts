@@ -81,6 +81,29 @@ export function parseTimeString(
 }
 
 /**
+ * Calculates raw work minutes (at-desk time) for a list of entries: interval time minus pause, or durationMinutes.
+ * Excludes driver/passenger time. Used for stats breakdown (hours worked vs driven vs passenger).
+ */
+export function calculateWorkMinutes(entriesToSum: TimeEntry[]): number {
+  return entriesToSum.reduce((total, entry) => {
+    if (typeof entry.durationMinutes === 'number') {
+      return total + entry.durationMinutes
+    }
+    if (entry.startTime && entry.endTime) {
+      const workMinutes = differenceInMinutes(entry.endTime, entry.startTime)
+      if (entry.location === 'TIME_OFF_IN_LIEU') return total
+      if (['SICK_LEAVE', 'PTO', 'BANK_HOLIDAY'].includes(entry.location)) {
+        return total + workMinutes
+      }
+      const pauseMinutes = entry.pauseDuration || 0
+      const deskMinutes = workMinutes - pauseMinutes
+      return total + (deskMinutes > 0 ? deskMinutes : 0)
+    }
+    return total
+  }, 0)
+}
+
+/**
  * Calculates the total compensated minutes for a list of entries, using compensation percentages for driver and passenger.
  * Used for daily, weekly, and monthly totals in the tracker.
  */
