@@ -32,11 +32,26 @@ describe('AppHeader', () => {
     return render(<TooltipProvider>{ui}</TooltipProvider>)
   }
 
-  it('renders app name, export link, and menu button', () => {
+  it('renders app name, export link, stats link, and menu button', () => {
     renderWithProvider(<AppHeader />)
     expect(screen.getByText('common.appName')).toBeInTheDocument()
-    expect(screen.getByText('tracker.headerExportLink')).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /tracker\.headerExportLink/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /nav\.bottom\.stats/i }),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('user-menu-btn')).toBeInTheDocument()
+  })
+
+  it('links export to /export and stats to /stats', () => {
+    renderWithProvider(<AppHeader />)
+    expect(
+      screen.getByRole('link', { name: /tracker\.headerExportLink/i }),
+    ).toHaveAttribute('href', '/export')
+    expect(
+      screen.getByRole('link', { name: /nav\.bottom\.stats/i }),
+    ).toHaveAttribute('href', '/stats')
   })
 
   it('links app name to tracker', () => {

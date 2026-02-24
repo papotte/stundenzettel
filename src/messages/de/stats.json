@@ -1,0 +1,21 @@
+{
+  "title": "Statistik",
+  "periodThisWeek": "Diese Woche",
+  "periodLastWeek": "Letzte Woche",
+  "periodThisMonth": "Dieser Monat",
+  "periodLastMonth": "Letzter Monat",
+  "periodThisYear": "Dieses Jahr",
+  "project": "Projekt",
+  "hours": "Stunden",
+  "hoursWorked": "Gearbeitet",
+  "hoursDriven": "Gefahren",
+  "hoursPassenger": "Mitfahrer",
+  "total": "Gesamt",
+  "summaryTitle": "Übersicht",
+  "summaryExpectedHours": "Sollstunden",
+  "summaryTotalHours": "Gesamtstunden",
+  "summaryOvertime": "Überstunden",
+  "summarySpecialEntries": "Sondereinträge",
+  "noData": "Keine Einträge in diesem Zeitraum",
+  "sectionProjects": "Stunden nach Projekt"
+}

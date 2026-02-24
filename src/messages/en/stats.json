@@ -1,0 +1,21 @@
+{
+  "title": "Stats",
+  "periodThisWeek": "This week",
+  "periodLastWeek": "Last week",
+  "periodThisMonth": "This month",
+  "periodLastMonth": "Last month",
+  "periodThisYear": "This year",
+  "project": "Project",
+  "hours": "Hours",
+  "hoursWorked": "Worked",
+  "hoursDriven": "Driven",
+  "hoursPassenger": "Passenger",
+  "total": "Total",
+  "summaryTitle": "Summary",
+  "summaryExpectedHours": "Expected hours",
+  "summaryTotalHours": "Total hours",
+  "summaryOvertime": "Overtime",
+  "summarySpecialEntries": "Special entries",
+  "noData": "No entries in this period",
+  "sectionProjects": "Hours by project"
+}

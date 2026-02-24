@@ -7,6 +7,7 @@ import {
   calculateTotalCompensatedMinutes,
   calculateWeekCompensatedTime,
   calculateWeekPassengerTime,
+  calculateWorkMinutes,
   parseTimeString,
   shiftEntryToDate,
 } from '../time-utils'
@@ -163,6 +164,72 @@ describe('calculateTotalCompensatedMinutes', () => {
       durationMinutes: undefined,
     }
     expect(calculateTotalCompensatedMinutes([entry])).toBe(0)
+  })
+})
+
+describe('calculateWorkMinutes', () => {
+  const baseEntry: Omit<TimeEntry, 'id' | 'userId'> = {
+    location: 'Office',
+    startTime: set(new Date(), {
+      hours: 9,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    }),
+    endTime: set(new Date(), {
+      hours: 17,
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    }),
+    pauseDuration: 30,
+  }
+
+  it('returns 0 for empty entries', () => {
+    expect(calculateWorkMinutes([])).toBe(0)
+  })
+
+  it('uses durationMinutes when present', () => {
+    const entry: TimeEntry = {
+      ...baseEntry,
+      id: '1',
+      userId: 'u1',
+      durationMinutes: 90,
+    }
+    expect(calculateWorkMinutes([entry])).toBe(90)
+  })
+
+  it('calculates interval minus pause for regular location', () => {
+    const entry: TimeEntry = {
+      ...baseEntry,
+      id: '2',
+      userId: 'u1',
+    }
+    const expected =
+      differenceInMinutes(entry.endTime!, entry.startTime!) -
+      (entry.pauseDuration || 0)
+    expect(calculateWorkMinutes([entry])).toBe(expected)
+  })
+
+  it('excludes TIME_OFF_IN_LIEU from total', () => {
+    const entry: TimeEntry = {
+      ...baseEntry,
+      id: '3',
+      userId: 'u1',
+      location: 'TIME_OFF_IN_LIEU',
+    }
+    expect(calculateWorkMinutes([entry])).toBe(0)
+  })
+
+  it('includes full interval for SICK_LEAVE, PTO, BANK_HOLIDAY (no pause)', () => {
+    const sick: TimeEntry = {
+      ...baseEntry,
+      id: '4',
+      userId: 'u1',
+      location: 'SICK_LEAVE',
+    }
+    const fullMinutes = differenceInMinutes(sick.endTime!, sick.startTime!)
+    expect(calculateWorkMinutes([sick])).toBe(fullMinutes)
   })
 })
 

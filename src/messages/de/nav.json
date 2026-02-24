@@ -1,11 +1,9 @@
 {
   "bottom": {
     "home": "Übersicht",
-    "export": "Vorschau & Export"
+    "export": "Vorschau & Export",
+    "stats": "Statistik"
   },
-  "top": {
-    "features": "Funktionen",
-    "pricing": "Preise",
-    "login": "Anmelden"
-  }
+  "top": { "features": "Funktionen", "pricing": "Preise", "login": "Anmelden" },
+  "topLabel": "Hauptnavigation"
 }

@@ -74,7 +74,7 @@ const getDatabaseId = (): string => {
       const databaseId = getDatabaseId()
       db = getFirestore(app, databaseId)
       connectFirestoreEmulator(db, 'localhost', 8080)
-
+      console.log('Connected to Firestore with database ID:', databaseId)
       // Connect Auth emulator
       auth = getAuth(app)
       connectAuthEmulator(auth, 'http://localhost:9099')

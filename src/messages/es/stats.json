@@ -1,0 +1,21 @@
+{
+  "title": "Estadísticas",
+  "periodThisWeek": "Esta semana",
+  "periodLastWeek": "Semana pasada",
+  "periodThisMonth": "Este mes",
+  "periodLastMonth": "Mes pasado",
+  "periodThisYear": "Este año",
+  "project": "Proyecto",
+  "hours": "Horas",
+  "hoursWorked": "Trabajado",
+  "hoursDriven": "Conducción",
+  "hoursPassenger": "Pasajero",
+  "total": "Total",
+  "summaryTitle": "Resumen",
+  "summaryExpectedHours": "Horas esperadas",
+  "summaryTotalHours": "Horas totales",
+  "summaryOvertime": "Horas extra",
+  "summarySpecialEntries": "Entradas especiales",
+  "noData": "No hay entradas en este período",
+  "sectionProjects": "Horas por proyecto"
+}

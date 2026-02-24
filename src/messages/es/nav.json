@@ -1,11 +1,13 @@
 {
   "bottom": {
     "home": "Inicio",
-    "export": "Vista previa y exportar"
+    "export": "Vista previa y exportar",
+    "stats": "Estadísticas"
   },
   "top": {
     "features": "Características",
     "pricing": "Precios",
     "login": "Iniciar sesión"
-  }
+  },
+  "topLabel": "Navegación principal"
 }
