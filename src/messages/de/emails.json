@@ -1,0 +1,18 @@
+{
+  "teamInvitation": {
+    "subject": "Einladung zum Team \"{teamName}\"",
+    "heading": "Team-Einladung",
+    "body": "{inviterName} hat Sie eingeladen, dem Team \"{teamName}\" als {role} beizutreten.",
+    "acceptButton": "Einladung annehmen oder ablehnen",
+    "expiry": "Wichtig: Diese Einladung läuft in 7 Tagen ab.",
+    "ignore": "Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren."
+  },
+  "passwordChanged": {
+    "subject": "Ihr Passwort wurde geändert",
+    "heading": "Passwort geändert",
+    "greeting": "Hallo {displayName},",
+    "greetingFallback": "Hallo,",
+    "body": "Dies ist eine Bestätigung, dass Ihr Passwort geändert wurde.",
+    "warning": "Falls Sie diese Änderung nicht vorgenommen haben, kontaktieren Sie bitte sofort den Support."
+  }
+}

@@ -1,25 +1,26 @@
 import * as React from 'react'
 
 interface TeamInvitationEmailProps {
-  teamName: string
-  inviterName: string
   invitationLink: string
-  role: string
+  heading: string
+  body: string
+  acceptButtonText: string
+  expiryText: string
+  ignoreText: string
 }
 
 export function TeamInvitationEmail({
-  teamName,
-  inviterName,
   invitationLink,
-  role,
+  heading,
+  body,
+  acceptButtonText,
+  expiryText,
+  ignoreText,
 }: TeamInvitationEmailProps) {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', lineHeight: 1.6 }}>
-      <h2>Team Invitation</h2>
-      <p>
-        <strong>{inviterName}</strong> has invited you to join the team{' '}
-        <strong>&quot;{teamName}&quot;</strong> as a <strong>{role}</strong>.
-      </p>
+      <h2>{heading}</h2>
+      <p>{body}</p>
       <p>
         <a
           href={invitationLink}
@@ -32,16 +33,12 @@ export function TeamInvitationEmail({
             display: 'inline-block',
           }}
         >
-          Accept or Decline Invitation
+          {acceptButtonText}
         </a>
       </p>
-      <p>
-        <strong>Important:</strong> This invitation will expire in 7 days.
-      </p>
+      <p>{expiryText}</p>
       <hr />
-      <p style={{ color: '#666', fontSize: 12 }}>
-        If you did not expect this invitation, you can safely ignore this email.
-      </p>
+      <p style={{ color: '#666', fontSize: 12 }}>{ignoreText}</p>
     </div>
   )
 }
