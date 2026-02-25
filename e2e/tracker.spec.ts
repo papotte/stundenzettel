@@ -272,7 +272,7 @@ test.describe('Core Tracker Functionality', () => {
       page,
     }) => {
       await expect(
-        page.getByRole('navigation', { name: 'Top navigation' }),
+        page.getByRole('navigation', { name: 'Main navigation' }),
       ).toBeVisible()
       await expect(page.getByRole('main')).toBeVisible({ timeout: 10000 })
 

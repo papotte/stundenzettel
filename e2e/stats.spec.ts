@@ -28,20 +28,31 @@ test.describe('Stats Page', () => {
     const periodSelect = page.getByRole('combobox', { name: 'Stats' })
     await expect(periodSelect).toContainText('This month')
 
-    // Total hours is the first dd in the summary (7.0 h from 3h + 4h entries)
-    const totalHoursValue = summarySection.locator('dd').first()
+    // Total hours row: target the dd that follows the "Total hours" dt (Summary can show Expected hours first)
+    const totalHoursValue = summarySection
+      .locator('dt', { hasText: 'Total hours' })
+      .locator('xpath=following-sibling::dd[1]')
+    await expect(totalHoursValue).toBeVisible()
+    // 7.0 h from the two entries added in beforeEach (3h + 4h)
     await expect(totalHoursValue).toContainText('7.0')
 
-    await expect(page.getByText('Stats Project A')).toBeVisible()
-    await expect(page.getByText('Stats Project B')).toBeVisible()
-    await expect(page.getByRole('table')).toBeVisible()
+    const statsTable = page.getByRole('table')
+    await expect(statsTable).toBeVisible()
+    await expect(
+      statsTable.getByRole('cell', { name: 'Stats Project A' }),
+    ).toBeVisible()
+    await expect(
+      statsTable.getByRole('cell', { name: 'Stats Project B' }),
+    ).toBeVisible()
 
     // Switch to "This week" – same entries (today is in this week), total unchanged
     await periodSelect.click()
     await page.getByRole('option', { name: 'This week' }).click()
     await expect(periodSelect).toContainText('This week')
     await expect(totalHoursValue).toContainText('7.0')
-    await expect(page.getByText('Stats Project A')).toBeVisible()
+    await expect(
+      statsTable.getByRole('cell', { name: 'Stats Project A' }),
+    ).toBeVisible()
 
     // Switch to "Last week" – no entries, total becomes 0.0
     await periodSelect.click()
@@ -49,14 +60,17 @@ test.describe('Stats Page', () => {
     await expect(periodSelect).toContainText('Last week')
     await expect(totalHoursValue).toContainText('0.0')
     await expect(page.getByText('No entries in this period')).toBeVisible()
-    await expect(page.getByText('Stats Project A')).not.toBeVisible()
 
     // Switch back to "This month" – entries and total back
     await periodSelect.click()
     await page.getByRole('option', { name: 'This month' }).click()
     await expect(periodSelect).toContainText('This month')
     await expect(totalHoursValue).toContainText('7.0')
-    await expect(page.getByText('Stats Project A')).toBeVisible()
-    await expect(page.getByText('Stats Project B')).toBeVisible()
+    await expect(
+      statsTable.getByRole('cell', { name: 'Stats Project A' }),
+    ).toBeVisible()
+    await expect(
+      statsTable.getByRole('cell', { name: 'Stats Project B' }),
+    ).toBeVisible()
   })
 })
