@@ -92,6 +92,16 @@ export interface PricingPlan {
   trialEnabled?: boolean // Whether this plan offers trials
 }
 
+// Team-wide settings (admin/owner configurable, optionally overridable by members)
+export interface TeamSettings {
+  defaultDriverCompensationPercent?: number // default 100
+  defaultPassengerCompensationPercent?: number // default 90
+  allowMemberOverrideCompensation?: boolean // default true
+  exportIncludeDriverTime?: boolean // default true
+  exportIncludePassengerTime?: boolean // default true
+  allowMemberOverrideExport?: boolean // default true
+}
+
 // Team Management Types
 export interface Team {
   id: string

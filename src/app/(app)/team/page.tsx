@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   Mail,
   Settings,
+  SlidersHorizontal,
   UserPlus,
   Users,
 } from 'lucide-react'
@@ -20,6 +21,7 @@ import { TeamMembersList } from '@/components/team/team-members-list'
 import { TeamReportsTab } from '@/components/team/team-reports-tab'
 import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
+import { TeamWideSettingsForm } from '@/components/team/team-wide-settings-form'
 import { UserInvitationsList } from '@/components/team/user-invitations-list'
 import { Button } from '@/components/ui/button'
 import {
@@ -381,6 +383,16 @@ export default function TeamPage() {
                     {t('reports.tab')}
                   </TabsTrigger>
                 )}
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
+                  <TabsTrigger
+                    value="team-settings"
+                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    {t('teams.teamWideSettings')}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value="subscription"
                   className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
@@ -433,6 +445,28 @@ export default function TeamPage() {
               {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
                 <TabsContent value="reports">
                   <TeamReportsTab teamId={team?.id ?? null} members={members} />
+                </TabsContent>
+              )}
+
+              {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+                <TabsContent value="team-settings">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <SlidersHorizontal className="h-5 w-5" />
+                        {t('teams.teamWideSettings')}
+                      </CardTitle>
+                      <CardDescription>
+                        {t('teams.teamWideSettingsDescription')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <TeamWideSettingsForm
+                        teamId={team.id}
+                        canEdit={currentUserRole === 'owner'}
+                      />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               )}
 
