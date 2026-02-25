@@ -1,6 +1,8 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { TeamInvitationEmail } from '@/components/emails/team-invitation-email'
+import { getEmailTranslations } from '@/lib/email-translations'
 import {
   createResendService,
   handleResendError,
@@ -34,16 +36,39 @@ export async function POST(request: Request) {
       )
     }
 
+    const cookieStore = await cookies()
+    const locale = cookieStore.get('preferredLanguage')?.value
+
+    const t = await getEmailTranslations(locale)
+    const {
+      subject: subjectTemplate,
+      heading,
+      body: bodyTemplate,
+      acceptButton,
+      expiry,
+      ignore,
+    } = t.teamInvitation
+
+    const emailSubject =
+      subject || subjectTemplate.replace('{teamName}', teamName)
+
+    const emailBody = bodyTemplate
+      .replace('{inviterName}', inviterName)
+      .replace('{teamName}', teamName)
+      .replace('{role}', role)
+
     const resendService = createResendService()
     const data = await resendService.sendEmail({
       from,
       to: [to],
-      subject: subject || `Invitation to join team "${teamName}"`,
+      subject: emailSubject,
       react: TeamInvitationEmail({
-        teamName,
-        inviterName,
         invitationLink,
-        role,
+        heading,
+        body: emailBody,
+        acceptButtonText: acceptButton,
+        expiryText: expiry,
+        ignoreText: ignore,
       }),
     })
 

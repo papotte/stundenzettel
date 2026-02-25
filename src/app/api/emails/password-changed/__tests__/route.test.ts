@@ -2,6 +2,37 @@ import * as resendService from '@/services/resend-service'
 
 import { POST } from '../route'
 
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  cookies: jest.fn().mockResolvedValue({
+    get: jest.fn().mockReturnValue(undefined),
+  }),
+}))
+
+// Mock email translations
+jest.mock('@/lib/email-translations', () => ({
+  getEmailTranslations: jest.fn().mockResolvedValue({
+    teamInvitation: {
+      subject: 'Invitation to join team "{teamName}"',
+      heading: 'Team Invitation',
+      body: '{inviterName} has invited you to join the team "{teamName}" as a {role}.',
+      acceptButton: 'Accept or Decline Invitation',
+      expiry: 'Important: This invitation will expire in 7 days.',
+      ignore:
+        'If you did not expect this invitation, you can safely ignore this email.',
+    },
+    passwordChanged: {
+      subject: 'Your password was changed',
+      heading: 'Password Changed',
+      greeting: 'Hello {displayName},',
+      greetingFallback: 'Hello there,',
+      body: 'This is a confirmation that your password has been changed.',
+      warning:
+        'If you did not make this change, please contact support immediately.',
+    },
+  }),
+}))
+
 // Mock the Resend service
 jest.mock('@/services/resend-service', () => ({
   createResendService: jest.fn(),
