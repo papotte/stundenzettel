@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/papotte/stundenzettel/compare/v1.24.2...v1.25.0) (2026-02-25)
+
+
+### Features
+
+* create stats page with hours breakdown ([#197](https://github.com/papotte/stundenzettel/issues/197)) ([51b125d](https://github.com/papotte/stundenzettel/commit/51b125d96f4e7f9611d9e709d8cfd83a2cb2f5b0))
+
 ## [1.24.2](https://github.com/papotte/stundenzettel/compare/v1.24.1...v1.24.2) (2026-02-16)
 
 
