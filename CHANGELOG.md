@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/papotte/stundenzettel/compare/v1.25.0...v1.25.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* suggest 45-minute pause after 9h30m, not 9h ([#198](https://github.com/papotte/stundenzettel/issues/198)) ([029ecf0](https://github.com/papotte/stundenzettel/commit/029ecf0ba6fb7eb939131ccd8c43102b671ba271))
+
 # [1.25.0](https://github.com/papotte/stundenzettel/compare/v1.24.2...v1.25.0) (2026-02-25)
 
 
