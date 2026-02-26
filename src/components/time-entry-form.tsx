@@ -264,8 +264,8 @@ export default function TimeEntryForm({
       const totalActivityInMinutes =
         workDurationInMinutes + (driver + passenger) * 60
 
-      if (totalActivityInMinutes > 9 * 60) {
-        return { minutes: 45, timeString: '00:45', reason: '9 hours' }
+      if (totalActivityInMinutes > 9 * 60 + 30) {
+        return { minutes: 45, timeString: '00:45', reason: '9.5 hours' }
       }
       if (totalActivityInMinutes > 6 * 60) {
         return { minutes: 30, timeString: '00:30', reason: '6 hours' }

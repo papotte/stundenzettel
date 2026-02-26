@@ -366,7 +366,7 @@ describe('TimeEntryForm', () => {
     )
   })
 
-  it('shows 9h pause suggestion (45 min) when work duration exceeds 9 hours', async () => {
+  it('shows 9.5h pause suggestion (45 min) when work duration exceeds 9.5 hours', async () => {
     const user = userEvent.setup()
     render(
       <TestWrapper
@@ -389,8 +389,8 @@ describe('TimeEntryForm', () => {
     await user.clear(screen.getByLabelText('time_entry_form.endTimeLabel'))
     await user.type(
       screen.getByLabelText('time_entry_form.endTimeLabel'),
-      '17:30',
-    ) // 9.5h
+      '17:31',
+    ) // 9h31m > 9.5h
 
     const suggestionButton = await screen.findByRole('button', {
       name: /45|time_entry_form.pauseSuggestion/i,
