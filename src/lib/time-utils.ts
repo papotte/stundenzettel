@@ -224,6 +224,30 @@ export function calculateWeekPassengerTime(
 }
 
 /**
+ * Calculates the theoretical hours for time off in lieu entries.
+ * Computed as: number of unique days with TIME_OFF_IN_LIEU entries × defaultWorkHours.
+ *
+ * @param entries TimeEntry array
+ * @param defaultWorkHours Standard hours per working day
+ * @returns Theoretical time off in lieu hours
+ */
+export function calculateTimeOffInLieuHours(
+  entries: TimeEntry[],
+  defaultWorkHours: number,
+): number {
+  const timeOffEntries = entries.filter(
+    (e) => e.location === 'TIME_OFF_IN_LIEU',
+  )
+  const uniqueDays = new Set(
+    timeOffEntries.map((e) => {
+      const d = e.startTime
+      return `${d.getFullYear()}-${String(d.getMonth()).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    }),
+  )
+  return uniqueDays.size * defaultWorkHours
+}
+
+/**
  * Calculates the expected monthly working hours based on user settings.
  * If defaultWorkHours is set, auto-calculates using the formula: defaultWorkHours × 260 ÷ 12
  * Otherwise, uses the manual expectedMonthlyHours value or defaults to 160.

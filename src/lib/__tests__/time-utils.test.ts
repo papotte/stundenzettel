@@ -4,6 +4,7 @@ import type { TimeEntry, UserSettings } from '@/lib/types'
 
 import {
   calculateExpectedMonthlyHours,
+  calculateTimeOffInLieuHours,
   calculateTotalCompensatedMinutes,
   calculateWeekCompensatedTime,
   calculateWeekPassengerTime,
@@ -766,5 +767,54 @@ describe('shiftEntryToDate', () => {
     expect(result.startTime.getHours()).toBe(12)
     expect(result.startTime.getMinutes()).toBe(0)
     expect(result.endTime).toBeUndefined()
+  })
+})
+
+describe('calculateTimeOffInLieuHours', () => {
+  const makeEntry = (
+    year: number,
+    month: number,
+    day: number,
+    location = 'TIME_OFF_IN_LIEU',
+  ): TimeEntry => ({
+    id: `${year}-${month}-${day}`,
+    userId: 'u1',
+    location,
+    startTime: new Date(year, month - 1, day, 12, 0, 0),
+    durationMinutes: 480,
+  })
+
+  it('returns 0 for empty entries', () => {
+    expect(calculateTimeOffInLieuHours([], 8)).toBe(0)
+  })
+
+  it('returns defaultWorkHours for a single TIME_OFF_IN_LIEU entry', () => {
+    const entry = makeEntry(2025, 3, 10)
+    expect(calculateTimeOffInLieuHours([entry], 8)).toBe(8)
+  })
+
+  it('counts each unique day once even if multiple entries on the same day', () => {
+    const entry1 = makeEntry(2025, 3, 10)
+    const entry2 = { ...makeEntry(2025, 3, 10), id: 'entry2' }
+    expect(calculateTimeOffInLieuHours([entry1, entry2], 8)).toBe(8)
+  })
+
+  it('counts multiple unique days independently', () => {
+    const entry1 = makeEntry(2025, 3, 10)
+    const entry2 = makeEntry(2025, 3, 11)
+    const entry3 = makeEntry(2025, 3, 12)
+    expect(calculateTimeOffInLieuHours([entry1, entry2, entry3], 8)).toBe(24)
+  })
+
+  it('uses the provided defaultWorkHours value', () => {
+    const entry = makeEntry(2025, 3, 10)
+    expect(calculateTimeOffInLieuHours([entry], 7.5)).toBe(7.5)
+  })
+
+  it('ignores entries with other locations', () => {
+    const toil = makeEntry(2025, 3, 10)
+    const regular = makeEntry(2025, 3, 11, 'Project A')
+    const sick = makeEntry(2025, 3, 12, 'SICK_LEAVE')
+    expect(calculateTimeOffInLieuHours([toil, regular, sick], 8)).toBe(8)
   })
 })

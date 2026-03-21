@@ -52,6 +52,21 @@ function entryFeb15(): TimeEntry {
   }
 }
 
+/** TIME_OFF_IN_LIEU entry in current month on day 10. */
+function timeOffInLieuEntryInCurrentMonth(
+  overrides: Partial<TimeEntry> = {},
+): TimeEntry {
+  const now = new Date()
+  return {
+    id: 'toil-1',
+    userId: 'u1',
+    location: 'TIME_OFF_IN_LIEU',
+    startTime: new Date(now.getFullYear(), now.getMonth(), 10, 12, 0, 0),
+    durationMinutes: 480,
+    ...overrides,
+  }
+}
+
 describe('StatsView', () => {
   beforeEach(() => {
     mockEntries = []
@@ -145,5 +160,49 @@ describe('StatsView', () => {
     expect(totalHoursDt.nextElementSibling).toHaveTextContent('0.0 h')
 
     jest.useRealTimers()
+  })
+
+  it('shows theoretical TIME_OFF_IN_LIEU hours (days × defaultWorkHours)', () => {
+    mockUserSettings = { ...defaultUserSettings, defaultWorkHours: 8 }
+    // Two entries on different days in current month
+    const entry1 = timeOffInLieuEntryInCurrentMonth({ id: 'toil-1' })
+    const entry2 = timeOffInLieuEntryInCurrentMonth({
+      id: 'toil-2',
+      startTime: new Date(
+        entry1.startTime.getFullYear(),
+        entry1.startTime.getMonth(),
+        entry1.startTime.getDate() + 1,
+        12,
+        0,
+        0,
+      ),
+    })
+    mockEntries = [entry1, entry2]
+
+    render(<StatsView />)
+    const summarySection = screen.getByRole('region', {
+      name: /stats\.summaryTitle/i,
+    })
+    const timeOffDt = within(summarySection).getByText(
+      'special_locations.TIME_OFF_IN_LIEU',
+    )
+    // 2 days × 8 hours/day = 16 hours
+    expect(timeOffDt.nextElementSibling).toHaveTextContent('16.0 h')
+  })
+
+  it('uses defaultWorkHours=8 fallback when not configured for TIME_OFF_IN_LIEU', () => {
+    mockUserSettings = { ...defaultUserSettings, defaultWorkHours: undefined }
+    const entry = timeOffInLieuEntryInCurrentMonth()
+    mockEntries = [entry]
+
+    render(<StatsView />)
+    const summarySection = screen.getByRole('region', {
+      name: /stats\.summaryTitle/i,
+    })
+    const timeOffDt = within(summarySection).getByText(
+      'special_locations.TIME_OFF_IN_LIEU',
+    )
+    // 1 day × 8 hours/day (default) = 8 hours
+    expect(timeOffDt.nextElementSibling).toHaveTextContent('8.0 h')
   })
 })
