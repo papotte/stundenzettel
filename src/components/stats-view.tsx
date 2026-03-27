@@ -36,6 +36,7 @@ import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
 import {
   calculateExpectedMonthlyHours,
+  calculateTimeOffInLieuHours,
   calculateTotalCompensatedMinutes,
   calculateWorkMinutes,
 } from '@/lib/time-utils'
@@ -111,6 +112,7 @@ export default function StatsView() {
 
   const driverComp = userSettings?.driverCompensationPercent ?? 100
   const passengerComp = userSettings?.passengerCompensationPercent ?? 100
+  const defaultWorkHours = userSettings?.defaultWorkHours ?? 8
 
   type ProjectRow = {
     location: string
@@ -161,13 +163,16 @@ export default function StatsView() {
         sickLeaveHours: location === 'SICK_LEAVE' ? totalHours : 0,
         ptoHours: location === 'PTO' ? totalHours : 0,
         holidayHours: location === 'BANK_HOLIDAY' ? totalHours : 0,
-        timeOffInLieuHours: location === 'TIME_OFF_IN_LIEU' ? totalHours : 0,
+        timeOffInLieuHours:
+          location === 'TIME_OFF_IN_LIEU'
+            ? calculateTimeOffInLieuHours(groupEntries, defaultWorkHours)
+            : 0,
         totalHours,
       })
     })
     result.sort((a, b) => b.totalHours - a.totalHours)
     return result
-  }, [entriesInPeriod, driverComp, passengerComp])
+  }, [entriesInPeriod, driverComp, passengerComp, defaultWorkHours])
 
   const totals = useMemo(
     () =>
