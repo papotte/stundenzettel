@@ -13,7 +13,7 @@ import {
 } from 'date-fns'
 import { useTranslations } from 'next-intl'
 
-import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
+import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
 import { useToast } from '@/hooks/use-toast'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
@@ -44,8 +44,11 @@ export function useTimeTracker(user: { uid: string } | null) {
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
-  const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
+  const {
+    fetchCurrentLocationAddress: handleGetCurrentLocation,
+    isFetchingLocation,
+  } = useGeolocationAddress(setLocation)
 
   useEffect(() => {
     setSelectedDate(new Date())
@@ -275,67 +278,6 @@ export function useTimeTracker(user: { uid: string } | null) {
     }
   }
 
-  const handleGetCurrentLocation = async () => {
-    if (isFetchingLocation) return
-    if (navigator.geolocation) {
-      setIsFetchingLocation(true)
-      toast({
-        title: t('time_entry_form.locationFetchToastTitle') ?? '',
-        description: t('time_entry_form.locationFetchToastDescription') ?? '',
-      })
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords
-          try {
-            const result = await reverseGeocode({ latitude, longitude })
-            setLocation(result.address)
-            toast({
-              title: t('time_entry_form.locationFetchedToastTitle') ?? '',
-              description:
-                t('time_entry_form.locationFetchedToastDescription', {
-                  address: result.address,
-                }) ?? '',
-              className: 'bg-accent text-accent-foreground',
-            })
-          } catch (error) {
-            console.error('Error getting address', error)
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : 'An unknown error occurred'
-            toast({
-              title: t('time_entry_form.locationErrorToastTitle') ?? '',
-              description: errorMessage ?? '',
-              variant: 'destructive',
-            })
-            setLocation(
-              `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`,
-            )
-          } finally {
-            setIsFetchingLocation(false)
-          }
-        },
-        (error) => {
-          console.error('Error getting location', error)
-          toast({
-            title: t('time_entry_form.locationCoordsErrorToastTitle') ?? '',
-            description:
-              t('time_entry_form.locationCoordsErrorToastDescription') ?? '',
-            variant: 'destructive',
-          })
-          setIsFetchingLocation(false)
-        },
-      )
-    } else {
-      toast({
-        title: t('time_entry_form.geolocationNotSupportedToastTitle') ?? '',
-        description:
-          t('time_entry_form.geolocationNotSupportedToastDescription') ?? '',
-        variant: 'destructive',
-      })
-    }
-  }
-
   const handleCopyFromYesterday = async () => {
     if (!user || !selectedDate) return
     if (!isSameDay(selectedDate, new Date())) return
@@ -517,7 +459,6 @@ export function useTimeTracker(user: { uid: string } | null) {
     editingEntry,
     setEditingEntry,
     isFetchingLocation,
-    setIsFetchingLocation,
     userSettings,
     setUserSettings,
     handleStartTimer,

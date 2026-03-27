@@ -16,7 +16,6 @@ import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -58,8 +57,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
+import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useToast } from '@/hooks/use-toast'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import {
@@ -96,11 +95,11 @@ const formSchema = z
     date: z.date(),
     startTime: z
       .string()
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
+      .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
       .optional(),
     endTime: z
       .string()
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
+      .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
       .optional(),
     duration: z.coerce
       .number()
@@ -110,7 +109,7 @@ const formSchema = z
       .optional(),
     pauseDuration: z
       .string()
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)')
+      .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
       .optional(),
     driverTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
     passengerTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
@@ -157,10 +156,8 @@ export default function TimeEntryForm({
   onClose,
   userSettings,
 }: TimeEntryFormProps) {
-  const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter().dateTime
-  const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const isMobile = useIsMobile()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const { entries } = useTimeTrackerContext()
@@ -194,6 +191,13 @@ export default function TimeEntryForm({
       passengerTimeHours: entry?.passengerTimeHours || 0,
     },
   })
+
+  const {
+    fetchCurrentLocationAddress: handleGetCurrentLocation,
+    isFetchingLocation,
+  } = useGeolocationAddress((address) =>
+    form.setValue('location', address, { shouldValidate: true }),
+  )
 
   const { watch, setValue, getValues } = form
   const modeValue = watch('mode')
@@ -347,71 +351,6 @@ export default function TimeEntryForm({
     locationValue,
     getValues,
   ])
-
-  const handleGetCurrentLocation = async () => {
-    if (isFetchingLocation) return
-    if (navigator.geolocation) {
-      setIsFetchingLocation(true)
-      toast({
-        title: t('time_entry_form.locationFetchToastTitle'),
-        description: t('time_entry_form.locationFetchToastDescription'),
-      })
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords
-          try {
-            const result = await reverseGeocode({ latitude, longitude })
-            form.setValue('location', result.address, { shouldValidate: true })
-            toast({
-              title: t('time_entry_form.locationFetchedToastTitle'),
-              description: t(
-                'time_entry_form.locationFetchedToastDescription',
-                { address: result.address },
-              ),
-              className: 'bg-accent text-accent-foreground',
-            })
-          } catch (error) {
-            console.error('Error getting address', error)
-            const errorMessage =
-              error instanceof Error
-                ? error.message
-                : 'An unknown error occurred'
-            toast({
-              title: t('time_entry_form.locationErrorToastTitle'),
-              description: errorMessage,
-              variant: 'destructive',
-            })
-            form.setValue(
-              'location',
-              `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`,
-              { shouldValidate: true },
-            )
-          } finally {
-            setIsFetchingLocation(false)
-          }
-        },
-        (error) => {
-          console.error('Error getting location', error)
-          toast({
-            title: t('time_entry_form.locationCoordsErrorToastTitle'),
-            description: t(
-              'time_entry_form.locationCoordsErrorToastDescription',
-            ),
-            variant: 'destructive',
-          })
-          setIsFetchingLocation(false)
-        },
-      )
-    } else {
-      toast({
-        title: t('time_entry_form.geolocationNotSupportedToastTitle'),
-        description: t(
-          'time_entry_form.geolocationNotSupportedToastDescription',
-        ),
-        variant: 'destructive',
-      })
-    }
-  }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const finalIsSpecial = SPECIAL_LOCATION_KEYS.includes(

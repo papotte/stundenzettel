@@ -41,7 +41,7 @@ const passwordChangeSchema = z
       .max(4096, 'Password must be at most 4096 characters long')
       .regex(/[A-Z]/, 'Password must contain an uppercase character')
       .regex(/[a-z]/, 'Password must contain a lowercase character')
-      .regex(/[0-9]/, 'Password must contain a numeric character')
+      .regex(/\d/, 'Password must contain a numeric character')
       .regex(/[^A-Za-z0-9]/, 'Password must contain a special character'),
     confirmPassword: z.string().min(1, 'Please confirm your new password'),
   })
