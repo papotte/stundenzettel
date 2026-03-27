@@ -10,6 +10,7 @@ import {
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
+import { overtimeTextColorClass } from '@/lib/utils'
 
 interface TotalsRowData {
   label: string
@@ -86,6 +87,7 @@ export default function TimesheetPreviewTotals({
 
   const actualHours = monthCompTotal + compensatedPassengerHours
   const overtime = actualHours - expectedHours
+  const overtimeClassName = overtimeTextColorClass(overtime)
 
   // Rows data structure
   const rowsData: TotalsRow[] = [
@@ -121,9 +123,7 @@ export default function TimesheetPreviewTotals({
         label: t('export.footerOvertime'),
         value: `${overtime > 0 ? '+' : ''}${overtime.toFixed(2)}`,
         testId: 'timesheet-overtime',
-        className: `${
-          overtime > 0 ? 'text-green-600' : overtime < 0 ? 'text-red-600' : ''
-        }`,
+        className: overtimeClassName,
       },
       rightColumn: {
         label: t('export.footerTotalAfterConversion'),

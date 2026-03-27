@@ -15,6 +15,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Tailwind text color for overtime delta (positive / negative / zero). */
+export function overtimeTextColorClass(overtime: number): string {
+  if (overtime > 0) return 'text-green-600'
+  if (overtime < 0) return 'text-red-600'
+  return ''
+}
+
 export function maskEmail(email: string): string {
   const [localPart, domain] = email.split('@')
   if (localPart.length <= 3) {

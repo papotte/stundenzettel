@@ -158,6 +158,41 @@ export function SeatAssignmentDialog({
     return member.role !== 'owner'
   }
 
+  const renderSeatActionCell = (member: TeamMember) => {
+    if (!hasSeatAssigned(member)) {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleAssignSeat(member.id)}
+          disabled={loadingMemberId === member.id || availableSeats <= 0}
+        >
+          <Check className="mr-1 h-3 w-3" />
+          {t('teams.assignSeat')}
+        </Button>
+      )
+    }
+    if (canUnassignSeat(member)) {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUnassignSeat(member.id)}
+          disabled={loadingMemberId === member.id}
+          className="text-red-600 hover:text-red-700"
+        >
+          <X className="mr-1 h-3 w-3" />
+          {t('teams.unassignSeat')}
+        </Button>
+      )
+    }
+    return (
+      <span className="text-sm text-muted-foreground">
+        {t('teams.ownerSeatRequired')}
+      </span>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl">
@@ -256,38 +291,7 @@ export function SeatAssignmentDialog({
                         <span className="text-sm text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell>
-                      {hasSeatAssigned(member) ? (
-                        canUnassignSeat(member) ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUnassignSeat(member.id)}
-                            disabled={loadingMemberId === member.id}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="mr-1 h-3 w-3" />
-                            {t('teams.unassignSeat')}
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            {t('teams.ownerSeatRequired')}
-                          </span>
-                        )
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAssignSeat(member.id)}
-                          disabled={
-                            loadingMemberId === member.id || availableSeats <= 0
-                          }
-                        >
-                          <Check className="mr-1 h-3 w-3" />
-                          {t('teams.assignSeat')}
-                        </Button>
-                      )}
-                    </TableCell>
+                    <TableCell>{renderSeatActionCell(member)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -13,9 +13,9 @@ import {
 } from '@/components/ui/table'
 import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
-import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
-import { maskEmail } from '@/lib/utils'
+
+import { MemberReportTableRow } from './member-report-table-row'
 
 interface TeamReportsListProps {
   teamId: string | null
@@ -92,74 +92,12 @@ export function TeamReportsList({
                 </TableRow>
               ))
             : sortedSummaries.map((summary) => (
-                <TableRow
+                <MemberReportTableRow
                   key={summary.member.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onMemberClick(summary.member.id)}
-                  data-testid={`member-row-${summary.member.id}`}
-                >
-                  <TableCell className="font-medium">
-                    {summary.isLoading ? (
-                      <Skeleton className="h-4 w-48" />
-                    ) : (
-                      displayNames.get(summary.member.id) ||
-                      (summary.userSettings?.displayName ?? '').trim() ||
-                      maskEmail(summary.member.email) ||
-                      summary.member.email
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {summary.isLoading ? (
-                      <Skeleton className="h-4 w-16 ml-auto" />
-                    ) : !summary.isPublished ? (
-                      t('reports.notPublished')
-                    ) : summary.userSettings ? (
-                      calculateExpectedMonthlyHours(
-                        summary.userSettings,
-                      ).toFixed(2) + 'h'
-                    ) : (
-                      '0.00h'
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {summary.isLoading ? (
-                      <Skeleton className="h-4 w-16 ml-auto" />
-                    ) : !summary.isPublished ? (
-                      t('reports.notPublished')
-                    ) : (
-                      `${summary.hoursWorked.toFixed(2)}h`
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {summary.isLoading ? (
-                      <Skeleton className="h-4 w-16 ml-auto" />
-                    ) : !summary.isPublished ? (
-                      t('reports.notPublished')
-                    ) : (
-                      <span
-                        className={
-                          summary.overtime > 0
-                            ? 'text-green-600'
-                            : summary.overtime < 0
-                              ? 'text-red-600'
-                              : ''
-                        }
-                      >
-                        {summary.overtime > 0 ? '+' : ''}
-                        {summary.overtime.toFixed(2)}h
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {summary.isLoading ? (
-                      <Skeleton className="h-4 w-16 ml-auto" />
-                    ) : !summary.isPublished ? (
-                      t('reports.notPublished')
-                    ) : (
-                      `${summary.percentage.toFixed(1)}%`
-                    )}
-                  </TableCell>
-                </TableRow>
+                  summary={summary}
+                  displayNames={displayNames}
+                  onMemberClick={onMemberClick}
+                />
               ))}
         </TableBody>
       </Table>

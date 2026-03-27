@@ -43,7 +43,7 @@ describe('TimeEntriesList', () => {
     mockContext.selectedDate = undefined
     mockContext.isLoading = true
     render(<TimeEntriesList />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    expect(screen.getByText('common.loading')).toBeInTheDocument()
   })
 
   it('renders empty state', () => {
