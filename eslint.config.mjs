@@ -3,6 +3,7 @@ import tsParser from '@typescript-eslint/parser'
 
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
+import sonarjs from 'eslint-plugin-sonarjs'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
@@ -33,6 +34,7 @@ export default defineConfig([
       },
       globals: {},
     },
+    extends: [sonarjs.configs.recommended],
     plugins: {},
     rules: {
       ...tseslint.configs.recommended.rules,

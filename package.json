@@ -119,6 +119,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-sonarjs": "^4.0.2",
     "firebase-admin": "^13.4.0",
     "firebase-functions-test": "^3.1.0",
     "firebase-tools": "^15.0.0",
