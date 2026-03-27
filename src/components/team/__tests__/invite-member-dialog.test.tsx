@@ -24,8 +24,6 @@ const mockToast = {
 }
 
 const mockCreateTeamInvitation = jest.fn()
-new Date('2024-01-01')
-new Date('2024-01-08')
 const defaultProps = {
   teamId: 'team-1',
   invitedBy: 'user-1',
