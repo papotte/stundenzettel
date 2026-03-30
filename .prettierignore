@@ -2,6 +2,9 @@
 .next/
 out/
 
+# Next.js generated TypeScript env reference
+next-env.d.ts
+
 # Node modules
 node_modules/
 
