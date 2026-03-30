@@ -661,9 +661,10 @@ const SidebarMenuSkeleton = React.forwardRef<
   }
 >(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90% (computed once via lazy initializer)
-  const [width] = React.useState(
-    () => `${Math.floor(Math.random() * 40) + 50}%`,
-  )
+  const [width] = React.useState(() => {
+    // eslint-disable-next-line sonarjs/pseudo-random -- Decorative skeleton bar width only; not security-sensitive.
+    return `${Math.floor(Math.random() * 40) + 50}%`
+  })
 
   return (
     <div

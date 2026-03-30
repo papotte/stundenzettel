@@ -226,7 +226,8 @@ export default function LoginPage() {
   }
 
   const handleMockLogin = async (user: AuthenticatedUser) => {
-    // Use the seeded user credentials to authenticate with Firebase
+    // Use the seeded user credentials to authenticate with Firebase (mock login UI is dev-only).
+    // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- Matches Firebase emulator seed; not used outside `useMocks` / development.
     const password = 'password123' // All seeded users use the same password
     // Set state and mark that we want to authenticate
     setEmail(user.email.trim())
