@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/papotte/stundenzettel/compare/v1.25.1...v1.26.0) (2026-03-30)
+
+
+### Features
+
+* show theoretical time off in lieu hours in statistics ([#212](https://github.com/papotte/stundenzettel/issues/212)) ([ce63ded](https://github.com/papotte/stundenzettel/commit/ce63ded15fea75e67b366973dce7026dc7178bbb))
+
 ## [1.25.1](https://github.com/papotte/stundenzettel/compare/v1.25.0...v1.25.1) (2026-02-26)
 
 
