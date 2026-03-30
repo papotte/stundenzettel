@@ -49,6 +49,7 @@
   "companyFax": "Número de fax",
   "companyFaxPlaceholder": "+34 912 345 680",
   "compensationSettings": "Configuraciones de compensación",
+  "compensationManagedByTeam": "El administrador de tu equipo ha definido los porcentajes de compensación para todos los miembros. No puedes cambiar estos valores.",
   "driverCompensationPercent": "Compensación de tiempo como conductor (%)",
   "driverCompensationPercentDescription": "Porcentaje del tiempo de conducción como conductor que se cuenta como tiempo compensado.",
   "passengerCompensationPercent": "Compensación de tiempo como pasajero (%)",

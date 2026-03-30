@@ -49,6 +49,7 @@
   "companyFax": "Faxnummer",
   "companyFaxPlaceholder": "+49 123 456 791",
   "compensationSettings": "Vergütungseinstellungen",
+  "compensationManagedByTeam": "Ihr Team-Administrator hat die Vergütungsprozentsätze für alle Mitglieder festgelegt. Sie können diese Werte nicht ändern.",
   "driverCompensationPercent": "Vergütung Fahrerzeit (%)",
   "driverCompensationPercentDescription": "Prozentsatz der Fahrerzeit, der als vergütete Zeit angerechnet wird.",
   "passengerCompensationPercent": "Vergütung Beifahrerzeit (%)",

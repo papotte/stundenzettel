@@ -49,6 +49,7 @@
   "companyFax": "Fax Number",
   "companyFaxPlaceholder": "+1 234 567 892",
   "compensationSettings": "Compensation Settings",
+  "compensationManagedByTeam": "Your team admin has set compensation percentages for all members. You cannot change these values.",
   "driverCompensationPercent": "Driver time compensation (%)",
   "driverCompensationPercentDescription": "Percentage of driving time as driver that is counted as compensated time.",
   "passengerCompensationPercent": "Passenger time compensation (%)",

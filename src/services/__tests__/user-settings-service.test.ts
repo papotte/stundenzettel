@@ -17,6 +17,14 @@ jest.mock('@/lib/firebase', () => ({
   db: {},
 }))
 
+jest.mock('@/services/team-service', () => ({
+  getUserTeamMembership: jest.fn().mockResolvedValue(null),
+}))
+
+jest.mock('@/services/team-settings-service', () => ({
+  getTeamSettings: jest.fn(),
+}))
+
 const mockDoc = doc as jest.MockedFunction<typeof doc>
 const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
 const mockSetDoc = setDoc as jest.MockedFunction<typeof setDoc>
@@ -198,6 +206,39 @@ describe('User Settings Service', () => {
     it('setUserSettings throws error when no user ID provided', async () => {
       await expect(userSettingsService.setUserSettings('', {})).rejects.toThrow(
         'User not authenticated',
+      )
+    })
+
+    it('setUserSettings omits compensation fields when team disallows member overrides', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        allowMemberOverrideCompensation: false,
+      })
+
+      const mockSettingsRef = {}
+      mockDoc.mockReturnValueOnce(mockSettingsRef as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings('user-123', {
+        language: 'en',
+        driverCompensationPercent: 50,
+        passengerCompensationPercent: 60,
+      })
+
+      expect(mockSetDoc).toHaveBeenCalledWith(
+        mockSettingsRef,
+        { language: 'en' },
+        { merge: true },
       )
     })
   })

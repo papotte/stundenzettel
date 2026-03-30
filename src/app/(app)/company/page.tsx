@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import SubscriptionGuard from '@/components/subscription-guard'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -35,6 +36,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import {
   getUserSettings,
+  getUserSettingsWithCompensationLock,
   setUserSettings,
 } from '@/services/user-settings-service'
 
@@ -63,6 +65,7 @@ export default function CompanyPage() {
 
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [compensationLocked, setCompensationLocked] = useState(false)
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -88,7 +91,9 @@ export default function CompanyPage() {
     if (user) {
       const fetchData = async () => {
         try {
-          const settings = await getUserSettings(user.uid)
+          const { settings, compensationLocked: locked } =
+            await getUserSettingsWithCompensationLock(user.uid)
+          setCompensationLocked(locked)
           form.reset({
             companyName: settings.companyName || '',
             companyEmail: settings.companyEmail || '',
@@ -279,6 +284,14 @@ export default function CompanyPage() {
                       {t('settings.compensationSettings')}
                     </h3>
 
+                    {compensationLocked ? (
+                      <Alert className="mb-4">
+                        <AlertDescription>
+                          {t('settings.compensationManagedByTeam')}
+                        </AlertDescription>
+                      </Alert>
+                    ) : null}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -294,6 +307,12 @@ export default function CompanyPage() {
                                 min="0"
                                 max="200"
                                 step="0.1"
+                                readOnly={compensationLocked}
+                                className={
+                                  compensationLocked
+                                    ? 'cursor-not-allowed bg-muted'
+                                    : undefined
+                                }
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
@@ -324,6 +343,12 @@ export default function CompanyPage() {
                                 min="0"
                                 max="200"
                                 step="0.1"
+                                readOnly={compensationLocked}
+                                className={
+                                  compensationLocked
+                                    ? 'cursor-not-allowed bg-muted'
+                                    : undefined
+                                }
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))

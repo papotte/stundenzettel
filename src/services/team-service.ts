@@ -615,6 +615,52 @@ export async function getUserTeam(userId: string): Promise<Team | null> {
   }
 }
 
+/**
+ * Resolves the user's primary team and their role in that team.
+ * Used for team-wide policy (e.g. compensation overrides).
+ */
+export async function getUserTeamMembership(
+  userId: string,
+): Promise<{ teamId: string; role: TeamMember['role'] } | null> {
+  if (!userId) {
+    return null
+  }
+  try {
+    const userTeamDoc = await getDoc(doc(db, 'user-teams', userId))
+    if (userTeamDoc.exists()) {
+      const teamId = userTeamDoc.data().teamId as string
+      const memberDoc = await getDoc(
+        doc(db, 'teams', teamId, 'members', userId),
+      )
+      if (memberDoc.exists()) {
+        return {
+          teamId,
+          role: memberDoc.data().role as TeamMember['role'],
+        }
+      }
+      return null
+    }
+
+    const team = await getUserTeam(userId)
+    if (!team) {
+      return null
+    }
+    const memberDoc = await getDoc(doc(db, 'teams', team.id, 'members', userId))
+    if (memberDoc.exists()) {
+      return {
+        teamId: team.id,
+        role: memberDoc.data().role as TeamMember['role'],
+      }
+    }
+    if (team.ownerId === userId) {
+      return { teamId: team.id, role: 'owner' }
+    }
+    return null
+  } catch (error: unknown) {
+    return handleFirebaseError(error, 'fetch user team membership')
+  }
+}
+
 // Team subscription
 export async function getTeamSubscription(
   teamId: string,
