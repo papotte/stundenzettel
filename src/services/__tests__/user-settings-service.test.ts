@@ -209,6 +209,23 @@ describe('User Settings Service', () => {
       )
     })
 
+    it('setUserSettings omits locked from payload', async () => {
+      const mockSettingsRef = {}
+      mockDoc.mockReturnValueOnce(mockSettingsRef as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings('user-123', {
+        language: 'en',
+        locked: { compensation: true },
+      })
+
+      expect(mockSetDoc).toHaveBeenCalledWith(
+        mockSettingsRef,
+        { language: 'en' },
+        { merge: true },
+      )
+    })
+
     it('setUserSettings omits compensation fields when team disallows member overrides', async () => {
       const { getUserTeamMembership } = jest.requireMock<{
         getUserTeamMembership: jest.Mock

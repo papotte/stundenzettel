@@ -35,9 +35,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import {
-  getUserSettings,
-  getUserSettingsWithCompensationLock,
+  useInvalidateUserSettings,
+  useUserSettings,
+} from '@/hooks/use-user-settings'
+import {
   setUserSettings,
+  stripReadOnlySettingsFields,
 } from '@/services/user-settings-service'
 
 const companyFormSchema = z.object({
@@ -62,10 +65,14 @@ export default function CompanyPage() {
   const router = useRouter()
   const { toast } = useToast()
   const t = useTranslations()
+  const {
+    data: settings,
+    isPending: settingsPending,
+    isError: settingsError,
+  } = useUserSettings()
+  const invalidateUserSettings = useInvalidateUserSettings()
 
-  const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [compensationLocked, setCompensationLocked] = useState(false)
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -88,51 +95,37 @@ export default function CompanyPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      const fetchData = async () => {
-        try {
-          const { settings, compensationLocked: locked } =
-            await getUserSettingsWithCompensationLock(user.uid)
-          setCompensationLocked(locked)
-          form.reset({
-            companyName: settings.companyName || '',
-            companyEmail: settings.companyEmail || '',
-            companyPhone1: settings.companyPhone1 || '',
-            companyPhone2: settings.companyPhone2 || '',
-            companyFax: settings.companyFax || '',
-            driverCompensationPercent:
-              settings.driverCompensationPercent || 100,
-            passengerCompensationPercent:
-              settings.passengerCompensationPercent || 90,
-          })
-        } catch (error) {
-          console.error('Failed to fetch user settings', error)
-          toast({
-            title: t('settings.errorLoadingTitle'),
-            description: t('settings.errorLoadingDescription'),
-            variant: 'destructive',
-          })
-        } finally {
-          setPageLoading(false)
-        }
-      }
-      fetchData()
-    }
-    // Only depend on user and form.reset to avoid unnecessary resets
+    if (!settings) return
+    form.reset({
+      companyName: settings.companyName || '',
+      companyEmail: settings.companyEmail || '',
+      companyPhone1: settings.companyPhone1 || '',
+      companyPhone2: settings.companyPhone2 || '',
+      companyFax: settings.companyFax || '',
+      driverCompensationPercent: settings.driverCompensationPercent || 100,
+      passengerCompensationPercent: settings.passengerCompensationPercent || 90,
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, form.reset])
+  }, [settings, form.reset])
+
+  useEffect(() => {
+    if (!settingsError) return
+    toast({
+      title: t('settings.errorLoadingTitle'),
+      description: t('settings.errorLoadingDescription'),
+      variant: 'destructive',
+    })
+  }, [settingsError, t, toast])
+
+  const compensationLocked = Boolean(settings?.locked?.compensation)
 
   const onSubmit = async (data: CompanyFormValues) => {
-    if (!user) return
+    if (!user || !settings) return
     setIsSaving(true)
     try {
-      // Get current settings to preserve other fields
-      const currentSettings = await getUserSettings(user.uid)
-      const updatedSettings = {
-        ...currentSettings,
-        ...data,
-      }
-      await setUserSettings(user.uid, updatedSettings)
+      const base = stripReadOnlySettingsFields(settings)
+      await setUserSettings(user.uid, { ...base, ...data })
+      await invalidateUserSettings(user.uid)
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),
@@ -149,7 +142,7 @@ export default function CompanyPage() {
     }
   }
 
-  if (authLoading || pageLoading) {
+  if (authLoading || (user && settingsPending)) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">

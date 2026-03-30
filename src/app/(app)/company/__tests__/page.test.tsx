@@ -6,7 +6,6 @@ import userEvent from '@testing-library/user-event'
 import { UserSettings } from '@/lib/types'
 import {
   getUserSettings,
-  getUserSettingsWithCompensationLock,
   setUserSettings,
 } from '@/services/user-settings-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
@@ -55,10 +54,17 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-jest.mock('@/services/user-settings-service')
+jest.mock('@/services/user-settings-service', () => {
+  const actual = jest.requireActual<
+    typeof import('@/services/user-settings-service')
+  >('@/services/user-settings-service')
+  return {
+    ...actual,
+    getUserSettings: jest.fn(),
+    setUserSettings: jest.fn(),
+  }
+})
 const mockGetUserSettings = getUserSettings as jest.Mock
-const mockGetUserSettingsWithCompensationLock =
-  getUserSettingsWithCompensationLock as jest.Mock
 const mockSetUserSettings = setUserSettings as jest.Mock
 
 const mockSettings: UserSettings = {
@@ -89,12 +95,6 @@ describe('CompanyPage', () => {
     currentSettings = { ...mockSettings }
     mockGetUserSettings.mockImplementation(() =>
       Promise.resolve(currentSettings),
-    )
-    mockGetUserSettingsWithCompensationLock.mockImplementation(() =>
-      Promise.resolve({
-        settings: currentSettings,
-        compensationLocked: false,
-      }),
     )
     mockSetUserSettings.mockImplementation((uid, newSettings) => {
       currentSettings = { ...currentSettings, ...newSettings }
@@ -135,9 +135,7 @@ describe('CompanyPage', () => {
       renderWithProviders(<CompanyPage />)
 
       await waitFor(() => {
-        expect(mockGetUserSettingsWithCompensationLock).toHaveBeenCalledWith(
-          'test-user-id',
-        )
+        expect(mockGetUserSettings).toHaveBeenCalledWith('test-user-id')
       })
 
       await waitFor(() => {
@@ -227,9 +225,7 @@ describe('CompanyPage', () => {
     })
 
     it('shows error toast when loading settings fails', async () => {
-      mockGetUserSettingsWithCompensationLock.mockRejectedValue(
-        new Error('Load failed'),
-      )
+      mockGetUserSettings.mockRejectedValue(new Error('Load failed'))
 
       renderWithProviders(<CompanyPage />)
 
@@ -312,17 +308,14 @@ describe('CompanyPage', () => {
 
   describe('form fields', () => {
     beforeEach(() => {
-      mockGetUserSettingsWithCompensationLock.mockResolvedValue({
-        settings: {
-          companyName: '',
-          companyEmail: '',
-          companyPhone1: '',
-          companyPhone2: '',
-          companyFax: '',
-          driverCompensationPercent: 100,
-          passengerCompensationPercent: 90,
-        },
-        compensationLocked: false,
+      mockGetUserSettings.mockResolvedValue({
+        companyName: '',
+        companyEmail: '',
+        companyPhone1: '',
+        companyPhone2: '',
+        companyFax: '',
+        driverCompensationPercent: 100,
+        passengerCompensationPercent: 90,
       })
     })
 

@@ -19,6 +19,11 @@ export interface TimeEntry {
   passengerTimeHours?: number // optional, decimal hours spent as passenger
 }
 
+/** Computed when loading settings; not persisted to Firestore (see user-settings-service). */
+export interface UserSettingsLocked {
+  compensation?: boolean
+}
+
 export interface UserSettings {
   defaultWorkHours?: number
   defaultStartTime?: string
@@ -33,6 +38,7 @@ export interface UserSettings {
   driverCompensationPercent?: number // percent, default 100
   passengerCompensationPercent?: number // percent, default 90
   expectedMonthlyHours?: number // expected working hours per month, default 160
+  locked?: UserSettingsLocked
 }
 
 export interface AuthenticatedUser {

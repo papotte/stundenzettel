@@ -6,7 +6,8 @@ import type { TeamSettings, UserSettings } from '@/lib/types'
 import { getUserTeamMembership } from './team-service'
 import { getTeamSettings } from './team-settings-service'
 
-const defaultSettings: UserSettings = {
+/** Baseline settings before Firestore merge; used by the service and client fallbacks (e.g. time tracker while query is loading). */
+export const DEFAULT_USER_SETTINGS: UserSettings = {
   defaultWorkHours: 8,
   defaultStartTime: '09:00',
   defaultEndTime: '17:00',
@@ -42,12 +43,19 @@ function applyTeamCompensationFromContext(
   }
 }
 
-async function loadUserSettingsWithTeamContext(userId: string): Promise<{
-  settings: UserSettings
-  compensationLocked: boolean
-}> {
+function stripLockedFromFirestorePayload(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
+  const copy = { ...data }
+  delete copy.locked
+  return copy
+}
+
+async function loadUserSettingsWithTeamContext(
+  userId: string,
+): Promise<UserSettings> {
   if (!userId) {
-    return { settings: defaultSettings, compensationLocked: false }
+    return { ...DEFAULT_USER_SETTINGS }
   }
 
   const membership = await getUserTeamMembership(userId)
@@ -67,9 +75,10 @@ async function loadUserSettingsWithTeamContext(userId: string): Promise<{
   let core: UserSettings
 
   if (settingsSnap.exists()) {
+    const rawData = settingsSnap.data() as Record<string, unknown>
     core = {
-      ...defaultSettings,
-      ...settingsSnap.data(),
+      ...DEFAULT_USER_SETTINGS,
+      ...stripLockedFromFirestorePayload(rawData),
     } as UserSettings
     if (userSnap.exists()) {
       const raw = userSnap.data()?.displayName
@@ -78,39 +87,43 @@ async function loadUserSettingsWithTeamContext(userId: string): Promise<{
   } else {
     let initial: Record<string, unknown>
     if (compensationLocked) {
-      initial = { ...defaultSettings }
+      initial = { ...DEFAULT_USER_SETTINGS }
       delete initial.driverCompensationPercent
       delete initial.passengerCompensationPercent
     } else {
-      initial = { ...defaultSettings }
+      initial = { ...DEFAULT_USER_SETTINGS }
     }
     await setUserSettings(userId, initial as UserSettings)
     core = {
-      ...defaultSettings,
+      ...DEFAULT_USER_SETTINGS,
       ...initial,
     } as UserSettings
   }
 
-  const settings = applyTeamCompensationFromContext(
+  const merged = applyTeamCompensationFromContext(
     core,
     membership,
     teamSettings,
   )
-  return { settings, compensationLocked }
+  return {
+    ...merged,
+    locked: compensationLocked ? { compensation: true } : undefined,
+  }
 }
 
 export const getUserSettings = async (
   userId: string,
 ): Promise<UserSettings> => {
-  const { settings } = await loadUserSettingsWithTeamContext(userId)
-  return settings
+  return loadUserSettingsWithTeamContext(userId)
 }
 
-/** Company page: effective settings plus whether compensation fields are team-controlled. */
-export async function getUserSettingsWithCompensationLock(
-  userId: string,
-): Promise<{ settings: UserSettings; compensationLocked: boolean }> {
-  return loadUserSettingsWithTeamContext(userId)
+/** Strip computed read-only fields before spreading into forms or merge payloads. */
+export function stripReadOnlySettingsFields(
+  settings: UserSettings,
+): Omit<UserSettings, 'locked'> {
+  const copy = { ...settings }
+  delete copy.locked
+  return copy
 }
 
 export const getDisplayNameForMember = async (
@@ -159,6 +172,8 @@ export const setUserSettings = async (
   const cleanSettings = Object.fromEntries(
     Object.entries(settings).filter(([, value]) => value !== undefined),
   ) as Partial<UserSettings>
+
+  delete cleanSettings.locked
 
   const membership = await getUserTeamMembership(userId)
   const teamSettings = membership

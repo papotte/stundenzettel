@@ -7,7 +7,9 @@ import { Lora, PT_Sans } from 'next/font/google'
 
 import { HtmlLang } from '@/components/html-lang'
 import { PwaRegister } from '@/components/pwa-register'
+import { AppQueryClientProvider } from '@/components/query-client-provider'
 import { Toaster } from '@/components/ui/toaster'
+import { UserSettingsQuerySync } from '@/components/user-settings-query-sync'
 import { AuthProvider } from '@/context/auth-context'
 import { SubscriptionProvider } from '@/context/subscription-context'
 
@@ -39,13 +41,16 @@ async function LocaleAwareRoot({
     <>
       <HtmlLang locale={locale} />
       <AuthProvider>
-        <SubscriptionProvider>
-          <NextIntlClientProvider locale={locale}>
-            <PwaRegister />
-            {children}
-            <Toaster />
-          </NextIntlClientProvider>
-        </SubscriptionProvider>
+        <AppQueryClientProvider>
+          <UserSettingsQuerySync />
+          <SubscriptionProvider>
+            <NextIntlClientProvider locale={locale}>
+              <PwaRegister />
+              {children}
+              <Toaster />
+            </NextIntlClientProvider>
+          </SubscriptionProvider>
+        </AppQueryClientProvider>
       </AuthProvider>
     </>
   )

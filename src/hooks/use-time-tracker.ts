@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl'
 
 import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
 import { useToast } from '@/hooks/use-toast'
+import { useUserSettings } from '@/hooks/use-user-settings'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import {
@@ -30,9 +31,10 @@ import {
   getTimeEntries,
   updateTimeEntry,
 } from '@/services/time-entry-service'
-import { getUserSettings } from '@/services/user-settings-service'
+import { DEFAULT_USER_SETTINGS } from '@/services/user-settings-service'
 
 export function useTimeTracker(user: { uid: string } | null) {
+  const { data: settingsFromQuery } = useUserSettings()
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter().dateTime
@@ -44,24 +46,21 @@ export function useTimeTracker(user: { uid: string } | null) {
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
   const {
     fetchCurrentLocationAddress: handleGetCurrentLocation,
     isFetchingLocation,
   } = useGeolocationAddress(setLocation)
 
+  const userSettings: UserSettings | null =
+    settingsFromQuery ?? DEFAULT_USER_SETTINGS
   useEffect(() => {
     setSelectedDate(new Date())
     if (!user) return
     const fetchInitialData = async () => {
       setIsLoading(true)
       try {
-        const [fetchedEntries, settings] = await Promise.all([
-          getTimeEntries(user.uid),
-          getUserSettings(user.uid),
-        ])
+        const fetchedEntries = await getTimeEntries(user.uid)
         setEntries(fetchedEntries)
-        setUserSettings(settings)
       } catch (error) {
         console.error('Error fetching initial data:', error)
         toast({
@@ -219,11 +218,9 @@ export function useTimeTracker(user: { uid: string } | null) {
   }
 
   const handleAddSpecialEntry = async (locationKey: SpecialLocationKey) => {
-    if (!selectedDate || !user) return
-    const currentSettings = await getUserSettings(user.uid)
-    setUserSettings(currentSettings)
+    if (!selectedDate || !user || !userSettings) return
     const isTimeOffInLieu = locationKey === 'TIME_OFF_IN_LIEU'
-    const hours = isTimeOffInLieu ? 0 : currentSettings.defaultWorkHours || 7
+    const hours = isTimeOffInLieu ? 0 : userSettings.defaultWorkHours || 7
     const startTime = set(selectedDate, {
       hours: 12,
       minutes: 0,
@@ -460,7 +457,6 @@ export function useTimeTracker(user: { uid: string } | null) {
     setEditingEntry,
     isFetchingLocation,
     userSettings,
-    setUserSettings,
     handleStartTimer,
     handleStopTimer,
     handleSaveEntry,
