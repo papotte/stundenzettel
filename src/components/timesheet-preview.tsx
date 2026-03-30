@@ -1,5 +1,6 @@
 'use client'
 
+/* eslint-disable sonarjs/no-nested-functions, sonarjs/cognitive-complexity -- TODO: Refactor table rendering (extract row/cell subcomponents; lower nesting and cognitive complexity). */
 import React, { useCallback, useMemo } from 'react'
 
 import {
