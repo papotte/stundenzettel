@@ -13,6 +13,15 @@ import {
   shiftEntryToDate,
 } from '../time-utils'
 
+function createMockGetEntriesForDay(
+  entriesByDay: Record<string, TimeEntry[]>,
+): (day: Date) => TimeEntry[] {
+  return (day: Date) => {
+    const dayKey = day.toISOString().split('T')[0]
+    return entriesByDay[dayKey] || []
+  }
+}
+
 describe('parseTimeString', () => {
   it('parses time strings correctly', () => {
     const baseDate = new Date('2024-01-15T12:00:00Z')
@@ -261,16 +270,6 @@ describe('calculateWeekCompensatedTime', () => {
     language: 'en',
   }
 
-  const createMockGetEntriesForDay = (
-    entriesByDay: Record<string, TimeEntry[]>,
-  ) => {
-    return (day: Date) => {
-      const dayKey = day.toISOString().split('T')[0]
-
-      return entriesByDay[dayKey] || []
-    }
-  }
-
   it('calculates total for a week with entries', () => {
     const week = [
       new Date('2025-08-01'), // Friday
@@ -490,15 +489,6 @@ describe('calculateWeekCompensatedTime', () => {
 })
 
 describe('calculateWeekPassengerTime', () => {
-  const createMockGetEntriesForDay = (
-    entriesByDay: Record<string, TimeEntry[]>,
-  ) => {
-    return (day: Date) => {
-      const dayKey = day.toISOString().split('T')[0]
-      return entriesByDay[dayKey] || []
-    }
-  }
-
   it('calculates total for a week with passenger time entries', () => {
     const week = [
       new Date('2025-08-01'), // Friday
