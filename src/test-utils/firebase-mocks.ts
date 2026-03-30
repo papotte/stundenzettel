@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-nested-functions */
 // Firebase mocking utilities for Jest tests
 // This file contains all Firebase-related mocks to keep jest.setup.tsx clean
 

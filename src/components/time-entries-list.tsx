@@ -60,21 +60,67 @@ const TimeEntriesList: React.FC = () => {
     setCopyDayTargetDate(undefined)
   }
 
+  let listTitle: string
+  if (selectedDate && isSameDay(selectedDate, new Date())) {
+    listTitle = t('tracker.todaysEntries', {
+      date: formattedSelectedDate,
+    })
+  } else if (selectedDate) {
+    listTitle = t('tracker.entriesForDate', {
+      date: formattedSelectedDate,
+    })
+  } else {
+    listTitle = t('common.loading')
+  }
+
+  let entriesContent: React.ReactNode
+  if (isLoading) {
+    entriesContent = (
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    )
+  } else if (filteredEntries.length > 0) {
+    entriesContent = (
+      <div className="space-y-4">
+        {filteredEntries.map((entry) => (
+          <TimeEntryCard
+            key={entry.id}
+            entry={entry}
+            onEdit={handleEditEntry}
+            onDelete={handleDeleteEntry}
+            onCopyTo={handleCopyEntryTo}
+            driverCompensationPercent={
+              userSettings?.driverCompensationPercent ?? 100
+            }
+            passengerCompensationPercent={
+              userSettings?.passengerCompensationPercent ?? 100
+            }
+          />
+        ))}
+      </div>
+    )
+  } else {
+    entriesContent = (
+      <div className="py-12 text-center">
+        <p className="text-muted-foreground">{t('tracker.noEntries')}</p>
+        <SubscriptionGuardButton
+          variant="link"
+          onClick={openNewEntryForm}
+          className="mt-2"
+        >
+          {t('tracker.addFirstEntryLink')}
+        </SubscriptionGuardButton>
+      </div>
+    )
+  }
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex shrink">
-            {selectedDate && isSameDay(selectedDate, new Date())
-              ? t('tracker.todaysEntries', {
-                  date: formattedSelectedDate,
-                })
-              : selectedDate
-                ? t('tracker.entriesForDate', {
-                    date: formattedSelectedDate,
-                  })
-                : 'Loading...'}
-          </CardTitle>
+          <CardTitle className="flex shrink">{listTitle}</CardTitle>
           <div className="text-nowrap text-lg font-bold text-primary">
             {formatHoursAndMinutes(dailyTotal)}
           </div>
@@ -115,43 +161,7 @@ const TimeEntriesList: React.FC = () => {
           </div>
         )}
       </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        ) : filteredEntries.length > 0 ? (
-          <div className="space-y-4">
-            {filteredEntries.map((entry) => (
-              <TimeEntryCard
-                key={entry.id}
-                entry={entry}
-                onEdit={handleEditEntry}
-                onDelete={handleDeleteEntry}
-                onCopyTo={handleCopyEntryTo}
-                driverCompensationPercent={
-                  userSettings?.driverCompensationPercent ?? 100
-                }
-                passengerCompensationPercent={
-                  userSettings?.passengerCompensationPercent ?? 100
-                }
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="py-12 text-center">
-            <p className="text-muted-foreground">{t('tracker.noEntries')}</p>
-            <SubscriptionGuardButton
-              variant="link"
-              onClick={openNewEntryForm}
-              className="mt-2"
-            >
-              {t('tracker.addFirstEntryLink')}
-            </SubscriptionGuardButton>
-          </div>
-        )}
-      </CardContent>
+      <CardContent>{entriesContent}</CardContent>
     </Card>
   )
 }

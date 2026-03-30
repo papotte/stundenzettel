@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-nested-functions -- TODO: Refactor fetchMemberData (map/async/reduce) into helpers to reduce nesting. */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { isSameDay } from 'date-fns'

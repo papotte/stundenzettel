@@ -8,7 +8,7 @@ import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import { useMemberSummaries } from '@/hooks/use-member-summaries'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import type { TeamMember } from '@/lib/types'
-import { maskEmail } from '@/lib/utils'
+import { maskEmail, overtimeTextColorClass } from '@/lib/utils'
 
 interface TeamReportsGridProps {
   teamId: string | null
@@ -91,13 +91,7 @@ export function TeamReportsGrid({
                           {t('export.footerOvertime')}:
                         </span>
                         <span
-                          className={`font-medium ${
-                            summary.overtime > 0
-                              ? 'text-green-600'
-                              : summary.overtime < 0
-                                ? 'text-red-600'
-                                : ''
-                          }`}
+                          className={`font-medium ${overtimeTextColorClass(summary.overtime)}`}
                         >
                           {summary.overtime > 0 ? '+' : ''}
                           {summary.overtime.toFixed(2)}h

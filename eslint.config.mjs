@@ -81,4 +81,18 @@ export default defineConfig([
       'react/prop-types': 'off',
     },
   },
+  {
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/__tests__/**/*.ts',
+      '**/__tests__/**/*.tsx',
+    ],
+    rules: {
+      // Test matchers often use flexible regex on short, fixed UI strings; not a ReDoS surface.
+      'sonarjs/slow-regex': 'off',
+    },
+  },
 ])

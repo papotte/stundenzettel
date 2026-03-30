@@ -259,6 +259,10 @@ describe('User Settings Service', () => {
     })
 
     it('returns Map of id to displayName by calling getDisplayNameForMember for each id', async () => {
+      const displayNamesById: Record<string, string> = {
+        'user-1': 'Alice',
+        'user-2': 'Bob',
+      }
       const refWithId = (id: string) =>
         ({ _id: id }) as unknown as DocumentReference
       mockDoc.mockImplementation((_db: unknown, _c: string, id: string) =>
@@ -269,8 +273,7 @@ describe('User Settings Service', () => {
         return Promise.resolve({
           exists: () => true,
           data: () => ({
-            displayName:
-              id === 'user-1' ? 'Alice' : id === 'user-2' ? 'Bob' : '',
+            displayName: displayNamesById[id ?? ''] ?? '',
           }),
         } as unknown as DocumentSnapshot)
       })

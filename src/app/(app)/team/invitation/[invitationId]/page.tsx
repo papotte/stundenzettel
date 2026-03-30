@@ -201,6 +201,14 @@ export default function InvitationPage() {
   }
 
   if (error && error !== 'expired' && error !== 'alreadyProcessed') {
+    let errorCardDescription: string
+    if (error === 'Invalid invitation link') {
+      errorCardDescription = t('teams.invalidInvitationLink')
+    } else if (error === 'Invitation not found') {
+      errorCardDescription = t('teams.invitationNotFound')
+    } else {
+      errorCardDescription = error
+    }
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">
@@ -213,13 +221,7 @@ export default function InvitationPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('common.error')}</CardTitle>
-              <CardDescription>
-                {error === 'Invalid invitation link'
-                  ? t('teams.invalidInvitationLink')
-                  : error === 'Invitation not found'
-                    ? t('teams.invitationNotFound')
-                    : error}
-              </CardDescription>
+              <CardDescription>{errorCardDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild variant="outline">
@@ -234,6 +236,13 @@ export default function InvitationPage() {
 
   const isExpired = error === 'expired'
   const isAlreadyProcessed = error === 'alreadyProcessed'
+
+  let invitationHeaderDescription = t('teams.reviewInvitationDetails')
+  if (isExpired) {
+    invitationHeaderDescription = t('teams.invitationExpiredDescription')
+  } else if (isAlreadyProcessed) {
+    invitationHeaderDescription = t('teams.invitationAlreadyProcessed')
+  }
 
   return (
     <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
@@ -251,13 +260,7 @@ export default function InvitationPage() {
               <Mail className="h-5 w-5" />
               {t('teams.teamInvitation')}
             </CardTitle>
-            <CardDescription>
-              {isExpired
-                ? t('teams.invitationExpiredDescription')
-                : isAlreadyProcessed
-                  ? t('teams.invitationAlreadyProcessed')
-                  : t('teams.reviewInvitationDetails')}
-            </CardDescription>
+            <CardDescription>{invitationHeaderDescription}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {invitation && team && (

@@ -22,6 +22,109 @@ interface ExportParams {
   getLocationDisplayName: (location: string) => string
 }
 
+type ExcelFormatter = ExportParams['format']
+
+function applyExcelRowStyles(
+  row: ExcelJS.Row,
+  defaultBorder: ExcelJS.Border,
+  allBorders: Partial<ExcelJS.Borders>,
+): void {
+  row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+    let border: Partial<ExcelJS.Borders>
+    if (colNumber === 4) {
+      border = {
+        top: defaultBorder,
+        left: defaultBorder,
+        bottom: defaultBorder,
+      }
+    } else if (colNumber === 5) {
+      border = {
+        top: defaultBorder,
+        right: defaultBorder,
+        bottom: defaultBorder,
+      }
+    } else {
+      border = allBorders
+    }
+    cell.border = border
+    cell.alignment = { vertical: 'middle' }
+  })
+}
+
+function compensatedHoursForIntervalEntry(
+  entry: TimeEntry,
+  workDurationMinutes: number,
+  userSettings: UserSettings,
+): number {
+  if (['SICK_LEAVE', 'PTO', 'BANK_HOLIDAY'].includes(entry.location)) {
+    return workDurationMinutes / 60
+  }
+  if (entry.location === 'TIME_OFF_IN_LIEU') {
+    return 0
+  }
+  const compensatedMinutes =
+    workDurationMinutes -
+    (entry.pauseDuration || 0) +
+    ((entry.driverTimeHours || 0) *
+      60 *
+      (userSettings.driverCompensationPercent ?? 100)) /
+      100
+  return compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
+}
+
+function getExcelRowValues(
+  entry: TimeEntry,
+  userSettings: UserSettings,
+  format: ExcelFormatter,
+): {
+  compensatedHours: number
+  fromValue: string
+  toValue: string
+  pauseCellValue: number | ''
+  driverTimeCellValue: number | ''
+  passengerTimeCellValue: number | ''
+} {
+  let compensatedHours = 0
+  let fromValue = ''
+  let toValue = ''
+
+  if (typeof entry.durationMinutes === 'number') {
+    compensatedHours = entry.durationMinutes / 60
+  } else if (entry.endTime) {
+    const workDuration = differenceInMinutes(entry.endTime, entry.startTime!)
+    compensatedHours = compensatedHoursForIntervalEntry(
+      entry,
+      workDuration,
+      userSettings,
+    )
+    fromValue = entry.startTime
+      ? format.dateTime(entry.startTime, 'shortTime')
+      : ''
+    toValue = entry.endTime ? format.dateTime(entry.endTime, 'shortTime') : ''
+  }
+
+  const pauseDecimal = parseFloat(formatDecimalHours(entry.pauseDuration))
+  const pauseCellValue =
+    !entry.pauseDuration || pauseDecimal === 0 ? '' : pauseDecimal
+  const driverTimeCellValue =
+    entry.driverTimeHours && entry.driverTimeHours !== 0
+      ? entry.driverTimeHours
+      : ''
+  const passengerTimeCellValue =
+    entry.passengerTimeHours && entry.passengerTimeHours !== 0
+      ? entry.passengerTimeHours
+      : ''
+
+  return {
+    compensatedHours,
+    fromValue,
+    toValue,
+    pauseCellValue,
+    driverTimeCellValue,
+    passengerTimeCellValue,
+  }
+}
+
 export const exportToExcel = async ({
   selectedMonth,
   user,
@@ -205,86 +308,16 @@ export const exportToExcel = async ({
 
       if (!isSameMonth(day, selectedMonth)) return
 
-      const applyRowStyles = (row: ExcelJS.Row) => {
-        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-          let border: Partial<ExcelJS.Borders>
-          if (colNumber === 4) {
-            // von
-            border = {
-              top: defaultBorder,
-              left: defaultBorder,
-              bottom: defaultBorder,
-            }
-          } else if (colNumber === 5) {
-            // bis
-            border = {
-              top: defaultBorder,
-              right: defaultBorder,
-              bottom: defaultBorder,
-            }
-          } else {
-            border = allBorders
-          }
-          cell.border = border
-          cell.alignment = { vertical: 'middle' }
-        })
-      }
-
       if (dayEntries.length > 0) {
         dayEntries.forEach((entry) => {
-          let compensatedHours = 0
-          let fromValue = ''
-          let toValue = ''
-          if (typeof entry.durationMinutes === 'number') {
-            compensatedHours = entry.durationMinutes / 60
-            fromValue = ''
-            toValue = ''
-          } else if (entry.endTime) {
-            const workDuration = differenceInMinutes(
-              entry.endTime,
-              entry.startTime!,
-            )
-            const isCompensatedSpecialDay = [
-              'SICK_LEAVE',
-              'PTO',
-              'BANK_HOLIDAY',
-            ].includes(entry.location)
-            if (isCompensatedSpecialDay) {
-              compensatedHours = workDuration / 60
-            } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-              const compensatedMinutes =
-                workDuration -
-                (entry.pauseDuration || 0) +
-                ((entry.driverTimeHours || 0) *
-                  60 *
-                  (userSettings.driverCompensationPercent ?? 100)) /
-                  100
-              compensatedHours =
-                compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
-            }
-            fromValue = entry.startTime
-              ? format.dateTime(entry.startTime, 'shortTime')
-              : ''
-            toValue = entry.endTime
-              ? format.dateTime(entry.endTime, 'shortTime')
-              : ''
-          }
-          const pauseDecimal = parseFloat(
-            formatDecimalHours(entry.pauseDuration),
-          )
-
-          // If pauseDecimal is 0, use blank; otherwise, use the value
-          const pauseCellValue =
-            !entry.pauseDuration || pauseDecimal === 0 ? '' : pauseDecimal
-          // If travelTime is 0, use blank; otherwise, use the value
-          const driverTimeCellValue =
-            entry.driverTimeHours && entry.driverTimeHours !== 0
-              ? entry.driverTimeHours
-              : ''
-          const passengerTimeCellValue =
-            entry.passengerTimeHours && entry.passengerTimeHours !== 0
-              ? entry.passengerTimeHours
-              : ''
+          const {
+            compensatedHours,
+            fromValue,
+            toValue,
+            pauseCellValue,
+            driverTimeCellValue,
+            passengerTimeCellValue,
+          } = getExcelRowValues(entry, userSettings, format)
 
           const rowData = [
             '', // Weekday gets merged
@@ -299,7 +332,7 @@ export const exportToExcel = async ({
             '', // Mileage
           ]
           const dataRow = worksheet.addRow(rowData)
-          applyRowStyles(dataRow)
+          applyExcelRowStyles(dataRow, defaultBorder, allBorders)
           // Set specific alignments after applying common styles
           dataRow.getCell(3).alignment = { horizontal: 'left', wrapText: true }
           dataRow.getCell(4).alignment.horizontal = 'right'
@@ -349,7 +382,7 @@ export const exportToExcel = async ({
           '',
           '',
         ])
-        applyRowStyles(emptyRow)
+        applyExcelRowStyles(emptyRow, defaultBorder, allBorders)
         emptyRow.getCell(1).fill = dayColFill
         emptyRow.getCell(1).alignment = {
           vertical: 'middle',

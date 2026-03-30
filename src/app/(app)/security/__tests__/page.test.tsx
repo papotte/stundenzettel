@@ -399,6 +399,8 @@ describe('SecurityPage', () => {
       })
     })
 
+    // Skipped: the failure toast after `deleteAccount` rejects is not asserted reliably in RTL
+    // (confirm dialog + picking the second "delete" button). Re-enable when that flow is stable in tests.
     xit('shows error when account deletion fails', async () => {
       const user = userEvent.setup()
       mockAuthContext.deleteAccount!.mockRejectedValue(

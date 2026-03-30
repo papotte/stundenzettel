@@ -123,13 +123,14 @@ export function ExportPreviewActions({
       </Button>
     )
 
-    const tooltipContent = !userTeam
-      ? t('export.publishForTeamHint')
-      : !hasEntriesForMonth
-        ? t('export.noDataHint', {
-            defaultValue: 'No data available for export in this month.',
-          })
-        : null
+    let tooltipContent: string | null = null
+    if (!userTeam) {
+      tooltipContent = t('export.publishForTeamHint')
+    } else if (!hasEntriesForMonth) {
+      tooltipContent = t('export.noDataHint', {
+        defaultValue: 'No data available for export in this month.',
+      })
+    }
 
     if (userTeam && publishedAt) {
       return (

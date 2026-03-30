@@ -42,6 +42,20 @@ export default function PricingCard({
 
   const isIndividualPlan = !plan.maxUsers
 
+  let subscribeButtonInner: React.ReactNode
+  if (loading === plan.id) {
+    subscribeButtonInner = (
+      <div className="flex items-center space-x-2">
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+        <span>{t('pricing.processing')}</span>
+      </div>
+    )
+  } else if (isIndividualPlan) {
+    subscribeButtonInner = t('pricing.getStarted')
+  } else {
+    subscribeButtonInner = t('pricing.createTeam')
+  }
+
   return (
     <Card
       className={`relative ${
@@ -152,16 +166,7 @@ export default function PricingCard({
               : 'bg-gray-900 hover:bg-gray-800'
           }`}
         >
-          {loading === plan.id ? (
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>{t('pricing.processing')}</span>
-            </div>
-          ) : isIndividualPlan ? (
-            t('pricing.getStarted')
-          ) : (
-            t('pricing.createTeam')
-          )}
+          {subscribeButtonInner}
         </Button>
       </CardFooter>
     </Card>

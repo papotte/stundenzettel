@@ -61,10 +61,10 @@ const preferencesFormSchema = z.object({
     .optional(),
   defaultStartTime: z
     .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
+    .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
   defaultEndTime: z
     .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:mm)'),
+    .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
   language: z.enum(locales),
 })
 

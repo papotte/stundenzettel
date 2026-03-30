@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { AlertCircle, CreditCard } from 'lucide-react'
@@ -211,6 +211,73 @@ export function LinkTeamSubscriptionDialog({
     }
   }
 
+  let linkDialogBody: ReactNode
+  if (isLoading) {
+    linkDialogBody = (
+      <div className="space-y-3">
+        <Skeleton className="h-6 w-2/3" />
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-20 w-full" />
+      </div>
+    )
+  } else if (subscriptions.length === 0) {
+    linkDialogBody = (
+      <div className="rounded-md border p-4 text-sm text-muted-foreground">
+        {t('teams.noLinkableSubscriptions')}
+      </div>
+    )
+  } else {
+    linkDialogBody = (
+      <div className="space-y-4">
+        {selected?.status === 'past_due' && (
+          <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+            <AlertCircle className="mt-0.5 h-4 w-4 text-destructive" />
+            <div className="text-destructive">
+              {t('teams.subscriptionPastDueWarning')}
+            </div>
+          </div>
+        )}
+
+        <RadioGroup value={selectedId} onValueChange={setSelectedId}>
+          <div className="space-y-3">
+            {subscriptions.map((s) => (
+              <label
+                key={s.stripeSubscriptionId}
+                className="flex cursor-pointer items-start justify-between rounded-lg border p-4 transition-colors hover:border-primary/50"
+                htmlFor={s.stripeSubscriptionId}
+              >
+                <div className="flex items-start gap-3">
+                  <RadioGroupItem
+                    id={s.stripeSubscriptionId}
+                    value={s.stripeSubscriptionId}
+                    className="mt-1"
+                  />
+                  <div>
+                    <div className="font-medium">
+                      {s.planName || t('teams.teamPlan')}
+                    </div>
+                    {s.planDescription && (
+                      <div className="text-sm text-muted-foreground">
+                        {s.planDescription}
+                      </div>
+                    )}
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {t('teams.seatUsage')}: {s.quantity ?? 1}
+                    </div>
+                  </div>
+                </div>
+
+                <Badge variant={getStatusBadgeVariant(s.status)}>
+                  {s.status}
+                </Badge>
+              </label>
+            ))}
+          </div>
+        </RadioGroup>
+      </div>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -223,65 +290,7 @@ export function LinkTeamSubscriptionDialog({
             {t('teams.linkExistingSubscriptionDescription')}
           </DialogDescription>
         </DialogHeader>
-        {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-6 w-2/3" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-        ) : subscriptions.length === 0 ? (
-          <div className="rounded-md border p-4 text-sm text-muted-foreground">
-            {t('teams.noLinkableSubscriptions')}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {selected?.status === 'past_due' && (
-              <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-                <AlertCircle className="mt-0.5 h-4 w-4 text-destructive" />
-                <div className="text-destructive">
-                  {t('teams.subscriptionPastDueWarning')}
-                </div>
-              </div>
-            )}
-
-            <RadioGroup value={selectedId} onValueChange={setSelectedId}>
-              <div className="space-y-3">
-                {subscriptions.map((s) => (
-                  <label
-                    key={s.stripeSubscriptionId}
-                    className="flex cursor-pointer items-start justify-between rounded-lg border p-4 transition-colors hover:border-primary/50"
-                    htmlFor={s.stripeSubscriptionId}
-                  >
-                    <div className="flex items-start gap-3">
-                      <RadioGroupItem
-                        id={s.stripeSubscriptionId}
-                        value={s.stripeSubscriptionId}
-                        className="mt-1"
-                      />
-                      <div>
-                        <div className="font-medium">
-                          {s.planName || t('teams.teamPlan')}
-                        </div>
-                        {s.planDescription && (
-                          <div className="text-sm text-muted-foreground">
-                            {s.planDescription}
-                          </div>
-                        )}
-                        <div className="mt-1 text-sm text-muted-foreground">
-                          {t('teams.seatUsage')}: {s.quantity ?? 1}
-                        </div>
-                      </div>
-                    </div>
-
-                    <Badge variant={getStatusBadgeVariant(s.status)}>
-                      {s.status}
-                    </Badge>
-                  </label>
-                ))}
-              </div>
-            </RadioGroup>
-          </div>
-        )}
+        {linkDialogBody}
 
         <DialogFooter className="flex flex-col gap-2 sm:flex-row">
           <Button
