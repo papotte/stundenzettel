@@ -18,10 +18,10 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamOptionsCard } from '@/components/team/team-options-card'
 import { TeamReportsTab } from '@/components/team/team-reports-tab'
 import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
-import { TeamWideSettingsForm } from '@/components/team/team-wide-settings-form'
 import { UserInvitationsList } from '@/components/team/user-invitations-list'
 import { Button } from '@/components/ui/button'
 import {
@@ -450,23 +450,10 @@ export default function TeamPage() {
 
               {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
                 <TabsContent value="team-settings">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <SlidersHorizontal className="h-5 w-5" />
-                        {t('teams.teamWideSettings')}
-                      </CardTitle>
-                      <CardDescription>
-                        {t('teams.teamWideSettingsDescription')}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <TeamWideSettingsForm
-                        teamId={team.id}
-                        canEdit={currentUserRole === 'owner'}
-                      />
-                    </CardContent>
-                  </Card>
+                  <TeamOptionsCard
+                    teamId={team.id}
+                    canEdit={currentUserRole === 'owner'}
+                  />
                 </TabsContent>
               )}
 

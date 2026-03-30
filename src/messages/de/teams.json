@@ -183,7 +183,7 @@
   "acceptInvitation": "Einladung annehmen",
   "declineInvitation": "Einladung ablehnen",
   "goToTeamPage": "Zur Team-Seite",
-  "teamWideSettings": "Teamweite Einstellungen",
+  "teamWideSettings": "Optionen",
   "teamWideSettingsDescription": "Standardwerte und Berechtigungen für alle Teammitglieder festlegen.",
   "compensationDefaults": "Vergütungsstandards",
   "compensationDefaultsDescription": "Standardvergütungssätze für alle Teammitglieder festlegen.",
@@ -202,7 +202,7 @@
   "allowMemberOverrideExport": "Mitgliedern erlauben, Exporteinstellungen zu überschreiben",
   "allowMemberOverrideExportDescription": "Wenn aktiviert, können Teammitglieder ihre eigenen Exportoptionen anpassen.",
   "teamSettingsSaved": "Team-Einstellungen gespeichert",
-  "teamSettingsSavedDescription": "Teamweite Einstellungen wurden erfolgreich aktualisiert.",
+  "teamSettingsSavedDescription": "Die Optionen wurden erfolgreich aktualisiert.",
   "failedToSaveTeamSettings": "Team-Einstellungen konnten nicht gespeichert werden",
   "failedToLoadTeamSettings": "Team-Einstellungen konnten nicht geladen werden"
 }

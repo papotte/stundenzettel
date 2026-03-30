@@ -183,7 +183,7 @@
   "acceptInvitation": "Accept Invitation",
   "declineInvitation": "Decline Invitation",
   "goToTeamPage": "Go to Team Page",
-  "teamWideSettings": "Team-Wide Settings",
+  "teamWideSettings": "Options",
   "teamWideSettingsDescription": "Configure defaults and override permissions for all team members.",
   "compensationDefaults": "Compensation Defaults",
   "compensationDefaultsDescription": "Set default compensation rates for all team members.",
@@ -202,7 +202,7 @@
   "allowMemberOverrideExport": "Allow members to override export settings",
   "allowMemberOverrideExportDescription": "When enabled, team members can customize their own export options.",
   "teamSettingsSaved": "Team settings saved",
-  "teamSettingsSavedDescription": "Team-wide settings have been updated successfully.",
+  "teamSettingsSavedDescription": "Options have been updated successfully.",
   "failedToSaveTeamSettings": "Failed to save team settings",
   "failedToLoadTeamSettings": "Failed to load team settings"
 }

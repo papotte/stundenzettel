@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { Building, Loader2, Save } from 'lucide-react'
+import { AlertTriangle, Building, Loader2, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
@@ -278,7 +278,8 @@ export default function CompanyPage() {
                     </h3>
 
                     {compensationLocked ? (
-                      <Alert className="mb-4">
+                      <Alert variant="warning" className="mb-4">
+                        <AlertTriangle className="h-4 w-4" aria-hidden />
                         <AlertDescription>
                           {t('settings.compensationManagedByTeam')}
                         </AlertDescription>
