@@ -19,7 +19,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   companyPhone2: '',
   companyFax: '',
   driverCompensationPercent: 100,
-  passengerCompensationPercent: 90,
+  passengerCompensationPercent: 100,
   // expectedMonthlyHours is not included in default settings - it will be auto-calculated
 }
 
@@ -28,7 +28,7 @@ function applyTeamCompensationFromContext(
   membership: { teamId: string; role: string } | null,
   teamSettings: TeamSettings | null,
 ): UserSettings {
-  if (!membership || membership.role !== 'member' || !teamSettings) {
+  if (!membership || !teamSettings) {
     return settings
   }
   if (teamSettings.allowMemberOverrideCompensation !== false) {
@@ -39,8 +39,57 @@ function applyTeamCompensationFromContext(
     driverCompensationPercent:
       teamSettings.defaultDriverCompensationPercent ?? 100,
     passengerCompensationPercent:
-      teamSettings.defaultPassengerCompensationPercent ?? 90,
+      teamSettings.defaultPassengerCompensationPercent ?? 100,
   }
+}
+
+function resolveExportIncludeFlags(
+  settings: UserSettings,
+  membership: { teamId: string; role: string } | null,
+  teamSettings: TeamSettings | null,
+): {
+  exportIncludeDriverTime: boolean
+  exportIncludePassengerTime: boolean
+  exportLocked: boolean
+} {
+  const teamDriver = teamSettings?.exportIncludeDriverTime ?? true
+  const teamPassenger = teamSettings?.exportIncludePassengerTime ?? true
+  const exportLocked =
+    membership != null &&
+    teamSettings != null &&
+    teamSettings.allowMemberOverrideExport === false
+
+  if (exportLocked) {
+    return {
+      exportIncludeDriverTime: teamDriver,
+      exportIncludePassengerTime: teamPassenger,
+      exportLocked: true,
+    }
+  }
+  if (membership && teamSettings) {
+    return {
+      exportIncludeDriverTime: settings.exportIncludeDriverTime ?? teamDriver,
+      exportIncludePassengerTime:
+        settings.exportIncludePassengerTime ?? teamPassenger,
+      exportLocked: false,
+    }
+  }
+  return {
+    exportIncludeDriverTime: settings.exportIncludeDriverTime ?? true,
+    exportIncludePassengerTime: settings.exportIncludePassengerTime ?? true,
+    exportLocked: false,
+  }
+}
+
+function buildLockedField(
+  compensationLocked: boolean,
+  exportLocked: boolean,
+): UserSettings['locked'] {
+  if (!compensationLocked && !exportLocked) return undefined
+  const o: NonNullable<UserSettings['locked']> = {}
+  if (compensationLocked) o.compensation = true
+  if (exportLocked) o.export = true
+  return o
 }
 
 function stripLockedFromFirestorePayload(
@@ -51,6 +100,57 @@ function stripLockedFromFirestorePayload(
   return copy
 }
 
+async function resolveTeamContext(userId: string): Promise<{
+  membership: { teamId: string; role: string } | null
+  teamSettings: TeamSettings | null
+  compensationLocked: boolean
+  exportLocked: boolean
+}> {
+  const membership = await getUserTeamMembership(userId)
+  const teamSettings = membership
+    ? await getTeamSettings(membership.teamId)
+    : null
+  const compensationLocked =
+    membership != null &&
+    teamSettings != null &&
+    teamSettings.allowMemberOverrideCompensation === false
+  const exportLocked =
+    membership != null &&
+    teamSettings != null &&
+    teamSettings.allowMemberOverrideExport === false
+
+  return { membership, teamSettings, compensationLocked, exportLocked }
+}
+
+function buildInitialSettings(
+  compensationLocked: boolean,
+  exportLocked: boolean,
+): UserSettings {
+  const initial = { ...DEFAULT_USER_SETTINGS } as UserSettings
+
+  if (compensationLocked) {
+    delete initial.driverCompensationPercent
+    delete initial.passengerCompensationPercent
+  }
+  if (exportLocked) {
+    delete initial.exportIncludeDriverTime
+    delete initial.exportIncludePassengerTime
+  }
+
+  return initial
+}
+
+function mergeUserDisplayName(
+  settings: UserSettings,
+  userRaw: unknown,
+): UserSettings {
+  const raw = (userRaw as { displayName?: unknown } | undefined)?.displayName
+  return {
+    ...settings,
+    displayName: (typeof raw === 'string' ? raw : '').trim(),
+  }
+}
+
 async function loadUserSettingsWithTeamContext(
   userId: string,
 ): Promise<UserSettings> {
@@ -58,14 +158,8 @@ async function loadUserSettingsWithTeamContext(
     return { ...DEFAULT_USER_SETTINGS }
   }
 
-  const membership = await getUserTeamMembership(userId)
-  const teamSettings = membership
-    ? await getTeamSettings(membership.teamId)
-    : null
-  const compensationLocked =
-    membership?.role === 'member' &&
-    teamSettings != null &&
-    teamSettings.allowMemberOverrideCompensation === false
+  const { membership, teamSettings, compensationLocked, exportLocked } =
+    await resolveTeamContext(userId)
 
   const [settingsSnap, userSnap] = await Promise.all([
     getDoc(doc(db, 'users', userId, 'settings', 'general')),
@@ -81,19 +175,11 @@ async function loadUserSettingsWithTeamContext(
       ...stripLockedFromFirestorePayload(rawData),
     } as UserSettings
     if (userSnap.exists()) {
-      const raw = userSnap.data()?.displayName
-      core.displayName = (typeof raw === 'string' ? raw : '').trim()
+      core = mergeUserDisplayName(core, userSnap.data())
     }
   } else {
-    let initial: Record<string, unknown>
-    if (compensationLocked) {
-      initial = { ...DEFAULT_USER_SETTINGS }
-      delete initial.driverCompensationPercent
-      delete initial.passengerCompensationPercent
-    } else {
-      initial = { ...DEFAULT_USER_SETTINGS }
-    }
-    await setUserSettings(userId, initial as UserSettings)
+    const initial = buildInitialSettings(compensationLocked, exportLocked)
+    await setUserSettings(userId, initial)
     core = {
       ...DEFAULT_USER_SETTINGS,
       ...initial,
@@ -105,10 +191,22 @@ async function loadUserSettingsWithTeamContext(
     membership,
     teamSettings,
   )
-  return {
+  const resolvedExport = resolveExportIncludeFlags(
+    merged,
+    membership,
+    teamSettings,
+  )
+  const locked = buildLockedField(
+    compensationLocked,
+    resolvedExport.exportLocked,
+  )
+  const out: UserSettings = {
     ...merged,
-    locked: compensationLocked ? { compensation: true } : undefined,
+    exportIncludeDriverTime: resolvedExport.exportIncludeDriverTime,
+    exportIncludePassengerTime: resolvedExport.exportIncludePassengerTime,
   }
+  if (locked) out.locked = locked
+  return out
 }
 
 export const getUserSettings = async (
@@ -180,14 +278,22 @@ export const setUserSettings = async (
     ? await getTeamSettings(membership.teamId)
     : null
   const compensationLocked =
-    membership?.role === 'member' &&
+    membership != null &&
     teamSettings != null &&
     teamSettings.allowMemberOverrideCompensation === false
+  const exportLocked =
+    membership != null &&
+    teamSettings != null &&
+    teamSettings.allowMemberOverrideExport === false
 
   const toWrite = { ...cleanSettings }
   if (compensationLocked) {
     delete toWrite.driverCompensationPercent
     delete toWrite.passengerCompensationPercent
+  }
+  if (exportLocked) {
+    delete toWrite.exportIncludeDriverTime
+    delete toWrite.exportIncludePassengerTime
   }
 
   const docRef = doc(db, 'users', userId, 'settings', 'general')

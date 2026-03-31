@@ -47,14 +47,16 @@ describe('User Settings Service', () => {
       companyPhone2: '',
       companyFax: '',
       driverCompensationPercent: 100,
-      passengerCompensationPercent: 90,
+      passengerCompensationPercent: 100,
+      exportIncludeDriverTime: true,
+      exportIncludePassengerTime: true,
       expectedMonthlyHours: undefined,
     }
 
     it('getUserSettings returns default settings when no user ID provided', async () => {
       const result = await userSettingsService.getUserSettings('')
 
-      expect(result).toEqual(defaultSettings)
+      expect(result).toEqual(userSettingsService.DEFAULT_USER_SETTINGS)
     })
 
     it('getUserSettings returns default settings when document does not exist', async () => {
@@ -85,7 +87,7 @@ describe('User Settings Service', () => {
       expect(mockSetDoc).toHaveBeenNthCalledWith(
         1,
         mockSettingsRef,
-        defaultSettings,
+        userSettingsService.DEFAULT_USER_SETTINGS,
         { merge: true },
       )
       expect(mockSetDoc).toHaveBeenNthCalledWith(
@@ -226,7 +228,7 @@ describe('User Settings Service', () => {
       )
     })
 
-    it('setUserSettings omits compensation fields when team disallows member overrides', async () => {
+    it('setUserSettings omits compensation fields when team disallows overrides for any role', async () => {
       const { getUserTeamMembership } = jest.requireMock<{
         getUserTeamMembership: jest.Mock
       }>('@/services/team-service')
@@ -236,7 +238,7 @@ describe('User Settings Service', () => {
 
       getUserTeamMembership.mockResolvedValueOnce({
         teamId: 'team-1',
-        role: 'member',
+        role: 'owner',
       })
       getTeamSettings.mockResolvedValueOnce({
         allowMemberOverrideCompensation: false,
@@ -250,6 +252,250 @@ describe('User Settings Service', () => {
         language: 'en',
         driverCompensationPercent: 50,
         passengerCompensationPercent: 60,
+      })
+
+      expect(mockSetDoc).toHaveBeenCalledWith(
+        mockSettingsRef,
+        { language: 'en' },
+        { merge: true },
+      )
+    })
+
+    it('getUserSettings forces team compensation and locked.compensation for owner when team disallows overrides', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'owner',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        defaultDriverCompensationPercent: 75,
+        defaultPassengerCompensationPercent: 65,
+        allowMemberOverrideCompensation: false,
+      })
+
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => ({
+          driverCompensationPercent: 100,
+          passengerCompensationPercent: 100,
+        }),
+      }
+      const mockUserSnap = { exists: () => false }
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getUserSettings('locked-owner')
+
+      expect(result.driverCompensationPercent).toBe(75)
+      expect(result.passengerCompensationPercent).toBe(65)
+      expect(result.locked?.compensation).toBe(true)
+    })
+
+    it('getUserSettings merges team export column defaults for team owner', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'owner',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: true,
+      })
+
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => ({ language: 'en' }),
+      }
+      const mockUserSnap = { exists: () => false }
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getUserSettings('owner-user')
+
+      expect(result.exportIncludeDriverTime).toBe(false)
+      expect(result.exportIncludePassengerTime).toBe(true)
+      expect(result.locked).toBeUndefined()
+    })
+
+    it('getUserSettings uses user export overrides when member may override team', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: false,
+        allowMemberOverrideExport: true,
+      })
+
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => ({
+          exportIncludeDriverTime: true,
+          exportIncludePassengerTime: true,
+        }),
+      }
+      const mockUserSnap = { exists: () => false }
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getUserSettings('member-user')
+
+      expect(result.exportIncludeDriverTime).toBe(true)
+      expect(result.exportIncludePassengerTime).toBe(true)
+      expect(result.locked?.export).toBeUndefined()
+    })
+
+    it('getUserSettings forces team export flags and locked.export when team disallows overrides', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: true,
+        allowMemberOverrideExport: false,
+      })
+
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => ({
+          exportIncludeDriverTime: true,
+          exportIncludePassengerTime: false,
+        }),
+      }
+      const mockUserSnap = { exists: () => false }
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getUserSettings('locked-member')
+
+      expect(result.exportIncludeDriverTime).toBe(false)
+      expect(result.exportIncludePassengerTime).toBe(true)
+      expect(result.locked?.export).toBe(true)
+    })
+
+    it('getUserSettings forces team export flags and locked.export for owner when team disallows overrides', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'owner',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: true,
+        allowMemberOverrideExport: false,
+      })
+
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => ({
+          exportIncludeDriverTime: true,
+          exportIncludePassengerTime: false,
+        }),
+      }
+      const mockUserSnap = { exists: () => false }
+
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+
+      const result = await userSettingsService.getUserSettings('locked-owner')
+
+      expect(result.exportIncludeDriverTime).toBe(false)
+      expect(result.exportIncludePassengerTime).toBe(true)
+      expect(result.locked?.export).toBe(true)
+    })
+
+    it('setUserSettings omits export fields when team disallows export overrides for any role', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'owner',
+      })
+      getTeamSettings.mockResolvedValueOnce({
+        allowMemberOverrideExport: false,
+      })
+
+      const mockSettingsRef = {}
+      mockDoc.mockReturnValueOnce(mockSettingsRef as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings('user-123', {
+        language: 'en',
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: false,
       })
 
       expect(mockSetDoc).toHaveBeenCalledWith(

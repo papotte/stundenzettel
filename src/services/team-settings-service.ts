@@ -5,7 +5,7 @@ import type { TeamSettings } from '@/lib/types'
 
 const defaultTeamSettings: TeamSettings = {
   defaultDriverCompensationPercent: 100,
-  defaultPassengerCompensationPercent: 90,
+  defaultPassengerCompensationPercent: 100,
   allowMemberOverrideCompensation: true,
   exportIncludeDriverTime: true,
   exportIncludePassengerTime: true,

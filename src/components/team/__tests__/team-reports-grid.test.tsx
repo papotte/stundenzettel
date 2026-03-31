@@ -58,7 +58,7 @@ const createMockTimeEntry = (
 const mockUserSettings = {
   expectedMonthlyHours: 160,
   driverCompensationPercent: 100,
-  passengerCompensationPercent: 90,
+  passengerCompensationPercent: 100,
 }
 
 const mockPublishedData = (

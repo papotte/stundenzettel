@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Loader2, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -29,7 +30,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
+import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { userSettingsKeys } from '@/lib/query-keys'
 import type { TeamSettings } from '@/lib/types'
 import {
   getTeamSettings,
@@ -61,6 +64,8 @@ interface TeamOptionsCardProps {
 export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
   const t = useTranslations()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -68,7 +73,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
     resolver: zodResolver(teamOptionsSchema),
     defaultValues: {
       defaultDriverCompensationPercent: 100,
-      defaultPassengerCompensationPercent: 90,
+      defaultPassengerCompensationPercent: 100,
       allowMemberOverrideCompensation: true,
       exportIncludeDriverTime: true,
       exportIncludePassengerTime: true,
@@ -84,7 +89,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
           defaultDriverCompensationPercent:
             settings.defaultDriverCompensationPercent ?? 100,
           defaultPassengerCompensationPercent:
-            settings.defaultPassengerCompensationPercent ?? 90,
+            settings.defaultPassengerCompensationPercent ?? 100,
           allowMemberOverrideCompensation:
             settings.allowMemberOverrideCompensation ?? true,
           exportIncludeDriverTime: settings.exportIncludeDriverTime ?? true,
@@ -111,6 +116,11 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
     setIsSaving(true)
     try {
       await setTeamSettings(teamId, data)
+      if (user?.uid) {
+        await queryClient.invalidateQueries({
+          queryKey: userSettingsKeys.detail(user.uid),
+        })
+      }
       toast({
         title: t('teams.teamSettingsSaved'),
         description: t('teams.teamSettingsSavedDescription'),

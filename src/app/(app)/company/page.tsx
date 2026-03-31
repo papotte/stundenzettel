@@ -4,20 +4,19 @@ import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { AlertTriangle, Building, Loader2, Save } from 'lucide-react'
+import { Building, FileSpreadsheet, Loader2, Percent, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { LockedByTeamAlert } from '@/components/locked-by-team-alert'
 import SubscriptionGuard from '@/components/subscription-guard'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -32,12 +31,14 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import {
   useInvalidateUserSettings,
   useUserSettings,
 } from '@/hooks/use-user-settings'
+import { getUserTeamMembership } from '@/services/team-service'
 import {
   setUserSettings,
   stripReadOnlySettingsFields,
@@ -56,6 +57,8 @@ const companyFormSchema = z.object({
     .min(0)
     .max(100)
     .optional(),
+  exportIncludeDriverTime: z.boolean(),
+  exportIncludePassengerTime: z.boolean(),
 })
 
 type CompanyFormValues = z.infer<typeof companyFormSchema>
@@ -73,6 +76,7 @@ export default function CompanyPage() {
   const invalidateUserSettings = useInvalidateUserSettings()
 
   const [isSaving, setIsSaving] = useState(false)
+  const [canManageTeamOptions, setCanManageTeamOptions] = useState(false)
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -84,7 +88,9 @@ export default function CompanyPage() {
       companyPhone2: '',
       companyFax: '',
       driverCompensationPercent: 100,
-      passengerCompensationPercent: 90,
+      passengerCompensationPercent: 100,
+      exportIncludeDriverTime: true,
+      exportIncludePassengerTime: true,
     },
   })
 
@@ -103,7 +109,10 @@ export default function CompanyPage() {
       companyPhone2: settings.companyPhone2 || '',
       companyFax: settings.companyFax || '',
       driverCompensationPercent: settings.driverCompensationPercent || 100,
-      passengerCompensationPercent: settings.passengerCompensationPercent || 90,
+      passengerCompensationPercent:
+        settings.passengerCompensationPercent || 100,
+      exportIncludeDriverTime: settings.exportIncludeDriverTime !== false,
+      exportIncludePassengerTime: settings.exportIncludePassengerTime !== false,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings, form.reset])
@@ -117,7 +126,30 @@ export default function CompanyPage() {
     })
   }, [settingsError, t, toast])
 
+  useEffect(() => {
+    let cancelled = false
+    const loadMembership = async () => {
+      if (!user?.uid) {
+        if (!cancelled) setCanManageTeamOptions(false)
+        return
+      }
+      try {
+        const membership = await getUserTeamMembership(user.uid)
+        const canManage =
+          membership?.role === 'owner' || membership?.role === 'admin'
+        if (!cancelled) setCanManageTeamOptions(canManage)
+      } catch {
+        if (!cancelled) setCanManageTeamOptions(false)
+      }
+    }
+    void loadMembership()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.uid])
+
   const compensationLocked = Boolean(settings?.locked?.compensation)
+  const exportLocked = Boolean(settings?.locked?.export)
 
   const onSubmit = async (data: CompanyFormValues) => {
     if (!user || !settings) return
@@ -145,9 +177,11 @@ export default function CompanyPage() {
   if (authLoading || (user && settingsPending)) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
-        <div className="mx-auto max-w-2xl">
-          <Skeleton className="mb-8 h-10 w-32" />
-          <Skeleton className="h-96 w-full" />
+        <div className="mx-auto max-w-2xl space-y-6">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-56 w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-48 w-full" />
         </div>
       </div>
     )
@@ -173,7 +207,7 @@ export default function CompanyPage() {
                     {t('settings.companyDescription')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="companyName"
@@ -215,7 +249,7 @@ export default function CompanyPage() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="companyPhone1"
@@ -271,115 +305,179 @@ export default function CompanyPage() {
                       </FormItem>
                     )}
                   />
+                </CardContent>
+              </Card>
 
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4">
-                      {t('settings.compensationSettings')}
-                    </h3>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Percent className="h-5 w-5" />
+                    {t('settings.compensationSettings')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {compensationLocked ? (
+                    <LockedByTeamAlert showChangeText={canManageTeamOptions} />
+                  ) : null}
 
-                    {compensationLocked ? (
-                      <Alert variant="warning" className="mb-4">
-                        <AlertTriangle className="h-4 w-4" aria-hidden />
-                        <AlertDescription>
-                          {t('settings.compensationManagedByTeam')}
-                        </AlertDescription>
-                      </Alert>
-                    ) : null}
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="driverCompensationPercent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('settings.driverCompensationPercent')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="200"
+                              step="0.1"
+                              readOnly={compensationLocked}
+                              className={
+                                compensationLocked
+                                  ? 'cursor-not-allowed bg-muted'
+                                  : undefined
+                              }
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {t('settings.driverCompensationPercentDescription')}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="driverCompensationPercent"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t('settings.driverCompensationPercent')}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="200"
-                                step="0.1"
-                                readOnly={compensationLocked}
-                                className={
-                                  compensationLocked
-                                    ? 'cursor-not-allowed bg-muted'
-                                    : undefined
-                                }
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              {t(
-                                'settings.driverCompensationPercentDescription',
-                              )}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="passengerCompensationPercent"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {t('settings.passengerCompensationPercent')}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="200"
-                                step="0.1"
-                                readOnly={compensationLocked}
-                                className={
-                                  compensationLocked
-                                    ? 'cursor-not-allowed bg-muted'
-                                    : undefined
-                                }
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              {t(
-                                'settings.passengerCompensationPercentDescription',
-                              )}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="passengerCompensationPercent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('settings.passengerCompensationPercent')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="200"
+                              step="0.1"
+                              readOnly={compensationLocked}
+                              className={
+                                compensationLocked
+                                  ? 'cursor-not-allowed bg-muted'
+                                  : undefined
+                              }
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {t(
+                              'settings.passengerCompensationPercentDescription',
+                            )}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <Button
-                    type="submit"
-                    disabled={isSaving}
-                    className="w-full"
-                    data-testid="saveButton"
-                  >
-                    {isSaving ? (
-                      <Loader2
-                        className="mr-2 h-4 w-4 animate-spin"
-                        data-testid="loader-icon"
-                      />
-                    ) : (
-                      <Save className="mr-2 h-4 w-4" />
-                    )}
-                    {isSaving ? t('common.saving') : t('common.save')}
-                  </Button>
-                </CardFooter>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-5 w-5" />
+                    {t('settings.exportSettings')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {exportLocked ? (
+                    <LockedByTeamAlert showChangeText={canManageTeamOptions} />
+                  ) : null}
+
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="exportIncludeDriverTime"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start justify-between gap-4">
+                          <div className="space-y-0.5">
+                            <FormLabel>
+                              {t('settings.exportIncludeDriverTime')}
+                            </FormLabel>
+                            <FormDescription>
+                              {t('settings.exportIncludeDriverTimeDescription')}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={exportLocked}
+                              className="shrink-0"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="exportIncludePassengerTime"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start justify-between gap-4">
+                          <div className="space-y-0.5">
+                            <FormLabel>
+                              {t('settings.exportIncludePassengerTime')}
+                            </FormLabel>
+                            <FormDescription>
+                              {t(
+                                'settings.exportIncludePassengerTimeDescription',
+                              )}
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              disabled={exportLocked}
+                              className="shrink-0"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button
+                type="submit"
+                disabled={isSaving}
+                className="w-full"
+                data-testid="saveButton"
+              >
+                {isSaving ? (
+                  <Loader2
+                    className="mr-2 h-4 w-4 animate-spin"
+                    data-testid="loader-icon"
+                  />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                {isSaving ? t('common.saving') : t('common.save')}
+              </Button>
             </form>
           </Form>
         </div>

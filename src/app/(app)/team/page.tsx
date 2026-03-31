@@ -75,12 +75,15 @@ export default function TeamPage() {
   // Use state for tab, but initialize to 'members' and update in useEffect
   const [selectedTab, setSelectedTab] = useState('members')
 
-  // On mount or when searchParams changes, check for ?success, ?cancelled, or ?tab=subscription
+  // On mount or when searchParams changes, handle tab selection and checkout flags.
   useEffect(() => {
     const success = searchParams.get('success') === 'true'
     const cancelled = searchParams.get('cancelled') === 'true'
     const tab = searchParams.get('tab')
-    if (success || cancelled || tab === 'subscription') {
+    if (tab && ['members', 'subscription', 'team-settings'].includes(tab)) {
+      setSelectedTab(tab)
+    }
+    if (success || cancelled) {
       setSelectedTab('subscription')
     }
     if (success) {

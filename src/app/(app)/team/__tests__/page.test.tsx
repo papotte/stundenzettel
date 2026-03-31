@@ -177,7 +177,7 @@ describe('TeamPage', () => {
       displayName: 'Test User',
       expectedMonthlyHours: 160,
       driverCompensationPercent: 100,
-      passengerCompensationPercent: 90,
+      passengerCompensationPercent: 100,
     })
   })
 

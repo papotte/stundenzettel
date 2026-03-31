@@ -24,6 +24,116 @@ interface ExportParams {
 
 type ExcelFormatter = ExportParams['format']
 
+/** 1-based Excel column indices for timesheet grid (driver/passenger optional). */
+export type ExcelExportColumnLayout = {
+  week: number
+  date: number
+  location: number
+  from: number
+  to: number
+  pause: number
+  driver: number | null
+  compensated: number
+  passenger: number | null
+  mileage: number
+  columnCount: number
+  showDriver: boolean
+  showPassenger: boolean
+}
+
+export function buildExcelExportColumnLayout(
+  userSettings: UserSettings,
+): ExcelExportColumnLayout {
+  const showDriver = userSettings.exportIncludeDriverTime !== false
+  const showPassenger = userSettings.exportIncludePassengerTime !== false
+  let c = 1
+  const week = c++
+  const date = c++
+  const location = c++
+  const from = c++
+  const to = c++
+  const pause = c++
+  const driver = showDriver ? c++ : null
+  const compensated = c++
+  const passenger = showPassenger ? c++ : null
+  const mileage = c++
+  return {
+    week,
+    date,
+    location,
+    from,
+    to,
+    pause,
+    driver,
+    compensated,
+    passenger,
+    mileage,
+    columnCount: c - 1,
+    showDriver,
+    showPassenger,
+  }
+}
+
+function buildExcelHeaderRow1(
+  layout: ExcelExportColumnLayout,
+  t: ExportParams['t'],
+): ExcelJS.CellValue[] {
+  const row: ExcelJS.CellValue[] = Array(layout.columnCount).fill('')
+  row[layout.week - 1] = t('export.headerWeek')
+  row[layout.date - 1] = t('export.headerDate')
+  row[layout.location - 1] = t('export.headerLocation')
+  row[layout.from - 1] = t('export.headerWorkTime')
+  row[layout.to - 1] = ''
+  row[layout.pause - 1] = t('export.headerPauseDuration')
+  if (layout.driver != null) {
+    row[layout.driver - 1] = t('export.headerDriverTime')
+  }
+  row[layout.compensated - 1] = t('export.headerCompensatedTime')
+  if (layout.passenger != null) {
+    row[layout.passenger - 1] = t('export.headerPassengerTime')
+  }
+  row[layout.mileage - 1] = t('export.headerMileage')
+  return row
+}
+
+function buildExcelHeaderRow2(
+  layout: ExcelExportColumnLayout,
+  t: ExportParams['t'],
+): ExcelJS.CellValue[] {
+  const row: ExcelJS.CellValue[] = Array(layout.columnCount).fill('')
+  row[layout.from - 1] = t('export.headerFrom')
+  row[layout.to - 1] = t('export.headerTo')
+  return row
+}
+
+function styleTimesheetDataRow(
+  dataRow: ExcelJS.Row,
+  layout: ExcelExportColumnLayout,
+  defaultBorder: ExcelJS.Border,
+  allBorders: Partial<ExcelJS.Borders>,
+): void {
+  applyExcelRowStyles(dataRow, defaultBorder, allBorders)
+  dataRow.getCell(layout.location).alignment = {
+    horizontal: 'left',
+    wrapText: true,
+  }
+  dataRow.getCell(layout.from).alignment = { horizontal: 'right' }
+  dataRow.getCell(layout.to).alignment = { horizontal: 'right' }
+  dataRow.getCell(layout.pause).alignment = { horizontal: 'right' }
+  dataRow.getCell(layout.pause).numFmt = '0.00'
+  if (layout.driver != null) {
+    dataRow.getCell(layout.driver).alignment = { horizontal: 'right' }
+    dataRow.getCell(layout.driver).numFmt = '0.00'
+  }
+  dataRow.getCell(layout.compensated).alignment = { horizontal: 'right' }
+  dataRow.getCell(layout.compensated).numFmt = '0.00'
+  if (layout.passenger != null) {
+    dataRow.getCell(layout.passenger).alignment = { horizontal: 'right' }
+    dataRow.getCell(layout.passenger).numFmt = '0.00'
+  }
+  dataRow.getCell(layout.mileage).alignment = { horizontal: 'left' }
+}
+
 function applyExcelRowStyles(
   row: ExcelJS.Row,
   defaultBorder: ExcelJS.Border,
@@ -136,6 +246,7 @@ export const exportToExcel = async ({
 }: ExportParams) => {
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Stundenzettel')
+  const layout = buildExcelExportColumnLayout(userSettings)
 
   // --- PAGE SETUP & HEADERS/FOOTERS ---
   const companyName = userSettings?.companyName || ''
@@ -184,19 +295,34 @@ export const exportToExcel = async ({
     right: defaultBorder,
   }
 
-  // --- COLUMN WIDTHS ---
-  worksheet.columns = [
-    { key: 'week', width: 5 },
-    { key: 'date', width: 12 },
-    { key: 'location', width: 16 },
-    { key: 'from', width: 8 },
-    { key: 'to', width: 8 },
-    { key: 'pause', width: 8 },
-    { key: 'driverTime', width: 8 },
-    { key: 'compensated', width: 8 },
-    { key: 'passengerTime', width: 8 },
-    { key: 'mileage', width: 12 },
-  ]
+  const colWidths: Record<string, number> = {
+    week: 5,
+    date: 12,
+    location: 16,
+    from: 8,
+    to: 8,
+    pause: 8,
+    driverTime: 8,
+    compensated: 8,
+    passengerTime: 8,
+    mileage: 12,
+  }
+  worksheet.columns = Array.from({ length: layout.columnCount }, (_, i) => {
+    const keys = [
+      'week',
+      'date',
+      'location',
+      'from',
+      'to',
+      'pause',
+      ...(layout.showDriver ? (['driverTime'] as const) : []),
+      'compensated',
+      ...(layout.showPassenger ? (['passengerTime'] as const) : []),
+      'mileage',
+    ] as const
+    const key = keys[i] ?? 'mileage'
+    return { key, width: colWidths[key] ?? 8 }
+  })
 
   // --- IN-SHEET TITLE AND USER NAME ---
   const titleRow = worksheet.addRow([])
@@ -205,11 +331,11 @@ export const exportToExcel = async ({
   })
   titleRow.getCell('A').font = { bold: true, size: 12 }
 
-  worksheet.mergeCells(titleRow.number, 1, titleRow.number, 5)
+  worksheet.mergeCells(titleRow.number, 1, titleRow.number, layout.to)
 
   const userExportName =
     userSettings.displayName?.trim() || user?.displayName || user?.email || ''
-  const userCell = titleRow.getCell('J')
+  const userCell = titleRow.getCell(layout.columnCount)
   userCell.value = userExportName
   userCell.font = { bold: true, size: 10 }
   userCell.alignment = { horizontal: 'right' }
@@ -236,37 +362,23 @@ export const exportToExcel = async ({
     const headerRow2Num = headerRow1Num + 1
 
     const headerRow1 = worksheet.getRow(headerRow1Num)
-    headerRow1.values = [
-      t('export.headerWeek'),
-      t('export.headerDate'),
-      t('export.headerLocation'),
-      t('export.headerWorkTime'),
-      '',
-      t('export.headerPauseDuration'),
-      t('export.headerDriverTime'),
-      t('export.headerCompensatedTime'),
-      t('export.headerPassengerTime'),
-      t('export.headerMileage'),
-    ]
+    headerRow1.values = buildExcelHeaderRow1(layout, t)
 
     const headerRow2 = worksheet.getRow(headerRow2Num)
-    headerRow2.values = [
-      '',
-      '',
-      '',
-      t('export.headerFrom'),
-      t('export.headerTo'),
-    ]
+    headerRow2.values = buildExcelHeaderRow2(layout, t)
 
-    worksheet.mergeCells(headerRow1Num, 1, headerRow2Num, 1)
-    worksheet.mergeCells(headerRow1Num, 2, headerRow2Num, 2)
-    worksheet.mergeCells(headerRow1Num, 3, headerRow2Num, 3)
-    worksheet.mergeCells(headerRow1Num, 4, headerRow1Num, 5)
-    worksheet.mergeCells(headerRow1Num, 6, headerRow2Num, 6)
-    worksheet.mergeCells(headerRow1Num, 7, headerRow2Num, 7)
-    worksheet.mergeCells(headerRow1Num, 8, headerRow2Num, 8)
-    worksheet.mergeCells(headerRow1Num, 9, headerRow2Num, 9)
-    worksheet.mergeCells(headerRow1Num, 10, headerRow2Num, 10)
+    const mergeHeaderVertical = (col: number) => {
+      worksheet.mergeCells(headerRow1Num, col, headerRow2Num, col)
+    }
+    mergeHeaderVertical(layout.week)
+    mergeHeaderVertical(layout.date)
+    mergeHeaderVertical(layout.location)
+    worksheet.mergeCells(headerRow1Num, layout.from, headerRow1Num, layout.to)
+    mergeHeaderVertical(layout.pause)
+    if (layout.driver != null) mergeHeaderVertical(layout.driver)
+    mergeHeaderVertical(layout.compensated)
+    if (layout.passenger != null) mergeHeaderVertical(layout.passenger)
+    mergeHeaderVertical(layout.mileage)
 
     // Apply styles to header rows
     ;[headerRow1, headerRow2].forEach((row) => {
@@ -319,33 +431,23 @@ export const exportToExcel = async ({
             passengerTimeCellValue,
           } = getExcelRowValues(entry, userSettings, format)
 
-          const rowData = [
-            '', // Weekday gets merged
-            '', // Date gets merged
-            getLocationDisplayName(entry.location),
-            fromValue,
-            toValue,
-            pauseCellValue,
-            driverTimeCellValue,
-            compensatedHours,
-            passengerTimeCellValue,
-            '', // Mileage
-          ]
+          const rowData: ExcelJS.CellValue[] = Array(layout.columnCount).fill(
+            '',
+          )
+          rowData[layout.location - 1] = getLocationDisplayName(entry.location)
+          rowData[layout.from - 1] = fromValue
+          rowData[layout.to - 1] = toValue
+          rowData[layout.pause - 1] = pauseCellValue
+          if (layout.driver != null) {
+            rowData[layout.driver - 1] = driverTimeCellValue
+          }
+          rowData[layout.compensated - 1] = compensatedHours
+          if (layout.passenger != null) {
+            rowData[layout.passenger - 1] = passengerTimeCellValue
+          }
+          rowData[layout.mileage - 1] = ''
           const dataRow = worksheet.addRow(rowData)
-          applyExcelRowStyles(dataRow, defaultBorder, allBorders)
-          // Set specific alignments after applying common styles
-          dataRow.getCell(3).alignment = { horizontal: 'left', wrapText: true }
-          dataRow.getCell(4).alignment.horizontal = 'right'
-          dataRow.getCell(5).alignment.horizontal = 'right'
-          dataRow.getCell(6).alignment.horizontal = 'right'
-          dataRow.getCell(7).alignment.horizontal = 'right'
-          dataRow.getCell(8).alignment.horizontal = 'right'
-          dataRow.getCell(9).alignment.horizontal = 'right'
-          dataRow.getCell(10).alignment.horizontal = 'left'
-          dataRow.getCell(6).numFmt = '0.00'
-          dataRow.getCell(7).numFmt = '0.00'
-          dataRow.getCell(8).numFmt = '0.00'
-          dataRow.getCell(9).numFmt = '0.00'
+          styleTimesheetDataRow(dataRow, layout, defaultBorder, allBorders)
         })
 
         // Set and merge weekday and date cells
@@ -370,18 +472,12 @@ export const exportToExcel = async ({
           2,
         )
       } else if (!isSunday) {
-        const emptyRow = worksheet.addRow([
-          format.dateTime(day, 'weekday'),
-          format.dateTime(day, 'short'),
+        const emptyValues: ExcelJS.CellValue[] = Array(layout.columnCount).fill(
           '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-        ])
+        )
+        emptyValues[layout.week - 1] = format.dateTime(day, 'weekday')
+        emptyValues[layout.date - 1] = format.dateTime(day, 'short')
+        const emptyRow = worksheet.addRow(emptyValues)
         applyExcelRowStyles(emptyRow, defaultBorder, allBorders)
         emptyRow.getCell(1).fill = dayColFill
         emptyRow.getCell(1).alignment = {
@@ -407,31 +503,38 @@ export const exportToExcel = async ({
       getEntriesForDay,
       selectedMonth,
     )
-    const totalRow = worksheet.addRow([])
-    worksheet.mergeCells(totalRow.number, 1, totalRow.number, 7)
+    const totalRow = worksheet.addRow(Array(layout.columnCount).fill(''))
+    worksheet.mergeCells(
+      totalRow.number,
+      1,
+      totalRow.number,
+      layout.compensated - 1,
+    )
     const totalLabelCell = totalRow.getCell(1)
     totalLabelCell.value = t('export.footerTotalPerWeek')
     totalLabelCell.alignment = { horizontal: 'right' }
 
-    const totalCompCell = totalRow.getCell(8)
+    const totalCompCell = totalRow.getCell(layout.compensated)
     totalCompCell.value = weekCompTotal
     totalCompCell.numFmt = '0.00'
     totalCompCell.border = {
       bottom: { style: 'medium', color: { argb: 'FF000000' } },
     }
     totalCompCell.alignment = { horizontal: 'right' }
-    const totalPassengerCell = totalRow.getCell(9)
-    totalPassengerCell.value = weekPassengerTotal
-    totalPassengerCell.numFmt = '0.00'
-    totalPassengerCell.border = {
-      bottom: { style: 'medium', color: { argb: 'FF000000' } },
+    if (layout.passenger != null) {
+      const totalPassengerCell = totalRow.getCell(layout.passenger)
+      totalPassengerCell.value = weekPassengerTotal
+      totalPassengerCell.numFmt = '0.00'
+      totalPassengerCell.border = {
+        bottom: { style: 'medium', color: { argb: 'FF000000' } },
+      }
+      totalPassengerCell.alignment = { horizontal: 'right' }
     }
-    totalPassengerCell.alignment = { horizontal: 'right' }
     worksheet.addRow([]) // Blank row for spacing
   })
 
   // -- GRAND TOTAL AND EXPECTED HOURS ROW --
-  const grandTotalRow = worksheet.addRow([])
+  const grandTotalRow = worksheet.addRow(Array(layout.columnCount).fill(''))
 
   // --- EXPECTED HOURS  ---
   const expectedHours = calculateExpectedMonthlyHours(userSettings)
@@ -460,28 +563,37 @@ export const exportToExcel = async ({
     0,
   )
 
-  worksheet.mergeCells(grandTotalRow.number, 4, grandTotalRow.number, 7)
-  const grandTotalLabelCell = grandTotalRow.getCell(4)
+  worksheet.mergeCells(
+    grandTotalRow.number,
+    layout.from,
+    grandTotalRow.number,
+    layout.compensated - 1,
+  )
+  const grandTotalLabelCell = grandTotalRow.getCell(layout.from)
   grandTotalLabelCell.value = t('export.footerTotalHours')
   grandTotalLabelCell.alignment = { horizontal: 'right' }
-  const grandTotalCompCell = grandTotalRow.getCell(8)
+  const grandTotalCompCell = grandTotalRow.getCell(layout.compensated)
   grandTotalCompCell.value = monthCompTotal
   grandTotalCompCell.numFmt = '0.00'
   grandTotalCompCell.border = {
     bottom: { style: 'double', color: { argb: 'FF000000' } },
   }
   grandTotalCompCell.alignment = { horizontal: 'right' }
-  const grandTotalPassengerCell = grandTotalRow.getCell(9)
-  grandTotalPassengerCell.value = monthPassengerTotal
-  grandTotalPassengerCell.numFmt = '0.00'
-  grandTotalPassengerCell.border = {
-    bottom: { style: 'double', color: { argb: 'FF000000' } },
+  if (layout.passenger != null) {
+    const grandTotalPassengerCell = grandTotalRow.getCell(layout.passenger)
+    grandTotalPassengerCell.value = monthPassengerTotal
+    grandTotalPassengerCell.numFmt = '0.00'
+    grandTotalPassengerCell.border = {
+      bottom: { style: 'double', color: { argb: 'FF000000' } },
+    }
+    grandTotalPassengerCell.alignment = { horizontal: 'right' }
   }
-  grandTotalPassengerCell.alignment = { horizontal: 'right' }
 
   // -- GRAND TOTAL AND OVERTIME ROW --
-  const afterConversionRow = worksheet.addRow([])
-  const passengerCompPercent = userSettings.passengerCompensationPercent ?? 90
+  const afterConversionRow = worksheet.addRow(
+    Array(layout.columnCount).fill(''),
+  )
+  const passengerCompPercent = userSettings.passengerCompensationPercent ?? 100
   const compensatedPassengerHours =
     monthPassengerTotal * (passengerCompPercent / 100)
 
@@ -510,19 +622,24 @@ export const exportToExcel = async ({
   // --- SECOND MONTHLY TOTAL CELLS ---
   worksheet.mergeCells(
     afterConversionRow.number,
-    4,
+    layout.from,
     afterConversionRow.number,
-    7,
+    layout.compensated - 1,
   )
-  const afterConversionLabelCell = afterConversionRow.getCell(4)
+  const afterConversionLabelCell = afterConversionRow.getCell(layout.from)
   afterConversionLabelCell.value = t('export.footerTotalAfterConversion')
   afterConversionLabelCell.alignment = { horizontal: 'right' }
 
-  const afterConversionValueCell = afterConversionRow.getCell(8)
+  const afterConversionValueCell = afterConversionRow.getCell(
+    layout.compensated,
+  )
   afterConversionValueCell.value = monthCompTotal + compensatedPassengerHours
   afterConversionValueCell.numFmt = '0.00'
-  afterConversionRow.getCell(9).value = compensatedPassengerHours
-  afterConversionRow.getCell(9).numFmt = '0.00'
+  if (layout.passenger != null) {
+    afterConversionRow.getCell(layout.passenger).value =
+      compensatedPassengerHours
+    afterConversionRow.getCell(layout.passenger).numFmt = '0.00'
+  }
 
   // --- SAVE FILE ---
   const buffer = await workbook.xlsx.writeBuffer()

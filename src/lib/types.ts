@@ -22,6 +22,8 @@ export interface TimeEntry {
 /** Computed when loading settings; not persisted to Firestore (see user-settings-service). */
 export interface UserSettingsLocked {
   compensation?: boolean
+  /** Team disallows member override for export column defaults. */
+  export?: boolean
 }
 
 export interface UserSettings {
@@ -36,8 +38,12 @@ export interface UserSettings {
   companyPhone2?: string
   companyFax?: string
   driverCompensationPercent?: number // percent, default 100
-  passengerCompensationPercent?: number // percent, default 90
+  passengerCompensationPercent?: number // percent, default 100
   expectedMonthlyHours?: number // expected working hours per month, default 160
+  /** Show driver time column in timesheet / Excel; merged from team defaults when applicable. */
+  exportIncludeDriverTime?: boolean
+  /** Show passenger time column in timesheet / Excel; merged from team defaults when applicable. */
+  exportIncludePassengerTime?: boolean
   locked?: UserSettingsLocked
 }
 
@@ -101,7 +107,7 @@ export interface PricingPlan {
 // Team-wide settings (admin/owner configurable, optionally overridable by members)
 export interface TeamSettings {
   defaultDriverCompensationPercent?: number // default 100
-  defaultPassengerCompensationPercent?: number // default 90
+  defaultPassengerCompensationPercent?: number // default 100
   allowMemberOverrideCompensation?: boolean // default true
   exportIncludeDriverTime?: boolean // default true
   exportIncludePassengerTime?: boolean // default true

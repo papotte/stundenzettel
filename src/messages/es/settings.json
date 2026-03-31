@@ -49,7 +49,12 @@
   "companyFax": "Número de fax",
   "companyFaxPlaceholder": "+34 912 345 680",
   "compensationSettings": "Configuraciones de compensación",
-  "compensationManagedByTeam": "El administrador de tu equipo ha definido los porcentajes de compensación para todos los miembros. No puedes cambiar estos valores.",
+  "exportSettings": "Configuraciones de exportación",
+  "exportIncludeDriverTime": "Incluir tiempo de conductor en exportaciones",
+  "exportIncludeDriverTimeDescription": "Muestra la columna de tiempo de conductor en tu vista previa de exportación y en el archivo Excel.",
+  "exportIncludePassengerTime": "Incluir tiempo de pasajero en exportaciones",
+  "exportIncludePassengerTimeDescription": "Muestra la columna de tiempo de pasajero en tu vista previa de exportación y en el archivo Excel.",
+  "openTeamOptions": "Abrir opciones del equipo",
   "driverCompensationPercent": "Compensación de tiempo como conductor (%)",
   "driverCompensationPercentDescription": "Porcentaje del tiempo de conducción como conductor que se cuenta como tiempo compensado.",
   "passengerCompensationPercent": "Compensación de tiempo como pasajero (%)",
@@ -109,5 +114,8 @@
   "installPromptTitle": "Instalar aplicación",
   "installPromptDescription": "Añade a la pantalla de inicio para acceder rápido.",
   "installPromptButton": "Añadir a la pantalla de inicio",
-  "installPromptIOSInstructions": "Para instalar la aplicación en tu dispositivo iOS, pulsa el botón compartir y luego \"Añadir a la pantalla de inicio\"."
+  "installPromptIOSInstructions": "Para instalar la aplicación en tu dispositivo iOS, pulsa el botón compartir y luego \"Añadir a la pantalla de inicio\".",
+  "managedByTeam": "El administrador de tu equipo ha establecido valores predeterminados para todos los miembros.",
+  "teamManagementForbidden": "No puedes cambiar estos valores.",
+  "teamManagementAllowed": "Eres administrador o propietario del equipo — ¡puedes cambiar esto!"
 }
