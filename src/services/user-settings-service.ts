@@ -169,10 +169,12 @@ async function loadUserSettingsWithTeamContext(
   let core: UserSettings
 
   if (settingsSnap.exists()) {
-    const rawData = settingsSnap.data() as Record<string, unknown>
+    const rawData = stripLockedFromFirestorePayload(
+      settingsSnap.data() as Record<string, unknown>,
+    )
     core = {
       ...DEFAULT_USER_SETTINGS,
-      ...stripLockedFromFirestorePayload(rawData),
+      ...rawData,
     } as UserSettings
     if (userSnap.exists()) {
       core = mergeUserDisplayName(core, userSnap.data())
