@@ -81,6 +81,16 @@ service cloud.firestore {
          exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)));
     }
 
+    // Team-wide settings: all members can read; only owner and admins can write.
+    match /teams/{teamId}/settings/{doc} {
+      allow read: if request.auth.uid != null &&
+        exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid));
+      allow write: if request.auth.uid != null &&
+        (request.auth.uid == get(/databases/$(database)/documents/teams/$(teamId)).data.ownerId ||
+         (exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)).data.role in ['owner', 'admin']));
+    }
+
     // Published monthly exports: members publish snapshots; owners/admins and the member can read.
     match /teams/{teamId}/memberExports/{memberId}/months/{monthKey} {
       allow read: if request.auth.uid != null &&

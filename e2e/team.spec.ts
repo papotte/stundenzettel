@@ -123,6 +123,50 @@ test.describe('Team Page', () => {
     })
   })
 
+  test.describe('Team export options', () => {
+    test('saving team Options hides driver column on Preview & Export', async ({
+      page,
+      loginUser,
+    }) => {
+      await loginUser(page)
+      await navigateToTeamPage(page)
+
+      await page.getByRole('button', { name: 'Create Team' }).click()
+      await page.getByLabel('Team Name').fill('Export Options E2E Team')
+      await page.getByRole('button', { name: 'Create Team' }).click()
+
+      await expect(page.getByTestId('create-team-dialog')).not.toBeVisible()
+      await expect(page.getByTestId('team-name')).toHaveText(
+        'Export Options E2E Team',
+      )
+
+      await page.getByRole('tab', { name: 'Options' }).click()
+      await expect(
+        page.getByText('Include driver time in exports by default'),
+      ).toBeVisible()
+
+      const driverSwitch = page.getByRole('switch', {
+        name: /Include driver time in exports by default/i,
+      })
+      await expect(driverSwitch).toHaveAttribute('data-state', 'checked')
+      await driverSwitch.click()
+      await expect(driverSwitch).toHaveAttribute('data-state', 'unchecked')
+
+      await page.getByTestId('saveTeamSettingsButton').click()
+      await expect(page.locator('[data-testid="toast-title"]')).toContainText(
+        'Team settings saved',
+      )
+
+      await page.getByRole('link', { name: 'Preview & Export' }).click()
+      await page.waitForURL('/export')
+      await expect(page.getByTestId('export-preview-card')).toBeVisible()
+
+      const preview = page.locator('.printable-area')
+      await expect(preview).toBeVisible()
+      await expect(preview.getByText('Driver Time (hrs)')).toHaveCount(0)
+    })
+  })
+
   test.describe('Team Invitations', () => {
     test('should accept and decline an invitation', async ({
       page,

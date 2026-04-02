@@ -109,7 +109,7 @@ export function useMemberSummaries(
           )
 
           const passengerCompPercent =
-            userSettings?.passengerCompensationPercent ?? 90
+            userSettings?.passengerCompensationPercent ?? 100
           const compensatedPassengerHours =
             passengerHours * (passengerCompPercent / 100)
 

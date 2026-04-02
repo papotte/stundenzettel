@@ -4,6 +4,7 @@ import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
 import { UserSettings } from '@/lib/types'
+import { getUserTeamMembership } from '@/services/team-service'
 import {
   getUserSettings,
   setUserSettings,
@@ -54,7 +55,21 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-jest.mock('@/services/user-settings-service')
+jest.mock('@/services/team-service', () => ({
+  getUserTeamMembership: jest.fn(),
+}))
+const mockGetUserTeamMembership = getUserTeamMembership as jest.Mock
+
+jest.mock('@/services/user-settings-service', () => {
+  const actual = jest.requireActual<
+    typeof import('@/services/user-settings-service')
+  >('@/services/user-settings-service')
+  return {
+    ...actual,
+    getUserSettings: jest.fn(),
+    setUserSettings: jest.fn(),
+  }
+})
 const mockGetUserSettings = getUserSettings as jest.Mock
 const mockSetUserSettings = setUserSettings as jest.Mock
 
@@ -70,7 +85,9 @@ const mockSettings: UserSettings = {
   companyFax: '54321',
   displayName: 'Export User',
   driverCompensationPercent: 100,
-  passengerCompensationPercent: 90,
+  passengerCompensationPercent: 100,
+  exportIncludeDriverTime: true,
+  exportIncludePassengerTime: true,
 }
 
 let currentSettings: UserSettings
@@ -91,6 +108,7 @@ describe('CompanyPage', () => {
       currentSettings = { ...currentSettings, ...newSettings }
       return Promise.resolve()
     })
+    mockGetUserTeamMembership.mockResolvedValue(null)
     mockAuthContext.user = createMockUser()
     mockAuthContext.loading = false
   })
@@ -137,8 +155,9 @@ describe('CompanyPage', () => {
         expect(screen.getByDisplayValue('12345')).toBeInTheDocument()
         expect(screen.getByDisplayValue('67890')).toBeInTheDocument()
         expect(screen.getByDisplayValue('54321')).toBeInTheDocument()
-        expect(screen.getByDisplayValue('100')).toBeInTheDocument()
-        expect(screen.getByDisplayValue('90')).toBeInTheDocument()
+        const hundreds = screen.getAllByDisplayValue('100')
+        expect(hundreds.length).toBeGreaterThanOrEqual(2)
+        expect(screen.getByText('settings.exportSettings')).toBeInTheDocument()
       })
     })
 
@@ -172,7 +191,9 @@ describe('CompanyPage', () => {
             companyPhone2: '67890',
             companyFax: '54321',
             driverCompensationPercent: 100,
-            passengerCompensationPercent: 90,
+            passengerCompensationPercent: 100,
+            exportIncludeDriverTime: true,
+            exportIncludePassengerTime: true,
           }),
         )
       })
@@ -270,7 +291,10 @@ describe('CompanyPage', () => {
     it('shows loading state while saving', async () => {
       const user = userEvent.setup()
       mockGetUserSettings.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100)),
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve(currentSettings), 100),
+          ),
       )
 
       renderWithProviders(<CompanyPage />)
@@ -292,6 +316,63 @@ describe('CompanyPage', () => {
 
       expect(screen.getByText('common.saving')).toBeInTheDocument()
     })
+
+    it('shows team lock alerts when compensation and export are locked by team policy (member)', async () => {
+      mockGetUserTeamMembership.mockResolvedValue({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      currentSettings = {
+        ...mockSettings,
+        locked: { compensation: true, export: true },
+      }
+      mockGetUserSettings.mockImplementation(() =>
+        Promise.resolve(currentSettings),
+      )
+
+      renderWithProviders(<CompanyPage />)
+
+      await waitFor(() => {
+        expect(screen.getAllByText('settings.managedByTeam')).toHaveLength(2)
+      })
+      expect(
+        screen.getAllByText('settings.teamManagementForbidden'),
+      ).toHaveLength(2)
+      expect(
+        screen.queryByText('settings.teamManagementAllowed'),
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows team lock alerts with team options link when compensation and export are locked (team admin)', async () => {
+      mockGetUserTeamMembership.mockResolvedValue({
+        teamId: 'team-1',
+        role: 'admin',
+      })
+      currentSettings = {
+        ...mockSettings,
+        locked: { compensation: true, export: true },
+      }
+      mockGetUserSettings.mockImplementation(() =>
+        Promise.resolve(currentSettings),
+      )
+
+      renderWithProviders(<CompanyPage />)
+
+      await waitFor(() => {
+        expect(screen.getAllByText('settings.managedByTeam')).toHaveLength(2)
+      })
+      expect(
+        screen.queryByText('settings.teamManagementForbidden'),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getAllByText('settings.teamManagementAllowed'),
+      ).toHaveLength(2)
+      const links = screen.getAllByRole('link', {
+        name: 'settings.openTeamOptions',
+      })
+      expect(links).toHaveLength(2)
+      expect(links[0]).toHaveAttribute('href', '/team?tab=team-settings')
+    })
   })
 
   describe('form fields', () => {
@@ -303,7 +384,9 @@ describe('CompanyPage', () => {
         companyPhone2: '',
         companyFax: '',
         driverCompensationPercent: 100,
-        passengerCompensationPercent: 90,
+        passengerCompensationPercent: 100,
+        exportIncludeDriverTime: true,
+        exportIncludePassengerTime: true,
       })
     })
 
@@ -332,6 +415,12 @@ describe('CompanyPage', () => {
       ).toBeInTheDocument()
       expect(
         screen.getByLabelText(/settings\.passengerCompensationPercent/i),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('settings.exportIncludeDriverTime'),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('settings.exportIncludePassengerTime'),
       ).toBeInTheDocument()
     })
 
@@ -363,6 +452,7 @@ describe('CompanyPage', () => {
       expect(
         screen.getByText('settings.compensationSettings'),
       ).toBeInTheDocument()
+      expect(screen.getByText('settings.exportSettings')).toBeInTheDocument()
       expect(
         screen.getByText('settings.driverCompensationPercent'),
       ).toBeInTheDocument()

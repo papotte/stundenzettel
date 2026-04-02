@@ -1,4 +1,10 @@
-import { AllTheProviders, act, renderHook, waitFor } from '@jest-setup'
+import {
+  AllTheProviders,
+  act,
+  defaultMockAuth,
+  renderHook,
+  waitFor,
+} from '@jest-setup'
 
 import * as timeEntryService from '@/services/time-entry-service'
 import * as userSettingsService from '@/services/user-settings-service'
@@ -19,6 +25,11 @@ describe('useTimeTracker', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockToast.mockClear()
+    defaultMockAuth.user = {
+      uid: 'user1',
+      displayName: null,
+      email: 'user1@example.com',
+    }
     jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([])
     jest.spyOn(userSettingsService, 'getUserSettings').mockResolvedValue({
       language: 'en',
@@ -26,6 +37,10 @@ describe('useTimeTracker', () => {
       defaultStartTime: '09:00',
       defaultEndTime: '17:00',
     })
+  })
+
+  afterEach(() => {
+    defaultMockAuth.user = null
   })
 
   function renderTimeTracker() {

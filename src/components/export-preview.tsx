@@ -12,10 +12,11 @@ import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { useUserSettings } from '@/hooks/use-user-settings'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
-import type { TimeEntry, UserSettings } from '@/lib/types'
+import type { TimeEntry } from '@/lib/types'
 import { compareEntriesByStartTime } from '@/lib/utils'
 import {
   getPublishedMonth,
@@ -27,7 +28,6 @@ import {
   getTimeEntries,
   updateTimeEntry,
 } from '@/services/time-entry-service'
-import { getUserSettings } from '@/services/user-settings-service'
 
 import { ExportPreviewActions } from './export-preview-actions'
 import TimeEntryForm from './time-entry-form'
@@ -38,9 +38,9 @@ export default function ExportPreview() {
   const t = useTranslations()
   const format = useFormatter()
   const { toast } = useToast()
+  const { data: userSettings, isPending: settingsPending } = useUserSettings()
   const [entries, setEntries] = useState<TimeEntry[]>([])
-  const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [entriesLoading, setEntriesLoading] = useState(true)
   const [selectedMonth, setSelectedMonth] = useState<Date>()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
@@ -52,25 +52,26 @@ export default function ExportPreview() {
   const [isPublishing, setIsPublishing] = useState(false)
 
   useEffect(() => {
-    if (!user) return
+    if (!user) {
+      setEntriesLoading(false)
+      return
+    }
     const fetchAndSetEntries = async () => {
-      setIsLoading(true)
+      setEntriesLoading(true)
       try {
-        const [fetchedEntries, settings, team] = await Promise.all([
+        const [fetchedEntries, team] = await Promise.all([
           getTimeEntries(user.uid),
-          getUserSettings(user.uid),
           getUserTeam(user.uid),
         ])
         setEntries(fetchedEntries)
-        setUserSettings(settings)
         setUserTeam(team)
       } catch (error) {
         console.error('Failed to load initial data from Firestore.', error)
       }
       setSelectedMonth(new Date())
-      setIsLoading(false)
+      setEntriesLoading(false)
     }
-    fetchAndSetEntries()
+    void fetchAndSetEntries()
   }, [user])
 
   const monthKey = selectedMonth
@@ -224,7 +225,14 @@ export default function ExportPreview() {
     setNewEntryDate(null)
   }
 
-  if (isLoading || !selectedMonth || !userSettings) {
+  const showSkeleton =
+    !user ||
+    entriesLoading ||
+    settingsPending ||
+    !selectedMonth ||
+    !userSettings
+
+  if (showSkeleton) {
     return (
       <Card className="shadow-lg">
         <CardContent className="p-4 sm:p-6">

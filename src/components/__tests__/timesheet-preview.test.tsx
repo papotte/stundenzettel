@@ -22,6 +22,8 @@ const mockUserSettings: UserSettings = {
   defaultStartTime: '09:00',
   defaultEndTime: '17:00',
   language: 'en',
+  driverCompensationPercent: 100,
+  passengerCompensationPercent: 100,
 }
 
 const mockEntries: TimeEntry[] = [
@@ -87,6 +89,10 @@ describe('TimesheetPreview', () => {
     expect(screen.getAllByText('09:00').length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText('17:00').length).toBeGreaterThanOrEqual(1)
 
+    expect(
+      screen.getAllByText('export.headerDriverTime').length,
+    ).toBeGreaterThan(0)
+
     // For the test data, there's one pause (30min -> 0.50) and one driver time (0.5 -> 0.50).
     expect(screen.getAllByText('0.50')).toHaveLength(2)
 
@@ -95,6 +101,24 @@ describe('TimesheetPreview', () => {
 
     // Check second entry (Sick Leave)
     expect(screen.getByText('Sick Leave')).toBeInTheDocument()
+  })
+
+  it('hides driver time column when exportIncludeDriverTime is false', () => {
+    render(
+      <TimesheetPreview
+        {...defaultProps}
+        userSettings={{
+          ...mockUserSettings,
+          exportIncludeDriverTime: false,
+        }}
+      />,
+    )
+
+    expect(
+      screen.queryByText('export.headerDriverTime'),
+    ).not.toBeInTheDocument()
+    // Only pause shows 0.50; driver hours cell is not rendered.
+    expect(screen.getAllByText('0.50')).toHaveLength(1)
   })
 
   it('hides edit and add buttons when readOnly is true', () => {

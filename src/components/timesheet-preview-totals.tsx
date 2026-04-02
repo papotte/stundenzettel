@@ -38,6 +38,8 @@ interface TimesheetPreviewTotalsProps {
   relevantWeeks: Date[][]
   getEntriesForDay: (day: Date) => TimeEntry[]
   userSettings: UserSettings
+  /** When false, passenger totals are omitted from the footer (matches hidden passenger column). */
+  showPassengerTimeCol?: boolean
 }
 
 export default function TimesheetPreviewTotals({
@@ -45,6 +47,7 @@ export default function TimesheetPreviewTotals({
   relevantWeeks,
   getEntriesForDay,
   userSettings,
+  showPassengerTimeCol = true,
 }: TimesheetPreviewTotalsProps) {
   const t = useTranslations()
 
@@ -76,7 +79,7 @@ export default function TimesheetPreviewTotals({
     [relevantWeeks, getEntriesForDay, selectedMonth],
   )
 
-  const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 90
+  const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 100
   const compensatedPassengerHours =
     monthPassengerTotal * (passengerCompPercent / 100)
 
@@ -89,6 +92,33 @@ export default function TimesheetPreviewTotals({
   const overtime = actualHours - expectedHours
   const overtimeClassName = overtimeTextColorClass(overtime)
 
+  const monthTotalsValues: TotalsRowValue[] = [
+    {
+      value: monthCompTotal.toFixed(2),
+      testId: 'timesheet-month-total',
+    },
+    showPassengerTimeCol
+      ? {
+          value: monthPassengerTotal.toFixed(2),
+          testId: 'timesheet-month-passenger-total',
+        }
+      : { value: '' },
+    { value: 'Km:' },
+    { value: '' },
+  ]
+
+  const afterConversionValues: TotalsRowValue[] = [
+    {
+      value: (monthCompTotal + compensatedPassengerHours).toFixed(2),
+      testId: 'timesheet-month-adjusted',
+    },
+    showPassengerTimeCol
+      ? { value: compensatedPassengerHours.toFixed(2) }
+      : { value: '' },
+    { value: '' },
+    { value: '' },
+  ]
+
   // Rows data structure
   const rowsData: TotalsRow[] = [
     {
@@ -99,22 +129,7 @@ export default function TimesheetPreviewTotals({
       },
       rightColumn: {
         label: t('export.footerTotalHours'),
-        values: [
-          {
-            value: monthCompTotal.toFixed(2),
-            testId: 'timesheet-month-total',
-          },
-          {
-            value: monthPassengerTotal.toFixed(2),
-            testId: 'timesheet-month-passenger-total',
-          },
-          {
-            value: 'Km:',
-          },
-          {
-            value: '',
-          },
-        ],
+        values: monthTotalsValues,
         className: 'border-b-4 border-double border-black pb-2',
       },
     },
@@ -127,21 +142,7 @@ export default function TimesheetPreviewTotals({
       },
       rightColumn: {
         label: t('export.footerTotalAfterConversion'),
-        values: [
-          {
-            value: (monthCompTotal + compensatedPassengerHours).toFixed(2),
-            testId: 'timesheet-month-adjusted',
-          },
-          {
-            value: compensatedPassengerHours.toFixed(2),
-          },
-          {
-            value: '',
-          },
-          {
-            value: '',
-          },
-        ],
+        values: afterConversionValues,
         className: 'pb-2',
       },
     },

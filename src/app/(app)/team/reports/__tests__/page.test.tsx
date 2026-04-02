@@ -121,7 +121,7 @@ describe('TeamReportsPage', () => {
       companyPhone2: '',
       companyFax: '',
       driverCompensationPercent: 100,
-      passengerCompensationPercent: 90,
+      passengerCompensationPercent: 100,
     }
     ;(getPublishedMonth as jest.Mock).mockResolvedValue({
       publishedAt: new Date(),
@@ -178,7 +178,7 @@ describe('TeamReportsPage', () => {
         companyPhone2: '',
         companyFax: '',
         driverCompensationPercent: 100,
-        passengerCompensationPercent: 90,
+        passengerCompensationPercent: 100,
       },
     })
 

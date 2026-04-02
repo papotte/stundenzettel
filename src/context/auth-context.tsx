@@ -14,11 +14,7 @@ import LoadingIcon from '@/components/ui/loading-icon'
 import { defaultLocale } from '@/i18n'
 import { auth as firebaseAuth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
-import { getUserLocale, setUserLocale } from '@/services/locale'
-import {
-  getUserSettings,
-  setUserSettings,
-} from '@/services/user-settings-service'
+import { setUserLocale } from '@/services/locale'
 
 interface AuthContextType {
   user: AuthenticatedUser | null
@@ -37,52 +33,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [, startTransition] = useTransition()
 
-  const syncLanguage = async (uid?: string) => {
-    let targetLanguage = undefined
-    if (uid) {
-      try {
-        // Get user's saved language preference
-        const settings = await getUserSettings(uid)
-        if (settings.language) {
-          targetLanguage = settings.language
-        } else {
-          // If user has no saved preference, save current cookie to user settings
-          const currentLanguage = await getUserLocale()
-          const updatedSettings = {
-            ...settings,
-            language: currentLanguage as 'en' | 'de',
-          }
-          console.info(
-            'Saving current language to user settings:',
-            updatedSettings.language,
-            'for user:',
-            uid,
-          )
-          await setUserSettings(uid, updatedSettings)
-        }
-      } catch (error) {
-        console.error('Failed to sync language on login:', error)
-      }
-    } else {
-      targetLanguage = defaultLocale
-    }
-
-    if (targetLanguage != undefined) {
-      console.info(
-        'Changing language to:',
-        targetLanguage,
-        'for user:',
-        uid || 'guest',
-      )
-      startTransition(() => {
-        setUserLocale(targetLanguage)
-      })
-    }
-  }
-
   const signOut = async () => {
-    // Sync language on logout
-    syncLanguage()
+    startTransition(() => {
+      setUserLocale(defaultLocale)
+    })
 
     if (firebaseAuth && typeof firebaseAuth.onAuthStateChanged === 'function') {
       await firebaseSignOut(firebaseAuth)
@@ -112,9 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: firebaseUser.email || '',
           }
           setUser(user)
-
-          // Sync language on login
-          await syncLanguage(user.uid)
         } else {
           setUser(null)
         }

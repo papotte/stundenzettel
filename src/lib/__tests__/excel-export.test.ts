@@ -9,7 +9,7 @@ import {
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
 import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
 
-import { exportToExcel } from '../excel-export'
+import { buildExcelExportColumnLayout, exportToExcel } from '../excel-export'
 
 // Mock ExcelJS before importing the module
 const mockWorkbookInstance = {
@@ -133,6 +133,77 @@ describe('excel-export', () => {
   let mockRow: MockRow
   let mockCell: MockCell
 
+  describe('buildExcelExportColumnLayout', () => {
+    const baseSettings: UserSettings = {
+      defaultWorkHours: 8,
+      defaultStartTime: '09:00',
+      defaultEndTime: '17:00',
+      language: 'en',
+      displayName: 'Test',
+      driverCompensationPercent: 100,
+      passengerCompensationPercent: 100,
+    }
+
+    it('uses 10 columns when driver and passenger export columns are enabled', () => {
+      const layout = buildExcelExportColumnLayout({
+        ...baseSettings,
+        exportIncludeDriverTime: true,
+        exportIncludePassengerTime: true,
+      })
+      expect(layout.columnCount).toBe(10)
+      expect(layout.driver).toBe(7)
+      expect(layout.compensated).toBe(8)
+      expect(layout.passenger).toBe(9)
+      expect(layout.mileage).toBe(10)
+      expect(layout.showDriver).toBe(true)
+      expect(layout.showPassenger).toBe(true)
+    })
+
+    it('omits driver column when exportIncludeDriverTime is false', () => {
+      const layout = buildExcelExportColumnLayout({
+        ...baseSettings,
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: true,
+      })
+      expect(layout.columnCount).toBe(9)
+      expect(layout.driver).toBeNull()
+      expect(layout.compensated).toBe(7)
+      expect(layout.passenger).toBe(8)
+      expect(layout.mileage).toBe(9)
+    })
+
+    it('omits passenger column when exportIncludePassengerTime is false', () => {
+      const layout = buildExcelExportColumnLayout({
+        ...baseSettings,
+        exportIncludeDriverTime: true,
+        exportIncludePassengerTime: false,
+      })
+      expect(layout.columnCount).toBe(9)
+      expect(layout.driver).toBe(7)
+      expect(layout.compensated).toBe(8)
+      expect(layout.passenger).toBeNull()
+      expect(layout.mileage).toBe(9)
+    })
+
+    it('uses 8 columns when both optional export columns are disabled', () => {
+      const layout = buildExcelExportColumnLayout({
+        ...baseSettings,
+        exportIncludeDriverTime: false,
+        exportIncludePassengerTime: false,
+      })
+      expect(layout.columnCount).toBe(8)
+      expect(layout.driver).toBeNull()
+      expect(layout.compensated).toBe(7)
+      expect(layout.passenger).toBeNull()
+      expect(layout.mileage).toBe(8)
+    })
+
+    it('treats undefined export flags as enabled', () => {
+      const layout = buildExcelExportColumnLayout(baseSettings)
+      expect(layout.columnCount).toBe(10)
+    })
+  })
+
   const mockUser: AuthenticatedUser = {
     uid: 'user-123',
     displayName: 'Test User',
@@ -151,7 +222,7 @@ describe('excel-export', () => {
     companyPhone2: '098-765-4321',
     companyFax: '111-222-3333',
     driverCompensationPercent: 100,
-    passengerCompensationPercent: 90,
+    passengerCompensationPercent: 100,
     expectedMonthlyHours: 160,
   }
 
@@ -467,8 +538,8 @@ describe('excel-export', () => {
         format: mockFormat,
       })
 
-      // Should use displayName from settings
-      expect(mockRow.getCell).toHaveBeenCalledWith('J')
+      // User name is placed in the last column (10 when driver + passenger shown)
+      expect(mockRow.getCell).toHaveBeenCalledWith(10)
     })
   })
 
@@ -656,7 +727,7 @@ describe('excel-export', () => {
 
       const settingsWithPassengerComp: UserSettings = {
         ...defaultUserSettings,
-        passengerCompensationPercent: 90,
+        passengerCompensationPercent: 100,
       }
 
       await callExportToExcel({

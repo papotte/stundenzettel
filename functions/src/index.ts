@@ -15,6 +15,7 @@ import {
   FirestoreEvent,
   onDocumentCreated,
   onDocumentUpdated,
+  onDocumentWritten,
 } from 'firebase-functions/v2/firestore'
 import { onRequest } from 'firebase-functions/v2/https'
 import Stripe from 'stripe'
@@ -58,6 +59,111 @@ const getDb = (): FirebaseFirestore.Firestore => {
     })
   }
   return db
+}
+
+const DEFAULT_TEAM_DRIVER_COMP_PERCENT = 100
+const DEFAULT_TEAM_PASSENGER_COMP_PERCENT = 100
+const DEFAULT_EXPORT_INCLUDE_DRIVER = true
+const DEFAULT_EXPORT_INCLUDE_PASSENGER = true
+
+/** Aligns with `defaultTeamSettings` in `src/services/team-settings-service.ts`. */
+type TeamMemberDefaultsPayload = {
+  driverCompensationPercent: number
+  passengerCompensationPercent: number
+  exportIncludeDriverTime: boolean
+  exportIncludePassengerTime: boolean
+}
+
+function resolvedMemberDefaultsFromTeamSettings(
+  data: FirebaseFirestore.DocumentData | undefined,
+): TeamMemberDefaultsPayload {
+  if (!data) {
+    return {
+      driverCompensationPercent: DEFAULT_TEAM_DRIVER_COMP_PERCENT,
+      passengerCompensationPercent: DEFAULT_TEAM_PASSENGER_COMP_PERCENT,
+      exportIncludeDriverTime: DEFAULT_EXPORT_INCLUDE_DRIVER,
+      exportIncludePassengerTime: DEFAULT_EXPORT_INCLUDE_PASSENGER,
+    }
+  }
+  return {
+    driverCompensationPercent:
+      (data.defaultDriverCompensationPercent as number | undefined) ??
+      DEFAULT_TEAM_DRIVER_COMP_PERCENT,
+    passengerCompensationPercent:
+      (data.defaultPassengerCompensationPercent as number | undefined) ??
+      DEFAULT_TEAM_PASSENGER_COMP_PERCENT,
+    exportIncludeDriverTime:
+      (data.exportIncludeDriverTime as boolean | undefined) ??
+      DEFAULT_EXPORT_INCLUDE_DRIVER,
+    exportIncludePassengerTime:
+      (data.exportIncludePassengerTime as boolean | undefined) ??
+      DEFAULT_EXPORT_INCLUDE_PASSENGER,
+  }
+}
+
+function diffMemberDefaults(
+  before: TeamMemberDefaultsPayload,
+  after: TeamMemberDefaultsPayload,
+): Partial<TeamMemberDefaultsPayload> {
+  const out: Partial<TeamMemberDefaultsPayload> = {}
+  if (before.driverCompensationPercent !== after.driverCompensationPercent) {
+    out.driverCompensationPercent = after.driverCompensationPercent
+  }
+  if (
+    before.passengerCompensationPercent !== after.passengerCompensationPercent
+  ) {
+    out.passengerCompensationPercent = after.passengerCompensationPercent
+  }
+  if (before.exportIncludeDriverTime !== after.exportIncludeDriverTime) {
+    out.exportIncludeDriverTime = after.exportIncludeDriverTime
+  }
+  if (before.exportIncludePassengerTime !== after.exportIncludePassengerTime) {
+    out.exportIncludePassengerTime = after.exportIncludePassengerTime
+  }
+  return out
+}
+
+async function propagateTeamDefaultsToAllMembers(
+  teamId: string,
+  updates: Partial<TeamMemberDefaultsPayload>,
+): Promise<void> {
+  if (Object.keys(updates).length === 0) {
+    return
+  }
+
+  const membersSnap = await getDb()
+    .collection('teams')
+    .doc(teamId)
+    .collection('members')
+    .get()
+
+  if (membersSnap.empty) {
+    return
+  }
+
+  let batch = getDb().batch()
+  let opCount = 0
+  for (const memberDoc of membersSnap.docs) {
+    const uid = memberDoc.id
+    const ref = getDb().doc(`users/${uid}/settings/general`)
+    batch.set(ref, updates, { merge: true })
+    opCount++
+    if (opCount >= 500) {
+      await batch.commit()
+      batch = getDb().batch()
+      opCount = 0
+    }
+  }
+  if (opCount > 0) {
+    await batch.commit()
+  }
+
+  info('Propagated team default field changes to all members', {
+    teamId,
+    memberCount: membersSnap.size,
+    updatedFields: Object.keys(updates),
+    ...updates,
+  })
 }
 
 interface Payment {
@@ -457,6 +563,67 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, stripe: Stripe) {
 }
 
 // Firestore triggers for team management
+/** When team defaults (compensation or export columns) change, push resolved values to every member's user settings (admin cannot write other users' docs from the client). */
+export const onTeamSettingsWritten = onDocumentWritten(
+  {
+    document: 'teams/{teamId}/settings/general',
+    region: 'europe-west1',
+    secrets: ['NEXT_PUBLIC_FIREBASE_DATABASE_ID'],
+  },
+  async (event) => {
+    const teamId = event.params.teamId as string
+    const change = event.data
+    if (!change?.after.exists) {
+      return
+    }
+
+    const beforeExists = change.before.exists
+    const afterResolved = resolvedMemberDefaultsFromTeamSettings(
+      change.after.data(),
+    )
+
+    if (!beforeExists) {
+      await propagateTeamDefaultsToAllMembers(teamId, afterResolved)
+      return
+    }
+
+    const beforeResolved = resolvedMemberDefaultsFromTeamSettings(
+      change.before.data(),
+    )
+    const delta = diffMemberDefaults(beforeResolved, afterResolved)
+    await propagateTeamDefaultsToAllMembers(teamId, delta)
+  },
+)
+
+/** New members get current team defaults (compensation + export columns) written to their settings document. */
+export const onTeamMemberCreated = onDocumentCreated(
+  {
+    document: 'teams/{teamId}/members/{memberId}',
+    region: 'europe-west1',
+    secrets: ['NEXT_PUBLIC_FIREBASE_DATABASE_ID'],
+  },
+  async (event) => {
+    const teamId = event.params.teamId as string
+    const memberId = event.params.memberId as string
+
+    const settingsSnap = await getDb()
+      .doc(`teams/${teamId}/settings/general`)
+      .get()
+
+    const defaults = resolvedMemberDefaultsFromTeamSettings(settingsSnap.data())
+
+    await getDb()
+      .doc(`users/${memberId}/settings/general`)
+      .set(defaults, { merge: true })
+
+    info('Seeded team defaults for new team member', {
+      teamId,
+      memberId,
+      ...defaults,
+    })
+  },
+)
+
 export const onTeamCreated = onDocumentCreated(
   {
     document: 'teams/{teamId}',

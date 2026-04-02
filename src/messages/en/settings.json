@@ -49,6 +49,13 @@
   "companyFax": "Fax Number",
   "companyFaxPlaceholder": "+1 234 567 892",
   "compensationSettings": "Compensation Settings",
+  "managedByTeam": "Your team admin has set defaults for all members.",
+  "exportSettings": "Export Settings",
+  "exportIncludeDriverTime": "Include driver time in exports",
+  "exportIncludeDriverTimeDescription": "Show the driver time column in your export preview and Excel file.",
+  "exportIncludePassengerTime": "Include passenger time in exports",
+  "exportIncludePassengerTimeDescription": "Show the passenger time column in your export preview and Excel file.",
+  "openTeamOptions": "Open team options",
   "driverCompensationPercent": "Driver time compensation (%)",
   "driverCompensationPercentDescription": "Percentage of driving time as driver that is counted as compensated time.",
   "passengerCompensationPercent": "Passenger time compensation (%)",
@@ -108,5 +115,7 @@
   "installPromptTitle": "Install App",
   "installPromptDescription": "Add to your home screen for quick access.",
   "installPromptButton": "Add to Home Screen",
-  "installPromptIOSInstructions": "To install this app on your device, tap the share button and then \"Add to Home Screen\"."
+  "installPromptIOSInstructions": "To install this app on your device, tap the share button and then \"Add to Home Screen\".",
+  "teamManagementForbidden": "You cannot change these values.",
+  "teamManagementAllowed": "You're a team admin or owner — you can change this!"
 }

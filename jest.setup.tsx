@@ -1,6 +1,7 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import React from 'react'
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import '@testing-library/jest-dom'
 // Redefine `render` to always include NextIntlClientProvider
 import { RenderOptions, render as rtlRender } from '@testing-library/react'
@@ -8,6 +9,7 @@ import { RenderOptions, render as rtlRender } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
 
 import { formattingProps } from '@/lib/i18n/formats'
+import type { AuthenticatedUser } from '@/lib/types'
 
 // Import Firebase mocks
 import './src/test-utils/firebase-mocks'
@@ -36,7 +38,11 @@ Element.prototype.hasPointerCapture = jest.fn()
 Element.prototype.scrollIntoView = jest.fn()
 
 // Global mock for useAuth that can be overridden in individual tests
-const defaultMockAuth = {
+export const defaultMockAuth: {
+  user: AuthenticatedUser | null
+  loading: boolean
+  signOut: jest.Mock
+} = {
   user: null,
   loading: false,
   signOut: jest.fn(),
@@ -63,7 +69,7 @@ jest.mock('@/context/subscription-context', () => ({
 }))
 
 // Export for use in tests
-export { defaultMockAuth, defaultMockSubscriptionContext }
+export { defaultMockSubscriptionContext }
 
 // Avoid loading next/cache (use cache, etc.) in Node—uses TextEncoder.
 jest.mock('next/cache', () => ({
@@ -123,21 +129,35 @@ const messages = {
   },
 }
 
+function TestQueryClientProvider({ children }: React.PropsWithChildren) {
+  const [client] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+        },
+      }),
+  )
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+}
+
 export const AllTheProviders =
   (locale: string = 'en') =>
   ({ children }: React.PropsWithChildren) => {
     return (
-      <NextIntlClientProvider
-        locale={locale}
-        messages={messages}
-        formats={formattingProps}
-        onError={(_) => {}}
-        getMessageFallback={({ namespace, key }) =>
-          `${namespace != null ? namespace + '.' : ''}${key}`
-        }
-      >
-        {children}
-      </NextIntlClientProvider>
+      <TestQueryClientProvider>
+        <NextIntlClientProvider
+          locale={locale}
+          messages={messages}
+          formats={formattingProps}
+          onError={(_) => {}}
+          getMessageFallback={({ namespace, key }) =>
+            `${namespace != null ? namespace + '.' : ''}${key}`
+          }
+        >
+          {children}
+        </NextIntlClientProvider>
+      </TestQueryClientProvider>
     )
   }
 const customRender = (ui: React.ReactNode, options?: RenderOptions) =>

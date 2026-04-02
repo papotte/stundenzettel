@@ -42,7 +42,16 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-jest.mock('@/services/user-settings-service')
+jest.mock('@/services/user-settings-service', () => {
+  const actual = jest.requireActual<
+    typeof import('@/services/user-settings-service')
+  >('@/services/user-settings-service')
+  return {
+    ...actual,
+    getUserSettings: jest.fn(),
+    setUserSettings: jest.fn(),
+  }
+})
 const mockedGetUserSettings = getUserSettings as jest.Mock
 const mockedSetUserSettings = setUserSettings as jest.Mock
 
@@ -56,7 +65,8 @@ const mockSettings: UserSettings = {
   defaultWorkHours: 7.5,
   defaultStartTime: '08:30',
   defaultEndTime: '16:30',
-  language: 'de',
+  // Match AllTheProviders() default locale (en) so the language Select stays in sync with the form.
+  language: 'en',
 }
 
 let currentSettings: UserSettings
@@ -155,11 +165,7 @@ describe('PreferencesPage', () => {
         expect(displayNameInput).toHaveValue('New Export Name')
       })
 
-      // Submit the form
-      const form = document.querySelector('form')
-      form?.dispatchEvent(
-        new window.Event('submit', { bubbles: true, cancelable: true }),
-      )
+      await user.click(screen.getByTestId('saveButton'))
 
       // Check that the service was called first
       await waitFor(() => {
@@ -170,7 +176,7 @@ describe('PreferencesPage', () => {
             defaultWorkHours: 7.5,
             defaultStartTime: '08:30',
             defaultEndTime: '16:30',
-            language: 'de',
+            language: 'en',
           }),
         )
       })
@@ -204,11 +210,7 @@ describe('PreferencesPage', () => {
       await user.clear(displayNameInput)
       await user.type(displayNameInput, 'Changed Name')
 
-      // Submit the form
-      const form = document.querySelector('form')
-      form?.dispatchEvent(
-        new window.Event('submit', { bubbles: true, cancelable: true }),
-      )
+      await user.click(screen.getByTestId('saveButton'))
 
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({

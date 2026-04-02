@@ -49,6 +49,12 @@
   "companyFax": "Faxnummer",
   "companyFaxPlaceholder": "+49 123 456 791",
   "compensationSettings": "Vergütungseinstellungen",
+  "exportSettings": "Exporteinstellungen",
+  "exportIncludeDriverTime": "Fahrerzeit in Exporten einbeziehen",
+  "exportIncludeDriverTimeDescription": "Zeigt die Fahrerzeitspalte in Ihrer Exportvorschau und Excel-Datei an.",
+  "exportIncludePassengerTime": "Beifahrerzeit in Exporten einbeziehen",
+  "exportIncludePassengerTimeDescription": "Zeigt die Beifahrerzeitspalte in Ihrer Exportvorschau und Excel-Datei an.",
+  "openTeamOptions": "Team-Optionen öffnen",
   "driverCompensationPercent": "Vergütung Fahrerzeit (%)",
   "driverCompensationPercentDescription": "Prozentsatz der Fahrerzeit, der als vergütete Zeit angerechnet wird.",
   "passengerCompensationPercent": "Vergütung Beifahrerzeit (%)",
@@ -108,5 +114,8 @@
   "installPromptTitle": "App installieren",
   "installPromptDescription": "Zum Startbildschirm hinzufügen für schnellen Zugriff.",
   "installPromptButton": "Zum Startbildschirm",
-  "installPromptIOSInstructions": "Um die App auf Ihrem iOS-Gerät zu installieren, tippen Sie auf die Teilen-Schaltfläche und dann auf \"Zum Home-Bildschirm\"."
+  "installPromptIOSInstructions": "Um die App auf Ihrem iOS-Gerät zu installieren, tippen Sie auf die Teilen-Schaltfläche und dann auf \"Zum Home-Bildschirm\".",
+  "managedByTeam": "Ihr Team-Administrator hat Standardwerte für alle Mitglieder festgelegt.",
+  "teamManagementForbidden": "Sie können diese Werte nicht ändern.",
+  "teamManagementAllowed": "Sie sind Team-Admin oder Inhaber — Sie können das ändern!"
 }

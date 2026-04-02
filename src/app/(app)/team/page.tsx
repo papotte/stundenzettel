@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   Mail,
   Settings,
+  SlidersHorizontal,
   UserPlus,
   Users,
 } from 'lucide-react'
@@ -17,6 +18,7 @@ import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
 import { TeamMembersList } from '@/components/team/team-members-list'
+import { TeamOptionsCard } from '@/components/team/team-options-card'
 import { TeamReportsTab } from '@/components/team/team-reports-tab'
 import { TeamSettingsDialog } from '@/components/team/team-settings-dialog'
 import { TeamSubscriptionCard } from '@/components/team/team-subscription-card'
@@ -66,6 +68,8 @@ export default function TeamPage() {
   const [currentUserRole, setCurrentUserRole] = useState<
     'owner' | 'admin' | 'member'
   >('member')
+  const hasWritePermissions =
+    currentUserRole === 'owner' || currentUserRole === 'admin'
 
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -73,12 +77,15 @@ export default function TeamPage() {
   // Use state for tab, but initialize to 'members' and update in useEffect
   const [selectedTab, setSelectedTab] = useState('members')
 
-  // On mount or when searchParams changes, check for ?success, ?cancelled, or ?tab=subscription
+  // On mount or when searchParams changes, handle tab selection and checkout flags.
   useEffect(() => {
     const success = searchParams.get('success') === 'true'
     const cancelled = searchParams.get('cancelled') === 'true'
     const tab = searchParams.get('tab')
-    if (success || cancelled || tab === 'subscription') {
+    if (tab && ['members', 'subscription', 'team-settings'].includes(tab)) {
+      setSelectedTab(tab)
+    }
+    if (success || cancelled) {
       setSelectedTab('subscription')
     }
     if (success) {
@@ -324,8 +331,7 @@ export default function TeamPage() {
                     </CardDescription>
                   </div>
                   <div className="flex gap-2 flex-col md:flex-row">
-                    {(currentUserRole === 'owner' ||
-                      currentUserRole === 'admin') && (
+                    {hasWritePermissions && (
                       <InviteMemberDialog
                         teamId={team.id}
                         invitedBy={user.uid}
@@ -361,8 +367,7 @@ export default function TeamPage() {
                   <Users className="h-4 w-4" />
                   {t('teams.teamMembers')} ({members.length})
                 </TabsTrigger>
-                {(currentUserRole === 'owner' ||
-                  currentUserRole === 'admin') && (
+                {hasWritePermissions && (
                   <TabsTrigger
                     value="invitations"
                     className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
@@ -371,14 +376,32 @@ export default function TeamPage() {
                     {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
-                {(currentUserRole === 'owner' ||
-                  currentUserRole === 'admin') && (
+                {hasWritePermissions && (
                   <TabsTrigger
                     value="reports"
                     className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
                   >
                     <FileSpreadsheet className="h-4 w-4" />
                     {t('reports.tab')}
+                  </TabsTrigger>
+                )}
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
+                  <TabsTrigger
+                    value="team-settings"
+                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    {t('teams.teamWideSettings')}
+                  </TabsTrigger>
+                )}
+                {hasWritePermissions && (
+                  <TabsTrigger
+                    value="team-settings"
+                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    {t('teams.teamWideSettings')}
                   </TabsTrigger>
                 )}
                 <TabsTrigger
@@ -411,7 +434,7 @@ export default function TeamPage() {
                 </Card>
               </TabsContent>
 
-              {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+              {hasWritePermissions && (
                 <TabsContent value="invitations">
                   <Card>
                     <CardHeader>
@@ -430,9 +453,27 @@ export default function TeamPage() {
                 </TabsContent>
               )}
 
-              {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+              {hasWritePermissions && (
                 <TabsContent value="reports">
                   <TeamReportsTab teamId={team?.id ?? null} members={members} />
+                </TabsContent>
+              )}
+
+              {hasWritePermissions && (
+                <TabsContent value="team-settings">
+                  <TeamOptionsCard
+                    teamId={team.id}
+                    canEdit={hasWritePermissions}
+                  />
+                </TabsContent>
+              )}
+
+              {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
+                <TabsContent value="team-settings">
+                  <TeamOptionsCard
+                    teamId={team.id}
+                    canEdit={currentUserRole === 'owner'}
+                  />
                 </TabsContent>
               )}
 
