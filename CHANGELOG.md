@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/papotte/stundenzettel/compare/v1.26.0...v1.27.0) (2026-04-07)
+
+
+### Features
+
+* Team-wide settings for export defaults, compensation rates, and override permissions ([#200](https://github.com/papotte/stundenzettel/issues/200)) ([43ee54d](https://github.com/papotte/stundenzettel/commit/43ee54d9264678ec906203e54f007965d3f9485a))
+
 # [1.26.0](https://github.com/papotte/stundenzettel/compare/v1.25.1...v1.26.0) (2026-03-30)
 
 
