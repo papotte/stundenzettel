@@ -1,6 +1,10 @@
 import { expect, test } from './fixtures'
 import { addActiveSubscription } from './subscription-helpers'
-import { addDurationEntry, addManualEntry } from './test-helpers'
+import {
+  addDurationEntry,
+  addManualEntry,
+  formatForDayPicker,
+} from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
   test.beforeEach(async ({ page, loginUser }) => {
@@ -222,10 +226,8 @@ test.describe('Core Tracker Functionality', () => {
       await expect(popover).toBeVisible()
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
-      const dayNum = yesterday.getDate()
       await popover
-        .getByRole('button', { name: String(dayNum) })
-        .first()
+        .getByRole('button', { name: formatForDayPicker(yesterday) })
         .click()
       await popover.getByRole('button', { name: 'Copy' }).click()
       await expect(popover).not.toBeVisible()
@@ -249,10 +251,8 @@ test.describe('Core Tracker Functionality', () => {
       await expect(popover).toBeVisible()
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
-      const dayNum = yesterday.getDate()
       await popover
-        .getByRole('button', { name: String(dayNum) })
-        .first()
+        .getByRole('button', { name: formatForDayPicker(yesterday) })
         .click()
       await popover.getByRole('button', { name: 'Copy' }).click()
       await expect(popover).not.toBeVisible()

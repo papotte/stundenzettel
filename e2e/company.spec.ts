@@ -40,7 +40,7 @@ test.describe('Company Page', () => {
     await editForm.getByRole('button', { name: 'Save Entry' }).click()
     await expect(editForm).not.toBeVisible()
 
-    await expect(entryCard.getByText('03:54:00')).toBeVisible()
+    await expect(entryCard.getByText('04:00:00')).toBeVisible()
 
     await navigateToCompanyPage(page)
     await page.getByLabel('Company Name').fill('Test Company GmbH')

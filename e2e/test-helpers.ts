@@ -1,6 +1,7 @@
 import { type Page, expect } from '@playwright/test'
 
 import { format, isSameMonth, parse } from 'date-fns'
+import { enUS } from 'date-fns/locale'
 import { getApps } from 'firebase/app'
 import {
   addDoc,
@@ -10,6 +11,11 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore'
+
+/** Accessible name for a react-day-picker v9+ day button (en-US `PPPP`). */
+export function formatForDayPicker(date: Date): string {
+  return format(date, 'PPPP', { locale: enUS })
+}
 
 // Helper function to create a new manual entry for the currently selected day
 // ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.

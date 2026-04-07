@@ -385,16 +385,6 @@ export default function TeamPage() {
                     {t('reports.tab')}
                   </TabsTrigger>
                 )}
-                {(currentUserRole === 'owner' ||
-                  currentUserRole === 'admin') && (
-                  <TabsTrigger
-                    value="team-settings"
-                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    {t('teams.teamWideSettings')}
-                  </TabsTrigger>
-                )}
                 {hasWritePermissions && (
                   <TabsTrigger
                     value="team-settings"
@@ -464,15 +454,6 @@ export default function TeamPage() {
                   <TeamOptionsCard
                     teamId={team.id}
                     canEdit={hasWritePermissions}
-                  />
-                </TabsContent>
-              )}
-
-              {(currentUserRole === 'owner' || currentUserRole === 'admin') && (
-                <TabsContent value="team-settings">
-                  <TeamOptionsCard
-                    teamId={team.id}
-                    canEdit={currentUserRole === 'owner'}
                   />
                 </TabsContent>
               )}
