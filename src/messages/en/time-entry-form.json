@@ -18,6 +18,8 @@
   "pauseSuggestionTooltip": "Activity over {hours}. Recommended pause: {minutes} mins.",
   "driverTimeLabel": "Driving Time (as Driver)",
   "passengerTimeLabel": "Driving Time (as Passenger)",
+  "privateCarLabel": "Private car (PKW) used",
+  "privateCarKilometersLabel": "Kilometers driven (km)",
   "totalTimeLabel": "Total Compensated Time:",
   "warning10HoursTitle": "Warning: Exceeds 10 Hours",
   "warning10HoursDescription": "The work duration exceeds the legal maximum of 10 hours per day.",

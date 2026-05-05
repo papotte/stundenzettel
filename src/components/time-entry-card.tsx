@@ -14,6 +14,7 @@ import {
   Plane,
   Trash2,
   UserPlus,
+  Navigation,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -231,6 +232,16 @@ export default function TimeEntryCard({
                   <span>
                     {t('time_entry_card.passengerLabel', {
                       hours: entry.passengerTimeHours,
+                    })}
+                  </span>
+                </div>
+              ) : null}
+              {entry.privateCarKilometers && entry.privateCarKilometers > 0 ? (
+                <div className="flex items-center">
+                  <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                  <span>
+                    {t('time_entry_card.privateCarKmLabel', {
+                      km: entry.privateCarKilometers,
                     })}
                   </span>
                 </div>

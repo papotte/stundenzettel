@@ -72,6 +72,7 @@ const preferencesFormSchema = z.object({
     .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
   language: z.enum(locales),
   showActivities: z.boolean().optional(),
+  defaultPrivateCar: z.boolean().optional(),
 })
 
 type PreferencesFormValues = z.infer<typeof preferencesFormSchema>
@@ -104,6 +105,7 @@ export default function PreferencesPage() {
       language: language,
       displayName: '',
       showActivities: false,
+      defaultPrivateCar: false,
     },
   })
 
@@ -386,6 +388,29 @@ export default function PreferencesPage() {
                     )}
                   />
                 </div>
+                <FormField
+                  control={form.control}
+                  name="defaultPrivateCar"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                      <div className="space-y-0.5">
+                        <FormLabel>
+                          {t('settings.defaultPrivateCar')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t('settings.defaultPrivateCarDescription')}
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
+                          data-testid="default-private-car-switch"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

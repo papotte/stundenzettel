@@ -18,6 +18,7 @@ export interface TimeEntry {
   driverTimeHours?: number // optional, decimal hours spent as driver
   passengerTimeHours?: number // optional, decimal hours spent as passenger
   activities?: string // optional, free-text description of activities carried out
+  privateCarKilometers?: number // optional, km driven with private car (PKW)
 }
 
 /** Computed when loading settings; not persisted to Firestore (see user-settings-service). */
@@ -47,6 +48,8 @@ export interface UserSettings {
   exportIncludePassengerTime?: boolean
   /** Whether to show the Activities field in the time entry form. Default false. */
   showActivities?: boolean
+  /** Default state for the private car (PKW) toggle in new entries. */
+  defaultPrivateCar?: boolean
   locked?: UserSettingsLocked
 }
 
