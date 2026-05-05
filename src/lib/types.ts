@@ -17,6 +17,7 @@ export interface TimeEntry {
   pauseDuration?: number // in minutes
   driverTimeHours?: number // optional, decimal hours spent as driver
   passengerTimeHours?: number // optional, decimal hours spent as passenger
+  activities?: string // optional, free-text description of activities carried out
 }
 
 /** Computed when loading settings; not persisted to Firestore (see user-settings-service). */
@@ -44,6 +45,8 @@ export interface UserSettings {
   exportIncludeDriverTime?: boolean
   /** Show passenger time column in timesheet / Excel; merged from team defaults when applicable. */
   exportIncludePassengerTime?: boolean
+  /** Whether to show the Activities field in the time entry form. Default false. */
+  showActivities?: boolean
   locked?: UserSettingsLocked
 }
 

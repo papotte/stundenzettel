@@ -117,5 +117,7 @@
   "installPromptButton": "Add to Home Screen",
   "installPromptIOSInstructions": "To install this app on your device, tap the share button and then \"Add to Home Screen\".",
   "teamManagementForbidden": "You cannot change these values.",
-  "teamManagementAllowed": "You're a team admin or owner — you can change this!"
+  "teamManagementAllowed": "You're a team admin or owner — you can change this!",
+  "showActivities": "Show Activities Field",
+  "showActivitiesDescription": "Display a free-text activities field in the time entry form."
 }

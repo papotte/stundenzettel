@@ -43,5 +43,7 @@
   "durationInvalid": "Por favor ingresa una duración válida en minutos. El mínimo es 5 minutos.",
   "compensatedInfoLabel": "Información de tiempo compensado",
   "compensatedInfo": "Tiempo compensado = Tiempo trabajado - Pausa + Tiempo conductor × {driver}% + Tiempo pasajero × {passenger}%",
-  "smartSuggestionTooltip": "Sugerencia inteligente basada en tus entradas anteriores"
+  "smartSuggestionTooltip": "Sugerencia inteligente basada en tus entradas anteriores",
+  "activitiesLabel": "Actividades",
+  "activitiesPlaceholder": "Describe las actividades realizadas..."
 }

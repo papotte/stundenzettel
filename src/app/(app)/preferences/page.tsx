@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -70,6 +71,7 @@ const preferencesFormSchema = z.object({
     .string()
     .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
   language: z.enum(locales),
+  showActivities: z.boolean().optional(),
 })
 
 type PreferencesFormValues = z.infer<typeof preferencesFormSchema>
@@ -101,6 +103,7 @@ export default function PreferencesPage() {
       defaultEndTime: '17:00',
       language: language,
       displayName: '',
+      showActivities: false,
     },
   })
 
@@ -383,6 +386,29 @@ export default function PreferencesPage() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="showActivities"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>
+                          {t('settings.showActivities')}
+                        </FormLabel>
+                        <FormDescription>
+                          {t('settings.showActivitiesDescription')}
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </CardContent>
               <CardFooter>
                 <Button

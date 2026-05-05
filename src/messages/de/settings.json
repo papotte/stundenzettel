@@ -117,5 +117,7 @@
   "installPromptIOSInstructions": "Um die App auf Ihrem iOS-Gerät zu installieren, tippen Sie auf die Teilen-Schaltfläche und dann auf \"Zum Home-Bildschirm\".",
   "managedByTeam": "Ihr Team-Administrator hat Standardwerte für alle Mitglieder festgelegt.",
   "teamManagementForbidden": "Sie können diese Werte nicht ändern.",
-  "teamManagementAllowed": "Sie sind Team-Admin oder Inhaber — Sie können das ändern!"
+  "teamManagementAllowed": "Sie sind Team-Admin oder Inhaber — Sie können das ändern!",
+  "showActivities": "Tätigkeitsfeld anzeigen",
+  "showActivitiesDescription": "Zeigt ein Freitextfeld für Tätigkeiten im Zeiteintrag-Formular an."
 }
