@@ -177,6 +177,30 @@ describe('Time Entry Service', () => {
         passengerTimeHours: 0.5,
       })
     })
+
+    it('should omit undefined optional fields (Firestore rejects undefined)', async () => {
+      const entryWithUndefinedActivities: Omit<TimeEntry, 'id'> = {
+        ...mockEntry,
+        activities: undefined,
+        driverTimeHours: undefined,
+      }
+      const mockDocRefWithId = {
+        id: mockEntryId,
+      } as unknown as DocumentReference
+      mockAddDoc.mockResolvedValue(mockDocRefWithId)
+
+      await timeEntryService.addTimeEntry(entryWithUndefinedActivities)
+
+      const written = mockAddDoc.mock.calls[0][1] as Record<string, unknown>
+      expect(written).not.toHaveProperty('activities')
+      expect(written).not.toHaveProperty('driverTimeHours')
+      expect(written).toEqual({
+        userId: mockUserId,
+        location: 'Test Location',
+        startTime: expect.any(Object),
+        endTime: expect.any(Object),
+      })
+    })
   })
 
   describe('updateTimeEntry', () => {

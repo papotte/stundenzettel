@@ -8,6 +8,10 @@ import * as fs from 'fs'
 if (fs.existsSync('.env.test')) {
   dotenv.config({ path: '.env.test', quiet: true })
 }
+
+// Keep calendar math in the test worker aligned with Chromium (see `timezoneId` below).
+// Otherwise `format(new Date(), …)` / `getWeekOfMonth` in specs can disagree with client-side dates.
+process.env.TZ = 'UTC'
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -47,6 +51,8 @@ const config: PlaywrightTestConfig = {
     actionTimeout: 10000,
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: 'http://localhost:9003',
+    /* Match `process.env.TZ` above so timesheet rows and test helpers use the same calendar day. */
+    timezoneId: 'UTC',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',

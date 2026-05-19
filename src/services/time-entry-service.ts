@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 
 import { db } from '@/lib/firebase'
+import { clearUndefinedValues } from '@/lib/firestore-sanitizer'
 import type { TimeEntry } from '@/lib/types'
 
 // Helper to convert Firestore Timestamps to JS Dates in a document
@@ -45,7 +46,7 @@ const toFirestore = (entry: Partial<TimeEntry>): UpdateData<TimeEntry> => {
   }
   // Don't save the id field in the document data
   if ('id' in data) delete data.id
-  return data
+  return clearUndefinedValues(data) as UpdateData<TimeEntry>
 }
 
 export const addTimeEntry = async (

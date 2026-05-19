@@ -1,6 +1,7 @@
 import { Timestamp, deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore'
 
 import { db } from '@/lib/firebase'
+import { clearUndefinedValues } from '@/lib/firestore-sanitizer'
 import type { TimeEntry, UserSettings } from '@/lib/types'
 
 /** Snapshot of a month's export as stored in Firestore (dates as Timestamps). */
@@ -83,7 +84,7 @@ export async function publishMonthForTeam(
     entries: entries.map(entryToFirestore),
     userSettings,
   }
-  await setDoc(ref, snapshot)
+  await setDoc(ref, clearUndefinedValues(snapshot) as PublishedMonthSnapshot)
 }
 
 /**

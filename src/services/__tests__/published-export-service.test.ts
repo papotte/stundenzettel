@@ -62,6 +62,38 @@ describe('published-export-service', () => {
       expect(data.entries[0].location).toBe('Office')
       expect(data.userSettings).toEqual(mockUserSettings)
     })
+
+    it('omits undefined values so setDoc receives Firestore-valid data', async () => {
+      const entriesWithUndefined: TimeEntry[] = [
+        {
+          ...mockEntries[0],
+          activities: undefined,
+          driverTimeHours: undefined,
+        },
+      ]
+      const settings: UserSettings = {
+        ...mockUserSettings,
+        companyName: undefined,
+        locked: { compensation: true, export: undefined },
+      }
+
+      await publishMonthForTeam(
+        'team-1',
+        'user-1',
+        '2024-01',
+        entriesWithUndefined,
+        settings,
+      )
+
+      const [, data] = mockSetDoc.mock.calls[0]
+      expect(data.entries[0]).not.toHaveProperty('activities')
+      expect(data.entries[0]).not.toHaveProperty('driverTimeHours')
+      expect(data.userSettings).toEqual({
+        displayName: 'Test',
+        expectedMonthlyHours: 160,
+        locked: { compensation: true },
+      })
+    })
   })
 
   describe('getPublishedMonth', () => {
