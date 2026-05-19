@@ -61,12 +61,7 @@
       "groupName": "typescript and types"
     },
     {
-      "matchPackageNames": [
-        "next",
-        "@types/next",
-        "next-auth",
-        "@types/next-auth"
-      ],
+      "matchPackageNames": ["next", "next-auth", "@types/next-auth"],
       "groupName": "next.js dependencies"
     },
     {

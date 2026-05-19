@@ -117,5 +117,7 @@
   "installPromptIOSInstructions": "Para instalar la aplicación en tu dispositivo iOS, pulsa el botón compartir y luego \"Añadir a la pantalla de inicio\".",
   "managedByTeam": "El administrador de tu equipo ha establecido valores predeterminados para todos los miembros.",
   "teamManagementForbidden": "No puedes cambiar estos valores.",
-  "teamManagementAllowed": "Eres administrador o propietario del equipo — ¡puedes cambiar esto!"
+  "teamManagementAllowed": "Eres administrador o propietario del equipo — ¡puedes cambiar esto!",
+  "showActivities": "Mostrar campo de actividades",
+  "showActivitiesDescription": "Muestra un campo de texto libre para actividades en el formulario de entrada de tiempo."
 }

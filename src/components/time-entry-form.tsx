@@ -50,6 +50,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Tooltip,
   TooltipContent,
@@ -118,6 +119,7 @@ const formSchema = z
       .optional(),
     driverTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
     passengerTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
+    activities: z.string().optional(),
   })
   .refine(
     (data) => {
@@ -194,6 +196,7 @@ export default function TimeEntryForm({
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
       driverTimeHours: entry?.driverTimeHours || 0,
       passengerTimeHours: entry?.passengerTimeHours || 0,
+      activities: entry?.activities || '',
     },
   })
 
@@ -397,6 +400,7 @@ export default function TimeEntryForm({
           : timeStringToMinutes(String(values.pauseDuration || '')),
         driverTimeHours: finalIsSpecial ? 0 : values.driverTimeHours,
         passengerTimeHours: finalIsSpecial ? 0 : values.passengerTimeHours,
+        activities: values.activities || undefined,
       }
     } else {
       // duration mode
@@ -420,6 +424,7 @@ export default function TimeEntryForm({
         pauseDuration: 0,
         driverTimeHours: 0,
         passengerTimeHours: 0,
+        activities: values.activities || undefined,
       }
     }
     onSave(finalEntry)
@@ -884,6 +889,34 @@ export default function TimeEntryForm({
                       />
                     </div>
                   </div>
+                </>
+              )}
+
+              {userSettings?.showActivities && (
+                <>
+                  <Separator />
+                  <FormField
+                    control={form.control}
+                    name="activities"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {t('time_entry_form.activitiesLabel')}
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t(
+                              'time_entry_form.activitiesPlaceholder',
+                            )}
+                            className="resize-none"
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </>
               )}
 
