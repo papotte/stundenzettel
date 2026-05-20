@@ -25,13 +25,16 @@ interface ExportParams {
 
 type ExcelFormatter = ExportParams['format']
 
+/** Per-entry mileage cell: empty unless km is a positive finite value. */
 function formatKilometersForExcelDisplay(
   km: number | undefined | null,
   t: ExportParams['t'],
 ): string {
-  const safeKm = km != null && Number.isFinite(km) && km >= 0 ? km : 0
+  if (km == null || !Number.isFinite(km) || km <= 0) {
+    return ''
+  }
   return t('export.footerTotalKilometers', {
-    km: safeKm.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+    km: km.toLocaleString(undefined, { maximumFractionDigits: 2 }),
   })
 }
 
