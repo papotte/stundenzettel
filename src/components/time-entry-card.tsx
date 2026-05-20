@@ -206,7 +206,7 @@ export default function TimeEntryCard({
                   </span>
                 </div>
               )}
-              {entry.pauseDuration && entry.pauseDuration > 0 ? (
+              {entry.pauseDuration && entry.pauseDuration > 0 && (
                 <div className="flex items-center">
                   <Coffee className="mr-1.5 h-3.5 w-3.5" />
                   <span>
@@ -215,8 +215,8 @@ export default function TimeEntryCard({
                     })}
                   </span>
                 </div>
-              ) : null}
-              {entry.driverTimeHours && entry.driverTimeHours > 0 ? (
+              )}
+              {entry.driverTimeHours && entry.driverTimeHours > 0 && (
                 <div className="flex items-center">
                   <CarFront className="mr-1.5 h-3.5 w-3.5" />
                   <span>
@@ -225,8 +225,8 @@ export default function TimeEntryCard({
                     })}
                   </span>
                 </div>
-              ) : null}
-              {entry.passengerTimeHours && entry.passengerTimeHours > 0 ? (
+              )}
+              {entry.passengerTimeHours && entry.passengerTimeHours > 0 && (
                 <div className="flex items-center">
                   <UserPlus className="mr-1.5 h-3.5 w-3.5" />
                   <span>
@@ -235,17 +235,19 @@ export default function TimeEntryCard({
                     })}
                   </span>
                 </div>
-              ) : null}
-              {entry.privateCarKilometers && entry.privateCarKilometers > 0 ? (
-                <div className="flex items-center">
-                  <Navigation className="mr-1.5 h-3.5 w-3.5" />
-                  <span>
-                    {t('time_entry_card.privateCarKmLabel', {
-                      km: entry.privateCarKilometers,
-                    })}
-                  </span>
-                </div>
-              ) : null}
+              )}
+              {entry.privateCarKilometers != null &&
+                Number.isFinite(entry.privateCarKilometers) &&
+                entry.privateCarKilometers > 0 && (
+                  <div className="flex items-center">
+                    <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                    <span>
+                      {t('time_entry_card.privateCarKmLabel', {
+                        km: entry.privateCarKilometers,
+                      })}
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
           <div className="flex items-center gap-2">
