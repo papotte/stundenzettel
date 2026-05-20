@@ -415,10 +415,8 @@ export default function TimeEntryForm({
         activities: values.activities || undefined,
         privateCarKilometers:
           finalIsSpecial || !values.usePrivateCar
-            ? undefined
-            : (values.privateCarKilometers ?? 0) > 0
-              ? values.privateCarKilometers
-              : undefined,
+            ? 0
+            : (values.privateCarKilometers ?? 0),
       }
     } else {
       // duration mode
@@ -947,9 +945,7 @@ export default function TimeEntryForm({
                               value={field.value?.toString() ?? ''}
                               onChange={(e) => {
                                 const val = e.target.value
-                                field.onChange(
-                                  val === '' ? 0 : parseFloat(val),
-                                )
+                                field.onChange(val === '' ? 0 : parseFloat(val))
                               }}
                             />
                           </FormControl>

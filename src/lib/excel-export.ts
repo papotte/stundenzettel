@@ -6,6 +6,7 @@ import { useFormatter } from '@/lib/date-formatter'
 import {
   calculateExpectedMonthlyHours,
   calculateWeekCompensatedTime,
+  calculateWeekKilometers,
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
@@ -23,6 +24,16 @@ interface ExportParams {
 }
 
 type ExcelFormatter = ExportParams['format']
+
+function formatKilometersForExcelDisplay(
+  km: number | undefined | null,
+  t: ExportParams['t'],
+): string {
+  const safeKm = km != null && Number.isFinite(km) && km >= 0 ? km : 0
+  return t('export.footerTotalKilometers', {
+    km: safeKm.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+  })
+}
 
 /** 1-based Excel column indices for timesheet grid (driver/passenger optional). */
 export type ExcelExportColumnLayout = {
@@ -131,7 +142,7 @@ function styleTimesheetDataRow(
     dataRow.getCell(layout.passenger).alignment = { horizontal: 'right' }
     dataRow.getCell(layout.passenger).numFmt = '0.00'
   }
-  dataRow.getCell(layout.mileage).alignment = { horizontal: 'left' }
+  dataRow.getCell(layout.mileage).alignment = { horizontal: 'right' }
 }
 
 function applyExcelRowStyles(
@@ -193,6 +204,7 @@ function getExcelRowValues(
   pauseCellValue: number | ''
   driverTimeCellValue: number | ''
   passengerTimeCellValue: number | ''
+  mileageCellValue: number
 } {
   let compensatedHours = 0
   let fromValue = ''
@@ -224,6 +236,9 @@ function getExcelRowValues(
     entry.passengerTimeHours && entry.passengerTimeHours !== 0
       ? entry.passengerTimeHours
       : ''
+  const rawKm = entry.privateCarKilometers
+  const mileageCellValue =
+    rawKm != null && Number.isFinite(rawKm) && rawKm >= 0 ? rawKm : 0
 
   return {
     compensatedHours,
@@ -232,6 +247,7 @@ function getExcelRowValues(
     pauseCellValue,
     driverTimeCellValue,
     passengerTimeCellValue,
+    mileageCellValue,
   }
 }
 
@@ -429,6 +445,7 @@ export const exportToExcel = async ({
             pauseCellValue,
             driverTimeCellValue,
             passengerTimeCellValue,
+            mileageCellValue,
           } = getExcelRowValues(entry, userSettings, format)
 
           const rowData: ExcelJS.CellValue[] = Array(layout.columnCount).fill(
@@ -445,7 +462,10 @@ export const exportToExcel = async ({
           if (layout.passenger != null) {
             rowData[layout.passenger - 1] = passengerTimeCellValue
           }
-          rowData[layout.mileage - 1] = ''
+          rowData[layout.mileage - 1] = formatKilometersForExcelDisplay(
+            mileageCellValue,
+            t,
+          )
           const dataRow = worksheet.addRow(rowData)
           styleTimesheetDataRow(dataRow, layout, defaultBorder, allBorders)
         })
@@ -503,6 +523,11 @@ export const exportToExcel = async ({
       getEntriesForDay,
       selectedMonth,
     )
+    const weekPrivateCarKmTotal = calculateWeekKilometers(
+      week,
+      getEntriesForDay,
+      selectedMonth,
+    )
     const totalRow = worksheet.addRow(Array(layout.columnCount).fill(''))
     worksheet.mergeCells(
       totalRow.number,
@@ -529,6 +554,15 @@ export const exportToExcel = async ({
         bottom: { style: 'medium', color: { argb: 'FF000000' } },
       }
       totalPassengerCell.alignment = { horizontal: 'right' }
+    }
+    const totalKmCell = totalRow.getCell(layout.mileage)
+    totalKmCell.alignment = { horizontal: 'right' }
+    totalKmCell.value = formatKilometersForExcelDisplay(
+      weekPrivateCarKmTotal,
+      t,
+    )
+    totalKmCell.border = {
+      bottom: { style: 'medium', color: { argb: 'FF000000' } },
     }
     worksheet.addRow([]) // Blank row for spacing
   })
@@ -562,6 +596,11 @@ export const exportToExcel = async ({
       acc + calculateWeekPassengerTime(week, getEntriesForDay, selectedMonth),
     0,
   )
+  const monthPrivateCarKmTotal = weeksInMonth.reduce(
+    (acc, week) =>
+      acc + calculateWeekKilometers(week, getEntriesForDay, selectedMonth),
+    0,
+  )
 
   worksheet.mergeCells(
     grandTotalRow.number,
@@ -587,6 +626,15 @@ export const exportToExcel = async ({
       bottom: { style: 'double', color: { argb: 'FF000000' } },
     }
     grandTotalPassengerCell.alignment = { horizontal: 'right' }
+  }
+  const grandTotalKmCell = grandTotalRow.getCell(layout.mileage)
+  grandTotalKmCell.alignment = { horizontal: 'right' }
+  grandTotalKmCell.value = formatKilometersForExcelDisplay(
+    monthPrivateCarKmTotal,
+    t,
+  )
+  grandTotalKmCell.border = {
+    bottom: { style: 'double', color: { argb: 'FF000000' } },
   }
 
   // -- GRAND TOTAL AND OVERTIME ROW --

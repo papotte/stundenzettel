@@ -394,9 +394,7 @@ export default function PreferencesPage() {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                       <div className="space-y-0.5">
-                        <FormLabel>
-                          {t('settings.defaultPrivateCar')}
-                        </FormLabel>
+                        <FormLabel>{t('settings.defaultPrivateCar')}</FormLabel>
                         <FormDescription>
                           {t('settings.defaultPrivateCarDescription')}
                         </FormDescription>

@@ -142,6 +142,23 @@ export function calculateTotalCompensatedMinutes(
 }
 
 /**
+ * Sums a per-day value over a calendar week. When `selectedMonth` is set (monthly export),
+ * days outside that month are skipped — weeks can span month boundaries.
+ */
+function sumWeekDaysInSelectedMonth(
+  week: Date[],
+  selectedMonth: Date | undefined,
+  valueForDay: (day: Date) => number,
+): number {
+  return week.reduce((total, day) => {
+    if (selectedMonth && !isSameMonth(day, selectedMonth)) {
+      return total
+    }
+    return total + valueForDay(day)
+  }, 0)
+}
+
+/**
  * Calculates the total compensated time (in hours) for a week, using the same logic as the preview and export.
  * @param week Array of Date objects representing the days in the week
  * @param getEntriesForDay Function to get all TimeEntry objects for a given day
@@ -156,45 +173,34 @@ export function calculateWeekCompensatedTime(
   selectedMonth?: Date,
 ): number {
   if (!userSettings) return 0
-  return week.reduce((weekTotal, day) => {
-    // If selectedMonth is provided, only include days from that month
-    if (selectedMonth && !isSameMonth(day, selectedMonth)) {
-      return weekTotal
-    }
-
+  return sumWeekDaysInSelectedMonth(week, selectedMonth, (day) => {
     const entries = getEntriesForDay(day)
-    return (
-      weekTotal +
-      entries.reduce((acc, entry) => {
-        if (typeof entry.durationMinutes === 'number') {
-          return acc + entry.durationMinutes / 60
-        } else if (entry.endTime && entry.startTime) {
-          const workDuration = differenceInMinutes(
-            entry.endTime,
-            entry.startTime,
-          )
-          const isCompensatedSpecialDay = [
-            'SICK_LEAVE',
-            'PTO',
-            'BANK_HOLIDAY',
-          ].includes(entry.location)
-          if (isCompensatedSpecialDay) {
-            return acc + workDuration / 60
-          } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
-            const compensatedMinutes =
-              workDuration -
-              (entry.pauseDuration || 0) +
-              ((entry.driverTimeHours || 0) *
-                60 *
-                (userSettings.driverCompensationPercent ?? 100)) /
-                100
-            return acc + (compensatedMinutes > 0 ? compensatedMinutes / 60 : 0)
-          }
+    return entries.reduce((acc, entry) => {
+      if (typeof entry.durationMinutes === 'number') {
+        return acc + entry.durationMinutes / 60
+      } else if (entry.endTime && entry.startTime) {
+        const workDuration = differenceInMinutes(entry.endTime, entry.startTime)
+        const isCompensatedSpecialDay = [
+          'SICK_LEAVE',
+          'PTO',
+          'BANK_HOLIDAY',
+        ].includes(entry.location)
+        if (isCompensatedSpecialDay) {
+          return acc + workDuration / 60
+        } else if (entry.location !== 'TIME_OFF_IN_LIEU') {
+          const compensatedMinutes =
+            workDuration -
+            (entry.pauseDuration || 0) +
+            ((entry.driverTimeHours || 0) *
+              60 *
+              (userSettings.driverCompensationPercent ?? 100)) /
+              100
+          return acc + (compensatedMinutes > 0 ? compensatedMinutes / 60 : 0)
         }
-        return acc
-      }, 0)
-    )
-  }, 0)
+      }
+      return acc
+    }, 0)
+  })
 }
 
 /**
@@ -209,18 +215,34 @@ export function calculateWeekPassengerTime(
   getEntriesForDay: (day: Date) => TimeEntry[],
   selectedMonth?: Date,
 ): number {
-  return week.reduce((weekTotal, day) => {
-    // If selectedMonth is provided, only include days from that month
-    if (selectedMonth && !isSameMonth(day, selectedMonth)) {
-      return weekTotal
-    }
-
+  return sumWeekDaysInSelectedMonth(week, selectedMonth, (day) => {
     const entries = getEntriesForDay(day)
-    return (
-      weekTotal +
-      entries.reduce((acc, entry) => acc + (entry.passengerTimeHours || 0), 0)
+    return entries.reduce(
+      (acc, entry) => acc + (entry.passengerTimeHours || 0),
+      0,
     )
-  }, 0)
+  })
+}
+
+/**
+ * Sums PKW kilometers for a week for entries in the selected month.
+ * Only counts positive, finite `privateCarKilometers` (same rule as per-row export).
+ */
+export function calculateWeekKilometers(
+  week: Date[],
+  getEntriesForDay: (day: Date) => TimeEntry[],
+  selectedMonth?: Date,
+): number {
+  return sumWeekDaysInSelectedMonth(week, selectedMonth, (day) => {
+    const entries = getEntriesForDay(day)
+    return entries.reduce((acc, entry) => {
+      const km = entry.privateCarKilometers
+      if (km != null && Number.isFinite(km) && km > 0) {
+        return acc + km
+      }
+      return acc
+    }, 0)
+  })
 }
 
 /**

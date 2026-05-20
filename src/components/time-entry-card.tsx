@@ -11,10 +11,10 @@ import {
   Edit,
   Hourglass,
   Landmark,
+  Navigation,
   Plane,
   Trash2,
   UserPlus,
-  Navigation,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 

@@ -7,6 +7,7 @@ import {
   calculateTimeOffInLieuHours,
   calculateTotalCompensatedMinutes,
   calculateWeekCompensatedTime,
+  calculateWeekKilometers,
   calculateWeekPassengerTime,
   calculateWorkMinutes,
   parseTimeString,
@@ -639,6 +640,99 @@ describe('calculateWeekPassengerTime', () => {
 
     const result = calculateWeekPassengerTime(week, getEntriesForDay)
     expect(result).toBe(0)
+  })
+})
+
+describe('calculateWeekKilometers', () => {
+  it('sums positive private car km for the week', () => {
+    const week = [new Date('2025-08-01'), new Date('2025-08-02')]
+
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          privateCarKilometers: 12,
+        } as TimeEntry,
+      ],
+      '2025-08-02': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-02'), { hours: 10, minutes: 0 }),
+          endTime: set(new Date('2025-08-02'), { hours: 14, minutes: 0 }),
+          privateCarKilometers: 8.5,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    expect(calculateWeekKilometers(week, getEntriesForDay)).toBe(20.5)
+  })
+
+  it('filters by selected month when provided', () => {
+    const week = [
+      new Date('2025-07-31'),
+      new Date('2025-08-01'),
+      new Date('2025-08-02'),
+    ]
+    const august2025 = new Date(2025, 7, 15)
+
+    const entriesByDay = {
+      '2025-07-31': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date(2025, 6, 31), { hours: 9, minutes: 0 }),
+          endTime: set(new Date(2025, 6, 31), { hours: 17, minutes: 0 }),
+          privateCarKilometers: 100,
+        } as TimeEntry,
+      ],
+      '2025-08-01': [
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date(2025, 7, 1), { hours: 9, minutes: 0 }),
+          endTime: set(new Date(2025, 7, 1), { hours: 17, minutes: 0 }),
+          privateCarKilometers: 10,
+        } as TimeEntry,
+      ],
+    }
+
+    const getEntriesForDay = createMockGetEntriesForDay(entriesByDay)
+    expect(calculateWeekKilometers(week, getEntriesForDay, august2025)).toBe(10)
+  })
+
+  it('ignores zero, undefined, and non-finite km', () => {
+    const week = [new Date('2025-08-01')]
+    const entriesByDay = {
+      '2025-08-01': [
+        {
+          id: '1',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+          privateCarKilometers: 0,
+        } as TimeEntry,
+        {
+          id: '2',
+          userId: 'u1',
+          location: 'Test',
+          startTime: set(new Date('2025-08-01'), { hours: 9, minutes: 0 }),
+          endTime: set(new Date('2025-08-01'), { hours: 17, minutes: 0 }),
+        } as TimeEntry,
+      ],
+    }
+    expect(
+      calculateWeekKilometers(week, createMockGetEntriesForDay(entriesByDay)),
+    ).toBe(0)
   })
 })
 

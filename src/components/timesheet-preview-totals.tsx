@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import {
   calculateExpectedMonthlyHours,
   calculateWeekCompensatedTime,
+  calculateWeekKilometers,
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
@@ -79,6 +80,16 @@ export default function TimesheetPreviewTotals({
     [relevantWeeks, getEntriesForDay, selectedMonth],
   )
 
+  const monthPrivateCarKmTotal = useMemo(
+    () =>
+      relevantWeeks.reduce(
+        (acc: number, week: Date[]) =>
+          acc + calculateWeekKilometers(week, getEntriesForDay, selectedMonth),
+        0,
+      ),
+    [relevantWeeks, getEntriesForDay, selectedMonth],
+  )
+
   const passengerCompPercent = userSettings?.passengerCompensationPercent ?? 100
   const compensatedPassengerHours =
     monthPassengerTotal * (passengerCompPercent / 100)
@@ -103,8 +114,15 @@ export default function TimesheetPreviewTotals({
           testId: 'timesheet-month-passenger-total',
         }
       : { value: '' },
-    { value: 'Km:' },
     { value: '' },
+    {
+      value: t('export.footerTotalKilometers', {
+        km: monthPrivateCarKmTotal.toLocaleString(undefined, {
+          maximumFractionDigits: 2,
+        }),
+      }),
+      testId: 'timesheet-month-private-car-km-total',
+    },
   ]
 
   const afterConversionValues: TotalsRowValue[] = [

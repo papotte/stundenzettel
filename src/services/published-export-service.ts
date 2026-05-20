@@ -17,6 +17,8 @@ export interface PublishedMonthSnapshot {
     pauseDuration?: number
     driverTimeHours?: number
     passengerTimeHours?: number
+    activities?: string
+    privateCarKilometers?: number
   }>
   userSettings: UserSettings
 }
@@ -56,6 +58,8 @@ function entryFromFirestore(
     pauseDuration: raw.pauseDuration,
     driverTimeHours: raw.driverTimeHours,
     passengerTimeHours: raw.passengerTimeHours,
+    activities: raw.activities,
+    privateCarKilometers: raw.privateCarKilometers,
   }
 }
 
