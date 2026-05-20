@@ -48,9 +48,9 @@ describe('User Settings Service', () => {
       companyFax: '',
       driverCompensationPercent: 100,
       passengerCompensationPercent: 100,
+      defaultPrivateCar: false,
       exportIncludeDriverTime: true,
       exportIncludePassengerTime: true,
-      expectedMonthlyHours: undefined,
     }
 
     it('getUserSettings returns default settings when no user ID provided', async () => {
