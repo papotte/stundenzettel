@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useFormatter } from '@/lib/date-formatter'
+import { cn } from '@/lib/utils'
 
 export interface ExportPreviewActionsProps {
   onExport: () => void | Promise<void>
@@ -108,12 +109,16 @@ export function ExportPreviewActions({
   }
 
   function renderPublishButton() {
+    if (!userTeam) {
+      return null
+    }
+
     const publishButtonContent = (
       <Button
         variant="default"
         className={BUTTON_CLASS}
-        disabled={!userTeam ? true : isPublishing || !hasEntriesForMonth}
-        onClick={userTeam && !publishedAt ? onPublish : undefined}
+        disabled={isPublishing || !hasEntriesForMonth}
+        onClick={!publishedAt ? onPublish : undefined}
         data-testid="export-preview-publish-button"
       >
         <Send className="mr-2 h-4 w-4 shrink-0" />
@@ -124,15 +129,13 @@ export function ExportPreviewActions({
     )
 
     let tooltipContent: string | null = null
-    if (!userTeam) {
-      tooltipContent = t('export.publishForTeamHint')
-    } else if (!hasEntriesForMonth) {
+    if (!hasEntriesForMonth) {
       tooltipContent = t('export.noDataHint', {
         defaultValue: 'No data available for export in this month.',
       })
     }
 
-    if (userTeam && publishedAt) {
+    if (publishedAt) {
       return (
         <AlertDialog>
           <Tooltip>
@@ -181,10 +184,17 @@ export function ExportPreviewActions({
   }
 
   return (
-    <div className="mt-4 grid grid-cols-3 gap-x-2 gap-y-1 sm:mt-0">
+    <div
+      className={cn(
+        'mt-4 grid gap-x-2 gap-y-1 sm:mt-0',
+        userTeam ? 'grid-cols-3' : 'grid-cols-2',
+      )}
+    >
       <div className="flex min-w-0">{renderExportButton()}</div>
       <div className="flex min-w-0">{renderPdfButton()}</div>
-      <div className="flex  min-w-0">{renderPublishButton()}</div>
+      {userTeam ? (
+        <div className="flex min-w-0">{renderPublishButton()}</div>
+      ) : null}
       {userTeam && publishedAt && (
         <div
           className="col-start-3 flex items-center"
