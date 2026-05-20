@@ -1,3 +1,16 @@
+# [1.28.0](https://github.com/papotte/stundenzettel/compare/v1.27.0...v1.28.0) (2026-05-20)
+
+
+### Bug Fixes
+
+* e2e uses firebase emulators:exec ([b6d5887](https://github.com/papotte/stundenzettel/commit/b6d58876663036cf93163a855eb41952f0b8dd0b))
+* fe2e tests and make the pipeline use PLAYWRIGHT_PROJECT ([22e3e6a](https://github.com/papotte/stundenzettel/commit/22e3e6ac7328a76ec8e7844592b539b09a91e191))
+
+
+### Features
+
+* add Activities field to time entry form with user preference toggle ([#225](https://github.com/papotte/stundenzettel/issues/225)) ([126de74](https://github.com/papotte/stundenzettel/commit/126de74be129d8ea5c1ea3cfa61eb4febb58d009))
+
 # [1.27.0](https://github.com/papotte/stundenzettel/compare/v1.26.0...v1.27.0) (2026-04-07)
 
 
