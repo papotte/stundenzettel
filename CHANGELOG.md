@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/papotte/stundenzettel/compare/v1.28.0...v1.29.0) (2026-05-21)
+
+
+### Features
+
+* Add private car (PKW) kilometers tracking with conditional toggle ([#223](https://github.com/papotte/stundenzettel/issues/223)) ([9dc5adb](https://github.com/papotte/stundenzettel/commit/9dc5adbcc933922fbd9dbac52429e52c3f02822c))
+
 # [1.28.0](https://github.com/papotte/stundenzettel/compare/v1.27.0...v1.28.0) (2026-05-20)
 
 
