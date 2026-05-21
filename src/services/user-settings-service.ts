@@ -20,6 +20,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   companyFax: '',
   driverCompensationPercent: 100,
   passengerCompensationPercent: 100,
+  defaultPrivateCar: false,
   // expectedMonthlyHours is not included in default settings - it will be auto-calculated
 }
 

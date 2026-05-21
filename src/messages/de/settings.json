@@ -119,5 +119,7 @@
   "teamManagementForbidden": "Sie können diese Werte nicht ändern.",
   "teamManagementAllowed": "Sie sind Team-Admin oder Inhaber — Sie können das ändern!",
   "showActivities": "Tätigkeitsfeld anzeigen",
-  "showActivitiesDescription": "Zeigt ein Freitextfeld für Tätigkeiten im Zeiteintrag-Formular an."
+  "showActivitiesDescription": "Zeigt ein Freitextfeld für Tätigkeiten im Zeiteintrag-Formular an.",
+  "defaultPrivateCar": "Standardmäßig Privatwagen (PKW) aktiviert",
+  "defaultPrivateCarDescription": "Legt den Standardzustand des Privatwagen-Schalters für neue Einträge fest."
 }

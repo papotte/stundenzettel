@@ -119,5 +119,7 @@
   "teamManagementForbidden": "No puedes cambiar estos valores.",
   "teamManagementAllowed": "Eres administrador o propietario del equipo — ¡puedes cambiar esto!",
   "showActivities": "Mostrar campo de actividades",
-  "showActivitiesDescription": "Muestra un campo de texto libre para actividades en el formulario de entrada de tiempo."
+  "showActivitiesDescription": "Muestra un campo de texto libre para actividades en el formulario de entrada de tiempo.",
+  "defaultPrivateCar": "Coche propio (PKW) activado por defecto",
+  "defaultPrivateCarDescription": "Establece el estado predeterminado del interruptor de coche propio para nuevas entradas."
 }

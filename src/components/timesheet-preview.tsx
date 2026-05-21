@@ -24,6 +24,7 @@ import {
 import { useFormatter } from '@/lib/date-formatter'
 import {
   calculateWeekCompensatedTime,
+  calculateWeekKilometers,
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
@@ -121,6 +122,11 @@ export default function TimesheetPreview({
             selectedMonth,
           )
           const weekPassengerTotal = calculateWeekPassengerTime(
+            weekFiltered,
+            getEntriesForDay,
+            selectedMonth,
+          )
+          const weekPrivateCarKmTotal = calculateWeekKilometers(
             weekFiltered,
             getEntriesForDay,
             selectedMonth,
@@ -387,7 +393,15 @@ export default function TimesheetPreview({
                                 : ''}
                             </TableCell>
                           ) : null}
-                          <TableCell className="text-right print:p-1"></TableCell>
+                          <TableCell className="text-right print:p-1">
+                            {entry.privateCarKilometers != null &&
+                            Number.isFinite(entry.privateCarKilometers) &&
+                            entry.privateCarKilometers > 0
+                              ? t('time_entry_card.privateCarKmLabel', {
+                                  km: entry.privateCarKilometers,
+                                })
+                              : ''}
+                          </TableCell>
                         </TableRow>
                       )
                     })
@@ -416,7 +430,16 @@ export default function TimesheetPreview({
                           {weekPassengerTotal.toFixed(2)}
                         </div>
                       ) : null}
-                      <div className="flex-1 print:pb-1"></div>
+                      <div
+                        className="flex-1 text-right print:pb-0.5"
+                        data-testid={`timesheet-week-${weekNumber}-private-car-km`}
+                      >
+                        {t('export.footerTotalKilometers', {
+                          km: weekPrivateCarKmTotal.toLocaleString(undefined, {
+                            maximumFractionDigits: 2,
+                          }),
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>

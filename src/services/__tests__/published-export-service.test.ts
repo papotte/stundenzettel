@@ -132,6 +132,30 @@ describe('published-export-service', () => {
       expect(result!.entries[0].userId).toBe('user-1')
       expect(result!.userSettings).toEqual(mockUserSettings)
     })
+
+    it('restores privateCarKilometers from snapshot', async () => {
+      mockGetDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({
+          publishedAt: { toDate: () => new Date('2024-01-20') },
+          entries: [
+            {
+              id: 'e1',
+              userId: 'user-1',
+              startTime: { toDate: () => new Date('2024-01-15T09:00:00') },
+              endTime: { toDate: () => new Date('2024-01-15T17:00:00') },
+              location: 'Office',
+              privateCarKilometers: 18,
+            },
+          ],
+          userSettings: mockUserSettings,
+        }),
+      })
+
+      const result = await getPublishedMonth('team-1', 'user-1', '2024-01')
+
+      expect(result!.entries[0].privateCarKilometers).toBe(18)
+    })
   })
 
   describe('unpublishMonth', () => {

@@ -4,6 +4,7 @@ import { createDateFormatter } from '@/lib/date-formatter'
 import {
   calculateExpectedMonthlyHours,
   calculateWeekCompensatedTime,
+  calculateWeekKilometers,
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
@@ -39,6 +40,8 @@ const mockCalculateWeekPassengerTime =
   calculateWeekPassengerTime as jest.MockedFunction<
     typeof calculateWeekPassengerTime
   >
+const mockCalculateWeekKilometers =
+  calculateWeekKilometers as jest.MockedFunction<typeof calculateWeekKilometers>
 const mockGetWeeksForMonth = getWeeksForMonth as jest.MockedFunction<
   typeof getWeeksForMonth
 >
@@ -226,9 +229,16 @@ describe('excel-export', () => {
     expectedMonthlyHours: 160,
   }
 
-  const mockT = jest.fn((key: string) => key) as unknown as ReturnType<
-    typeof useTranslations
-  >
+  const mockT = jest.fn((key: string, values?: Record<string, unknown>) => {
+    if (
+      key === 'export.footerTotalKilometers' &&
+      values &&
+      typeof values.km === 'string'
+    ) {
+      return `${values.km} km`
+    }
+    return key
+  }) as unknown as ReturnType<typeof useTranslations>
 
   // Use the actual date formatter
   const mockFormat = createDateFormatter('en')
@@ -382,6 +392,7 @@ describe('excel-export', () => {
     mockCalculateExpectedMonthlyHours.mockReturnValue(160)
     mockCalculateWeekCompensatedTime.mockReturnValue(40)
     mockCalculateWeekPassengerTime.mockReturnValue(5)
+    mockCalculateWeekKilometers.mockReturnValue(0)
     mockFormatDecimalHours.mockImplementation((minutes) => {
       if (!minutes) return '0.00'
       return (minutes / 60).toFixed(2)
@@ -567,6 +578,32 @@ describe('excel-export', () => {
       expect(getLocationDisplayName).toHaveBeenCalledWith('Office')
     })
 
+    it('puts private car kilometers in the mileage column', async () => {
+      const entry: TimeEntry = {
+        id: 'entry-1',
+        userId: 'user-123',
+        location: 'Office',
+        startTime: new Date('2024-01-01T09:00:00'),
+        endTime: new Date('2024-01-01T17:00:00'),
+        privateCarKilometers: 42,
+      }
+
+      const { getEntriesForDay, getLocationDisplayName } =
+        createEntryMocks(entry)
+
+      await callExportToExcel({
+        entries: [entry],
+        getEntriesForDay,
+        getLocationDisplayName,
+      })
+
+      const dataRow = mockWorksheet.addRow.mock.calls
+        .map((c) => c[0] as unknown[])
+        .find((row) => row[2] === 'Office')
+      expect(dataRow).toBeDefined()
+      expect(dataRow![9]).toBe('42 km')
+    })
+
     it('should render entries with durationMinutes', async () => {
       const entry: TimeEntry = {
         id: 'entry-1',
@@ -684,6 +721,7 @@ describe('excel-export', () => {
 
       expect(mockCalculateWeekCompensatedTime).toHaveBeenCalled()
       expect(mockCalculateWeekPassengerTime).toHaveBeenCalled()
+      expect(mockCalculateWeekKilometers).toHaveBeenCalled()
     })
 
     it('should calculate and display monthly totals', async () => {

@@ -7,6 +7,7 @@
   "pauseLabel": "{minutes}m pause",
   "drivingLabel": "{hours}h driving",
   "passengerLabel": "{hours}h passenger",
+  "privateCarKmLabel": "{km} km (PKW)",
   "copyToLabel": "Copy to…",
   "copyToTitle": "Copy entry to"
 }

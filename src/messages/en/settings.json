@@ -119,5 +119,7 @@
   "teamManagementForbidden": "You cannot change these values.",
   "teamManagementAllowed": "You're a team admin or owner — you can change this!",
   "showActivities": "Show Activities Field",
-  "showActivitiesDescription": "Display a free-text activities field in the time entry form."
+  "showActivitiesDescription": "Display a free-text activities field in the time entry form.",
+  "defaultPrivateCar": "Private car (PKW) enabled by default",
+  "defaultPrivateCarDescription": "Sets the default state of the private car toggle for new entries."
 }

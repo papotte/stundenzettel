@@ -98,6 +98,7 @@ const formSchema = z
     location: z.string().min(2, {
       message: 'Location must be at least 2 characters.',
     }),
+    activities: z.string().optional(),
     date: z.date(),
     startTime: z
       .string()
@@ -119,7 +120,11 @@ const formSchema = z
       .optional(),
     driverTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
     passengerTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
-    activities: z.string().optional(),
+    usePrivateCar: z.boolean(),
+    privateCarKilometers: z.coerce
+      .number()
+      .min(0, 'Must be positive')
+      .optional(),
   })
   .refine(
     (data) => {
@@ -177,6 +182,10 @@ export default function TimeEntryForm({
     isDurationEntry && entry?.durationMinutes != null
       ? entry.durationMinutes
       : 15
+  const defaultUsePrivateCar =
+    entry != null
+      ? (entry.privateCarKilometers ?? 0) > 0
+      : (userSettings?.defaultPrivateCar ?? false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -184,6 +193,7 @@ export default function TimeEntryForm({
       mode: defaultMode,
       location: entry?.location || '',
       date: entry?.startTime ?? selectedDate ?? new Date(),
+      activities: entry?.activities || '',
       startTime:
         !isDurationEntry && entry && entry.startTime
           ? format(entry.startTime, 'shortTime')
@@ -196,7 +206,8 @@ export default function TimeEntryForm({
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
       driverTimeHours: entry?.driverTimeHours || 0,
       passengerTimeHours: entry?.passengerTimeHours || 0,
-      activities: entry?.activities || '',
+      usePrivateCar: defaultUsePrivateCar,
+      privateCarKilometers: entry?.privateCarKilometers ?? 0,
     },
   })
 
@@ -218,6 +229,7 @@ export default function TimeEntryForm({
     control,
     name: 'passengerTimeHours',
   })
+  const usePrivateCarValue = useWatch({ control, name: 'usePrivateCar' })
 
   const isSpecialEntry = useMemo(() => {
     return SPECIAL_LOCATION_KEYS.includes(
@@ -401,6 +413,10 @@ export default function TimeEntryForm({
         driverTimeHours: finalIsSpecial ? 0 : values.driverTimeHours,
         passengerTimeHours: finalIsSpecial ? 0 : values.passengerTimeHours,
         activities: values.activities || undefined,
+        privateCarKilometers:
+          finalIsSpecial || !values.usePrivateCar
+            ? 0
+            : (values.privateCarKilometers ?? 0),
       }
     } else {
       // duration mode
@@ -889,6 +905,55 @@ export default function TimeEntryForm({
                       />
                     </div>
                   </div>
+                  {/* Private car (PKW) toggle and km field */}
+                  <FormField
+                    control={form.control}
+                    name="usePrivateCar"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center gap-3">
+                        <Switch
+                          id="use-private-car-switch"
+                          data-testid="use-private-car-switch"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                        <FormLabel
+                          htmlFor="use-private-car-switch"
+                          className="cursor-pointer"
+                        >
+                          {t('time_entry_form.privateCarLabel')}
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  {usePrivateCarValue && (
+                    <FormField
+                      control={form.control}
+                      name="privateCarKilometers"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t('time_entry_form.privateCarKilometersLabel')}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="number"
+                              min={0}
+                              step={1}
+                              placeholder="e.g. 30"
+                              value={field.value?.toString() ?? ''}
+                              onChange={(e) => {
+                                const val = e.target.value
+                                field.onChange(val === '' ? 0 : parseFloat(val))
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </>
               )}
 
