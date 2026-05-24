@@ -207,7 +207,7 @@ function compensatedHoursForIntervalEntry(
     ((entry.driverTimeHours || 0) *
       60 *
       (userSettings.driverCompensationPercent ?? 100)) /
-      100
+    100
   return compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
 }
 
@@ -345,23 +345,31 @@ export const exportToExcel = async ({
     activities: 24,
     mileage: 12,
   }
-  worksheet.columns = Array.from({ length: layout.columnCount }, (_, i) => {
-    const keys = [
-      'week',
-      'date',
-      'location',
-      'from',
-      'to',
-      'pause',
-      ...(layout.showDriver ? (['driverTime'] as const) : []),
-      'compensated',
-      ...(layout.showPassenger ? (['passengerTime'] as const) : []),
-      ...(layout.showActivities ? (['activities'] as const) : []),
-      'mileage',
-    ] as const
-    const key = keys[i] ?? 'mileage'
+  const columnKeys = [
+    'week',
+    'date',
+    'location',
+    'from',
+    'to',
+    'pause',
+    ...(layout.showDriver ? (['driverTime'] as const) : []),
+    'compensated',
+    ...(layout.showPassenger ? (['passengerTime'] as const) : []),
+    ...(layout.showActivities ? (['activities'] as const) : []),
+    'mileage',
+  ] as const
+  const baseColumns = Array.from({ length: layout.columnCount }, (_, i) => {
+    const key = columnKeys[i] ?? 'mileage'
     return { key, width: colWidths[key] ?? 8 }
   })
+  const maxPrintableWidth = 80
+  const totalWidth = baseColumns.reduce((sum, column) => sum + column.width, 0)
+  const widthScale = totalWidth > maxPrintableWidth ? maxPrintableWidth / totalWidth : 1
+
+  worksheet.columns = baseColumns.map(({ key, width }) => ({
+    key,
+    width: Number((width * widthScale).toFixed(2)),
+  }))
 
   // --- IN-SHEET TITLE AND USER NAME ---
   const titleRow = worksheet.addRow([])
@@ -420,19 +428,19 @@ export const exportToExcel = async ({
     if (layout.activities != null) mergeHeaderVertical(layout.activities)
     mergeHeaderVertical(layout.mileage)
 
-    // Apply styles to header rows
-    ;[headerRow1, headerRow2].forEach((row) => {
-      row.eachCell({ includeEmpty: true }, (cell) => {
-        cell.fill = headerFill
-        cell.font = headerFont
-        cell.alignment = {
-          vertical: 'middle',
-          horizontal: 'left',
-          wrapText: true,
-        }
-        cell.border = allBorders
+      // Apply styles to header rows
+      ;[headerRow1, headerRow2].forEach((row) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.fill = headerFill
+          cell.font = headerFont
+          cell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            wrapText: true,
+          }
+          cell.border = allBorders
+        })
       })
-    })
 
     // --- Custom border logic for "Arbeitszeit" and "von/bis" headers ---
     const arbeitszeitCell = worksheet.getCell(headerRow1Num, 4)

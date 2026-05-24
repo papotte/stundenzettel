@@ -457,17 +457,23 @@ describe('excel-export', () => {
       })
 
       expect(mockWorksheet.columns).toEqual([
-        { key: 'week', width: 5 },
-        { key: 'date', width: 12 },
-        { key: 'location', width: 16 },
-        { key: 'from', width: 8 },
-        { key: 'to', width: 8 },
-        { key: 'pause', width: 8 },
-        { key: 'driverTime', width: 8 },
-        { key: 'compensated', width: 8 },
-        { key: 'passengerTime', width: 8 },
-        { key: 'mileage', width: 12 },
+        { key: 'week', width: 4.3 },
+        { key: 'date', width: 10.32 },
+        { key: 'location', width: 13.76 },
+        { key: 'from', width: 6.88 },
+        { key: 'to', width: 6.88 },
+        { key: 'pause', width: 6.88 },
+        { key: 'driverTime', width: 6.88 },
+        { key: 'compensated', width: 6.88 },
+        { key: 'passengerTime', width: 6.88 },
+        { key: 'mileage', width: 10.32 },
       ])
+
+      const totalWidth = mockWorksheet.columns.reduce(
+        (sum, column) => sum + column.width,
+        0,
+      )
+      expect(totalWidth).toBeLessThanOrEqual(80)
     })
 
     it('should set up headers and footers with company info', async () => {
