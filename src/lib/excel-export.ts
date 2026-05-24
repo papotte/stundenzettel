@@ -24,6 +24,7 @@ interface ExportParams {
 }
 
 type ExcelFormatter = ExportParams['format']
+const MAX_PRINTABLE_EXPORT_WIDTH = 80
 
 /** Per-entry mileage cell: empty unless km is a positive finite value. */
 function formatKilometersForExcelDisplay(
@@ -362,13 +363,15 @@ export const exportToExcel = async ({
     const key = columnKeys[i] ?? 'mileage'
     return { key, width: colWidths[key] ?? 8 }
   })
-  const maxPrintableWidth = 80
   const totalWidth = baseColumns.reduce((sum, column) => sum + column.width, 0)
-  const widthScale = totalWidth > maxPrintableWidth ? maxPrintableWidth / totalWidth : 1
+  const widthScale =
+    totalWidth > MAX_PRINTABLE_EXPORT_WIDTH
+      ? MAX_PRINTABLE_EXPORT_WIDTH / totalWidth
+      : 1
 
   worksheet.columns = baseColumns.map(({ key, width }) => ({
     key,
-    width: Number((width * widthScale).toFixed(2)),
+    width: Math.round(width * widthScale * 100) / 100,
   }))
 
   // --- IN-SHEET TITLE AND USER NAME ---
