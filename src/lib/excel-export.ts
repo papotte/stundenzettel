@@ -49,10 +49,12 @@ export type ExcelExportColumnLayout = {
   driver: number | null
   compensated: number
   passenger: number | null
+  activities: number | null
   mileage: number
   columnCount: number
   showDriver: boolean
   showPassenger: boolean
+  showActivities: boolean
 }
 
 export function buildExcelExportColumnLayout(
@@ -60,6 +62,7 @@ export function buildExcelExportColumnLayout(
 ): ExcelExportColumnLayout {
   const showDriver = userSettings.exportIncludeDriverTime !== false
   const showPassenger = userSettings.exportIncludePassengerTime !== false
+  const showActivities = userSettings.showActivities === true
   let c = 1
   const week = c++
   const date = c++
@@ -70,6 +73,7 @@ export function buildExcelExportColumnLayout(
   const driver = showDriver ? c++ : null
   const compensated = c++
   const passenger = showPassenger ? c++ : null
+  const activities = showActivities ? c++ : null
   const mileage = c++
   return {
     week,
@@ -81,10 +85,12 @@ export function buildExcelExportColumnLayout(
     driver,
     compensated,
     passenger,
+    activities,
     mileage,
     columnCount: c - 1,
     showDriver,
     showPassenger,
+    showActivities,
   }
 }
 
@@ -105,6 +111,9 @@ function buildExcelHeaderRow1(
   row[layout.compensated - 1] = t('export.headerCompensatedTime')
   if (layout.passenger != null) {
     row[layout.passenger - 1] = t('export.headerPassengerTime')
+  }
+  if (layout.activities != null) {
+    row[layout.activities - 1] = t('export.headerActivities')
   }
   row[layout.mileage - 1] = t('export.headerMileage')
   return row
@@ -144,6 +153,12 @@ function styleTimesheetDataRow(
   if (layout.passenger != null) {
     dataRow.getCell(layout.passenger).alignment = { horizontal: 'right' }
     dataRow.getCell(layout.passenger).numFmt = '0.00'
+  }
+  if (layout.activities != null) {
+    dataRow.getCell(layout.activities).alignment = {
+      horizontal: 'left',
+      wrapText: true,
+    }
   }
   dataRow.getCell(layout.mileage).alignment = { horizontal: 'right' }
 }
@@ -207,6 +222,7 @@ function getExcelRowValues(
   pauseCellValue: number | ''
   driverTimeCellValue: number | ''
   passengerTimeCellValue: number | ''
+  activitiesCellValue: string
   mileageCellValue: number
 } {
   let compensatedHours = 0
@@ -242,6 +258,7 @@ function getExcelRowValues(
   const rawKm = entry.privateCarKilometers
   const mileageCellValue =
     rawKm != null && Number.isFinite(rawKm) && rawKm >= 0 ? rawKm : 0
+  const activitiesCellValue = entry.activities?.trim() ?? ''
 
   return {
     compensatedHours,
@@ -250,6 +267,7 @@ function getExcelRowValues(
     pauseCellValue,
     driverTimeCellValue,
     passengerTimeCellValue,
+    activitiesCellValue,
     mileageCellValue,
   }
 }
@@ -324,6 +342,7 @@ export const exportToExcel = async ({
     driverTime: 8,
     compensated: 8,
     passengerTime: 8,
+    activities: 24,
     mileage: 12,
   }
   worksheet.columns = Array.from({ length: layout.columnCount }, (_, i) => {
@@ -337,6 +356,7 @@ export const exportToExcel = async ({
       ...(layout.showDriver ? (['driverTime'] as const) : []),
       'compensated',
       ...(layout.showPassenger ? (['passengerTime'] as const) : []),
+      ...(layout.showActivities ? (['activities'] as const) : []),
       'mileage',
     ] as const
     const key = keys[i] ?? 'mileage'
@@ -397,6 +417,7 @@ export const exportToExcel = async ({
     if (layout.driver != null) mergeHeaderVertical(layout.driver)
     mergeHeaderVertical(layout.compensated)
     if (layout.passenger != null) mergeHeaderVertical(layout.passenger)
+    if (layout.activities != null) mergeHeaderVertical(layout.activities)
     mergeHeaderVertical(layout.mileage)
 
     // Apply styles to header rows
@@ -448,6 +469,7 @@ export const exportToExcel = async ({
             pauseCellValue,
             driverTimeCellValue,
             passengerTimeCellValue,
+            activitiesCellValue,
             mileageCellValue,
           } = getExcelRowValues(entry, userSettings, format)
 
@@ -464,6 +486,9 @@ export const exportToExcel = async ({
           rowData[layout.compensated - 1] = compensatedHours
           if (layout.passenger != null) {
             rowData[layout.passenger - 1] = passengerTimeCellValue
+          }
+          if (layout.activities != null) {
+            rowData[layout.activities - 1] = activitiesCellValue
           }
           rowData[layout.mileage - 1] = formatKilometersForExcelDisplay(
             mileageCellValue,

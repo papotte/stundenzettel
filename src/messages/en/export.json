@@ -10,6 +10,7 @@
   "headerPauseDuration": "Pause (hrs)",
   "headerDriverTime": "Driver Time (hrs)",
   "headerPassengerTime": "Passenger Time (hrs)",
+  "headerActivities": "Activities",
   "headerCompensatedTime": "Compensated Hours",
   "headerFrom": "From",
   "headerTo": "To",

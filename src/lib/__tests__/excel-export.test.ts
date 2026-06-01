@@ -205,6 +205,26 @@ describe('excel-export', () => {
       const layout = buildExcelExportColumnLayout(baseSettings)
       expect(layout.columnCount).toBe(10)
     })
+
+    it('adds activities column when showActivities is true', () => {
+      const layout = buildExcelExportColumnLayout({
+        ...baseSettings,
+        showActivities: true,
+      })
+      expect(layout.columnCount).toBe(11)
+      expect(layout.activities).toBe(10)
+      expect(layout.mileage).toBe(11)
+      expect(layout.showActivities).toBe(true)
+    })
+
+    it('omits activities column when showActivities is false or undefined', () => {
+      const layout = buildExcelExportColumnLayout({
+        ...baseSettings,
+        showActivities: false,
+      })
+      expect(layout.columnCount).toBe(10)
+      expect(layout.activities).toBeNull()
+    })
   })
 
   const mockUser: AuthenticatedUser = {
@@ -602,6 +622,37 @@ describe('excel-export', () => {
         .find((row) => row[2] === 'Office')
       expect(dataRow).toBeDefined()
       expect(dataRow![9]).toBe('42 km')
+    })
+
+    it('puts activities in the activities column when showActivities is enabled', async () => {
+      const entry: TimeEntry = {
+        id: 'entry-1',
+        userId: 'user-123',
+        location: 'Office',
+        startTime: new Date('2024-01-01T09:00:00'),
+        endTime: new Date('2024-01-01T17:00:00'),
+        activities: 'Site inspection and reporting',
+      }
+
+      const { getEntriesForDay, getLocationDisplayName } =
+        createEntryMocks(entry)
+
+      await callExportToExcel({
+        entries: [entry],
+        getEntriesForDay,
+        getLocationDisplayName,
+        userSettings: {
+          ...defaultUserSettings,
+          showActivities: true,
+        },
+      })
+
+      const dataRow = mockWorksheet.addRow.mock.calls
+        .map((c) => c[0] as unknown[])
+        .find((row) => row[2] === 'Office')
+      expect(dataRow).toBeDefined()
+      expect(dataRow![9]).toBe('Site inspection and reporting')
+      expect(dataRow![10]).toBe('')
     })
 
     it('should render entries with durationMinutes', async () => {
