@@ -61,6 +61,7 @@ export default function TimesheetPreview({
   const showDriverTimeCol = userSettings?.exportIncludeDriverTime !== false
   const showPassengerTimeCol =
     userSettings?.exportIncludePassengerTime !== false
+  const showActivitiesCol = userSettings?.showActivities === true
 
   const weeksInMonth = useMemo(
     () => getWeeksForMonth(selectedMonth),
@@ -173,28 +174,36 @@ export default function TimesheetPreview({
                     >
                       {t('export.headerPauseDuration')}
                     </TableHead>
-                    {showDriverTimeCol ? (
+                    {showDriverTimeCol && (
                       <TableHead
                         rowSpan={2}
                         className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                       >
                         {t('export.headerDriverTime')}
                       </TableHead>
-                    ) : null}
+                    )}
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                     >
                       {t('export.headerCompensatedTime')}
                     </TableHead>
-                    {showPassengerTimeCol ? (
+                    {showPassengerTimeCol && (
                       <TableHead
                         rowSpan={2}
                         className="w-[8%] border-r border-black align-middle print:h-auto print:p-1"
                       >
                         {t('export.headerPassengerTime')}
                       </TableHead>
-                    ) : null}
+                    )}
+                    {showActivitiesCol && (
+                      <TableHead
+                        rowSpan={2}
+                        className="w-auto border-r border-black text-left print:h-auto print:p-1"
+                      >
+                        {t('export.headerActivities')}
+                      </TableHead>
+                    )}
                     <TableHead
                       rowSpan={2}
                       className="w-[8%] align-middle print:h-auto print:p-1"
@@ -250,13 +259,16 @@ export default function TimesheetPreview({
                           <TableCell className="text-right print:p-1"></TableCell>
                           <TableCell className="text-right print:p-1"></TableCell>
                           <TableCell className="border-l border-r border-black text-right print:p-1"></TableCell>
-                          {showDriverTimeCol ? (
+                          {showDriverTimeCol && (
                             <TableCell className="border-r border-black text-right print:p-1"></TableCell>
-                          ) : null}
+                          )}
                           <TableCell className="border-r border-black text-right print:p-1"></TableCell>
-                          {showPassengerTimeCol ? (
+                          {showPassengerTimeCol && (
                             <TableCell className="border-r border-black text-right print:p-1"></TableCell>
-                          ) : null}
+                          )}
+                          {showActivitiesCol && (
+                            <TableCell className="border-r border-black text-left print:p-1"></TableCell>
+                          )}
                           <TableCell className="text-right print:p-1"></TableCell>
                         </TableRow>
                       )
@@ -369,21 +381,21 @@ export default function TimesheetPreview({
                               ? formatDecimalHours(entry.pauseDuration)
                               : ''}
                           </TableCell>
-                          {showDriverTimeCol ? (
+                          {showDriverTimeCol && (
                             <TableCell className="border-r border-black text-right print:p-1">
                               {entry.driverTimeHours &&
                               entry.driverTimeHours !== 0
                                 ? formatDecimalHours(entry.driverTimeHours * 60)
                                 : ''}
                             </TableCell>
-                          ) : null}
+                          )}
                           <TableCell className="border-r border-black text-right print:p-1">
                             {/* Show blank if compensated is 0 or 0.00 */}
                             {compensatedHours && compensatedHours !== 0
                               ? compensatedHours.toFixed(2)
                               : ''}
                           </TableCell>
-                          {showPassengerTimeCol ? (
+                          {showPassengerTimeCol && (
                             <TableCell className="border-r border-black text-right print:p-1">
                               {entry.passengerTimeHours &&
                               entry.passengerTimeHours !== 0
@@ -392,7 +404,12 @@ export default function TimesheetPreview({
                                   )
                                 : ''}
                             </TableCell>
-                          ) : null}
+                          )}
+                          {showActivitiesCol && (
+                            <TableCell className="border-r border-black text-left print:p-1">
+                              {entry.activities?.trim() ?? ''}
+                            </TableCell>
+                          )}
                           <TableCell className="text-right print:p-1">
                             {entry.privateCarKilometers != null &&
                             Number.isFinite(entry.privateCarKilometers) &&
@@ -422,14 +439,14 @@ export default function TimesheetPreview({
                       >
                         {weekCompTotal.toFixed(2)}
                       </div>
-                      {showPassengerTimeCol ? (
+                      {showPassengerTimeCol && (
                         <div
                           className="flex-1 text-right print:pb-0.5"
                           data-testid={`timesheet-week-${weekNumber}-passenger`}
                         >
                           {weekPassengerTotal.toFixed(2)}
                         </div>
-                      ) : null}
+                      )}
                       <div
                         className="flex-1 text-right print:pb-0.5"
                         data-testid={`timesheet-week-${weekNumber}-private-car-km`}

@@ -121,6 +121,61 @@ describe('TimesheetPreview', () => {
     expect(screen.getAllByText('0.50')).toHaveLength(1)
   })
 
+  it('shows activities column and values when showActivities is true', () => {
+    const entryWithActivities: TimeEntry = {
+      ...mockEntries[0],
+      activities: 'Client meeting and documentation',
+    }
+    const getEntriesForDay = (day: Date) =>
+      isSameDay(entryWithActivities.startTime, day)
+        ? [entryWithActivities]
+        : mockGetEntriesForDay(day)
+
+    render(
+      <TimesheetPreview
+        {...defaultProps}
+        entries={[entryWithActivities, mockEntries[1]]}
+        getEntriesForDay={getEntriesForDay}
+        userSettings={{
+          ...mockUserSettings,
+          showActivities: true,
+        }}
+      />,
+    )
+
+    expect(
+      screen.getAllByText('export.headerActivities').length,
+    ).toBeGreaterThan(0)
+    expect(
+      screen.getByText('Client meeting and documentation'),
+    ).toBeInTheDocument()
+  })
+
+  it('hides activities column when showActivities is false', () => {
+    render(
+      <TimesheetPreview
+        {...defaultProps}
+        entries={[
+          {
+            ...mockEntries[0],
+            activities: 'Client meeting and documentation',
+          },
+        ]}
+        userSettings={{
+          ...mockUserSettings,
+          showActivities: false,
+        }}
+      />,
+    )
+
+    expect(
+      screen.queryByText('export.headerActivities'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Client meeting and documentation'),
+    ).not.toBeInTheDocument()
+  })
+
   it('hides edit and add buttons when readOnly is true', () => {
     render(<TimesheetPreview {...defaultProps} readOnly={true} />)
 
