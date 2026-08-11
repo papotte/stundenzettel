@@ -2,7 +2,7 @@ import { Page } from '@playwright/test'
 
 import { expect, test } from './fixtures'
 import { addActiveSubscription } from './subscription-helpers'
-import { addManualEntry } from './test-helpers'
+import { addManualEntry, selectDuration } from './test-helpers'
 
 async function navigateToCompanyPage(page: Page) {
   const dropdown = page.locator('[data-testid="user-menu-btn"]')
@@ -35,8 +35,12 @@ test.describe('Company Page', () => {
       'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
     )
     await expect(editForm).toBeVisible()
-    await editForm.getByLabel('Driving Time (as Driver)').fill('01:00')
-    await editForm.getByLabel('Driving Time (as Passenger)').fill('01:00')
+    await selectDuration(editForm.getByLabel('Driving Time (as Driver)'), 1, 0)
+    await selectDuration(
+      editForm.getByLabel('Driving Time (as Passenger)'),
+      1,
+      0,
+    )
     await editForm.getByRole('button', { name: 'Save Entry' }).click()
     await expect(editForm).not.toBeVisible()
 

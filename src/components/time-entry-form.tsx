@@ -708,6 +708,9 @@ export default function TimeEntryForm({
                         <DurationPicker
                           value={field.value}
                           onChange={field.onChange}
+                          title={t('time_entry_form.durationFormLabel')}
+                          maxHours={24}
+                          minuteStep={15}
                         />
                       </FormControl>
                       <FormMessage />
@@ -734,6 +737,7 @@ export default function TimeEntryForm({
                             <DurationPicker
                               value={field.value}
                               onChange={field.onChange}
+                              title={t('time_entry_form.pauseLabel')}
                               placeholder="e.g. 00:30 for 30 minutes"
                             />
                           </FormControl>
@@ -803,6 +807,7 @@ export default function TimeEntryForm({
                               <DurationPicker
                                 value={field.value}
                                 onChange={field.onChange}
+                                title={t('time_entry_form.driverTimeLabel')}
                               />
                             </FormControl>
                             {driverTimeSuggestions.length > 0 && (
@@ -854,6 +859,7 @@ export default function TimeEntryForm({
                               <DurationPicker
                                 value={field.value}
                                 onChange={field.onChange}
+                                title={t('time_entry_form.passengerTimeLabel')}
                               />
                             </FormControl>
                             {passengerTimeSuggestions.length > 0 && (

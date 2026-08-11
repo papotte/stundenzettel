@@ -6,6 +6,7 @@ import userEvent from '@testing-library/user-event'
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import type { TimeEntry, UserSettings } from '@/lib/types'
+import { selectDuration } from '@/test-utils/select-duration'
 
 import TimeEntryForm from '../time-entry-form'
 
@@ -183,11 +184,7 @@ describe('TimeEntryForm', () => {
       screen.getByLabelText('time_entry_form.endTimeLabel'),
       '16:00',
     )
-    await user.clear(screen.getByLabelText('time_entry_form.pauseLabel'))
-    await user.type(
-      screen.getByLabelText('time_entry_form.pauseLabel'),
-      '00:30',
-    )
+    await selectDuration(user, 'time_entry_form.pauseLabel', '00:30')
 
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
@@ -448,16 +445,8 @@ describe('TimeEntryForm', () => {
       screen.getByLabelText('time_entry_form.endTimeLabel'),
       '12:00',
     )
-    await user.clear(screen.getByLabelText('time_entry_form.pauseLabel'))
-    await user.type(
-      screen.getByLabelText('time_entry_form.pauseLabel'),
-      '00:30',
-    )
-    await user.clear(screen.getByLabelText('time_entry_form.driverTimeLabel'))
-    await user.type(
-      screen.getByLabelText('time_entry_form.driverTimeLabel'),
-      '01:30',
-    )
+    await selectDuration(user, 'time_entry_form.pauseLabel', '00:30')
+    await selectDuration(user, 'time_entry_form.driverTimeLabel', '01:30')
 
     expect(screen.getByText('5h 0m')).toBeInTheDocument()
   })
@@ -492,23 +481,9 @@ describe('TimeEntryForm', () => {
       screen.getByLabelText('time_entry_form.endTimeLabel'),
       '12:00',
     )
-    await user.clear(screen.getByLabelText('time_entry_form.pauseLabel'))
-    await user.type(
-      screen.getByLabelText('time_entry_form.pauseLabel'),
-      '00:30',
-    )
-    await user.clear(screen.getByLabelText('time_entry_form.driverTimeLabel'))
-    await user.type(
-      screen.getByLabelText('time_entry_form.driverTimeLabel'),
-      '01:00',
-    )
-    await user.clear(
-      screen.getByLabelText('time_entry_form.passengerTimeLabel'),
-    )
-    await user.type(
-      screen.getByLabelText('time_entry_form.passengerTimeLabel'),
-      '00:30',
-    )
+    await selectDuration(user, 'time_entry_form.pauseLabel', '00:30')
+    await selectDuration(user, 'time_entry_form.driverTimeLabel', '01:00')
+    await selectDuration(user, 'time_entry_form.passengerTimeLabel', '00:30')
 
     expect(screen.getByText('4h 57m')).toBeInTheDocument()
   })
@@ -631,8 +606,7 @@ describe('Pause Duration Field', () => {
     expect(screen.getByPlaceholderText(/00:30/)).toBeInTheDocument()
   })
 
-  it('auto-formats input as HH:mm on mobile', async () => {
-    isMobile = true
+  it('opens the duration picker and sets a value', async () => {
     const user = userEvent.setup()
     render(
       <Sheet defaultOpen>
@@ -647,29 +621,10 @@ describe('Pause Duration Field', () => {
         </SheetContent>
       </Sheet>,
     )
-    const pauseInput = screen.getByLabelText('time_entry_form.pauseLabel')
-    await user.clear(pauseInput)
-    await user.type(pauseInput, '1234')
-    expect(pauseInput).toHaveValue('12:34')
-  })
-
-  it('uses type="tel" for pause input on mobile', () => {
-    isMobile = true
-    render(
-      <Sheet defaultOpen>
-        <SheetContent>
-          <TimeEntryForm
-            entry={null}
-            selectedDate={new Date()}
-            onSave={mockOnSave}
-            onClose={mockOnClose}
-            userSettings={mockUserSettings}
-          />
-        </SheetContent>
-      </Sheet>,
+    await selectDuration(user, 'time_entry_form.pauseLabel', '00:30')
+    expect(screen.getByLabelText('time_entry_form.pauseLabel')).toHaveValue(
+      '00:30',
     )
-    const pauseInput = screen.getByLabelText('time_entry_form.pauseLabel')
-    expect(pauseInput).toHaveAttribute('type', 'tel')
   })
 })
 
@@ -775,11 +730,7 @@ describe('Duration-only entries', () => {
     await user.click(modeSwitch)
 
     // Fill duration (e.g., 90 minutes)
-    const durationInput = screen.getByLabelText(
-      'time_entry_form.durationFormLabel',
-    )
-    await user.clear(durationInput)
-    await user.type(durationInput, '0130')
+    await selectDuration(user, 'time_entry_form.durationFormLabel', '01:30')
 
     // Save
     await user.click(
@@ -818,23 +769,13 @@ describe('Duration-only entries', () => {
     // Switch to duration mode
     const modeSwitch = screen.getByTestId('mode-switch')
     await user.click(modeSwitch)
-    // Clear duration input
-    const durationInput = screen.getByLabelText(
-      'time_entry_form.durationFormLabel',
-    )
-    await user.clear(durationInput)
+    // Set duration below the minimum
+    await selectDuration(user, 'time_entry_form.durationFormLabel', '00:00')
     // Try to save
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
     expect(await screen.findByText(/15 minutes/)).toBeInTheDocument() // Should mention minimum 15 minutes
-    expect(mockOnSave).not.toHaveBeenCalled()
-    // Enter invalid duration (e.g., 17)
-    await user.type(durationInput, '0017')
-    await user.click(
-      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
-    )
-    expect(await screen.findByText(/multiple of 15/)).toBeInTheDocument()
     expect(mockOnSave).not.toHaveBeenCalled()
   })
 
@@ -866,8 +807,7 @@ describe('Duration-only entries', () => {
     )
     expect(durationInput).toHaveValue('02:30')
     // Edit duration
-    await user.clear(durationInput)
-    await user.type(durationInput, '0230')
+    await selectDuration(user, 'time_entry_form.durationFormLabel', '02:30')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
@@ -900,11 +840,7 @@ describe('Duration-only entries', () => {
     // Switch to duration mode
     const modeSwitch = screen.getByTestId('mode-switch')
     await user.click(modeSwitch)
-    const durationInput = screen.getByLabelText(
-      'time_entry_form.durationFormLabel',
-    )
-    await user.clear(durationInput)
-    await user.type(durationInput, '0003')
+    await selectDuration(user, 'time_entry_form.durationFormLabel', '00:00')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
@@ -927,42 +863,11 @@ describe('Duration-only entries', () => {
     // Switch to duration mode
     const modeSwitch = screen.getByTestId('mode-switch')
     await user.click(modeSwitch)
-    const durationInput = screen.getByLabelText(
-      'time_entry_form.durationFormLabel',
-    )
-    await user.clear(durationInput)
-    await user.type(durationInput, '2500')
+    await selectDuration(user, 'time_entry_form.durationFormLabel', '24:15')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
     const error = await screen.findByText(/Maximum 24 hours/i)
-    expect(error).toBeVisible()
-    expect(mockOnSave).not.toHaveBeenCalled()
-  })
-
-  it('shows error if duration is not a multiple of 15', async () => {
-    const user = userEvent.setup()
-    render(
-      <TestWrapper
-        entry={null}
-        selectedDate={new Date('2024-07-01T00:00:00')}
-        onSave={mockOnSave}
-        onClose={mockOnClose}
-        userSettings={mockUserSettings}
-      />,
-    )
-    // Switch to duration mode
-    const modeSwitch = screen.getByTestId('mode-switch')
-    await user.click(modeSwitch)
-    const durationInput = screen.getByLabelText(
-      'time_entry_form.durationFormLabel',
-    )
-    await user.clear(durationInput)
-    await user.type(durationInput, '0017')
-    await user.click(
-      screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
-    )
-    const error = await screen.findByText(/multiple of 15/i)
     expect(error).toBeVisible()
     expect(mockOnSave).not.toHaveBeenCalled()
   })

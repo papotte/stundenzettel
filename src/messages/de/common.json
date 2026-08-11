@@ -1,6 +1,8 @@
 {
   "appName": "TimeWise Tracker",
   "cancel": "Abbrechen",
+  "clear": "Zurücksetzen",
+  "set": "Übernehmen",
   "save": "Speichern",
   "saving": "Wird gespeichert...",
   "delete": "Löschen",

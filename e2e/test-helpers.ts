@@ -1,4 +1,4 @@
-import { type Page, expect } from '@playwright/test'
+import { type Locator, type Page, expect } from '@playwright/test'
 
 import { format, isSameMonth, parse } from 'date-fns'
 import { enUS } from 'date-fns/locale'
@@ -40,6 +40,46 @@ export const addManualEntry = async (
   await expect(form).not.toBeVisible()
 }
 
+// Helper to select a duration from the DurationPicker wheel
+export async function selectDuration(
+  locator: Locator,
+  value: string,
+): Promise<void>
+export async function selectDuration(
+  locator: Locator,
+  hours: number | string,
+  minutes: number | string,
+): Promise<void>
+export async function selectDuration(
+  locator: Locator,
+  valueOrHours: string | number,
+  maybeMinutes?: number | string,
+) {
+  let hours: string
+  let minutes: string
+
+  if (maybeMinutes !== undefined) {
+    hours = String(valueOrHours).padStart(2, '0')
+    minutes = String(maybeMinutes).padStart(2, '0')
+  } else {
+    const [h, m] = (valueOrHours as string).split(':')
+    hours = h.padStart(2, '0')
+    minutes = m.padStart(2, '0')
+  }
+
+  const page = locator.page()
+  await locator.click()
+  await page
+    .getByTestId('hour-wheel')
+    .getByRole('button', { name: hours })
+    .click()
+  await page
+    .getByTestId('minute-wheel')
+    .getByRole('button', { name: minutes })
+    .click()
+  await page.getByTestId('duration-picker-set').click()
+}
+
 // Helper function to create a new duration-only entry for the currently selected day
 // ⚠️ REQUIRES SUBSCRIPTION: This function uses the "Add" button which is a SubscriptionGuardButton.
 // Make sure to call addActiveSubscription(page) in your test's beforeEach hook.
@@ -58,7 +98,9 @@ export const addDurationEntry = async (
   await form.getByRole('textbox', { name: 'Location' }).fill(location)
   // Switch to duration mode (Radix Switch)
   await form.getByTestId('mode-switch').click()
-  await form.getByLabel('Duration (minutes)').fill(duration.toString())
+  const hours = Math.floor(duration / 60)
+  const minutes = duration % 60
+  await selectDuration(form.getByLabel('Duration (HH:mm)'), hours, minutes)
   await form.getByRole('button', { name: 'Save Entry' }).click()
   await expect(form).not.toBeVisible()
 }

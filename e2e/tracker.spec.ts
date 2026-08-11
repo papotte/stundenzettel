@@ -4,6 +4,7 @@ import {
   addDurationEntry,
   addManualEntry,
   formatForDayPicker,
+  selectDuration,
 } from './test-helpers'
 
 test.describe('Core Tracker Functionality', () => {
@@ -160,9 +161,9 @@ test.describe('Core Tracker Functionality', () => {
         'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
       )
       await expect(form).toBeVisible({ timeout: 5000 })
-      await expect(form.getByLabel('Duration (minutes)')).toBeVisible()
+      await expect(form.getByLabel('Duration (HH:mm)')).toBeVisible()
 
-      await form.getByLabel('Duration (minutes)').fill('360')
+      await selectDuration(form.getByLabel('Duration (HH:mm)'), 6, 0)
       await form.getByRole('button', { name: 'Save Entry' }).click()
 
       await expect(form).not.toBeVisible({ timeout: 5000 })
