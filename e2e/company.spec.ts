@@ -35,8 +35,8 @@ test.describe('Company Page', () => {
       'div[role="dialog"]:has(h2:has-text("Edit Time Entry"))',
     )
     await expect(editForm).toBeVisible()
-    await editForm.getByLabel('Driving Time (as Driver)').fill('1')
-    await editForm.getByLabel('Driving Time (as Passenger)').fill('1')
+    await editForm.getByLabel('Driving Time (as Driver)').fill('01:00')
+    await editForm.getByLabel('Driving Time (as Passenger)').fill('01:00')
     await editForm.getByRole('button', { name: 'Save Entry' }).click()
     await expect(editForm).not.toBeVisible()
 

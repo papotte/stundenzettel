@@ -29,6 +29,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { DurationPicker } from '@/components/ui/duration-picker'
 import {
   Form,
   FormControl,
@@ -59,7 +60,6 @@ import {
 } from '@/components/ui/tooltip'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import {
@@ -108,18 +108,43 @@ const formSchema = z
       .string()
       .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
       .optional(),
-    duration: z.coerce
-      .number()
-      .min(15, 'Minimum 15 minutes')
-      .max(1440, 'Maximum 24 hours')
-      .multipleOf(15, 'Must be a multiple of 15')
+    duration: z
+      .string()
+      .refine(
+        (v) => {
+          if (v === '') return false
+          const minutes = timeStringToMinutes(v)
+          return minutes >= 15 && minutes <= 1440 && minutes % 15 === 0
+        },
+        (v) => {
+          if (v === '') return { message: 'Minimum 15 minutes' }
+          const minutes = timeStringToMinutes(v)
+          if (minutes < 15) return { message: 'Minimum 15 minutes' }
+          if (minutes > 1440) return { message: 'Maximum 24 hours' }
+          return { message: 'Must be a multiple of 15' }
+        },
+      )
       .optional(),
     pauseDuration: z
       .string()
       .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
       .optional(),
-    driverTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
-    passengerTimeHours: z.coerce.number().min(0, 'Must be positive').optional(),
+    driverTimeHours: z
+      .union([
+        z
+          .string()
+          .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
+        z.literal(''),
+      ])
+      .optional(),
+    passengerTimeHours: z
+      .union([
+        z
+          .string()
+          .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
+        z.literal(''),
+      ])
+      .optional(),
     usePrivateCar: z.boolean(),
     privateCarKilometers: z.coerce
       .number()
@@ -138,12 +163,7 @@ const formSchema = z
           return false
         }
       } else if (data.mode === 'duration') {
-        if (!data.duration || Number.isNaN(data.duration)) return false
-        return (
-          data.duration >= 15 &&
-          data.duration <= 1440 &&
-          data.duration % 15 === 0
-        )
+        return true
       }
       return false
     },
@@ -170,7 +190,6 @@ export default function TimeEntryForm({
 }: TimeEntryFormProps) {
   const t = useTranslations()
   const format = useFormatter().dateTime
-  const isMobile = useIsMobile()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const { entries } = useTimeTrackerContext()
 
@@ -202,10 +221,14 @@ export default function TimeEntryForm({
         !isDurationEntry && entry?.endTime
           ? format(entry.endTime, 'shortTime')
           : defaultEndTime,
-      duration: defaultDuration,
+      duration: formatMinutesToTimeInput(defaultDuration),
       pauseDuration: formatMinutesToTimeInput(entry?.pauseDuration ?? 0),
-      driverTimeHours: entry?.driverTimeHours || 0,
-      passengerTimeHours: entry?.passengerTimeHours || 0,
+      driverTimeHours: formatMinutesToTimeInput(
+        (entry?.driverTimeHours ?? 0) * 60,
+      ),
+      passengerTimeHours: formatMinutesToTimeInput(
+        (entry?.passengerTimeHours ?? 0) * 60,
+      ),
       usePrivateCar: defaultUsePrivateCar,
       privateCarKilometers: entry?.privateCarKilometers ?? 0,
     },
@@ -284,8 +307,10 @@ export default function TimeEntryForm({
       if (end <= start) return null
 
       const workDurationInMinutes = differenceInMinutes(end, start)
-      const driver = Number(driverTimeHoursValue) || 0
-      const passenger = Number(passengerTimeHoursValue) || 0
+      const driver =
+        timeStringToMinutes(String(driverTimeHoursValue || '')) / 60
+      const passenger =
+        timeStringToMinutes(String(passengerTimeHoursValue || '')) / 60
       const totalActivityInMinutes =
         workDurationInMinutes + (driver + passenger) * 60
 
@@ -328,14 +353,18 @@ export default function TimeEntryForm({
             ? parseTimeString(endTimeValue, new Date(getValues('date')))
             : undefined,
         durationMinutes:
-          modeValue === 'duration' ? Number(getValues('duration')) : undefined,
+          modeValue === 'duration'
+            ? timeStringToMinutes(String(getValues('duration') || ''))
+            : undefined,
         pauseDuration: isSpecialEntry
           ? 0
           : timeStringToMinutes(String(pauseDurationValue)),
-        driverTimeHours: isSpecialEntry ? 0 : Number(driverTimeHoursValue) || 0,
+        driverTimeHours: isSpecialEntry
+          ? 0
+          : timeStringToMinutes(String(driverTimeHoursValue || '')) / 60,
         passengerTimeHours: isSpecialEntry
           ? 0
-          : Number(passengerTimeHoursValue) || 0,
+          : timeStringToMinutes(String(passengerTimeHoursValue || '')) / 60,
       }
       const driverPercent = userSettings?.driverCompensationPercent ?? 100
       const passengerPercent = userSettings?.passengerCompensationPercent ?? 100
@@ -350,7 +379,7 @@ export default function TimeEntryForm({
         const end = parseTimeString(endTimeValue)
         workDuration = end > start ? differenceInMinutes(end, start) : 0
       } else if (modeValue === 'duration') {
-        workDuration = Number(getValues('duration')) || 0
+        workDuration = timeStringToMinutes(String(getValues('duration') || ''))
       }
       return {
         workDurationInMinutes: workDuration,
@@ -410,8 +439,12 @@ export default function TimeEntryForm({
         pauseDuration: finalIsSpecial
           ? 0
           : timeStringToMinutes(String(values.pauseDuration || '')),
-        driverTimeHours: finalIsSpecial ? 0 : values.driverTimeHours,
-        passengerTimeHours: finalIsSpecial ? 0 : values.passengerTimeHours,
+        driverTimeHours: finalIsSpecial
+          ? 0
+          : timeStringToMinutes(String(values.driverTimeHours || '')) / 60,
+        passengerTimeHours: finalIsSpecial
+          ? 0
+          : timeStringToMinutes(String(values.passengerTimeHours || '')) / 60,
         activities: values.activities || undefined,
         privateCarKilometers:
           finalIsSpecial || !values.usePrivateCar
@@ -420,7 +453,7 @@ export default function TimeEntryForm({
       }
     } else {
       // duration mode
-      if (Number.isNaN(values.duration)) {
+      if (!values.duration) {
         // Should not happen due to validation, but guard for type safety
         return
       }
@@ -435,7 +468,7 @@ export default function TimeEntryForm({
       finalEntry = {
         id: entry?.id || newTimeEntryClientId(),
         location: values.location,
-        durationMinutes: values.duration,
+        durationMinutes: timeStringToMinutes(values.duration),
         startTime,
         pauseDuration: 0,
         driverTimeHours: 0,
@@ -444,14 +477,6 @@ export default function TimeEntryForm({
       }
     }
     onSave(finalEntry)
-  }
-
-  // Helper to format input as HH:mm
-  function formatDurationInput(value: string) {
-    // Remove non-digits
-    const digits = value.replace(/\D/g, '')
-    if (digits.length <= 2) return digits
-    return digits.slice(0, 2) + ':' + digits.slice(2, 4)
   }
 
   // Helper to validate HH:mm format and valid duration
@@ -680,14 +705,9 @@ export default function TimeEntryForm({
                         {t('time_entry_form.durationFormLabel')}
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min={5}
-                          max={1440}
-                          step={5}
-                          placeholder="e.g. 30"
-                          {...field}
-                          value={field.value?.toString() ?? ''}
+                        <DurationPicker
+                          value={field.value}
+                          onChange={field.onChange}
                         />
                       </FormControl>
                       <FormMessage />
@@ -711,29 +731,11 @@ export default function TimeEntryForm({
                             {t('time_entry_form.pauseLabel')}
                           </FormLabel>
                           <FormControl>
-                            {isMobile ? (
-                              <Input
-                                type="tel"
-                                inputMode="numeric"
-                                pattern="[0-9:]*"
-                                placeholder="e.g. 00:30 for 30 minutes"
-                                value={field.value}
-                                onChange={(e) => {
-                                  const formatted = formatDurationInput(
-                                    e.target.value,
-                                  )
-                                  field.onChange(formatted)
-                                }}
-                                maxLength={5}
-                              />
-                            ) : (
-                              <Input
-                                type="time"
-                                step="60"
-                                placeholder="e.g. 00:30 for 30 minutes"
-                                {...field}
-                              />
-                            )}
+                            <DurationPicker
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="e.g. 00:30 for 30 minutes"
+                            />
                           </FormControl>
                           {field.value && !isValidDuration(field.value) && (
                             <div className="text-sm font-medium text-destructive mt-1">
@@ -798,19 +800,9 @@ export default function TimeEntryForm({
                               {t('time_entry_form.driverTimeLabel')}
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                min={0}
-                                step={0.25}
-                                placeholder="e.g. 1.5"
-                                value={field.value?.toString() ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                  field.onChange(
-                                    val === '' ? 0 : parseFloat(val),
-                                  )
-                                }}
+                              <DurationPicker
+                                value={field.value}
+                                onChange={field.onChange}
                               />
                             </FormControl>
                             {driverTimeSuggestions.length > 0 && (
@@ -824,13 +816,17 @@ export default function TimeEntryForm({
                                         size="sm"
                                         className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
                                         onClick={() =>
-                                          setValue('driverTimeHours', s, {
-                                            shouldValidate: true,
-                                          })
+                                          setValue(
+                                            'driverTimeHours',
+                                            formatMinutesToTimeInput(s * 60),
+                                            {
+                                              shouldValidate: true,
+                                            },
+                                          )
                                         }
                                       >
                                         <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
-                                        {s}
+                                        {formatMinutesToTimeInput(s * 60)}
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -855,19 +851,9 @@ export default function TimeEntryForm({
                               {t('time_entry_form.passengerTimeLabel')}
                             </FormLabel>
                             <FormControl>
-                              <Input
-                                {...field}
-                                type="number"
-                                min={0}
-                                step={0.25}
-                                placeholder="e.g. 1.5"
-                                value={field.value?.toString() ?? ''}
-                                onChange={(e) => {
-                                  const val = e.target.value
-                                  field.onChange(
-                                    val === '' ? 0 : parseFloat(val),
-                                  )
-                                }}
+                              <DurationPicker
+                                value={field.value}
+                                onChange={field.onChange}
                               />
                             </FormControl>
                             {passengerTimeSuggestions.length > 0 && (
@@ -881,13 +867,17 @@ export default function TimeEntryForm({
                                         size="sm"
                                         className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
                                         onClick={() =>
-                                          setValue('passengerTimeHours', s, {
-                                            shouldValidate: true,
-                                          })
+                                          setValue(
+                                            'passengerTimeHours',
+                                            formatMinutesToTimeInput(s * 60),
+                                            {
+                                              shouldValidate: true,
+                                            },
+                                          )
                                         }
                                       >
                                         <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
-                                        {s}
+                                        {formatMinutesToTimeInput(s * 60)}
                                       </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>

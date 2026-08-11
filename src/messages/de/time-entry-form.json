@@ -41,7 +41,7 @@
   "modeInterval": "Nach Zeitraum",
   "modeDuration": "Nach Dauer",
   "durationLabel": "Dauer",
-  "durationFormLabel": "Dauer (Minuten)",
+  "durationFormLabel": "Dauer (HH:mm)",
   "durationInvalid": "Bitte geben Sie eine gültige Dauer in Minuten ein. Mindestdauer ist 5 Minuten.",
   "compensatedInfoLabel": "Vergütete Zeit Info",
   "compensatedInfo": "Vergütete Zeit = Arbeitszeit - Pause + Fahrerzeit × {driver}% + Beifahrerzeit × {passenger}%",

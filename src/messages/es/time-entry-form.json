@@ -41,7 +41,7 @@
   "modeInterval": "Por intervalo",
   "modeDuration": "Por duración",
   "durationLabel": "Duración",
-  "durationFormLabel": "Duración (minutos)",
+  "durationFormLabel": "Duración (HH:mm)",
   "durationInvalid": "Por favor ingresa una duración válida en minutos. El mínimo es 5 minutos.",
   "compensatedInfoLabel": "Información de tiempo compensado",
   "compensatedInfo": "Tiempo compensado = Tiempo trabajado - Pausa + Tiempo conductor × {driver}% + Tiempo pasajero × {passenger}%",

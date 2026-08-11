@@ -190,23 +190,20 @@ export default function TimeEntryCard({
           <div className="grid flex-1 gap-1">
             <p className="font-semibold">{entry.location}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              {typeof entry.durationMinutes === 'number' ? (
-                <div className="flex items-center">
-                  <Clock className="mr-1.5 h-3.5 w-3.5" />
+              <div className="flex items-center">
+                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                {typeof entry.durationMinutes === 'number' ? (
                   <span>
                     {t('time_entry_form.durationLabel')}:{' '}
                     {entry.durationMinutes} min
                   </span>
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <Clock className="mr-1.5 h-3.5 w-3.5" />
+                ) : (
                   <span>
                     {formattedStartTime} - {formattedEndTime}
                   </span>
-                </div>
-              )}
-              {entry.pauseDuration && entry.pauseDuration > 0 && (
+                )}
+              </div>
+              {entry.pauseDuration !== undefined && entry.pauseDuration > 0 && (
                 <div className="flex items-center">
                   <Coffee className="mr-1.5 h-3.5 w-3.5" />
                   <span>
@@ -216,27 +213,29 @@ export default function TimeEntryCard({
                   </span>
                 </div>
               )}
-              {entry.driverTimeHours && entry.driverTimeHours > 0 && (
-                <div className="flex items-center">
-                  <CarFront className="mr-1.5 h-3.5 w-3.5" />
-                  <span>
-                    {t('time_entry_card.drivingLabel', {
-                      hours: entry.driverTimeHours,
-                    })}
-                  </span>
-                </div>
-              )}
-              {entry.passengerTimeHours && entry.passengerTimeHours > 0 && (
-                <div className="flex items-center">
-                  <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                  <span>
-                    {t('time_entry_card.passengerLabel', {
-                      hours: entry.passengerTimeHours,
-                    })}
-                  </span>
-                </div>
-              )}
-              {entry.privateCarKilometers != null &&
+              {entry.driverTimeHours !== undefined &&
+                entry.driverTimeHours > 0 && (
+                  <div className="flex items-center">
+                    <CarFront className="mr-1.5 h-3.5 w-3.5" />
+                    <span>
+                      {t('time_entry_card.drivingLabel', {
+                        hours: entry.driverTimeHours,
+                      })}
+                    </span>
+                  </div>
+                )}
+              {entry.passengerTimeHours !== undefined &&
+                entry.passengerTimeHours > 0 && (
+                  <div className="flex items-center">
+                    <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                    <span>
+                      {t('time_entry_card.passengerLabel', {
+                        hours: entry.passengerTimeHours,
+                      })}
+                    </span>
+                  </div>
+                )}
+              {entry.privateCarKilometers !== undefined &&
                 Number.isFinite(entry.privateCarKilometers) &&
                 entry.privateCarKilometers > 0 && (
                   <div className="flex items-center">
@@ -252,7 +251,9 @@ export default function TimeEntryCard({
           </div>
           <div className="flex items-center gap-2">
             <p className="font-mono text-lg font-medium tabular-nums text-primary">
-              {formatDuration(totalCompensatedSeconds)}
+              {totalCompensatedSeconds > 0
+                ? formatDuration(totalCompensatedSeconds)
+                : '—'}
             </p>
             <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
               <Edit className="h-4 w-4" />

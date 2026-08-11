@@ -150,10 +150,10 @@ describe('TimeEntryForm', () => {
     )
     expect(
       screen.getByLabelText('time_entry_form.driverTimeLabel'),
-    ).toHaveValue(0.5)
+    ).toHaveValue('00:30')
     expect(
       screen.getByLabelText('time_entry_form.passengerTimeLabel'),
-    ).toHaveValue(0.25)
+    ).toHaveValue('00:15')
     expect(screen.getByText('time_entry_form.editTitle')).toBeInTheDocument()
   })
 
@@ -456,7 +456,7 @@ describe('TimeEntryForm', () => {
     await user.clear(screen.getByLabelText('time_entry_form.driverTimeLabel'))
     await user.type(
       screen.getByLabelText('time_entry_form.driverTimeLabel'),
-      '1.5',
+      '01:30',
     )
 
     expect(screen.getByText('5h 0m')).toBeInTheDocument()
@@ -500,14 +500,14 @@ describe('TimeEntryForm', () => {
     await user.clear(screen.getByLabelText('time_entry_form.driverTimeLabel'))
     await user.type(
       screen.getByLabelText('time_entry_form.driverTimeLabel'),
-      '1',
+      '01:00',
     )
     await user.clear(
       screen.getByLabelText('time_entry_form.passengerTimeLabel'),
     )
     await user.type(
       screen.getByLabelText('time_entry_form.passengerTimeLabel'),
-      '0.5',
+      '00:30',
     )
 
     expect(screen.getByText('4h 57m')).toBeInTheDocument()
@@ -779,7 +779,7 @@ describe('Duration-only entries', () => {
       'time_entry_form.durationFormLabel',
     )
     await user.clear(durationInput)
-    await user.type(durationInput, '90')
+    await user.type(durationInput, '0130')
 
     // Save
     await user.click(
@@ -830,7 +830,7 @@ describe('Duration-only entries', () => {
     expect(await screen.findByText(/15 minutes/)).toBeInTheDocument() // Should mention minimum 15 minutes
     expect(mockOnSave).not.toHaveBeenCalled()
     // Enter invalid duration (e.g., 17)
-    await user.type(durationInput, '17')
+    await user.type(durationInput, '0017')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
@@ -864,10 +864,10 @@ describe('Duration-only entries', () => {
     const durationInput = screen.getByLabelText(
       'time_entry_form.durationFormLabel',
     )
-    expect(durationInput).toHaveValue(150)
+    expect(durationInput).toHaveValue('02:30')
     // Edit duration
     await user.clear(durationInput)
-    await user.type(durationInput, '150')
+    await user.type(durationInput, '0230')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
@@ -904,7 +904,7 @@ describe('Duration-only entries', () => {
       'time_entry_form.durationFormLabel',
     )
     await user.clear(durationInput)
-    await user.type(durationInput, '3')
+    await user.type(durationInput, '0003')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
@@ -931,7 +931,7 @@ describe('Duration-only entries', () => {
       'time_entry_form.durationFormLabel',
     )
     await user.clear(durationInput)
-    await user.type(durationInput, '1500')
+    await user.type(durationInput, '2500')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
@@ -958,7 +958,7 @@ describe('Duration-only entries', () => {
       'time_entry_form.durationFormLabel',
     )
     await user.clear(durationInput)
-    await user.type(durationInput, '17')
+    await user.type(durationInput, '0017')
     await user.click(
       screen.getByRole('button', { name: 'time_entry_form.saveButton' }),
     )
