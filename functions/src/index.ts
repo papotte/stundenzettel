@@ -7,7 +7,6 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 import * as dotenv from 'dotenv'
-import type { Request, Response } from 'express'
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { error, info, warn } from 'firebase-functions/logger'
@@ -186,7 +185,7 @@ export const stripeWebhook = onRequest(
       'NEXT_PUBLIC_FIREBASE_DATABASE_ID',
     ],
   },
-  async (req: Request, res: Response) => {
+  async (req, res) => {
     // Debug: Log environment variable availability
     info('Webhook handler started', {
       hasStripeKey: !!process.env.STRIPE_SECRET_KEY,

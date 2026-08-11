@@ -44,7 +44,7 @@ const config: Config = {
     '!src/i18n.ts',
   ],
   transformIgnorePatterns: [
-    '/node_modules/(?!(lucide-react|next-intl|use-intl|exceljs|uuid)/)',
+    '/node_modules/(?!(lucide-react|next-intl|use-intl|@formatjs|intl-messageformat|exceljs|uuid)/)',
   ],
 }
 
