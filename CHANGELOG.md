@@ -1,3 +1,10 @@
+## [1.29.1](https://github.com/papotte/stundenzettel/compare/v1.29.0...v1.29.1) (2026-08-11)
+
+
+### Bug Fixes
+
+* add activities to the export ([#227](https://github.com/papotte/stundenzettel/issues/227)) ([e131bf5](https://github.com/papotte/stundenzettel/commit/e131bf5b67febcbb36231a5305508edd8c476815))
+
 # [1.29.0](https://github.com/papotte/stundenzettel/compare/v1.28.0...v1.29.0) (2026-05-21)
 
 
