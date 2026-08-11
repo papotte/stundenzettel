@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/papotte/stundenzettel/compare/v1.29.1...v1.30.0) (2026-08-11)
+
+
+### Features
+
+* **export:** scale excel worksheet columns to single-page printable width ([#226](https://github.com/papotte/stundenzettel/issues/226)) ([77aa83f](https://github.com/papotte/stundenzettel/commit/77aa83fd0803c9435843f31d026b16d5fd27baaf))
+
 ## [1.29.1](https://github.com/papotte/stundenzettel/compare/v1.29.0...v1.29.1) (2026-08-11)
 
 
