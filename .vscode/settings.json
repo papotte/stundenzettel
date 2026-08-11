@@ -39,6 +39,7 @@
     "**/.next": true
   },
   "[css]": {
-    "editor.defaultFormatter": "vscode.css-language-features"
-  }
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "css.lint.unknownAtRules": "ignore"
 }
