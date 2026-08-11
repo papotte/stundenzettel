@@ -24,6 +24,7 @@ interface ExportParams {
 }
 
 type ExcelFormatter = ExportParams['format']
+const MAX_PRINTABLE_EXPORT_WIDTH = 80
 
 /** Per-entry mileage cell: empty unless km is a positive finite value. */
 function formatKilometersForExcelDisplay(
@@ -345,23 +346,33 @@ export const exportToExcel = async ({
     activities: 24,
     mileage: 12,
   }
-  worksheet.columns = Array.from({ length: layout.columnCount }, (_, i) => {
-    const keys = [
-      'week',
-      'date',
-      'location',
-      'from',
-      'to',
-      'pause',
-      ...(layout.showDriver ? (['driverTime'] as const) : []),
-      'compensated',
-      ...(layout.showPassenger ? (['passengerTime'] as const) : []),
-      ...(layout.showActivities ? (['activities'] as const) : []),
-      'mileage',
-    ] as const
-    const key = keys[i] ?? 'mileage'
+  const columnKeys = [
+    'week',
+    'date',
+    'location',
+    'from',
+    'to',
+    'pause',
+    ...(layout.showDriver ? (['driverTime'] as const) : []),
+    'compensated',
+    ...(layout.showPassenger ? (['passengerTime'] as const) : []),
+    ...(layout.showActivities ? (['activities'] as const) : []),
+    'mileage',
+  ] as const
+  const baseColumns = Array.from({ length: layout.columnCount }, (_, i) => {
+    const key = columnKeys[i] ?? 'mileage'
     return { key, width: colWidths[key] ?? 8 }
   })
+  const totalWidth = baseColumns.reduce((sum, column) => sum + column.width, 0)
+  const widthScale =
+    totalWidth > MAX_PRINTABLE_EXPORT_WIDTH
+      ? MAX_PRINTABLE_EXPORT_WIDTH / totalWidth
+      : 1
+
+  worksheet.columns = baseColumns.map(({ key, width }) => ({
+    key,
+    width: Math.round(width * widthScale * 100) / 100,
+  }))
 
   // --- IN-SHEET TITLE AND USER NAME ---
   const titleRow = worksheet.addRow([])

@@ -456,18 +456,48 @@ describe('excel-export', () => {
         format: mockFormat,
       })
 
-      expect(mockWorksheet.columns).toEqual([
-        { key: 'week', width: 5 },
-        { key: 'date', width: 12 },
-        { key: 'location', width: 16 },
-        { key: 'from', width: 8 },
-        { key: 'to', width: 8 },
-        { key: 'pause', width: 8 },
-        { key: 'driverTime', width: 8 },
-        { key: 'compensated', width: 8 },
-        { key: 'passengerTime', width: 8 },
-        { key: 'mileage', width: 12 },
-      ])
+      const baseWidthsByKey: Record<string, number> = {
+        week: 5,
+        date: 12,
+        location: 16,
+        from: 8,
+        to: 8,
+        pause: 8,
+        driverTime: 8,
+        compensated: 8,
+        passengerTime: 8,
+        mileage: 12,
+      }
+      const expectedKeys = [
+        'week',
+        'date',
+        'location',
+        'from',
+        'to',
+        'pause',
+        'driverTime',
+        'compensated',
+        'passengerTime',
+        'mileage',
+      ]
+      const maxPrintableWidth = 80
+
+      expect(mockWorksheet.columns.map((column) => column.key)).toEqual(
+        expectedKeys,
+      )
+      mockWorksheet.columns.forEach((column) => {
+        expect(column.width).toBeLessThanOrEqual(baseWidthsByKey[column.key])
+      })
+      expect(
+        mockWorksheet.columns.find((column) => column.key === 'location')
+          ?.width,
+      ).toBeLessThan(baseWidthsByKey.location)
+
+      const totalWidth = mockWorksheet.columns.reduce(
+        (sum, column) => sum + column.width,
+        0,
+      )
+      expect(totalWidth).toBeLessThanOrEqual(maxPrintableWidth)
     })
 
     it('should set up headers and footers with company info', async () => {

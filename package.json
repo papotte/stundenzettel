@@ -5,7 +5,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "dev": "NEXT_PUBLIC_ENVIRONMENT=development next dev -p 9002",
-    "dev:prod": "NEXT_PUBLIC_ENVIRONMENT=production next dev -p 9002",
+    "dev:prod": "NEXT_PUBLIC_ENVIRONMENT=production next dev -p 9004",
     "dev:test": "NODE_ENV=test NEXT_PUBLIC_ENVIRONMENT=test next dev -p 9003",
     "build": "NEXT_PUBLIC_ENVIRONMENT=production next build --webpack",
     "start": "next start -p 9004",
