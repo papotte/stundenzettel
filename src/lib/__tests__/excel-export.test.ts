@@ -489,7 +489,8 @@ describe('excel-export', () => {
         expect(column.width).toBeLessThanOrEqual(baseWidthsByKey[column.key])
       })
       expect(
-        mockWorksheet.columns.find((column) => column.key === 'location')?.width,
+        mockWorksheet.columns.find((column) => column.key === 'location')
+          ?.width,
       ).toBeLessThan(baseWidthsByKey.location)
 
       const totalWidth = mockWorksheet.columns.reduce(

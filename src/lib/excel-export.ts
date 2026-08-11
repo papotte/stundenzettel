@@ -208,7 +208,7 @@ function compensatedHoursForIntervalEntry(
     ((entry.driverTimeHours || 0) *
       60 *
       (userSettings.driverCompensationPercent ?? 100)) /
-    100
+      100
   return compensatedMinutes > 0 ? compensatedMinutes / 60 : 0
 }
 
@@ -431,19 +431,19 @@ export const exportToExcel = async ({
     if (layout.activities != null) mergeHeaderVertical(layout.activities)
     mergeHeaderVertical(layout.mileage)
 
-      // Apply styles to header rows
-      ;[headerRow1, headerRow2].forEach((row) => {
-        row.eachCell({ includeEmpty: true }, (cell) => {
-          cell.fill = headerFill
-          cell.font = headerFont
-          cell.alignment = {
-            vertical: 'middle',
-            horizontal: 'left',
-            wrapText: true,
-          }
-          cell.border = allBorders
-        })
+    // Apply styles to header rows
+    ;[headerRow1, headerRow2].forEach((row) => {
+      row.eachCell({ includeEmpty: true }, (cell) => {
+        cell.fill = headerFill
+        cell.font = headerFont
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'left',
+          wrapText: true,
+        }
+        cell.border = allBorders
       })
+    })
 
     // --- Custom border logic for "Arbeitszeit" and "von/bis" headers ---
     const arbeitszeitCell = worksheet.getCell(headerRow1Num, 4)
