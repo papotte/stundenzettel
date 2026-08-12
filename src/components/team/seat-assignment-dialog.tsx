@@ -167,7 +167,7 @@ export function SeatAssignmentDialog({
           onClick={() => handleAssignSeat(member.id)}
           disabled={loadingMemberId === member.id || availableSeats <= 0}
         >
-          <Check className="mr-1 h-3 w-3" />
+          <Check className="mr-1 size-3" />
           {t('teams.assignSeat')}
         </Button>
       )
@@ -181,7 +181,7 @@ export function SeatAssignmentDialog({
           disabled={loadingMemberId === member.id}
           className="text-red-600 hover:text-red-700"
         >
-          <X className="mr-1 h-3 w-3" />
+          <X className="mr-1 size-3" />
           {t('teams.unassignSeat')}
         </Button>
       )
@@ -198,7 +198,7 @@ export function SeatAssignmentDialog({
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+            <Users className="size-5" />
             {t('teams.seatAssignment')}
           </DialogTitle>
           <DialogDescription>
@@ -208,7 +208,7 @@ export function SeatAssignmentDialog({
 
         <div className="space-y-4">
           {/* Seat Usage Summary */}
-          <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+          <div className="flex items-center justify-between rounded-lg bg-muted p-4">
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
@@ -249,9 +249,7 @@ export function SeatAssignmentDialog({
                   <TableHead>{t('teams.role')}</TableHead>
                   <TableHead>{t('teams.seatStatus')}</TableHead>
                   <TableHead>{t('teams.assignedDate')}</TableHead>
-                  <TableHead className="w-[120px]">
-                    {t('teams.actions')}
-                  </TableHead>
+                  <TableHead className="w-30">{t('teams.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -270,7 +268,7 @@ export function SeatAssignmentDialog({
                     <TableCell>
                       {hasSeatAssigned(member) ? (
                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                          <Check className="mr-1 h-3 w-3" />
+                          <Check className="mr-1 size-3" />
                           {t('teams.seatAssigned')}
                         </Badge>
                       ) : (

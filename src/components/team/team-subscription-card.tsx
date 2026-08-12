@@ -79,9 +79,9 @@ export function TeamSubscriptionCard({
     switch (status) {
       case 'active':
       case 'trialing':
-        return <Check className="h-4 w-4" />
+        return <Check className="size-4" />
       default:
-        return <AlertCircle className="h-4 w-4" />
+        return <AlertCircle className="size-4" />
     }
   }
 
@@ -147,7 +147,7 @@ export function TeamSubscriptionCard({
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
+                  <CreditCard className="size-5" />
                   {t('teams.teamSubscription')}
                 </CardTitle>
                 <CardDescription>
@@ -161,18 +161,18 @@ export function TeamSubscriptionCard({
                 disabled={isRefreshing}
               >
                 <RefreshCw
-                  className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                  className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`}
                 />
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-center py-6">
-              <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">
+            <div className="py-6 text-center">
+              <CreditCard className="mx-auto mb-4 size-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-medium">
                 {t('teams.noActiveSubscription')}
               </h3>
-              <p className="text-muted-foreground mb-6">
+              <p className="mb-6 text-muted-foreground">
                 {t('teams.noActiveSubscriptionDescription')}
               </p>
               <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -188,7 +188,7 @@ export function TeamSubscriptionCard({
                 {(currentUserRole === 'owner' ||
                   currentUserRole === 'admin') && (
                   <Button onClick={handleUpgradeSubscription}>
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 size-4" />
                     {t('teams.subscribeNow')}
                   </Button>
                 )}
@@ -238,7 +238,7 @@ export function TeamSubscriptionCard({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
+                <CreditCard className="size-5" />
                 {t('teams.teamSubscription')}
               </CardTitle>
               <CardDescription>
@@ -252,7 +252,7 @@ export function TeamSubscriptionCard({
               disabled={isRefreshing}
             >
               <RefreshCw
-                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`}
               />
             </Button>
           </div>
@@ -275,8 +275,8 @@ export function TeamSubscriptionCard({
           {/* Seat Usage */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="font-medium flex items-center gap-2">
-                <Users className="h-4 w-4" />
+              <p className="flex items-center gap-2 font-medium">
+                <Users className="size-4" />
                 {t('teams.seatUsage')}
               </p>
               <div className="flex items-center gap-2">
@@ -290,7 +290,7 @@ export function TeamSubscriptionCard({
                       size="sm"
                       onClick={() => setShowSeatAssignmentDialog(true)}
                     >
-                      <Users className="mr-2 h-4 w-4" />
+                      <Users className="mr-2 size-4" />
                       {t('teams.seatAssignment')}
                     </Button>
                   )}
@@ -298,8 +298,8 @@ export function TeamSubscriptionCard({
             </div>
             <Progress value={seatUsagePercentage} className="h-2" />
             {usersWithoutSeats > 0 && (
-              <p className="text-sm text-amber-600 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
+              <p className="flex items-center gap-2 text-sm text-amber-600">
+                <AlertTriangle className="size-4" />
                 {t('teams.usersWithoutSeats', { count: usersWithoutSeats })}
               </p>
             )}
@@ -340,7 +340,7 @@ export function TeamSubscriptionCard({
                   disabled={isLoading}
                   className="flex-1"
                 >
-                  <CreditCard className="mr-2 h-4 w-4" />
+                  <CreditCard className="mr-2 size-4" />
                   {isLoading
                     ? t('common.loading')
                     : t('subscription.manageBilling')}
@@ -348,7 +348,7 @@ export function TeamSubscriptionCard({
               </div>
               {usersWithoutSeats > 0 && (
                 <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm">
-                  <p className="font-medium text-amber-900 mb-1">
+                  <p className="mb-1 font-medium text-amber-900">
                     {t('teams.updateSeatsTitle')}
                   </p>
                   <p className="text-amber-800">

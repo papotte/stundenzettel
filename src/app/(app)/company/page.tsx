@@ -193,14 +193,14 @@ export default function CompanyPage() {
 
   return (
     <SubscriptionGuard>
-      <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+      <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
         <div className="mx-auto max-w-2xl">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Building className="h-5 w-5" />
+                    <Building className="size-5" />
                     {t('settings.company')}
                   </CardTitle>
                   <CardDescription>
@@ -311,7 +311,7 @@ export default function CompanyPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Percent className="h-5 w-5" />
+                    <Percent className="size-5" />
                     {t('settings.compensationSettings')}
                   </CardTitle>
                 </CardHeader>
@@ -397,7 +397,7 @@ export default function CompanyPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <FileSpreadsheet className="h-5 w-5" />
+                    <FileSpreadsheet className="size-5" />
                     {t('settings.exportSettings')}
                   </CardTitle>
                 </CardHeader>
@@ -470,11 +470,11 @@ export default function CompanyPage() {
               >
                 {isSaving ? (
                   <Loader2
-                    className="mr-2 h-4 w-4 animate-spin"
+                    className="mr-2 size-4 animate-spin"
                     data-testid="loader-icon"
                   />
                 ) : (
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 size-4" />
                 )}
                 {isSaving ? t('common.saving') : t('common.save')}
               </Button>

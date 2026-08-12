@@ -16,6 +16,11 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   cacheComponents: true,
+  experimental: {
+    instantInsights: {
+      validationLevel: 'manual-warning',
+    },
+  },
   images: {
     remotePatterns: [
       {

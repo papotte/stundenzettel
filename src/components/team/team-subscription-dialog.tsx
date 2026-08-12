@@ -172,7 +172,7 @@ export function TeamSubscriptionDialog({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+              <CreditCard className="size-5" />
               {t('teams.createTeamSubscription')}
             </DialogTitle>
             <DialogDescription>
@@ -181,7 +181,7 @@ export function TeamSubscriptionDialog({
           </DialogHeader>
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <div className="mx-auto mb-4 size-8 animate-spin rounded-full border-b-2 border-primary"></div>
               <p className="text-muted-foreground">{t('common.loading')}</p>
             </div>
           </div>
@@ -195,7 +195,7 @@ export function TeamSubscriptionDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+            <CreditCard className="size-5" />
             {t('teams.createTeamSubscription')}
           </DialogTitle>
           <DialogDescription>
@@ -205,7 +205,7 @@ export function TeamSubscriptionDialog({
 
         <div className="space-y-6">
           {/* Billing Frequency Toggle */}
-          <div className="flex justify-center items-center space-x-4">
+          <div className="flex items-center justify-center space-x-4">
             <Label htmlFor="billing-toggle" className="text-sm font-medium">
               {t('landing.pricing.monthly')}
             </Label>
@@ -243,7 +243,7 @@ export function TeamSubscriptionDialog({
                   return (
                     <div
                       key={plan.id}
-                      className={`relative border rounded-lg p-4 cursor-pointer transition-colors ${
+                      className={`relative cursor-pointer rounded-lg border p-4 transition-colors ${
                         selectedPlan?.id === plan.id
                           ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-primary/50'
@@ -256,13 +256,13 @@ export function TeamSubscriptionDialog({
                       />
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="mb-2 flex items-center gap-2">
                             <h3 className="font-medium">{plan.name}</h3>
                             {selectedPlan?.id === plan.id && (
-                              <Check className="h-4 w-4 text-primary" />
+                              <Check className="size-4 text-primary" />
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mb-3">
+                          <p className="mb-3 text-sm text-muted-foreground">
                             {plan.features.slice(0, 3).join(' • ')}
                           </p>
                           <div className="text-sm">
@@ -303,7 +303,7 @@ export function TeamSubscriptionDialog({
               </RadioGroup>
             </div>
           ) : (
-            <div className="text-center py-6">
+            <div className="py-6 text-center">
               <p className="text-muted-foreground">
                 {t('teams.noTeamPlansAvailable')}
               </p>
@@ -314,7 +314,7 @@ export function TeamSubscriptionDialog({
           {selectedPlan && (
             <div className="space-y-4">
               <Label htmlFor="seats" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
+                <Users className="size-4" />
                 {t('teams.numberOfSeats')}
               </Label>
 
@@ -327,7 +327,7 @@ export function TeamSubscriptionDialog({
                   disabled={seats <= Math.max(currentMembersCount, 1)}
                   aria-label="Decrease seats"
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="size-4" />
                 </Button>
 
                 <Input
@@ -350,7 +350,7 @@ export function TeamSubscriptionDialog({
                   disabled={seats >= (selectedPlan.maxUsers || 50)}
                   aria-label="Increase seats"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="size-4" />
                 </Button>
               </div>
 
@@ -370,7 +370,7 @@ export function TeamSubscriptionDialog({
           {/* Final Pricing Summary */}
           {selectedPlan && (
             <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
                   {t('teams.seatsSelected', { count: seats })}
                 </span>
@@ -418,7 +418,7 @@ export function TeamSubscriptionDialog({
             onClick={handleSubscribe}
             disabled={isLoading || !selectedPlan}
           >
-            <CreditCard className="mr-2 h-4 w-4" />
+            <CreditCard className="mr-2 size-4" />
             {isLoading ? t('common.loading') : t('teams.subscribeNow')}
           </Button>
         </DialogFooter>

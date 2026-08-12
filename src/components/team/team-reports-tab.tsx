@@ -63,7 +63,7 @@ export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
                   className="h-8"
                   aria-label={t('reports.viewGrid')}
                 >
-                  <Grid3x3 className="h-4 w-4" />
+                  <Grid3x3 className="size-4" />
                 </Button>
                 <Button
                   variant={reportsViewMode === 'list' ? 'default' : 'ghost'}
@@ -72,7 +72,7 @@ export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
                   className="h-8"
                   aria-label={t('reports.viewList')}
                 >
-                  <List className="h-4 w-4" />
+                  <List className="size-4" />
                 </Button>
               </div>
             </div>
@@ -94,7 +94,7 @@ export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
               }
               data-testid="reports-previous-month-button"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="size-4" />
             </Button>
             <h3 className="text-lg font-semibold" data-testid="reports-month">
               {format.dateTime(reportsSelectedMonth, 'monthYear')}
@@ -113,7 +113,7 @@ export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
               }
               data-testid="reports-next-month-button"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="size-4" />
             </Button>
           </div>
           {reportsViewMode === 'grid' ? (
@@ -151,7 +151,7 @@ export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
             }
           }}
         >
-          <DialogContent className="max-w-[80vw] max-h-[80vh] w-full overflow-y-auto !border-0 !bg-white !p-0 !shadow-none [&>button]:hidden">
+          <DialogContent className="max-h-[80vh] w-full max-w-[80vw] overflow-y-auto border-0! bg-white! p-0! shadow-none! [&>button]:hidden">
             <DialogHeader className="hidden">
               <DialogTitle className="sr-only">
                 {selectedMemberId

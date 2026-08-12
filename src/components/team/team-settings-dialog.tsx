@@ -199,17 +199,17 @@ export function TeamSettingsDialog({
               <Input
                 value={team.id}
                 disabled
-                className="font-mono text-sm pr-10"
+                className="pr-10 font-mono text-sm"
               />
               <Button
                 type="button"
                 variant="link"
                 size="icon"
                 onClick={handleCopyTeamId}
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                className="absolute top-1/2 right-1 size-8 -translate-y-1/2"
                 title={t('teams.teamId')}
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="size-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">

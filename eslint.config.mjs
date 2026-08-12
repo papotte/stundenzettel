@@ -4,6 +4,7 @@ import tsParser from '@typescript-eslint/parser'
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
 import sonarjs from 'eslint-plugin-sonarjs'
+import eslintPluginTailwindcss from 'eslint-plugin-tailwindcss'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
@@ -76,9 +77,18 @@ export default defineConfig([
   },
   {
     files: ['**/*.tsx'],
-
     rules: {
       'react/prop-types': 'off',
+      'tailwindcss/no-custom-classname': [
+        'warn',
+        { whitelist: ['printable-area', 'badge'] },
+      ],
+    },
+    extends: [eslintPluginTailwindcss.configs.recommended],
+    settings: {
+      tailwindcss: {
+        cssConfigPath: './src/app/globals.css',
+      },
     },
   },
   {

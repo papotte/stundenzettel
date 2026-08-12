@@ -30,7 +30,7 @@ export default function AppHeader() {
         className="flex items-center gap-2 hover:opacity-90"
         aria-label={t('common.home')}
       >
-        <TimeWiseIcon className="h-6 w-6 text-primary" />
+        <TimeWiseIcon className="size-6 text-primary" />
         <h1 className="font-headline text-xl font-bold tracking-tight">
           {t('common.appName')}
         </h1>
@@ -63,7 +63,7 @@ export default function AppHeader() {
                 <Link
                   href="/stats"
                   className={cn(
-                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-transparent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&_svg]:size-4',
+                    'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-transparent hover:text-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none [&_svg]:size-4',
                     pathname === '/stats' && 'font-semibold text-primary',
                   )}
                   aria-current={pathname === '/stats' ? 'page' : undefined}

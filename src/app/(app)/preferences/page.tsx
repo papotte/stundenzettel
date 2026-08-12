@@ -212,14 +212,14 @@ export default function PreferencesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+    <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
       <div className="mx-auto max-w-2xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
+                  <Settings className="size-5" />
                   {t('settings.preferences')}
                 </CardTitle>
                 <CardDescription>
@@ -302,7 +302,7 @@ export default function PreferencesPage() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <InfoIcon className="h-4 w-4 text-muted-foreground" />
+                                <InfoIcon className="size-4 text-muted-foreground" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="max-w-xs">
@@ -342,7 +342,7 @@ export default function PreferencesPage() {
                               form.setValue('expectedMonthlyHours', calculated)
                               setIsExpectedHoursManuallySet(false)
                             }}
-                            className="ml-2 text-sm text-primary hover:text-primary/80 underline"
+                            className="ml-2 text-sm text-primary underline hover:text-primary/80"
                           >
                             {t('settings.resetToAutoCalculation')}
                           </button>
@@ -353,7 +353,7 @@ export default function PreferencesPage() {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="defaultStartTime"
@@ -440,11 +440,11 @@ export default function PreferencesPage() {
                 >
                   {isSaving ? (
                     <Loader2
-                      className="mr-2 h-4 w-4 animate-spin"
+                      className="mr-2 size-4 animate-spin"
                       data-testid="loader-icon"
                     />
                   ) : (
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save className="mr-2 size-4" />
                   )}
                   {isSaving ? t('common.saving') : t('common.save')}
                 </Button>

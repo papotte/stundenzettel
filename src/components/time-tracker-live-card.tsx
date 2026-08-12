@@ -53,7 +53,7 @@ const TimeTrackerLiveCard: React.FC = () => {
                   })}
                 </p>
               </div>
-              <p className="font-mono text-2xl font-bold tabular-nums tracking-wider text-primary">
+              <p className="font-mono text-2xl font-bold tracking-wider text-primary tabular-nums">
                 {formatDuration(elapsedTime)}
               </p>
             </div>
@@ -62,7 +62,7 @@ const TimeTrackerLiveCard: React.FC = () => {
                 onClick={handleStopTimer}
                 className="w-full bg-destructive transition-all duration-300 hover:bg-destructive/90"
               >
-                <Pause className="mr-2 h-4 w-4" />
+                <Pause className="mr-2 size-4" />
                 {t('tracker.stopButton')}
               </Button>
             </div>
@@ -86,9 +86,9 @@ const TimeTrackerLiveCard: React.FC = () => {
                     disabled={isFetchingLocation}
                   >
                     {isFetchingLocation ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin" />
                     ) : (
-                      <MapPin className="h-4 w-4" />
+                      <MapPin className="size-4" />
                     )}
                   </Button>
                 </TooltipTrigger>
@@ -102,7 +102,7 @@ const TimeTrackerLiveCard: React.FC = () => {
               size="lg"
               className="w-full transition-all duration-300"
             >
-              <Play className="mr-2 h-4 w-4" />
+              <Play className="mr-2 size-4" />
               {t('tracker.startButton')}
             </Button>
           </div>

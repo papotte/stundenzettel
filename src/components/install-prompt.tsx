@@ -100,10 +100,10 @@ export function InstallPrompt() {
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          className="rounded-md p-1 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="rounded-md p-1 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:outline-none"
           aria-label={t('common.close')}
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </button>
       </div>
     </div>

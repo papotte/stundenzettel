@@ -214,10 +214,10 @@ describe('UserMenu', () => {
     })
 
     it('applies custom className', () => {
-      renderWithTooltipProvider(<UserMenu className="custom-class" />)
+      renderWithTooltipProvider(<UserMenu className="bg-accent" />)
 
       const menuButton = screen.getByRole('button')
-      expect(menuButton).toHaveClass('custom-class')
+      expect(menuButton).toHaveClass('bg-accent')
     })
 
     it('has correct styling for hover effects', () => {

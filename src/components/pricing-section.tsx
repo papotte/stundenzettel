@@ -138,9 +138,9 @@ export default function PricingSection({
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         {showHeader && (
-          <div className="mx-auto max-w-2xl text-center mb-12">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
             <h2
-              className={`ext-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4 ${
+              className={`mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl ${
                 variant === 'landing' ? 'md:text-5xl' : ''
               }`}
             >
@@ -170,7 +170,7 @@ export default function PricingSection({
             </div>
           ) : (
             <div
-              className={`grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(filteredPlans.length, 4)}`}
+              className={`grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-${Math.min(filteredPlans.length, 4)}`}
             >
               {filteredPlans.map((plan: PricingPlan) => (
                 <div key={plan.id} id={`plan-${plan.id}`}>

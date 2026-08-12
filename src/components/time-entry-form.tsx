@@ -559,7 +559,7 @@ export default function TimeEntryForm({
                               !field.value && 'text-muted-foreground',
                             )}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            <CalendarIcon className="mr-2 size-4" />
                             {field.value ? (
                               format(field.value, 'long')
                             ) : (
@@ -584,7 +584,7 @@ export default function TimeEntryForm({
                 control={form.control}
                 name="mode"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center gap-4 mb-2">
+                  <FormItem className="mb-2 flex flex-row items-center gap-4">
                     <FormLabel className="mr-2">
                       {t('time_entry_form.modeInterval')}
                     </FormLabel>
@@ -619,7 +619,7 @@ export default function TimeEntryForm({
                         {/* Start time suggestions */}
                         {startTimeSuggestions.length > 0 && (
                           <div
-                            className="flex gap-2 mt-2"
+                            className="mt-2 flex gap-2"
                             data-testid="start-time-suggestions"
                           >
                             {startTimeSuggestions.map((s) => (
@@ -629,14 +629,14 @@ export default function TimeEntryForm({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                    className="flex h-auto items-center gap-1 p-1 text-primary hover:bg-primary/10"
                                     onClick={() =>
                                       setValue('startTime', s, {
                                         shouldValidate: true,
                                       })
                                     }
                                   >
-                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    <Lightbulb className="mr-1 size-4 opacity-70" />
                                     {s}
                                   </Button>
                                 </TooltipTrigger>
@@ -664,7 +664,7 @@ export default function TimeEntryForm({
                         </FormControl>
                         {/* End time suggestions */}
                         {endTimeSuggestions.length > 0 && (
-                          <div className="flex gap-2 mt-2">
+                          <div className="mt-2 flex gap-2">
                             {endTimeSuggestions.map((s) => (
                               <Tooltip key={s}>
                                 <TooltipTrigger asChild>
@@ -672,14 +672,14 @@ export default function TimeEntryForm({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                    className="flex h-auto items-center gap-1 p-1 text-primary hover:bg-primary/10"
                                     onClick={() =>
                                       setValue('endTime', s, {
                                         shouldValidate: true,
                                       })
                                     }
                                   >
-                                    <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                    <Lightbulb className="mr-1 size-4 opacity-70" />
                                     {s}
                                   </Button>
                                 </TooltipTrigger>
@@ -742,7 +742,7 @@ export default function TimeEntryForm({
                             />
                           </FormControl>
                           {field.value && !isValidDuration(field.value) && (
-                            <div className="text-sm font-medium text-destructive mt-1">
+                            <div className="mt-1 text-sm font-medium text-destructive">
                               {t('time_entry_form.pauseDurationInvalid', {
                                 example: '00:30',
                               })}
@@ -771,7 +771,7 @@ export default function TimeEntryForm({
                                       )
                                     }
                                   >
-                                    <Lightbulb className="mr-1 h-4 w-4" />
+                                    <Lightbulb className="mr-1 size-4" />
                                     {t('time_entry_form.pauseSuggestion', {
                                       minutes: pauseSuggestion.minutes,
                                     })}
@@ -811,7 +811,7 @@ export default function TimeEntryForm({
                               />
                             </FormControl>
                             {driverTimeSuggestions.length > 0 && (
-                              <div className="flex gap-2 mt-2">
+                              <div className="mt-2 flex gap-2">
                                 {driverTimeSuggestions.map((s) => (
                                   <Tooltip key={s}>
                                     <TooltipTrigger asChild>
@@ -819,7 +819,7 @@ export default function TimeEntryForm({
                                         type="button"
                                         variant="ghost"
                                         size="sm"
-                                        className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                        className="flex h-auto items-center gap-1 p-1 text-primary hover:bg-primary/10"
                                         onClick={() =>
                                           setValue(
                                             'driverTimeHours',
@@ -830,7 +830,7 @@ export default function TimeEntryForm({
                                           )
                                         }
                                       >
-                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                        <Lightbulb className="mr-1 size-4 opacity-70" />
                                         {formatMinutesToTimeInput(s * 60)}
                                       </Button>
                                     </TooltipTrigger>
@@ -863,7 +863,7 @@ export default function TimeEntryForm({
                               />
                             </FormControl>
                             {passengerTimeSuggestions.length > 0 && (
-                              <div className="flex gap-2 mt-2">
+                              <div className="mt-2 flex gap-2">
                                 {passengerTimeSuggestions.map((s) => (
                                   <Tooltip key={s}>
                                     <TooltipTrigger asChild>
@@ -871,7 +871,7 @@ export default function TimeEntryForm({
                                         type="button"
                                         variant="ghost"
                                         size="sm"
-                                        className="h-auto p-1 text-primary hover:bg-primary/10 flex items-center gap-1"
+                                        className="flex h-auto items-center gap-1 p-1 text-primary hover:bg-primary/10"
                                         onClick={() =>
                                           setValue(
                                             'passengerTimeHours',
@@ -882,7 +882,7 @@ export default function TimeEntryForm({
                                           )
                                         }
                                       >
-                                        <Lightbulb className="h-4 w-4 mr-1 opacity-70" />
+                                        <Lightbulb className="mr-1 size-4 opacity-70" />
                                         {formatMinutesToTimeInput(s * 60)}
                                       </Button>
                                     </TooltipTrigger>
@@ -984,7 +984,7 @@ export default function TimeEntryForm({
               <div className="space-y-4 pt-4">
                 <Separator />
                 <div className="flex items-center justify-between font-medium">
-                  <span className="text-muted-foreground flex items-center gap-2">
+                  <span className="flex items-center gap-2 text-muted-foreground">
                     {t('time_entry_form.totalTimeLabel')}
                     <TooltipProvider>
                       <Tooltip>
@@ -997,7 +997,7 @@ export default function TimeEntryForm({
                             )}
                             className="ml-1 text-primary hover:text-primary/80 focus:outline-none"
                           >
-                            <Info className="w-4 h-4" />
+                            <Info className="size-4" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent
@@ -1016,7 +1016,7 @@ export default function TimeEntryForm({
                 </div>
                 {workDurationInMinutes > 10 * 60 && !isSpecialEntry && (
                   <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTriangle className="size-4" />
                     <AlertTitle>
                       {t('time_entry_form.warning10HoursTitle')}
                     </AlertTitle>
@@ -1073,7 +1073,7 @@ export default function TimeEntryForm({
                   </AlertDialogContent>
                 </AlertDialog>
                 <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" />
+                  <Save className="mr-2 size-4" />
                   {t('time_entry_form.saveButton')}
                 </Button>
               </SheetFooter>

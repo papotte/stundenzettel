@@ -236,12 +236,12 @@ describe('TrialBanner', () => {
       render(
         <TrialBanner
           subscription={createMockSubscription('trialing')}
-          className="custom-class"
+          className="bg-accent"
         />,
       )
 
       const banner = screen.getByTestId('trial-banner')
-      expect(banner).toHaveClass('custom-class')
+      expect(banner).toHaveClass('bg-accent')
     })
   })
 

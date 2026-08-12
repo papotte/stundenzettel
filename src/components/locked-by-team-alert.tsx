@@ -18,7 +18,7 @@ export function LockedByTeamAlert({
   const t = useTranslations()
   return (
     <Alert variant="warning" className="mb-4">
-      <AlertTriangle className="h-4 w-4" aria-hidden />
+      <AlertTriangle className="size-4" aria-hidden />
       <AlertDescription>
         <span>{message ?? t('settings.managedByTeam')}</span>
         {!showChangeText ? (

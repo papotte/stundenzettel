@@ -131,13 +131,13 @@ export function TeamMembersList({
   const getRoleIcon = (role: TeamMember['role']) => {
     switch (role) {
       case 'owner':
-        return <ShieldCheck className="h-4 w-4 text-blue-600" />
+        return <ShieldCheck className="size-4 text-blue-600" />
       case 'admin':
-        return <Shield className="h-4 w-4 text-green-600" />
+        return <Shield className="size-4 text-green-600" />
       case 'member':
-        return <User className="h-4 w-4 text-gray-600" />
+        return <User className="size-4 text-gray-600" />
       default:
-        return <User className="h-4 w-4 text-gray-600" />
+        return <User className="size-4 text-gray-600" />
     }
   }
 
@@ -173,7 +173,7 @@ export function TeamMembersList({
       {canManageSeats && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <Users className="size-4" />
             <span className="text-sm text-muted-foreground">
               {t('teams.seatsUsed', { used: assignedSeats, total: totalSeats })}
             </span>
@@ -183,7 +183,7 @@ export function TeamMembersList({
             size="sm"
             onClick={() => setShowSeatAssignmentDialog(true)}
           >
-            <Users className="mr-2 h-4 w-4" />
+            <Users className="mr-2 size-4" />
             {t('teams.seatAssignment')}
           </Button>
         </div>
@@ -237,11 +237,11 @@ export function TeamMembersList({
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
-                          className="h-8 w-8 p-0"
+                          className="size-8 p-0"
                           disabled={loadingMemberId === member.id}
                           aria-label={t('teams.memberOptions')}
                         >
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -254,7 +254,7 @@ export function TeamMembersList({
                                     handleUpdateRole(member.id, 'admin')
                                   }
                                 >
-                                  <Shield className="mr-2 h-4 w-4" />
+                                  <Shield className="mr-2 size-4" />
                                   {t('teams.makeAdmin')}
                                 </DropdownMenuItem>
                               )}
@@ -264,7 +264,7 @@ export function TeamMembersList({
                                     handleUpdateRole(member.id, 'member')
                                   }
                                 >
-                                  <User className="mr-2 h-4 w-4" />
+                                  <User className="mr-2 size-4" />
                                   {t('teams.makeMember')}
                                 </DropdownMenuItem>
                               )}
@@ -275,7 +275,7 @@ export function TeamMembersList({
                           className="text-red-600"
                           onClick={() => handleRemoveMember(member.id)}
                         >
-                          <UserX className="mr-2 h-4 w-4" />
+                          <UserX className="mr-2 size-4" />
                           {t('teams.removeMember')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>

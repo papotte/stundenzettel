@@ -83,9 +83,9 @@ export default function UserMenu({
                 data-testid="user-menu-btn"
                 variant={variant}
                 size={size}
-                className={`rounded-md hover:bg-green-600 hover:text-white transition-colors ${className}`}
+                className={`rounded-md transition-colors hover:bg-green-600 hover:text-white ${className}`}
               >
-                <Menu className="h-6 w-6" aria-hidden />
+                <Menu className="size-6" aria-hidden />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
@@ -96,7 +96,7 @@ export default function UserMenu({
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{displayName}</p>
+              <p className="text-sm leading-none font-medium">{displayName}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email}
               </p>
@@ -105,31 +105,31 @@ export default function UserMenu({
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/preferences" data-testid="preferences">
-              <Settings className="mr-2 h-4 w-4" />
+              <Settings className="mr-2 size-4" />
               {t('settings.preferences')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/company" data-testid="company">
-              <Building2 className="mr-2 h-4 w-4" />
+              <Building2 className="mr-2 size-4" />
               <span className="flex flex-grow">{t('settings.company')}</span>
               {!hasValidSubscription && <ProBadge className="ml-2" />}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/security" data-testid="security">
-              <Shield className="mr-2 h-4 w-4" />
+              <Shield className="mr-2 size-4" />
               {t('settings.security')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/team" data-testid="team">
-              <Users className="mr-2 h-4 w-4" />
+              <Users className="mr-2 size-4" />
               <span className="flex flex-grow">{t('settings.manageTeam')}</span>
               {hasPendingInvitations && (
                 <Badge
                   variant="destructive"
-                  className="ml-2 h-5 min-w-[20px] px-0 text-xs justify-center"
+                  className="ml-2 h-5 min-w-5 justify-center px-0 text-xs"
                 >
                   {invitations.length > 9 ? '9+' : invitations.length}
                 </Badge>
@@ -138,13 +138,13 @@ export default function UserMenu({
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/subscription" data-testid="subscription">
-              <CreditCard className="mr-2 h-4 w-4" />
+              <CreditCard className="mr-2 size-4" />
               {t('settings.manageSubscription')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut} data-testid="sign-out-btn">
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 size-4" />
             {t('tracker.headerSignOutTooltip')}
           </DropdownMenuItem>
         </DropdownMenuContent>

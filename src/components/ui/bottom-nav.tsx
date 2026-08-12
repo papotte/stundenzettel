@@ -45,11 +45,11 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="flex w-auto flex-col items-center justify-center h-12"
+      className="flex h-12 w-auto flex-col items-center justify-center"
       {...(isActive ? { 'aria-current': 'page' } : {})}
     >
       <Icon
-        className={`mb-1 h-6 w-6 ${isActive ? 'text-primary' : 'text-gray-400'}`}
+        className={`mb-1 size-6 ${isActive ? 'text-primary' : 'text-gray-400'}`}
       />
       <span
         className={`block text-xs ${isActive ? 'font-semibold text-primary' : 'text-gray-500'}`}
@@ -81,7 +81,7 @@ export default function BottomNav() {
             const isActive = pathname === href
             const label = t(labelKey, { defaultValue: labelDefault })
             return (
-              <li key={href} className="flex-1 flex justify-center">
+              <li key={href} className="flex flex-1 justify-center">
                 {requiresSubscription ? (
                   <SubscriptionGuardButton
                     className="rounded-none p-0"

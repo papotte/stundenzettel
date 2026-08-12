@@ -231,7 +231,7 @@ export function LinkTeamSubscriptionDialog({
       <div className="space-y-4">
         {selected?.status === 'past_due' && (
           <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-            <AlertCircle className="mt-0.5 h-4 w-4 text-destructive" />
+            <AlertCircle className="mt-0.5 size-4 text-destructive" />
             <div className="text-destructive">
               {t('teams.subscriptionPastDueWarning')}
             </div>
@@ -283,7 +283,7 @@ export function LinkTeamSubscriptionDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+            <CreditCard className="size-5" />
             {t('teams.linkExistingSubscription')}
           </DialogTitle>
           <DialogDescription>

@@ -36,7 +36,7 @@ export default function LandingFeaturesSection() {
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
               {headerTitle}
             </h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+            <p className="max-w-225 text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
               {headerDescription}
             </p>
           </div>
@@ -47,7 +47,7 @@ export default function LandingFeaturesSection() {
             if (!item?.title || !item?.desc) return null
             return (
               <div key={key} className="flex items-start gap-4">
-                <div className="h-8 w-8 flex-shrink-0 text-primary" />
+                <div className="size-8 shrink-0 text-primary" />
                 <div className="grid gap-1">
                   <h3 className="text-lg font-bold">{item.title}</h3>
                   <p className="text-sm text-muted-foreground">{item.desc}</p>

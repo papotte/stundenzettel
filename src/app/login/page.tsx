@@ -303,9 +303,9 @@ export default function LoginPage() {
   }
 
   return (
-    <ColorfulBackground className="min-h-screen flex flex-col items-center justify-center p-4">
+    <ColorfulBackground className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="mb-4 flex items-center gap-2">
-        <TimeWiseIcon className="h-8 w-8 text-primary" />
+        <TimeWiseIcon className="size-8 text-primary" />
         <h1 className="font-headline text-3xl font-bold tracking-tight">
           {t('common.appName')} {useMocks ? ' (Test Mode)' : ''}
         </h1>
@@ -320,20 +320,20 @@ export default function LoginPage() {
             <TabsList className="grid w-full grid-cols-2 bg-transparent p-0">
               <TabsTrigger
                 value="signin"
-                className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-gray-200"
+                className="rounded-none border-b-2 border-gray-200 text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
               >
                 {t('login.signInTab')}
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-gray-200"
+                className="rounded-none border-b-2 border-gray-200 text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
               >
                 {t('login.signUpTab')}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="mt-6">
               {buildLoginForm()}
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 border-t pt-4">
                 {useMocks && buildMockLogin()}
               </div>
             </TabsContent>
@@ -400,7 +400,7 @@ export default function LoginPage() {
           onClick={handleGoogleSignIn}
           disabled={loading}
         >
-          <GoogleIcon className="mr-2 h-4 w-4" />
+          <GoogleIcon className="mr-2 size-4" />
           {t('login.signInWithGoogle')}
         </Button>
       </div>

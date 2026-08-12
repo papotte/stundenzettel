@@ -257,7 +257,7 @@ export default function TeamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+    <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
       <div className="mx-auto max-w-4xl">
         {!team ? (
           // No team - show create team option and pending invitations
@@ -265,18 +265,18 @@ export default function TeamPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+                  <Users className="size-5" />
                   {t('teams.title')}
                 </CardTitle>
                 <CardDescription>{t('teams.subtitle')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">
+                <div className="py-8 text-center">
+                  <Users className="mx-auto mb-4 size-12 text-muted-foreground" />
+                  <h3 className="mb-2 text-lg font-medium">
                     {t('teams.noTeamYet')}
                   </h3>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="mb-6 text-muted-foreground">
                     {t('teams.noTeamDescription')}
                   </p>
                   <CreateTeamDialog
@@ -293,7 +293,7 @@ export default function TeamPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Mail className="h-5 w-5" />
+                    <Mail className="size-5" />
                     {t('teams.pendingInvitations')}
                   </CardTitle>
                   <CardDescription>
@@ -323,14 +323,14 @@ export default function TeamPage() {
                       className="flex items-center gap-2"
                       data-testid="team-name"
                     >
-                      <Users className="h-5 w-5" />
+                      <Users className="size-5" />
                       {team.name}
                     </CardTitle>
                     <CardDescription>
                       {team.description || t('teams.noDescriptionProvided')}
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2 flex-col md:flex-row">
+                  <div className="flex flex-col gap-2 md:flex-row">
                     {hasWritePermissions && (
                       <InviteMemberDialog
                         teamId={team.id}
@@ -345,7 +345,7 @@ export default function TeamPage() {
                       onTeamDeleted={handleTeamDeleted}
                     >
                       <Button variant="outline" size="sm">
-                        <Settings className="mr-2 h-4 w-4" />
+                        <Settings className="mr-2 size-4" />
                         {t('teams.settings')}
                       </Button>
                     </TeamSettingsDialog>
@@ -359,46 +359,46 @@ export default function TeamPage() {
               onValueChange={setSelectedTab}
               className="space-y-6"
             >
-              <TabsList className="flex w-full flex-start bg-transparent p-0">
+              <TabsList className="flex w-full items-start justify-start bg-transparent p-0">
                 <TabsTrigger
                   value="members"
-                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
                 >
-                  <Users className="h-4 w-4" />
+                  <Users className="size-4" />
                   {t('teams.teamMembers')} ({members.length})
                 </TabsTrigger>
                 {hasWritePermissions && (
                   <TabsTrigger
                     value="invitations"
-                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                    className="flex items-center gap-2 rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
                   >
-                    <UserPlus className="h-4 w-4" />
+                    <UserPlus className="size-4" />
                     {t('teams.pendingInvitationsTab')} ({invitations.length})
                   </TabsTrigger>
                 )}
                 {hasWritePermissions && (
                   <TabsTrigger
                     value="reports"
-                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                    className="flex items-center gap-2 rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
                   >
-                    <FileSpreadsheet className="h-4 w-4" />
+                    <FileSpreadsheet className="size-4" />
                     {t('reports.tab')}
                   </TabsTrigger>
                 )}
                 {hasWritePermissions && (
                   <TabsTrigger
                     value="team-settings"
-                    className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                    className="flex items-center gap-2 rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
                   >
-                    <SlidersHorizontal className="h-4 w-4" />
+                    <SlidersHorizontal className="size-4" />
                     {t('teams.teamWideSettings')}
                   </TabsTrigger>
                 )}
                 <TabsTrigger
                   value="subscription"
-                  className="text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none border-b-2 border-transparent flex items-center gap-2"
+                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent text-muted-foreground hover:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
                 >
-                  <CreditCard className="h-4 w-4" />
+                  <CreditCard className="size-4" />
                   {t('teams.subscription')}
                 </TabsTrigger>
               </TabsList>

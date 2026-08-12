@@ -98,7 +98,7 @@ export default function TryForFreeButton({
       onClick={handleTryForFree}
       disabled={loading}
     >
-      {showIcon && <Sparkles className="h-4 w-4" />}
+      {showIcon && <Sparkles className="size-4" />}
       {loading ? t('pricing.processing') : t('pricing.tryForFree')}
     </Button>
   )

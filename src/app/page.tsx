@@ -16,14 +16,14 @@ export default async function LandingPage() {
     <LandingLayout>
       {/* Hero Section */}
       <section className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container px-4 md:px-6 mx-auto">
-          <div className="flex w-full gap-6 lg:gap-12 flex-col md:flex-row">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex w-full flex-col gap-6 md:flex-row lg:gap-12">
             <div className="flex flex-shrink flex-col justify-center space-y-4 md:basis-auto">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
                   {t('landing.heroTitle')}
                 </h1>
-                <p className="max-w-[600px] text-muted-foreground md:text-xl">
+                <p className="max-w-150 text-muted-foreground md:text-xl">
                   {t('landing.heroDescription')}
                 </p>
               </div>
@@ -39,7 +39,7 @@ export default async function LandingPage() {
             {/* Hero Illustration */}
             <div
               className={
-                'flex items-center justify-center lg:order-last p-4 md:basis-2/3'
+                'flex items-center justify-center p-4 md:basis-2/3 lg:order-last'
               }
             >
               <LandingIllustration className="aspect-video text-primary" />

@@ -17,5 +17,9 @@
   "summaryOvertime": "Überstunden",
   "summarySpecialEntries": "Sondereinträge",
   "noData": "Keine Einträge in diesem Zeitraum",
-  "sectionProjects": "Stunden nach Projekt"
+  "sectionProjects": "Stunden nach Projekt",
+  "periodCustom": "Benutzerdefiniert",
+  "startDate": "Start",
+  "endDate": "Ende",
+  "rangeError": "Der ausgewählte Zeitraum darf maximal 365 Tage umfassen und das Startdatum muss vor dem Enddatum liegen."
 }

@@ -238,9 +238,9 @@ export default function ExportPreview() {
         <CardContent className="p-4 sm:p-6">
           <div className="mb-6 flex flex-col items-center justify-between sm:flex-row print:hidden">
             <div className="flex items-center gap-4">
-              <Skeleton className="h-10 w-10" />
+              <Skeleton className="size-10" />
               <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-10 w-10" />
+              <Skeleton className="size-10" />
             </div>
             <Skeleton className="h-10 w-36" />
           </div>
@@ -276,7 +276,7 @@ export default function ExportPreview() {
                 onClick={() => setSelectedMonth(subMonths(selectedMonth, 1))}
                 data-testid="export-preview-previous-month-button"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="size-4" />
               </Button>
               <h2
                 className="text-2xl font-bold"
@@ -290,7 +290,7 @@ export default function ExportPreview() {
                 onClick={() => setSelectedMonth(addMonths(selectedMonth, 1))}
                 data-testid="export-preview-next-month-button"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="size-4" />
               </Button>
             </div>
             <ExportPreviewActions

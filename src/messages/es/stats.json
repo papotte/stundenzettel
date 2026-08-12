@@ -17,5 +17,9 @@
   "summaryOvertime": "Horas extra",
   "summarySpecialEntries": "Entradas especiales",
   "noData": "No hay entradas en este período",
-  "sectionProjects": "Horas por proyecto"
+  "sectionProjects": "Horas por proyecto",
+  "periodCustom": "Personalizado",
+  "startDate": "Inicio",
+  "endDate": "Fin",
+  "rangeError": "El rango seleccionado no puede superar 365 días y la fecha de inicio debe ser anterior a la de fin."
 }

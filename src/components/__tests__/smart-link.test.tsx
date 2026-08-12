@@ -68,13 +68,13 @@ describe('SmartLink', () => {
 
     it('applies custom className', () => {
       render(
-        <SmartLink href="/login" className="custom-class">
+        <SmartLink href="/login" className="bg-accent">
           <button>Get Started</button>
         </SmartLink>,
       )
 
       const link = screen.getByRole('link')
-      expect(link).toHaveClass('custom-class')
+      expect(link).toHaveClass('bg-accent')
     })
   })
 
@@ -151,7 +151,7 @@ describe('SmartLink', () => {
       render(
         <SmartLink
           href="/login"
-          className="test-class"
+          className="bg-accent"
           data-testid="smart-link"
           target="_blank"
         >
@@ -160,7 +160,7 @@ describe('SmartLink', () => {
       )
 
       const link = screen.getByTestId('smart-link')
-      expect(link).toHaveClass('test-class')
+      expect(link).toHaveClass('bg-accent')
       expect(link).toHaveAttribute('target', '_blank')
     })
   })

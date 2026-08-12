@@ -22,7 +22,7 @@ const SummaryCard: React.FC = () => {
     <Card className="shadow-lg" data-testid="summary-card">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <BarChart className="h-5 w-5 text-primary" />
+          <BarChart className="size-5 text-primary" />
           <CardTitle>{t('tracker.summaryTitle')}</CardTitle>
         </div>
         <CardDescription>{t('tracker.summaryDescription')}</CardDescription>

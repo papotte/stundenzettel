@@ -97,19 +97,19 @@ export default function TimeEntryCard({
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <SpecialIcon className="h-5 w-5 text-primary" />
+              <SpecialIcon className="size-5 text-primary" />
               <p className="font-semibold">
                 {getLocationDisplayName(entry.location, t)}
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <p className="font-mono text-lg font-medium tabular-nums text-primary">
+              <p className="font-mono text-lg font-medium text-primary tabular-nums">
                 {totalCompensatedSeconds > 0
                   ? formatDuration(totalCompensatedSeconds)
                   : '—'}
               </p>
               <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
-                <Edit className="h-4 w-4" />
+                <Edit className="size-4" />
                 <span className="sr-only">
                   {t('time_entry_card.editLabel')}
                 </span>
@@ -130,7 +130,7 @@ export default function TimeEntryCard({
                   title={t('time_entry_card.copyToTitle')}
                 >
                   <Button variant="ghost" size="icon">
-                    <Copy className="h-4 w-4" />
+                    <Copy className="size-4" />
                     <span className="sr-only">
                       {t('time_entry_card.copyToLabel')}
                     </span>
@@ -144,7 +144,7 @@ export default function TimeEntryCard({
                     size="icon"
                     className="text-destructive hover:text-destructive"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                     <span className="sr-only">
                       {t('time_entry_card.deleteLabel')}
                     </span>
@@ -191,7 +191,7 @@ export default function TimeEntryCard({
             <p className="font-semibold">{entry.location}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <div className="flex items-center">
-                <Clock className="mr-1.5 h-3.5 w-3.5" />
+                <Clock className="mr-1.5 size-3.5" />
                 {typeof entry.durationMinutes === 'number' ? (
                   <span>
                     {t('time_entry_form.durationLabel')}:{' '}
@@ -205,7 +205,7 @@ export default function TimeEntryCard({
               </div>
               {entry.pauseDuration !== undefined && entry.pauseDuration > 0 && (
                 <div className="flex items-center">
-                  <Coffee className="mr-1.5 h-3.5 w-3.5" />
+                  <Coffee className="mr-1.5 size-3.5" />
                   <span>
                     {t('time_entry_card.pauseLabel', {
                       minutes: entry.pauseDuration,
@@ -216,7 +216,7 @@ export default function TimeEntryCard({
               {entry.driverTimeHours !== undefined &&
                 entry.driverTimeHours > 0 && (
                   <div className="flex items-center">
-                    <CarFront className="mr-1.5 h-3.5 w-3.5" />
+                    <CarFront className="mr-1.5 size-3.5" />
                     <span>
                       {t('time_entry_card.drivingLabel', {
                         hours: entry.driverTimeHours,
@@ -227,7 +227,7 @@ export default function TimeEntryCard({
               {entry.passengerTimeHours !== undefined &&
                 entry.passengerTimeHours > 0 && (
                   <div className="flex items-center">
-                    <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                    <UserPlus className="mr-1.5 size-3.5" />
                     <span>
                       {t('time_entry_card.passengerLabel', {
                         hours: entry.passengerTimeHours,
@@ -239,7 +239,7 @@ export default function TimeEntryCard({
                 Number.isFinite(entry.privateCarKilometers) &&
                 entry.privateCarKilometers > 0 && (
                   <div className="flex items-center">
-                    <Navigation className="mr-1.5 h-3.5 w-3.5" />
+                    <Navigation className="mr-1.5 size-3.5" />
                     <span>
                       {t('time_entry_card.privateCarKmLabel', {
                         km: entry.privateCarKilometers,
@@ -250,13 +250,13 @@ export default function TimeEntryCard({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <p className="font-mono text-lg font-medium tabular-nums text-primary">
+            <p className="font-mono text-lg font-medium text-primary tabular-nums">
               {totalCompensatedSeconds > 0
                 ? formatDuration(totalCompensatedSeconds)
                 : '—'}
             </p>
             <Button variant="ghost" size="icon" onClick={() => onEdit(entry)}>
-              <Edit className="h-4 w-4" />
+              <Edit className="size-4" />
               <span className="sr-only">{t('time_entry_card.editLabel')}</span>
             </Button>
             {onCopyTo && (
@@ -275,7 +275,7 @@ export default function TimeEntryCard({
                 title={t('time_entry_card.copyToTitle')}
               >
                 <Button variant="ghost" size="icon">
-                  <Copy className="h-4 w-4" />
+                  <Copy className="size-4" />
                   <span className="sr-only">
                     {t('time_entry_card.copyToLabel')}
                   </span>
@@ -289,7 +289,7 @@ export default function TimeEntryCard({
                   size="icon"
                   className="text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="size-4" />
                   <span className="sr-only">
                     {t('time_entry_card.deleteLabel')}
                   </span>
