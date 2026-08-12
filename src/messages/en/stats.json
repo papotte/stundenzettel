@@ -17,5 +17,9 @@
   "summaryOvertime": "Overtime",
   "summarySpecialEntries": "Special entries",
   "noData": "No entries in this period",
-  "sectionProjects": "Hours by project"
+  "sectionProjects": "Hours by project",
+  "periodCustom": "Custom",
+  "startDate": "Start",
+  "endDate": "End",
+  "rangeError": "The selected range cannot exceed 365 days and the start must be before the end."
 }

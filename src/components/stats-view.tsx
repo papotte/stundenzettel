@@ -3,9 +3,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import {
+  differenceInCalendarDays,
+  endOfDay,
   endOfMonth,
   endOfWeek,
   endOfYear,
+  format,
+  parse,
+  startOfDay,
   startOfMonth,
   startOfWeek,
   startOfYear,
@@ -15,6 +20,8 @@ import {
 import { useTranslations } from 'next-intl'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -49,6 +56,10 @@ export type StatsPeriod =
   | 'lastMonth'
   | 'thisYear'
 
+type PeriodOption = StatsPeriod | 'custom'
+
+const MAX_RANGE_DAYS = 365
+
 function getPeriodBounds(
   period: StatsPeriod,
   ref: Date,
@@ -80,11 +91,23 @@ function getPeriodBounds(
   }
 }
 
+function parseDateInput(value: string): Date | null {
+  const parsed = parse(value, 'yyyy-MM-dd', new Date())
+  if (isNaN(parsed.getTime())) return null
+  return parsed
+}
+
 export default function StatsView() {
   const t = useTranslations('stats')
   const tSpecial = useTranslations('special_locations')
   const { entries, userSettings, isLoading } = useTimeTrackerContext()
-  const [period, setPeriod] = useState<StatsPeriod>('thisMonth')
+  const [period, setPeriod] = useState<PeriodOption>('thisMonth')
+  const [customStart, setCustomStart] = useState<Date>(() =>
+    startOfDay(startOfMonth(new Date())),
+  )
+  const [customEnd, setCustomEnd] = useState<Date>(() =>
+    endOfDay(endOfMonth(new Date())),
+  )
 
   const getLocationDisplayName = useCallback(
     (location: string) => {
@@ -96,19 +119,46 @@ export default function StatsView() {
     [tSpecial],
   )
 
-  const { start, end } = useMemo(
-    () => getPeriodBounds(period, new Date()),
-    [period],
-  )
+  const { start, end } = useMemo(() => {
+    if (period === 'custom') {
+      return { start: startOfDay(customStart), end: endOfDay(customEnd) }
+    }
+    return getPeriodBounds(period, new Date())
+  }, [period, customStart, customEnd])
+
+  const handleStartChange = (value: string) => {
+    const date = parseDateInput(value)
+    if (!date) return
+    setCustomStart(startOfDay(date))
+    setPeriod('custom')
+  }
+
+  const handleEndChange = (value: string) => {
+    const date = parseDateInput(value)
+    if (!date) return
+    setCustomEnd(endOfDay(date))
+    setPeriod('custom')
+  }
+
+  const rangeError = useMemo(() => {
+    if (customStart > customEnd) {
+      return t('rangeError')
+    }
+    if (differenceInCalendarDays(customEnd, customStart) > MAX_RANGE_DAYS) {
+      return t('rangeError')
+    }
+    return null
+  }, [customStart, customEnd, t])
 
   const entriesInPeriod = useMemo(() => {
+    if (rangeError) return []
     return entries.filter(
       (entry) =>
         entry.startTime &&
         entry.startTime.getTime() >= start.getTime() &&
         entry.startTime.getTime() <= end.getTime(),
     )
-  }, [entries, start, end])
+  }, [entries, start, end, rangeError])
 
   const driverComp = userSettings?.driverCompensationPercent ?? 100
   const passengerComp = userSettings?.passengerCompensationPercent ?? 100
@@ -202,7 +252,7 @@ export default function StatsView() {
   )
 
   const expectedHoursForPeriod = useMemo(() => {
-    if (!userSettings) return 0
+    if (!userSettings) return null
     const expectedMonthly = calculateExpectedMonthlyHours(userSettings)
     switch (period) {
       case 'thisWeek':
@@ -213,14 +263,16 @@ export default function StatsView() {
         return expectedMonthly
       case 'thisYear':
         return expectedMonthly * 12
+      case 'custom':
+        return null
     }
   }, [userSettings, period])
 
-  const overtimeHours = totals.totalHours - expectedHoursForPeriod
-  const showExpectedAndOvertime =
-    !!userSettings &&
-    (userSettings.expectedMonthlyHours != null ||
-      userSettings.defaultWorkHours != null)
+  const overtimeHours =
+    expectedHoursForPeriod !== null
+      ? totals.totalHours - expectedHoursForPeriod
+      : 0
+  const showExpectedAndOvertime = expectedHoursForPeriod !== null
 
   const projectRows = useMemo(
     () =>
@@ -309,168 +361,207 @@ export default function StatsView() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <CardTitle>{t('title')}</CardTitle>
-        <Select
-          value={period}
-          onValueChange={(v) => setPeriod(v as StatsPeriod)}
-        >
-          <SelectTrigger
-            className="w-full sm:w-[180px]"
-            aria-label={t('title')}
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+          {period === 'custom' && (
+            <div className="grid w-full grid-cols-2 gap-3 sm:w-auto">
+              <div className="flex flex-col gap-1">
+                <Label
+                  htmlFor="stats-start-date"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t('startDate')}
+                </Label>
+                <Input
+                  id="stats-start-date"
+                  type="date"
+                  value={format(customStart, 'yyyy-MM-dd')}
+                  onChange={(e) => handleStartChange(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label
+                  htmlFor="stats-end-date"
+                  className="text-xs text-muted-foreground"
+                >
+                  {t('endDate')}
+                </Label>
+                <Input
+                  id="stats-end-date"
+                  type="date"
+                  value={format(customEnd, 'yyyy-MM-dd')}
+                  onChange={(e) => handleEndChange(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          <Select
+            value={period}
+            onValueChange={(v) => setPeriod(v as PeriodOption)}
           >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="thisWeek">{t('periodThisWeek')}</SelectItem>
-            <SelectItem value="lastWeek">{t('periodLastWeek')}</SelectItem>
-            <SelectItem value="thisMonth">{t('periodThisMonth')}</SelectItem>
-            <SelectItem value="lastMonth">{t('periodLastMonth')}</SelectItem>
-            <SelectItem value="thisYear">{t('periodThisYear')}</SelectItem>
-          </SelectContent>
-        </Select>
+            <SelectTrigger className="w-full sm:w-45" aria-label={t('title')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="thisWeek">{t('periodThisWeek')}</SelectItem>
+              <SelectItem value="lastWeek">{t('periodLastWeek')}</SelectItem>
+              <SelectItem value="thisMonth">{t('periodThisMonth')}</SelectItem>
+              <SelectItem value="lastMonth">{t('periodLastMonth')}</SelectItem>
+              <SelectItem value="thisYear">{t('periodThisYear')}</SelectItem>
+              <SelectItem value="custom">{t('periodCustom')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          <section
-            className="rounded-lg border bg-muted/30 p-4"
-            aria-labelledby="stats-summary-heading"
-          >
-            <h2
-              id="stats-summary-heading"
-              className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+        {!rangeError ? (
+          <div className="space-y-6">
+            <section
+              className="rounded-lg border bg-muted/30 p-4"
+              aria-labelledby="stats-summary-heading"
             >
-              {t('summaryTitle')}
-            </h2>
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-              {showExpectedAndOvertime && (
-                <>
-                  <dt className="text-muted-foreground">
-                    {t('summaryExpectedHours')}
-                  </dt>
-                  <dd className="tabular-nums font-medium">
-                    {expectedHoursForPeriod.toFixed(1)} h
-                  </dd>
-                </>
-              )}
-              <dt className="text-muted-foreground">
-                {t('summaryTotalHours')}
-              </dt>
-              <dd className="tabular-nums font-medium">
-                {totals.totalHours.toFixed(1)} h
-              </dd>
-              {showExpectedAndOvertime && (
-                <>
-                  <dt className="text-muted-foreground">
-                    {t('summaryOvertime')}
-                  </dt>
-                  <dd className="tabular-nums font-medium">
-                    {overtimeHours >= 0 ? '+' : ''}
-                    {overtimeHours.toFixed(1)} h
-                  </dd>
-                </>
-              )}
-              <dt className="text-muted-foreground">
-                {tSpecial('SICK_LEAVE')}
-              </dt>
-              <dd className="tabular-nums font-medium">
-                {specialTotals.sickLeaveHours.toFixed(1)} h
-              </dd>
-              <dt className="text-muted-foreground">{tSpecial('PTO')}</dt>
-              <dd className="tabular-nums font-medium">
-                {specialTotals.ptoHours.toFixed(1)} h
-              </dd>
-              <dt className="text-muted-foreground">
-                {tSpecial('BANK_HOLIDAY')}
-              </dt>
-              <dd className="tabular-nums font-medium">
-                {specialTotals.holidayHours.toFixed(1)} h
-              </dd>
-              <dt className="text-muted-foreground">
-                {tSpecial('TIME_OFF_IN_LIEU')}
-              </dt>
-              <dd className="tabular-nums font-medium">
-                {specialTotals.timeOffInLieuHours.toFixed(1)} h
-              </dd>
-            </dl>
-          </section>
-
-          {!hasAnyData ? (
-            <p className="text-muted-foreground text-sm">{t('noData')}</p>
-          ) : (
-            <section aria-labelledby="stats-projects-heading">
               <h2
-                id="stats-projects-heading"
-                className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+                id="stats-summary-heading"
+                className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase"
               >
-                {t('sectionProjects')}
+                {t('summaryTitle')}
               </h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('project')}</TableHead>
-                    <TableHead className="text-right">
-                      {t('hoursWorked')}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t('hoursDriven')}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t('hoursPassenger')}
-                    </TableHead>
-                    <TableHead className="text-right">{t('total')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {projectRows.map(
-                    ({
-                      location,
-                      workHours,
-                      driverHours,
-                      passengerHours,
-                      totalHours,
-                    }) => (
-                      <TableRow key={location}>
-                        <TableCell>
-                          {getLocationDisplayName(location)}
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {workHours.toFixed(1)} h
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {driverHours.toFixed(1)} h
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {passengerHours.toFixed(1)} h
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {totalHours.toFixed(1)} h
-                        </TableCell>
-                      </TableRow>
-                    ),
-                  )}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell className="font-medium">{t('total')}</TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">
-                      {projectTotals.workHours.toFixed(1)} h
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">
-                      {projectTotals.driverHours.toFixed(1)} h
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">
-                      {projectTotals.passengerHours.toFixed(1)} h
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">
-                      {projectTotals.totalHours.toFixed(1)} h
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+                {showExpectedAndOvertime && (
+                  <>
+                    <dt className="text-muted-foreground">
+                      {t('summaryExpectedHours')}
+                    </dt>
+                    <dd className="font-medium tabular-nums">
+                      {expectedHoursForPeriod.toFixed(1)} h
+                    </dd>
+                  </>
+                )}
+                <dt className="text-muted-foreground">
+                  {t('summaryTotalHours')}
+                </dt>
+                <dd className="font-medium tabular-nums">
+                  {totals.totalHours.toFixed(1)} h
+                </dd>
+                {showExpectedAndOvertime && (
+                  <>
+                    <dt className="text-muted-foreground">
+                      {t('summaryOvertime')}
+                    </dt>
+                    <dd className="font-medium tabular-nums">
+                      {overtimeHours >= 0 ? '+' : ''}
+                      {overtimeHours.toFixed(1)} h
+                    </dd>
+                  </>
+                )}
+                <dt className="text-muted-foreground">
+                  {tSpecial('SICK_LEAVE')}
+                </dt>
+                <dd className="font-medium tabular-nums">
+                  {specialTotals.sickLeaveHours.toFixed(1)} h
+                </dd>
+                <dt className="text-muted-foreground">{tSpecial('PTO')}</dt>
+                <dd className="font-medium tabular-nums">
+                  {specialTotals.ptoHours.toFixed(1)} h
+                </dd>
+                <dt className="text-muted-foreground">
+                  {tSpecial('BANK_HOLIDAY')}
+                </dt>
+                <dd className="font-medium tabular-nums">
+                  {specialTotals.holidayHours.toFixed(1)} h
+                </dd>
+                <dt className="text-muted-foreground">
+                  {tSpecial('TIME_OFF_IN_LIEU')}
+                </dt>
+                <dd className="font-medium tabular-nums">
+                  {specialTotals.timeOffInLieuHours.toFixed(1)} h
+                </dd>
+              </dl>
             </section>
-          )}
-        </div>
+
+            {!hasAnyData ? (
+              <p className="text-sm text-muted-foreground">{t('noData')}</p>
+            ) : (
+              <section aria-labelledby="stats-projects-heading">
+                <h2
+                  id="stats-projects-heading"
+                  className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase"
+                >
+                  {t('sectionProjects')}
+                </h2>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('project')}</TableHead>
+                      <TableHead className="text-right">
+                        {t('hoursWorked')}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t('hoursDriven')}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t('hoursPassenger')}
+                      </TableHead>
+                      <TableHead className="text-right">{t('total')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {projectRows.map(
+                      ({
+                        location,
+                        workHours,
+                        driverHours,
+                        passengerHours,
+                        totalHours,
+                      }) => (
+                        <TableRow key={location}>
+                          <TableCell>
+                            {getLocationDisplayName(location)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {workHours.toFixed(1)} h
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {driverHours.toFixed(1)} h
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {passengerHours.toFixed(1)} h
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {totalHours.toFixed(1)} h
+                          </TableCell>
+                        </TableRow>
+                      ),
+                    )}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell className="font-medium">
+                        {t('total')}
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {projectTotals.workHours.toFixed(1)} h
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {projectTotals.driverHours.toFixed(1)} h
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {projectTotals.passengerHours.toFixed(1)} h
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {projectTotals.totalHours.toFixed(1)} h
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              </section>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-destructive">{rangeError}</p>
+        )}
       </CardContent>
     </Card>
   )
