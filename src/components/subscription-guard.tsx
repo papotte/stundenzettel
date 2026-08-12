@@ -47,7 +47,7 @@ function SubscriptionFallback({
                 aria-label={t('common.back')}
               >
                 <Link href="/">
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="size-4" />
                 </Link>
               </Button>
               <CardTitle>{t('subscription.loginRequiredTitle')}</CardTitle>
@@ -70,7 +70,7 @@ function SubscriptionFallback({
   }
   // type === 'subscription'
   return (
-    <div className="flex mt-24 items-center justify-center bg-background">
+    <div className="mt-24 flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{t('subscription.requiredTitle')}</CardTitle>
@@ -78,7 +78,7 @@ function SubscriptionFallback({
             {t('subscription.requiredDescription')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center space-y-4">
+        <CardContent className="space-y-4 text-center">
           <Button
             onClick={() => (window.location.href = '/pricing')}
             className="w-full"

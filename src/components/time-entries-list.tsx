@@ -121,7 +121,7 @@ const TimeEntriesList: React.FC = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex shrink">{listTitle}</CardTitle>
-          <div className="text-nowrap text-lg font-bold text-primary">
+          <div className="text-lg font-bold text-nowrap text-primary">
             {formatHoursAndMinutes(dailyTotal)}
           </div>
         </div>
@@ -134,7 +134,7 @@ const TimeEntriesList: React.FC = () => {
                 onClick={handleCopyFromYesterday}
                 data-testid="copy-from-yesterday-button"
               >
-                <Copy className="mr-2 h-4 w-4" />
+                <Copy className="mr-2 size-4" />
                 {t('tracker.copyFromYesterday')}
               </SubscriptionGuardButton>
             )}
@@ -153,7 +153,7 @@ const TimeEntriesList: React.FC = () => {
                   size="sm"
                   data-testid="copy-day-to-button"
                 >
-                  <Copy className="mr-2 h-4 w-4" />
+                  <Copy className="mr-2 size-4" />
                   {t('tracker.copyDayTo')}
                 </SubscriptionGuardButton>
               </CopyToDatePicker>

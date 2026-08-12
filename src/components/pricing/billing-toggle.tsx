@@ -20,7 +20,7 @@ export default function BillingToggle({
   const t = useTranslations('landing')
 
   return (
-    <div className="flex justify-center items-center space-x-4 mb-8">
+    <div className="mb-8 flex items-center justify-center space-x-4">
       <Label
         htmlFor="billing-toggle"
         className="text-sm font-medium text-gray-700"

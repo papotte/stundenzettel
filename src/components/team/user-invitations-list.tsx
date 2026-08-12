@@ -123,7 +123,7 @@ export function UserInvitationsList({
 
   if (invitations.length === 0) {
     return (
-      <div className="text-center py-6 text-muted-foreground">
+      <div className="py-6 text-center text-muted-foreground">
         {t('teams.noPendingInvitations')}
       </div>
     )
@@ -138,7 +138,7 @@ export function UserInvitationsList({
             <TableHead>{t('teams.role')}</TableHead>
             <TableHead>{t('teams.status')}</TableHead>
             <TableHead>{t('teams.expires')}</TableHead>
-            <TableHead className="w-[120px]">{t('teams.actions')}</TableHead>
+            <TableHead className="w-30">{t('teams.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -149,7 +149,7 @@ export function UserInvitationsList({
               <TableRow key={invitation.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <Mail className="size-4 text-muted-foreground" />
                     <span className="font-medium">
                       {t('teams.teamInvitation')}
                     </span>
@@ -158,7 +158,7 @@ export function UserInvitationsList({
                 <TableCell>{getRoleLabel(invitation.role)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-500" />
+                    <Clock className="size-4 text-amber-500" />
                     <span
                       className={expired ? 'text-red-600' : 'text-amber-600'}
                     >
@@ -178,7 +178,7 @@ export function UserInvitationsList({
                         disabled={loadingInvitationId === invitation.id}
                         className="h-8"
                       >
-                        <Check className="mr-1 h-3 w-3" />
+                        <Check className="mr-1 size-3" />
                         {t('teams.accept')}
                       </Button>
                       <Button
@@ -188,7 +188,7 @@ export function UserInvitationsList({
                         disabled={loadingInvitationId === invitation.id}
                         className="h-8"
                       >
-                        <X className="mr-1 h-3 w-3" />
+                        <X className="mr-1 size-3" />
                         {t('teams.decline')}
                       </Button>
                     </div>

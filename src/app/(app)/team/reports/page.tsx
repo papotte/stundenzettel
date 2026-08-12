@@ -165,11 +165,11 @@ export default function TeamReportsPage() {
     : null
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+    <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
       <div className="mx-auto max-w-7xl">
         <Button asChild variant="outline" className="mb-8">
           <Link href="/team">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 size-4" />
             {t('settings.backToTeam')}
           </Link>
         </Button>
@@ -188,7 +188,7 @@ export default function TeamReportsPage() {
                     }
                     data-testid="reports-previous-month-button"
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="size-4" />
                   </Button>
                   <h2
                     className="text-xl font-semibold"
@@ -204,7 +204,7 @@ export default function TeamReportsPage() {
                     }
                     data-testid="reports-next-month-button"
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="size-4" />
                   </Button>
                 </div>
               )}

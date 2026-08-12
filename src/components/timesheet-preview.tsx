@@ -170,7 +170,7 @@ export default function TimesheetPreview({
                     </TableHead>
                     <TableHead
                       rowSpan={2}
-                      className="w-[8%] border-l border-r border-black align-middle print:h-auto print:p-1"
+                      className="w-[8%] border-x border-black align-middle print:h-auto print:p-1"
                     >
                       {t('export.headerPauseDuration')}
                     </TableHead>
@@ -247,10 +247,10 @@ export default function TimesheetPreview({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 print:hidden"
+                                className="absolute top-1/2 right-0.5 size-7 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 print:hidden"
                                 onClick={() => onAdd(day)}
                               >
-                                <Plus className="h-4 w-4" />
+                                <Plus className="size-4" />
                                 <span className="sr-only">Add entry</span>
                               </Button>
                             )}
@@ -258,7 +258,7 @@ export default function TimesheetPreview({
                           <TableCell className="border-r border-black text-left text-muted-foreground print:p-1"></TableCell>
                           <TableCell className="text-right print:p-1"></TableCell>
                           <TableCell className="text-right print:p-1"></TableCell>
-                          <TableCell className="border-l border-r border-black text-right print:p-1"></TableCell>
+                          <TableCell className="border-x border-black text-right print:p-1"></TableCell>
                           {showDriverTimeCol && (
                             <TableCell className="border-r border-black text-right print:p-1"></TableCell>
                           )}
@@ -348,13 +348,13 @@ export default function TimesheetPreview({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="absolute right-0.5 top-1/2 h-7 w-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 print:hidden"
+                                  className="absolute top-1/2 right-0.5 size-7 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 print:hidden"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     onAdd(day)
                                   }}
                                 >
-                                  <Plus className="h-4 w-4" />
+                                  <Plus className="size-4" />
                                   <span className="sr-only">Add entry</span>
                                 </Button>
                               )}
@@ -375,7 +375,7 @@ export default function TimesheetPreview({
                               ? ''
                               : toValue}
                           </TableCell>
-                          <TableCell className="border-l border-r border-black text-right print:p-1">
+                          <TableCell className="border-x border-black text-right print:p-1">
                             {/* Show blank if pause is 0 or 0.00 */}
                             {entry.pauseDuration && entry.pauseDuration !== 0
                               ? formatDecimalHours(entry.pauseDuration)
@@ -428,7 +428,7 @@ export default function TimesheetPreview({
               <div className="mt-2 flex w-full justify-end print:mt-1 print:text-xs">
                 <div className="flex w-full justify-end">
                   <div className="flex-1"></div>
-                  <div className="flex flex-1 gap-8 sm:w-1/2 justify-between">
+                  <div className="flex flex-1 justify-between gap-8 sm:w-1/2">
                     <div className="flex-1 text-right font-semibold">
                       {t('export.footerTotalPerWeek')}
                     </div>

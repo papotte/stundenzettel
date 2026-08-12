@@ -34,10 +34,10 @@ export default function PricingCard({
   const format = useFormatter()
 
   const renderFeatureIcon = (feature: string) => {
-    if (feature.includes('support')) return <Star className="h-4 w-4" />
+    if (feature.includes('support')) return <Star className="size-4" />
     if (feature.includes('team') || feature.includes('collaboration'))
-      return <Users className="h-4 w-4" />
-    return <Check className="h-4 w-4" />
+      return <Users className="size-4" />
+    return <Check className="size-4" />
   }
 
   const isIndividualPlan = !plan.maxUsers
@@ -46,7 +46,7 @@ export default function PricingCard({
   if (loading === plan.id) {
     subscribeButtonInner = (
       <div className="flex items-center space-x-2">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+        <div className="size-4 animate-spin rounded-full border-b-2 border-white"></div>
         <span>{t('pricing.processing')}</span>
       </div>
     )
@@ -60,12 +60,12 @@ export default function PricingCard({
     <Card
       className={`relative ${
         plan.features.includes('Priority support')
-          ? 'border-2 border-primary shadow-lg scale-105'
+          ? 'scale-105 border-2 border-primary shadow-lg'
           : 'border border-gray-200'
       }`}
     >
       {plan.features.includes('Priority support') && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
           <Badge className="bg-primary text-primary-foreground">
             {t('pricing.mostPopular')}
           </Badge>
@@ -77,7 +77,7 @@ export default function PricingCard({
         <div className="mt-4">
           {plan.tieredPricing ? (
             <div className="text-center">
-              <div className="text-sm text-gray-600 mb-1">
+              <div className="mb-1 text-sm text-gray-600">
                 {t('pricing.startingAt')}
               </div>
               <div className="text-3xl font-bold text-gray-900">
@@ -89,7 +89,7 @@ export default function PricingCard({
                   },
                 )}
               </div>
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="mt-1 text-sm text-gray-600">
                 {plan.interval === 'month'
                   ? t('pricing.perUserPerMonth')
                   : t('pricing.perUserPerYear')}
@@ -103,7 +103,7 @@ export default function PricingCard({
                   style: 'currency',
                 })}
               </span>
-              <span className="text-gray-600 ml-1">
+              <span className="ml-1 text-gray-600">
                 /
                 {plan.interval === 'month'
                   ? t('pricing.month')
@@ -113,7 +113,7 @@ export default function PricingCard({
           )}
         </div>
         {plan.tieredPricing && plan.tieredPricing.length > 1 && (
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="mt-2 text-sm text-gray-500">
             {t('pricing.tieredHint')}
           </p>
         )}
@@ -132,7 +132,7 @@ export default function PricingCard({
         <ul className="space-y-3">
           {plan.features.map((feature, index) => (
             <li key={index} className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-0.5">
+              <div className="mt-0.5 flex-shrink-0">
                 {renderFeatureIcon(feature)}
               </div>
               <span className="text-sm text-gray-700">{feature}</span>

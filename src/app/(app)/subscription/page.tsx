@@ -112,12 +112,12 @@ export default function SubscriptionPage() {
     subscription?.status === 'active' || subscription?.status === 'trialing'
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+    <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
       <div className="mx-auto max-w-2xl">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+              <CreditCard className="size-5" />
               {t('settings.manageSubscription')}
             </CardTitle>
             <CardDescription>
@@ -126,27 +126,27 @@ export default function SubscriptionPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             {!isSubscribed ? (
-              <div className="text-center py-8">
-                <Crown className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">
+              <div className="py-8 text-center">
+                <Crown className="mx-auto mb-4 size-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-medium">
                   {t('subscription.noSubscription')}
                 </h3>
-                <p className="text-muted-foreground mb-4">
+                <p className="mb-4 text-muted-foreground">
                   {t('subscription.noSubscriptionDescription')}
                 </p>
                 <Button onClick={handleUpgrade}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink className="mr-2 size-4" />
                   {t('subscription.upgrade')}
                 </Button>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
-                    <h4 className="text-xs font-medium mb-2">
+                    <h4 className="mb-2 text-xs font-medium">
                       {t('subscription.currentPlan')}
                     </h4>
-                    <h3 className="font-headline text-xl font-semibold leading-none tracking-tight">
+                    <h3 className="font-headline text-xl leading-none font-semibold tracking-tight">
                       {subscription?.planName ?? t('subscription.unknownPlan')}
                     </h3>
                     <p className="text-xs text-muted-foreground">
@@ -166,14 +166,14 @@ export default function SubscriptionPage() {
 
                 {/* Trial Information */}
                 {isInTrial && trialEndDate && (
-                  <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                  <div className="rounded-lg border bg-blue-50 p-4 dark:bg-blue-950/20">
                     <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <Clock className="mt-0.5 size-5 text-blue-600" />
                       <div className="flex-1">
                         <h3 className="font-medium text-blue-900 dark:text-blue-100">
                           {t('subscription.trialStatus')}
                         </h3>
-                        <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                        <p className="mb-2 text-sm text-blue-700 dark:text-blue-300">
                           {daysRemaining !== null && daysRemaining > 0
                             ? t('subscription.trialDaysRemaining', {
                                 days: daysRemaining,
@@ -191,14 +191,14 @@ export default function SubscriptionPage() {
 
                 {/* Trial Expiration Warning */}
                 {isInTrial && isTrialExpiringSoon && (
-                  <div className="p-4 border border-orange-200 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 dark:bg-orange-950/20">
                     <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+                      <AlertTriangle className="mt-0.5 size-5 text-orange-600" />
                       <div className="flex-1">
                         <h3 className="font-medium text-orange-900 dark:text-orange-100">
                           {t('subscription.trialExpiringSoon')}
                         </h3>
-                        <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+                        <p className="mb-3 text-sm text-orange-700 dark:text-orange-300">
                           {t('subscription.trialExpiringDescription')}
                         </p>
                       </div>
@@ -208,7 +208,7 @@ export default function SubscriptionPage() {
 
                 {/* Cancellation Information */}
                 {subscription?.cancelAt && (
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center justify-between rounded-lg border p-4">
                     <div>
                       <h3 className="font-medium">
                         {t('subscription.cancellationDate')}
@@ -221,9 +221,9 @@ export default function SubscriptionPage() {
                 )}
 
                 {isSubscriptionOwner && (
-                  <div className="pt-4 border-t space-y-3">
+                  <div className="space-y-3 border-t pt-4">
                     <Button onClick={handleManageBilling} className="w-full">
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <ExternalLink className="mr-2 size-4" />
                       {isInTrial
                         ? t('subscription.addPaymentMethod')
                         : t('subscription.manageBilling')}

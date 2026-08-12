@@ -40,7 +40,7 @@ export function TeamReportsList({
 
   if (members.length === 0) {
     return (
-      <div className="text-center text-muted-foreground py-8">
+      <div className="py-8 text-center text-muted-foreground">
         {t('reports.noMembers')}
       </div>
     )
@@ -78,16 +78,16 @@ export function TeamReportsList({
                     <Skeleton className="h-4 w-48" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Skeleton className="h-4 w-16 ml-auto" />
+                    <Skeleton className="ml-auto h-4 w-16" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Skeleton className="h-4 w-16 ml-auto" />
+                    <Skeleton className="ml-auto h-4 w-16" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Skeleton className="h-4 w-16 ml-auto" />
+                    <Skeleton className="ml-auto h-4 w-16" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Skeleton className="h-4 w-16 ml-auto" />
+                    <Skeleton className="ml-auto h-4 w-16" />
                   </TableCell>
                 </TableRow>
               ))

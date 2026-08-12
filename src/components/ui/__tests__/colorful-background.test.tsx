@@ -16,13 +16,13 @@ describe('ColorfulBackground', () => {
 
   it('applies custom className', () => {
     render(
-      <ColorfulBackground className="custom-class">
+      <ColorfulBackground className="bg-amber-50">
         <div>Test Content</div>
       </ColorfulBackground>,
     )
 
     const container = screen.getByText('Test Content').parentElement
-    expect(container).toHaveClass('custom-class')
+    expect(container).toHaveClass('bg-amber-50')
     expect(container).toHaveClass('relative')
     expect(container).toHaveClass('isolate')
   })

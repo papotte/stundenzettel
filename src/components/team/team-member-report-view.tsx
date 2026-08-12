@@ -164,7 +164,7 @@ export function TeamMemberReportView({
         className="bg-white p-6 print:border-none print:shadow-none"
         data-testid="member-report-view-card"
       >
-        <p className="text-muted-foreground text-center">
+        <p className="text-center text-muted-foreground">
           {t('reports.notPublishedDetail')}
         </p>
       </div>
@@ -200,7 +200,7 @@ export function TeamMemberReportView({
                       data-testid="member-report-export-button"
                       disabled={entries.length === 0}
                     >
-                      <Download className="mr-2 h-4 w-4" />
+                      <Download className="mr-2 size-4" />
                       {t('export.exportButton')}
                     </Button>
                   </span>
@@ -223,7 +223,7 @@ export function TeamMemberReportView({
                       data-testid="member-report-pdf-button"
                       disabled={entries.length === 0}
                     >
-                      <Printer className="mr-2 h-4 w-4" />
+                      <Printer className="mr-2 size-4" />
                       {t('export.exportPdfButton')}
                     </Button>
                   </span>
@@ -240,7 +240,7 @@ export function TeamMemberReportView({
             </div>
           </div>
 
-          <div className="[&_.printable-area]:rounded-none [&_.printable-area]:shadow-none [&_.printable-area]:p-0">
+          <div className="[&_.printable-area]:rounded-none [&_.printable-area]:p-0 [&_.printable-area]:shadow-none">
             <TimesheetPreview
               selectedMonth={selectedMonth}
               user={mockUser}

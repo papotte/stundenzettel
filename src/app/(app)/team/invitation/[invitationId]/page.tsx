@@ -214,7 +214,7 @@ export default function InvitationPage() {
         <div className="mx-auto max-w-2xl">
           <Button asChild variant="outline" className="mb-8">
             <Link href="/team">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 size-4" />
               {t('settings.backToTeam')}
             </Link>
           </Button>
@@ -245,11 +245,11 @@ export default function InvitationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+    <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
       <div className="mx-auto max-w-2xl">
         <Button asChild variant="outline" className="mb-8">
           <Link href="/team">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 size-4" />
             {t('settings.backToTeam')}
           </Link>
         </Button>
@@ -257,7 +257,7 @@ export default function InvitationPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
+              <Mail className="size-5" />
               {t('teams.teamInvitation')}
             </CardTitle>
             <CardDescription>{invitationHeaderDescription}</CardDescription>
@@ -265,7 +265,7 @@ export default function InvitationPage() {
           <CardContent className="space-y-6">
             {invitation && team && (
               <div className="space-y-4">
-                <div className="rounded-lg border p-4 space-y-3">
+                <div className="space-y-3 rounded-lg border p-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">
@@ -280,7 +280,7 @@ export default function InvitationPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-3 border-t">
+                  <div className="grid grid-cols-2 gap-4 border-t pt-3">
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">
                         {t('teams.role')}
@@ -297,9 +297,9 @@ export default function InvitationPage() {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t">
+                  <div className="border-t pt-3">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <Clock className="size-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
                         {isExpired ? (
                           <span className="text-red-600">
@@ -318,7 +318,7 @@ export default function InvitationPage() {
                 </div>
 
                 {user.email !== invitation.email && (
-                  <div className="rounded-lg border border-amber-500 bg-amber-50 dark:bg-amber-950/20 p-4">
+                  <div className="rounded-lg border border-amber-500 bg-amber-50 p-4 dark:bg-amber-950/20">
                     <p className="text-sm text-amber-800 dark:text-amber-200">
                       {t('teams.invitationEmailWarning', {
                         invitedEmail: invitation.email,
@@ -335,7 +335,7 @@ export default function InvitationPage() {
                       disabled={processing || user.email !== invitation.email}
                       className="flex-1"
                     >
-                      <Check className="mr-2 h-4 w-4" />
+                      <Check className="mr-2 size-4" />
                       {t('teams.acceptInvitation')}
                     </Button>
                     <Button
@@ -344,7 +344,7 @@ export default function InvitationPage() {
                       variant="outline"
                       className="flex-1"
                     >
-                      <X className="mr-2 h-4 w-4" />
+                      <X className="mr-2 size-4" />
                       {t('teams.declineInvitation')}
                     </Button>
                   </div>

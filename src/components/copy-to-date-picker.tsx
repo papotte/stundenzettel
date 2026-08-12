@@ -57,17 +57,17 @@ export function CopyToDatePicker({
         data-testid="copy-to-date-picker-popover"
       >
         <div className="flex flex-col">
-          {title ? (
-            <div className="border-b px-4 py-3 text-md font-medium">
+          {title && (
+            <div className="border-b px-4 py-3 text-base font-medium">
               {title}
             </div>
-          ) : null}
+          )}
           <Calendar
             mode="single"
             selected={targetDate}
             onSelect={(date) => onTargetDateChange(date ?? undefined)}
           />
-          <div className="flex gap-2 border-t p-4 justify-end">
+          <div className="flex justify-end gap-2 border-t p-4">
             <Button variant="outline" size="sm" onClick={handleCancel}>
               {t('common.cancel')}
             </Button>

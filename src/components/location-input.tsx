@@ -120,12 +120,12 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
                 onClick={onGetCurrentLocation}
                 aria-label="Get current location"
                 disabled={isFetchingLocation}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6"
+                className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
               >
                 {isFetchingLocation ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="size-4" />
                 )}
               </Button>
             </TooltipTrigger>
@@ -138,7 +138,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
           <div
             id="location-suggestion-list"
             role="listbox"
-            className="absolute left-0 top-full mt-1 w-full bg-popover border border-border rounded shadow-lg z-20"
+            className="absolute top-full left-0 z-20 mt-1 w-full rounded border border-border bg-popover shadow-lg"
             style={{ minWidth: '100%' }}
           >
             {suggestions.map((suggestion, i) => (
@@ -148,7 +148,7 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
                 id={`location-suggestion-${i}`}
                 role="option"
                 aria-selected={activeSuggestion === i}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-accent focus:bg-accent border-0 bg-transparent ${
+                className={`w-full border-0 bg-transparent px-3 py-2 text-left text-sm hover:bg-accent focus:bg-accent ${
                   activeSuggestion === i ? 'bg-accent text-primary' : ''
                 }`}
                 onMouseDown={(e) => {

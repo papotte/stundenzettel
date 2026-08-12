@@ -56,7 +56,7 @@ export function TeamReportsGrid({
               </div>
             ) : (
               <div className="space-y-3">
-                <h3 className="font-semibold text-lg">
+                <h3 className="text-lg font-semibold">
                   {displayNames.get(summary.member.id) ||
                     (summary.userSettings?.displayName ?? '').trim() ||
                     maskEmail(summary.member.email) ||
@@ -107,7 +107,7 @@ export function TeamReportsGrid({
                       </div>
                     </>
                   ) : (
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       {t('reports.notPublished')}
                     </p>
                   )}

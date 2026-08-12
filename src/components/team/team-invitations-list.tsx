@@ -130,7 +130,7 @@ export function TeamInvitationsList({
 
   if (invitations.length === 0) {
     return (
-      <div className="text-center py-6 text-muted-foreground">
+      <div className="py-6 text-center text-muted-foreground">
         {t('teams.noPendingInvitations')}
       </div>
     )
@@ -156,14 +156,14 @@ export function TeamInvitationsList({
               <TableRow key={invitation.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <Mail className="size-4 text-muted-foreground" />
                     <span className="font-medium">{invitation.email}</span>
                   </div>
                 </TableCell>
                 <TableCell>{getRoleLabel(invitation.role)}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-500" />
+                    <Clock className="size-4 text-amber-500" />
                     <span
                       className={expired ? 'text-red-600' : 'text-amber-600'}
                     >
@@ -179,24 +179,24 @@ export function TeamInvitationsList({
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-8 w-8 p-0"
+                        className="size-8 p-0"
                         disabled={loadingInvitationId === invitation.id}
                       >
-                        <MoreHorizontal className="h-4 w-4" />
+                        <MoreHorizontal className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
                         onClick={() => handleResendInvitation(invitation)}
                       >
-                        <Mail className="mr-2 h-4 w-4" />
+                        <Mail className="mr-2 size-4" />
                         {t('teams.resendInvitation')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-red-600"
                         onClick={() => handleCancelInvitation(invitation.id)}
                       >
-                        <X className="mr-2 h-4 w-4" />
+                        <X className="mr-2 size-4" />
                         {t('teams.cancelInvitation')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>

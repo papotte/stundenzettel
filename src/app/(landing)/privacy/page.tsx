@@ -18,10 +18,10 @@ export default function PrivacyPage() {
   const testId = language === 'de' ? 'privacy-de-article' : 'privacy-en-article'
 
   return (
-    <div className="min-h-dvh flex flex-col">
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-16">
+    <div className="flex min-h-dvh flex-col">
+      <main className="flex flex-1 flex-col items-center justify-center px-4 py-16">
         <article
-          className="prose prose-neutral dark:prose-invert max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-6 md:p-10"
+          className="prose w-full max-w-2xl rounded-xl bg-white/80 p-6 shadow-lg prose-neutral md:p-10 dark:prose-invert"
           data-testid={testId}
         >
           <Content />

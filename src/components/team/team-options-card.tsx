@@ -171,7 +171,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
               <div className="space-y-1">
                 <h3
                   id="team-options-compensation-heading"
-                  className="text-base font-semibold leading-none tracking-tight"
+                  className="text-base leading-none font-semibold tracking-tight"
                 >
                   {t('teams.compensationDefaults')}
                 </h3>
@@ -262,7 +262,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
               <div className="space-y-1">
                 <h3
                   id="team-options-export-heading"
-                  className="text-base font-semibold leading-none tracking-tight"
+                  className="text-base leading-none font-semibold tracking-tight"
                 >
                   {t('teams.exportDefaults')}
                 </h3>
@@ -355,9 +355,9 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
                   data-testid="saveTeamSettingsButton"
                 >
                   {isSaving ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 size-4 animate-spin" />
                   ) : (
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save className="mr-2 size-4" />
                   )}
                   {isSaving ? t('common.saving') : t('common.save')}
                 </Button>

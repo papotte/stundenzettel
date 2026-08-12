@@ -63,7 +63,7 @@ function Wheel({ items, selected, onSelect, testId }: WheelProps) {
       ref={containerRef}
       data-testid={testId}
       style={{ scrollbarWidth: 'thin' }}
-      className="h-48 w-16 overflow-y-auto snap-y snap-mandatory rounded-md border [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-track]:bg-transparent"
+      className="h-48 w-16 snap-y snap-mandatory overflow-y-auto rounded-md border [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/30 [&::-webkit-scrollbar-track]:bg-transparent"
     >
       {items.map((item) => (
         <button
@@ -72,9 +72,9 @@ function Wheel({ items, selected, onSelect, testId }: WheelProps) {
           data-value={item}
           onClick={() => onSelect(item)}
           className={cn(
-            'h-10 w-full snap-start flex items-center justify-center text-sm',
+            'flex h-10 w-full snap-start items-center justify-center text-sm',
             selected === item
-              ? 'bg-primary text-primary-foreground font-medium'
+              ? 'bg-primary font-medium text-primary-foreground'
               : 'hover:bg-muted',
           )}
         >
@@ -170,8 +170,8 @@ const DurationPicker = React.forwardRef<HTMLInputElement, DurationPickerProps>(
           className={cn('cursor-pointer', className)}
           {...props}
         />
-        <DialogContent className="sm:max-w-sm w-80 p-0 gap-0">
-          <DialogHeader className="text-center sm:text-center bg-muted border-b py-3">
+        <DialogContent className="w-80 gap-0 p-0 sm:max-w-sm">
+          <DialogHeader className="border-b bg-muted py-3 text-center sm:text-center">
             <DialogTitle className="text-4xl font-semibold">
               {draft}
             </DialogTitle>
@@ -194,7 +194,7 @@ const DurationPicker = React.forwardRef<HTMLInputElement, DurationPickerProps>(
               testId="minute-wheel"
             />
           </div>
-          <DialogFooter className="flex-row justify-end border-t gap-2 py-3 px-6">
+          <DialogFooter className="flex-row justify-end gap-2 border-t px-6 py-3">
             <Button type="button" variant="ghost" onClick={handleClear}>
               {t('clear')}
             </Button>

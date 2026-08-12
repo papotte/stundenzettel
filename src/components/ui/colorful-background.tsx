@@ -25,7 +25,7 @@ export default function ColorfulBackground({
     <div className={`relative isolate ${className}`}>
       {/* Top gradient */}
       <div
-        className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80 pointer-events-none"
+        className="pointer-events-none absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
         aria-hidden="true"
       >
         <div
@@ -39,7 +39,7 @@ export default function ColorfulBackground({
 
       {/* Bottom gradient */}
       <div
-        className="absolute inset-x-0 -bottom-16 -z-10 transform-gpu overflow-hidden blur-3xl pointer-events-none"
+        className="pointer-events-none absolute inset-x-0 -bottom-16 -z-10 transform-gpu overflow-hidden blur-3xl"
         aria-hidden="true"
       >
         <div

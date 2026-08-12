@@ -76,7 +76,7 @@ export function ExportPreviewActions({
               data-testid="export-preview-export-button"
               disabled={!hasEntries}
             >
-              <Download className="mr-2 h-4 w-4 shrink-0" />
+              <Download className="mr-2 size-4 shrink-0" />
               <span className="truncate">{t('export.exportButton')}</span>
             </Button>
           </span>
@@ -98,7 +98,7 @@ export function ExportPreviewActions({
               data-testid="export-preview-pdf-button"
               disabled={!hasEntries}
             >
-              <Printer className="mr-2 h-4 w-4 shrink-0" />
+              <Printer className="mr-2 size-4 shrink-0" />
               <span className="truncate">{t('export.exportPdfButton')}</span>
             </Button>
           </span>
@@ -121,7 +121,7 @@ export function ExportPreviewActions({
         onClick={!publishedAt ? onPublish : undefined}
         data-testid="export-preview-publish-button"
       >
-        <Send className="mr-2 h-4 w-4 shrink-0" />
+        <Send className="mr-2 size-4 shrink-0" />
         <span className="truncate">
           {publishedAt ? t('export.publishUpdate') : t('export.publish')}
         </span>
@@ -200,7 +200,7 @@ export function ExportPreviewActions({
           className="col-start-3 flex items-center"
           data-testid="export-preview-published-on"
         >
-          <span className="text-muted-foreground text-sm">
+          <span className="text-sm text-muted-foreground">
             {t('export.publishedOn', {
               date: format.dateTime(publishedAt, 'short'),
             })}

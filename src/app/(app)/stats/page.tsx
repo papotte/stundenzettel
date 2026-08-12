@@ -24,7 +24,7 @@ export default function StatsPage() {
 
   return (
     <TimeTrackerProvider user={user}>
-      <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+      <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
         <div className="mx-auto max-w-7xl">
           <StatsView />
         </div>

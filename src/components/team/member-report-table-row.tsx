@@ -19,7 +19,7 @@ function MemberReportMetricCell({
 }) {
   const t = useTranslations()
   if (summary.isLoading) {
-    return <Skeleton className="h-4 w-16 ml-auto" />
+    return <Skeleton className="ml-auto h-4 w-16" />
   }
   if (!summary.isPublished) {
     return t('reports.notPublished')

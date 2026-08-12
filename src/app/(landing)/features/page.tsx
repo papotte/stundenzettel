@@ -15,7 +15,7 @@ export default function FeaturesPage() {
     <div>
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-base font-semibold leading-7 text-primary">
+          <p className="text-base leading-7 font-semibold text-primary">
             {t('features.headerTag')}
           </p>
           <h2 className="mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
@@ -35,9 +35,9 @@ export default function FeaturesPage() {
           {Array.isArray(features) &&
             features.map((key) => (
               <div key={key} className="relative pl-16">
-                <dt className="text-base font-semibold leading-7 text-foreground">
-                  <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                    <Check className="h-6 w-6 text-white" aria-hidden="true" />
+                <dt className="text-base leading-7 font-semibold text-foreground">
+                  <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-primary">
+                    <Check className="size-6 text-white" aria-hidden="true" />
                   </div>
                   {t(`features.list.${key}.title`)}
                 </dt>
@@ -49,7 +49,7 @@ export default function FeaturesPage() {
         </dl>
       </div>
 
-      <div className="flex my-32 text-center">
+      <div className="my-32 flex text-center">
         <Image
           src="/images/tracker.png"
           alt="Tracker"

@@ -178,7 +178,7 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-destructive">
-          <AlertTriangle className="h-5 w-5" />
+          <AlertTriangle className="size-5" />
           {t('settings.dangerZone')}
         </CardTitle>
         <CardDescription>{t('settings.dangerZoneDescription')}</CardDescription>
@@ -203,7 +203,7 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
                 size="sm"
                 data-testid="delete-user-button"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 size-4" />
                 {t('settings.deleteAccount')}
               </Button>
             </AlertDialogTrigger>
@@ -242,14 +242,14 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
                         disabled={isDeleting}
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <EyeOff className="size-4" />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <Eye className="size-4" />
                         )}
                       </Button>
                     </div>
@@ -310,12 +310,12 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
                 >
                   {isDeleting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                       {t('settings.deleteAccountProcessing')}
                     </>
                   ) : (
                     <>
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="mr-2 size-4" />
                       {t('settings.deleteAccountConfirmButton')}
                     </>
                   )}

@@ -54,7 +54,7 @@ export default function TrialBanner({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Clock
-              className="h-5 w-5 text-blue-600"
+              className="size-5 text-blue-600"
               data-testid="trial-banner-clock-icon"
             />
             <div>
@@ -86,7 +86,7 @@ export default function TrialBanner({
             </Badge>
             {isTrialExpiringSoon && (
               <AlertTriangle
-                className="h-4 w-4 text-orange-500"
+                className="size-4 text-orange-500"
                 data-testid="trial-banner-warning-icon"
               />
             )}

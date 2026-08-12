@@ -36,24 +36,24 @@ const DailyActionsCard: React.FC = () => {
           onClick={() => handleAddSpecialEntry('SICK_LEAVE')}
           variant="outline"
         >
-          <BedDouble className="mr-2 h-4 w-4" />{' '}
+          <BedDouble className="mr-2 size-4" />{' '}
           {t('special_locations.SICK_LEAVE')}
         </Button>
         <Button onClick={() => handleAddSpecialEntry('PTO')} variant="outline">
-          <Plane className="mr-2 h-4 w-4" /> {t('special_locations.PTO')}
+          <Plane className="mr-2 size-4" /> {t('special_locations.PTO')}
         </Button>
         <Button
           onClick={() => handleAddSpecialEntry('BANK_HOLIDAY')}
           variant="outline"
         >
-          <Landmark className="mr-2 h-4 w-4" />{' '}
+          <Landmark className="mr-2 size-4" />{' '}
           {t('special_locations.BANK_HOLIDAY')}
         </Button>
         <Button
           onClick={() => handleAddSpecialEntry('TIME_OFF_IN_LIEU')}
           variant="outline"
         >
-          <Hourglass className="mr-2 h-4 w-4" />{' '}
+          <Hourglass className="mr-2 size-4" />{' '}
           {t('special_locations.TIME_OFF_IN_LIEU')}
         </Button>
       </CardContent>

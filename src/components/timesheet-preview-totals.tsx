@@ -193,7 +193,7 @@ export default function TimesheetPreviewTotals({
       <>
         {/* Right column - single label with 4 values */}
         <div
-          className={`col-span-full sm:col-span-6 print:col-span-6 flex gap-8 justify-between ${getOrderClasses(index, 'right')}`}
+          className={`col-span-full flex justify-between gap-8 sm:col-span-6 print:col-span-6 ${getOrderClasses(index, 'right')}`}
         >
           <div className="flex-1 text-right font-semibold">
             {row.rightColumn.label}
@@ -215,14 +215,14 @@ export default function TimesheetPreviewTotals({
 
         {/* Spacer for desktop */}
         <div
-          className={`hidden sm:block print:block sm:col-span-3 print:col-span-3 ${getOrderClasses(index, 'spacer')}`}
+          className={`hidden sm:col-span-3 sm:block print:col-span-3 print:block ${getOrderClasses(index, 'spacer')}`}
         />
 
         {/* Left column */}
         <div
-          className={`col-span-full sm:col-span-3 print:col-span-3 flex gap-8 justify-between ${getOrderClasses(index, 'left')}`}
+          className={`col-span-full flex justify-between gap-8 sm:col-span-3 print:col-span-3 ${getOrderClasses(index, 'left')}`}
         >
-          <div className="text-right flex-1 font-semibold">
+          <div className="flex-1 text-right font-semibold">
             {row.leftColumn.label}
           </div>
           <div
@@ -239,7 +239,7 @@ export default function TimesheetPreviewTotals({
   return (
     <div
       className={
-        'grid grid-cols-none sm:grid-cols-12 print:grid-cols-12 w-full gap-2 mt-8'
+        'mt-8 grid w-full grid-cols-none gap-2 sm:grid-cols-12 print:grid-cols-12'
       }
     >
       {rowsData.map((row, index) => (

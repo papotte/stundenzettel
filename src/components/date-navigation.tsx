@@ -42,7 +42,7 @@ const DateNavigation: React.FC = () => {
       <h2 className="font-headline text-2xl font-bold">
         {t('tracker.timeEntriesTitle')}
       </h2>
-      <div className="flex flex-wrap w-full items-center gap-2 sm:w-auto">
+      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
         <div className="flex flex-1 items-center gap-1">
           <Button
             variant="outline"
@@ -50,7 +50,7 @@ const DateNavigation: React.FC = () => {
             onClick={handlePreviousDay}
             aria-label="Previous day"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="size-4" />
           </Button>
           <Popover>
             <PopoverTrigger asChild>
@@ -63,7 +63,7 @@ const DateNavigation: React.FC = () => {
                     : undefined
                 }
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <CalendarIcon className="mr-2 size-4" />
                 {formattedSelectedDate}
               </Button>
             </PopoverTrigger>
@@ -81,13 +81,13 @@ const DateNavigation: React.FC = () => {
             onClick={handleNextDay}
             aria-label="Next day"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="size-4" />
           </Button>
         </div>
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
           <SheetTrigger asChild>
             <SubscriptionGuardButton onClick={openNewEntryForm}>
-              <Plus className="mr-2 h-4 w-4" /> {t('tracker.addEntryButton')}
+              <Plus className="mr-2 size-4" /> {t('tracker.addEntryButton')}
             </SubscriptionGuardButton>
           </SheetTrigger>
           <SheetContent className="flex w-full max-w-none flex-col sm:max-w-md">

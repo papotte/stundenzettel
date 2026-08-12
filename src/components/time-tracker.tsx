@@ -27,8 +27,8 @@ export default function TimeTracker() {
 function TimeTrackerContent() {
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <main className="p-2 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
-        <div className="mx-auto flex flex-col w-full max-w-full sm:max-w-6xl gap-8">
+      <main className="p-2 pb-20 sm:p-4 md:p-6 md:pb-8 lg:p-8">
+        <div className="mx-auto flex w-full max-w-full flex-col gap-8 sm:max-w-6xl">
           <TimeTrackerLiveCard />
           <DailyActionsCard />
           <DateNavigation />

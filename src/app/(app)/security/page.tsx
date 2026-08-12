@@ -80,13 +80,13 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted p-4 sm:p-8 pb-20 md:pb-8">
+    <div className="min-h-screen bg-muted p-4 pb-20 sm:p-8 md:pb-8">
       <div className="mx-auto max-w-2xl">
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+                <Shield className="size-5" />
                 {t('settings.security')}
               </CardTitle>
               <CardDescription>
@@ -94,7 +94,7 @@ export default function SecurityPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                   <h3 className="font-medium">{t('settings.accountEmail')}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -132,7 +132,7 @@ export default function SecurityPage() {
 
               {/* Password change section - only show for email users */}
               {!checkingPasswordAuth && hasPasswordAuth && (
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <h3 className="font-medium">{t('settings.password')}</h3>
                     <p className="text-sm text-muted-foreground">

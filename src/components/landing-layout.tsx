@@ -22,7 +22,7 @@ export default function LandingLayout({
     { name: t('nav.top.pricing'), href: '/pricing' },
   ]
   return (
-    <div className="bg-background min-h-dvh flex flex-col">
+    <div className="flex min-h-dvh flex-col bg-background">
       <header className="relative z-50 w-full bg-white/80 backdrop-blur">
         <nav
           className="flex items-center justify-between p-4 lg:px-8"
@@ -30,7 +30,7 @@ export default function LandingLayout({
           data-testid="top-nav"
         >
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href="/" className="group flex items-center gap-2">
               <span className="sr-only">{t('common.appName')}</span>
               <TimeWiseIcon className="h-12 w-auto" />
               <span className="text-lg font-bold text-primary group-hover:underline">
@@ -44,7 +44,7 @@ export default function LandingLayout({
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-semibold leading-6 text-foreground"
+                className="text-sm leading-6 font-semibold text-foreground"
               >
                 {item.name}
               </Link>
@@ -56,7 +56,7 @@ export default function LandingLayout({
           </div>
         </nav>
       </header>
-      <ColorfulBackground className="flex-1 flex flex-col">
+      <ColorfulBackground className="flex flex-1 flex-col">
         <InstallPrompt />
         {children}
       </ColorfulBackground>

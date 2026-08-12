@@ -39,7 +39,7 @@ export function NotificationBadge({
   return (
     <div
       className={cn(
-        'absolute -top-1 -right-1 rounded-full flex items-center justify-center text-white font-medium',
+        'absolute -top-1 -right-1 flex items-center justify-center rounded-full font-medium text-white',
         notificationBadgeVariants.variant[variant],
         notificationBadgeVariants.size[size],
         className,
@@ -47,7 +47,7 @@ export function NotificationBadge({
       {...props}
     >
       {showDot ? (
-        <div className="h-1.5 w-1.5 rounded-full bg-white" />
+        <div className="size-1.5 rounded-full bg-white" />
       ) : (
         <span>{count && count > 9 ? '9+' : count}</span>
       )}
