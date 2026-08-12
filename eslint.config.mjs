@@ -81,7 +81,7 @@ export default defineConfig([
       'react/prop-types': 'off',
       'tailwindcss/no-custom-classname': [
         'warn',
-        { whitelist: ['printable-area'] },
+        { whitelist: ['printable-area', 'badge'] },
       ],
     },
     extends: [eslintPluginTailwindcss.configs.recommended],
