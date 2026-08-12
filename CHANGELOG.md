@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/papotte/stundenzettel/compare/v1.30.0...v1.31.0) (2026-08-12)
+
+
+### Features
+
+* **stats:** add custom date range selector with 365-day limit ([#231](https://github.com/papotte/stundenzettel/issues/231)) ([b268ebc](https://github.com/papotte/stundenzettel/commit/b268ebc4f194c1b03df6ebdb43ee516042d8fce3))
+
 # [1.30.0](https://github.com/papotte/stundenzettel/compare/v1.29.1...v1.30.0) (2026-08-11)
 
 
