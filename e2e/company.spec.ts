@@ -1,5 +1,7 @@
 import { Page } from '@playwright/test'
 
+import ExcelJS from 'exceljs'
+
 import { expect, test } from './fixtures'
 import { addActiveSubscription } from './subscription-helpers'
 import { addManualEntry, selectDuration } from './test-helpers'
@@ -70,5 +72,24 @@ test.describe('Company Page', () => {
     await expect(page.getByText('0301234567')).toBeVisible()
     await expect(page.getByText('0302334567')).toBeVisible()
     await expect(page.getByText('0300456789')).toBeVisible()
+
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByTestId('export-preview-export-button').click(),
+    ])
+    const filePath = await download.path()
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.readFile(filePath!)
+    const worksheet = workbook.getWorksheet('Stundenzettel')
+    const cellTexts: string[] = []
+    worksheet?.eachRow((row) =>
+      row.eachCell((cell) => cellTexts.push(String(cell.value ?? ''))),
+    )
+    const sheetContent = cellTexts.join(' ')
+    expect(sheetContent).toContain('Test Company GmbH')
+    expect(sheetContent).toContain('info@testcompany.de')
+    expect(sheetContent).toContain('0301234567')
+    expect(sheetContent).toContain('0302334567')
+    expect(sheetContent).toContain('0300456789')
   })
 })

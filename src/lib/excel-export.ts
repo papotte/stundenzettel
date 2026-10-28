@@ -294,14 +294,14 @@ export const exportToExcel = async ({
   const fax = userSettings?.companyFax || ''
   const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ')
   const contactParts = [
-    companyName,
-    email,
-    phoneNumbers ? `Tel.: ${phoneNumbers}` : '',
-    fax ? `FAX: ${fax}` : '',
+    companyName ? `${t('export.headerCompanyName')}: ${companyName}` : '',
+    email ? `${t('export.headerCompanyEmail')}: ${email}` : '',
+    phoneNumbers ? `${t('export.headerCompanyPhone')}: ${phoneNumbers}` : '',
+    fax ? `${t('export.headerCompanyFax')}: ${fax}` : '',
   ].filter(Boolean)
 
   if (contactParts.length > 0) {
-    worksheet.headerFooter.oddHeader = `&L${t('export.headerCompany')}&R${contactParts.join(' ')}`
+    worksheet.headerFooter.oddHeader = `&R${contactParts.join('  ')}`
   }
 
   const signatureString = t('export.signatureLine')
@@ -373,6 +373,24 @@ export const exportToExcel = async ({
     key,
     width: Math.round(width * widthScale * 100) / 100,
   }))
+
+  // --- IN-SHEET COMPANY INFO ---
+  if (contactParts.length > 0) {
+    const companyRow = worksheet.addRow([contactParts.join(' | ')])
+    worksheet.mergeCells(
+      companyRow.number,
+      1,
+      companyRow.number,
+      layout.columnCount,
+    )
+    const companyCell = companyRow.getCell(1)
+    companyCell.font = { size: 10 }
+    companyCell.alignment = {
+      horizontal: 'left',
+      vertical: 'middle',
+      wrapText: true,
+    }
+  }
 
   // --- IN-SHEET TITLE AND USER NAME ---
   const titleRow = worksheet.addRow([])
@@ -726,6 +744,14 @@ export const exportToExcel = async ({
     afterConversionRow.getCell(layout.passenger).value =
       compensatedPassengerHours
     afterConversionRow.getCell(layout.passenger).numFmt = '0.00'
+  }
+
+  // --- PRINT AREA ---
+  // The company info row is for on-screen viewing only; the running page
+  // header carries the same details on every printed page.
+  if (contactParts.length > 0) {
+    const lastColumn = String.fromCharCode(64 + layout.columnCount)
+    worksheet.pageSetup.printArea = `A2:${lastColumn}${worksheet.rowCount}`
   }
 
   // --- SAVE FILE ---

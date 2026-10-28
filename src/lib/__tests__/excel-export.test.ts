@@ -119,16 +119,16 @@ interface MockWorksheet {
     oddHeader: string
     oddFooter: string
   }
+  pageSetup: {
+    printArea?: string
+  }
   columns: Array<{ key: string; width: number }>
   addRow: jest.MockedFunction<(values?: unknown[]) => MockRow>
   getRow: (num: number) => MockRow
   getCell: (row: number, col: number) => MockCell
-  mergeCells: (
-    startRow: number,
-    startCol: number,
-    endRow: number,
-    endCol: number,
-  ) => void
+  mergeCells: jest.MockedFunction<
+    (startRow: number, startCol: number, endRow: number, endCol: number) => void
+  >
 }
 
 describe('excel-export', () => {
@@ -376,6 +376,7 @@ describe('excel-export', () => {
         oddHeader: '',
         oddFooter: '',
       },
+      pageSetup: {},
       columns: [],
       addRow,
       getRow: jest.fn((num: number) => rows[num - 1] || mockRow),
@@ -516,17 +517,17 @@ describe('excel-export', () => {
       })
 
       expect(mockWorksheet.headerFooter.oddHeader).toContain(
-        'export.headerCompany',
+        'export.headerCompanyName: Test Company',
       )
-      expect(mockWorksheet.headerFooter.oddHeader).toContain('Test Company')
       expect(mockWorksheet.headerFooter.oddHeader).toContain(
-        'company@example.com',
+        'export.headerCompanyEmail: company@example.com',
       )
-      expect(mockWorksheet.headerFooter.oddHeader).toContain('Tel.:')
-      expect(mockWorksheet.headerFooter.oddHeader).toContain('123-456-7890')
-      expect(mockWorksheet.headerFooter.oddHeader).toContain('098-765-4321')
-      expect(mockWorksheet.headerFooter.oddHeader).toContain('FAX:')
-      expect(mockWorksheet.headerFooter.oddHeader).toContain('111-222-3333')
+      expect(mockWorksheet.headerFooter.oddHeader).toContain(
+        'export.headerCompanyPhone: 123-456-7890 / 098-765-4321',
+      )
+      expect(mockWorksheet.headerFooter.oddHeader).toContain(
+        'export.headerCompanyFax: 111-222-3333',
+      )
       expect(mockWorksheet.headerFooter.oddFooter).toContain(
         'export.signatureLine',
       )
@@ -556,6 +557,51 @@ describe('excel-export', () => {
       })
 
       expect(mockWorksheet.headerFooter.oddHeader).toBe('')
+    })
+
+    it('should add a company info row as the first worksheet row', async () => {
+      const { getEntriesForDay, getLocationDisplayName } = createDefaultMocks()
+
+      await callExportToExcel({ getEntriesForDay, getLocationDisplayName })
+
+      expect(mockWorksheet.addRow).toHaveBeenCalledWith([
+        'export.headerCompanyName: Test Company | export.headerCompanyEmail: company@example.com | export.headerCompanyPhone: 123-456-7890 / 098-765-4321 | export.headerCompanyFax: 111-222-3333',
+      ])
+      // Single cell merged across all 10 columns, title merge on the next row
+      expect(mockWorksheet.mergeCells).toHaveBeenCalledWith(1, 1, 1, 10)
+      expect(mockWorksheet.mergeCells).toHaveBeenCalledWith(2, 1, 2, 5)
+      // Company row is visible on screen but excluded from the printed sheet
+      expect(mockWorksheet.pageSetup.printArea).toBe(
+        `A2:J${mockWorksheet.rowCount}`,
+      )
+    })
+
+    it('should not add a company info row when no company info is set', async () => {
+      const { getEntriesForDay, getLocationDisplayName } = createDefaultMocks()
+      const settingsWithoutCompany: UserSettings = {
+        ...defaultUserSettings,
+        companyName: '',
+        companyEmail: '',
+        companyPhone1: '',
+        companyPhone2: '',
+        companyFax: '',
+      }
+
+      await callExportToExcel({
+        getEntriesForDay,
+        getLocationDisplayName,
+        userSettings: settingsWithoutCompany,
+      })
+
+      expect(mockWorksheet.addRow).not.toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.stringContaining('export.headerCompany'),
+        ]),
+      )
+      // Title merge is the first merge when no company row exists
+      expect(mockWorksheet.mergeCells.mock.calls[0]).toEqual([1, 1, 1, 5])
+      // Nothing to exclude from printing without a company row
+      expect(mockWorksheet.pageSetup.printArea).toBeUndefined()
     })
 
     it('should add title row with user name', async () => {

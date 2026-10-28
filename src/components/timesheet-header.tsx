@@ -13,34 +13,37 @@ interface TimesheetHeaderProps {
 const TimesheetHeader = ({ userSettings }: TimesheetHeaderProps) => {
   const t = useTranslations()
 
-  const companyName = userSettings?.companyName || ''
-  const email = userSettings?.companyEmail || ''
-  const phone1 = userSettings?.companyPhone1 || ''
-  const phone2 = userSettings?.companyPhone2 || ''
-  const fax = userSettings?.companyFax || ''
+  const phoneNumbers = [
+    userSettings?.companyPhone1,
+    userSettings?.companyPhone2,
+  ]
+    .filter(Boolean)
+    .join(' / ')
 
-  const phoneNumbers = [phone1, phone2].filter(Boolean).join(' / ')
+  const items = [
+    { label: t('export.headerCompanyName'), value: userSettings?.companyName },
+    {
+      label: t('export.headerCompanyEmail'),
+      value: userSettings?.companyEmail,
+    },
+    { label: t('export.headerCompanyPhone'), value: phoneNumbers },
+    { label: t('export.headerCompanyFax'), value: userSettings?.companyFax },
+  ].filter((item) => item.value)
 
-  const contactParts = [
-    companyName,
-    email,
-    phoneNumbers ? `Tel.: ${phoneNumbers}` : '',
-    fax ? `FAX: ${fax}` : '',
-  ].filter(Boolean)
-
-  if (contactParts.length === 0) {
+  if (items.length === 0) {
     return null
   }
 
-  const detailsString = contactParts.join(' ')
-
   return (
     <div
-      className="mb-8 flex w-full flex-col justify-between text-sm sm:flex-row print:mb-2 print:text-xs"
+      className="mb-8 flex w-full flex-wrap justify-between gap-x-6 gap-y-1 text-sm print:mb-2 print:text-xs"
       data-testid="timesheet-header"
     >
-      <span>{t('export.headerCompany')}</span>
-      <span>{detailsString}</span>
+      {items.map((item) => (
+        <span key={item.label}>
+          {item.label}: {item.value}
+        </span>
+      ))}
     </div>
   )
 }

@@ -40,11 +40,18 @@ describe('TimesheetHeader', () => {
 
     render(<TimesheetHeader userSettings={userSettings} />)
 
-    expect(screen.getByText('export.headerCompany')).toBeInTheDocument()
-    const details = screen.getByText(/Test Corp/)
-    expect(details).toHaveTextContent('test@corp.com')
-    expect(details).toHaveTextContent('Tel.: 123-456 / 789-012')
-    expect(details).toHaveTextContent('FAX: 345-678')
+    expect(
+      screen.getByText('export.headerCompanyName: Test Corp'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('export.headerCompanyEmail: test@corp.com'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('export.headerCompanyPhone: 123-456 / 789-012'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('export.headerCompanyFax: 345-678'),
+    ).toBeInTheDocument()
   })
 
   it('handles partial user settings gracefully', () => {
@@ -62,10 +69,13 @@ describe('TimesheetHeader', () => {
 
     render(<TimesheetHeader userSettings={userSettings} />)
 
-    expect(screen.getByText('export.headerCompany')).toBeInTheDocument()
-    const details = screen.getByText(/Partial Inc./)
-    expect(details).toHaveTextContent('Tel.: 123-456')
-    expect(screen.queryByText(/test@corp.com/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/FAX:/)).not.toBeInTheDocument()
+    expect(
+      screen.getByText('export.headerCompanyName: Partial Inc.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('export.headerCompanyPhone: 123-456'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/headerCompanyEmail/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/headerCompanyFax/)).not.toBeInTheDocument()
   })
 })
