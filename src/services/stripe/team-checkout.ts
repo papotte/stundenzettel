@@ -1,11 +1,8 @@
 // moved from ../team-checkout-service.ts
 import Stripe from 'stripe'
 
+import { stripe } from './client'
 import { getPriceTrialInfo } from './utils'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil',
-})
 
 export interface CreateTeamCheckoutSessionParams {
   userId: string

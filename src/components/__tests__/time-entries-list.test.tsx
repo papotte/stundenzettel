@@ -68,8 +68,4 @@ describe('TimeEntriesList', () => {
     fireEvent.click(screen.getByText('time_entry_card.deleteAlertConfirm'))
     expect(mockContext.handleDeleteEntry).toHaveBeenCalled()
   })
-
-  it('calls navigation callbacks', () => {
-    render(<TimeEntriesList />)
-  })
 })
