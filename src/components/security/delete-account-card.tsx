@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AlertTriangle, Eye, EyeOff, Loader2, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -113,16 +113,12 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
   const { toast } = useToast()
   const t = useTranslations()
 
-  const [authMethod, setAuthMethod] = useState<DeleteAuthMethod>(null)
+  const authMethod = detectDeleteAuthMethod()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  useEffect(() => {
-    setAuthMethod(detectDeleteAuthMethod())
-  }, [user])
 
   const handleDeleteAccount = async () => {
     if (authMethod == null) return

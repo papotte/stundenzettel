@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
+import { render, screen, waitFor } from '@jest-setup'
 import { addMonths, subMonths } from 'date-fns'
 
 import { TooltipProvider } from '@/components/ui/tooltip'

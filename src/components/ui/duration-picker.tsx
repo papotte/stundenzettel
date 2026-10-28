@@ -106,11 +106,15 @@ const DurationPicker = React.forwardRef<HTMLInputElement, DurationPickerProps>(
     )
     const [draft, setDraft] = React.useState(formatTimeValue(hours, minutes))
 
-    React.useEffect(() => {
-      if (open) {
-        setDraft(formatTimeValue(hours, minutes))
-      }
-    }, [open, hours, minutes])
+    const handleOpenChange = React.useCallback(
+      (isOpen: boolean) => {
+        setOpen(isOpen)
+        if (isOpen) {
+          setDraft(formatTimeValue(hours, minutes))
+        }
+      },
+      [hours, minutes],
+    )
 
     const draftHours = parseTimeValue(draft).hours
     const draftMinutes = parseTimeValue(draft).minutes
@@ -146,27 +150,27 @@ const DurationPicker = React.forwardRef<HTMLInputElement, DurationPickerProps>(
 
     const handleSet = React.useCallback(() => {
       onChange?.(draft)
-      setOpen(false)
-    }, [draft, onChange])
+      handleOpenChange(false)
+    }, [draft, onChange, handleOpenChange])
 
     const handleClear = React.useCallback(() => {
       setDraft('00:00')
     }, [])
 
     const handleCancel = React.useCallback(() => {
-      setOpen(false)
-    }, [])
+      handleOpenChange(false)
+    }, [handleOpenChange])
 
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <Input
           ref={ref}
           type="text"
           inputMode="none"
           readOnly
           value={value ?? ''}
-          onFocus={() => setOpen(true)}
-          onClick={() => setOpen(true)}
+          onFocus={() => handleOpenChange(true)}
+          onClick={() => handleOpenChange(true)}
           className={cn('cursor-pointer', className)}
           {...props}
         />

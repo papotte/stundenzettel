@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useNow } from '@/hooks/use-now'
 import { useToast } from '@/hooks/use-toast'
 import type { TeamInvitation } from '@/lib/types'
 import { createTeamInvitation } from '@/services/team-service'
@@ -57,6 +58,7 @@ export function InviteMemberDialog({
 }: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const now = useNow()
   const { toast } = useToast()
   const t = useTranslations()
 
@@ -92,8 +94,8 @@ export function InviteMemberDialog({
         email: values.email,
         role: values.role,
         invitedBy,
-        invitedAt: new Date(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        invitedAt: now,
+        expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
         status: 'pending',
       }
 

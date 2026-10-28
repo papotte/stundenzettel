@@ -40,7 +40,7 @@ export function TeamReportsTab({ teamId, members }: TeamReportsTabProps) {
     'grid',
   )
   const [reportsSelectedMonth, setReportsSelectedMonth] = useState<Date>(
-    new Date(),
+    () => new Date(),
   )
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
   const [isMemberReportOpen, setIsMemberReportOpen] = useState(false)

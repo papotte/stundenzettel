@@ -9,10 +9,10 @@
     "dev:test": "NODE_ENV=test NEXT_PUBLIC_ENVIRONMENT=test next dev -p 9003",
     "build": "NEXT_PUBLIC_ENVIRONMENT=production next build --webpack",
     "start": "next start -p 9004",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "format": "prettier --write \"**/*.{ts,tsx,js,md,json,yml,yaml}\" --ignore-path .prettierignore",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,md,json,yml,yaml}\" --ignore-path .prettierignore",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "typecheck": "tsc --noEmit",
     "test": "jest --coverage",
     "test:ci": "jest --ci --json --coverage --testLocationInResults --outputFile=coverage/report.json",
@@ -23,7 +23,7 @@
     "deploy": "firebase deploy",
     "deploy:app": "firebase deploy --only apphosting",
     "postinstall": "playwright install chromium",
-    "functions:lint": "eslint functions/",
+    "functions:lint": "oxlint functions/",
     "functions:build": "tsc -p functions/tsconfig.json",
     "functions:build:watch": "tsc -p functions/tsconfig.json --watch",
     "functions:serve": "npm run functions:build && firebase emulators:start --only functions",
@@ -41,11 +41,11 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
-      "prettier --write",
-      "eslint --fix"
+      "oxfmt",
+      "oxlint --fix"
     ],
     "*.{md,json,yml,yaml}": [
-      "prettier --write"
+      "oxfmt"
     ]
   },
   "dependencies": {
@@ -111,19 +111,12 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
-    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/web-push": "^3.6.4",
-    "@typescript-eslint/eslint-plugin": "^8.55.0",
-    "@typescript-eslint/parser": "^8.55.0",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "16.2.2",
-    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-sonarjs": "^4.0.2",
-    "eslint-plugin-tailwindcss": "^4.2.0",
     "firebase-admin": "^13.10.0",
     "firebase-functions-test": "^3.5.0",
     "firebase-tools": "^15.26.0",
@@ -134,8 +127,6 @@
     "oxfmt": "^0.75.0",
     "oxlint": "^1.90.0",
     "postcss": "^8.5.26",
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.8.1",
     "semantic-release": "^25.0.9",
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",

@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
 import { within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+import { render, screen, waitFor } from '@jest-setup'
 
 import { CopyToDatePicker } from '../copy-to-date-picker'
 

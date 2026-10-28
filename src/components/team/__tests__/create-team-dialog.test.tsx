@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { render, screen, waitFor } from '@jest-setup'
 
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'

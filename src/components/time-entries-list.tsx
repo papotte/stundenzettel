@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SubscriptionGuardButton } from '@/components/ui/subscription-guard-button'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
+import { useNow } from '@/hooks/use-now'
 import { formatHoursAndMinutes } from '@/lib/utils'
 
 import TimeEntryCard from './time-entry-card'
@@ -33,6 +34,7 @@ const TimeEntriesList: React.FC = () => {
   } = useTimeTrackerContext()
   const t = useTranslations()
   const [copyDayPickerOpen, setCopyDayPickerOpen] = useState(false)
+  const today = useNow()
   const [copyDayTargetDate, setCopyDayTargetDate] = useState<Date | undefined>(
     undefined,
   )
@@ -45,7 +47,7 @@ const TimeEntriesList: React.FC = () => {
     )
   }, [entries, selectedDate])
 
-  const isToday = selectedDate && isSameDay(selectedDate, new Date())
+  const isToday = selectedDate && isSameDay(selectedDate, today)
   const showCopyFromYesterday =
     isToday &&
     yesterdayEntries.length > 0 &&
@@ -61,7 +63,7 @@ const TimeEntriesList: React.FC = () => {
   }
 
   let listTitle: string
-  if (selectedDate && isSameDay(selectedDate, new Date())) {
+  if (selectedDate && isSameDay(selectedDate, today)) {
     listTitle = t('tracker.todaysEntries', {
       date: formattedSelectedDate,
     })

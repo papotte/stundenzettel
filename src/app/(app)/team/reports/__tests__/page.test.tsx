@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@jest-setup'
-
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { useAuth } from '@/hooks/use-auth'

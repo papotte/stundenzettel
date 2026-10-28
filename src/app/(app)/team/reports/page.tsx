@@ -32,7 +32,6 @@ export default function TeamReportsPage() {
   const [members, setMembers] = useState<TeamMember[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthorized, setIsAuthorized] = useState(false)
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
 
   // Get month from URL params or default to current month
   const monthParam = searchParams.get('month')
@@ -108,15 +107,7 @@ export default function TeamReportsPage() {
     }
   }, [user, router, toast, t])
 
-  // Check for memberId in URL
-  useEffect(() => {
-    const memberId = searchParams.get('memberId')
-    if (memberId) {
-      setSelectedMemberId(memberId)
-    } else {
-      setSelectedMemberId(null)
-    }
-  }, [searchParams])
+  const selectedMemberId = searchParams.get('memberId')
 
   const handleMemberClick = useCallback(
     (memberId: string) => {

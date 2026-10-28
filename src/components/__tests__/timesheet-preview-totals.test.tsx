@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { render, screen } from '@jest-setup'
-
 import { isSameDay } from 'date-fns'
 
 import type { TimeEntry, UserSettings } from '@/lib/types'

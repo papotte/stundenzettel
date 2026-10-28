@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
+import { render, screen, waitFor } from '@jest-setup'
 import { useParams, useRouter } from 'next/navigation'
 
 import type { Team, TeamInvitation } from '@/lib/types'

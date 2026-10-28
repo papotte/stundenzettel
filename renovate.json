@@ -42,12 +42,7 @@
       "groupName": "testing-library dependencies"
     },
     {
-      "matchPackageNames": [
-        "eslint",
-        "eslint-config-*",
-        "eslint-plugin-*",
-        "prettier"
-      ],
+      "matchPackageNames": ["oxlint", "oxfmt", "@oxlint/*", "eslint-plugin-*"],
       "groupName": "linting and formatting"
     },
     {

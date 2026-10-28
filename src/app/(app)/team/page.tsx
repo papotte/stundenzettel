@@ -77,17 +77,28 @@ export default function TeamPage() {
   // Use state for tab, but initialize to 'members' and update in useEffect
   const [selectedTab, setSelectedTab] = useState('members')
 
-  // On mount or when searchParams changes, handle tab selection and checkout flags.
-  useEffect(() => {
-    const success = searchParams.get('success') === 'true'
-    const cancelled = searchParams.get('cancelled') === 'true'
+  // Sync the selected tab from URL params when they change (render-time state adjustment).
+  const searchParamsString = searchParams.toString()
+  const [prevSearchParamsString, setPrevSearchParamsString] =
+    useState(searchParamsString)
+  if (prevSearchParamsString !== searchParamsString) {
+    setPrevSearchParamsString(searchParamsString)
     const tab = searchParams.get('tab')
     if (tab && ['members', 'subscription', 'team-settings'].includes(tab)) {
       setSelectedTab(tab)
     }
-    if (success || cancelled) {
+    if (
+      searchParams.get('success') === 'true' ||
+      searchParams.get('cancelled') === 'true'
+    ) {
       setSelectedTab('subscription')
     }
+  }
+
+  // On mount or when searchParams changes, handle checkout flags.
+  useEffect(() => {
+    const success = searchParams.get('success') === 'true'
+    const cancelled = searchParams.get('cancelled') === 'true'
     if (success) {
       toast({
         title: t('teams.subscription'),
@@ -184,9 +195,11 @@ export default function TeamPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      loadTeamData()
+    if (!user) return
+    const load = async () => {
+      await loadTeamData()
     }
+    void load()
   }, [user, loadTeamData])
 
   const handleTeamCreated = (newTeam: Team) => {

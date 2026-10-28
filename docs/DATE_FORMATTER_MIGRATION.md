@@ -51,9 +51,9 @@ Replace all imports of `useFormatter` from next-intl with our custom version:
 ```tsx
 // Before
 import { useFormatter, useTranslations } from 'next-intl'
-
 // After
 import { useTranslations } from 'next-intl'
+
 import { useFormatter } from '@/lib/date-formatter'
 ```
 
