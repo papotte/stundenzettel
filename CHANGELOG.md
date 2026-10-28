@@ -1,3 +1,15 @@
+# [1.32.0](https://github.com/papotte/stundenzettel/compare/v1.31.0...v1.32.0) (2026-10-28)
+
+
+### Bug Fixes
+
+* update favicon ([e545b37](https://github.com/papotte/stundenzettel/commit/e545b374605e52b383ae7ab3b796184c9f2047a9))
+
+
+### Features
+
+* **export:** improve company info display in timesheet exports [[#211](https://github.com/papotte/stundenzettel/issues/211)] ([df25603](https://github.com/papotte/stundenzettel/commit/df2560334bcb5514a9044fc9a91744be2737bb91))
+
 # [1.31.0](https://github.com/papotte/stundenzettel/compare/v1.30.0...v1.31.0) (2026-08-12)
 
 
