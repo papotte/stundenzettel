@@ -3,7 +3,7 @@
   "semi": false,
   "singleQuote": true,
   "printWidth": 80,
-  "sortPackageJson": false,
+  "sortPackageJson": true,
   "sortTailwindcss": {
     "stylesheet": "./src/app/globals.css"
   },

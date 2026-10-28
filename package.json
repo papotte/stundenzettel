@@ -39,15 +39,6 @@
     "emulator:seed": "node scripts/seed-emulator.js",
     "prepare": "husky"
   },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,mjs,cjs}": [
-      "oxfmt",
-      "oxlint --fix"
-    ],
-    "*.{md,json,yml,yaml}": [
-      "oxfmt"
-    ]
-  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@mdx-js/loader": "^3.1.1",
@@ -131,6 +122,15 @@
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "oxfmt",
+      "oxlint --fix"
+    ],
+    "*.{md,json,yml,yaml}": [
+      "oxfmt"
+    ]
   },
   "engines": {
     "node": "24"
