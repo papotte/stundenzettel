@@ -3,9 +3,7 @@ import Stripe from 'stripe'
 import type { Subscription as AppSubscription } from '@/lib/types'
 import { Subscription } from '@/lib/types'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil',
-})
+import { stripe } from './client'
 
 export async function getUserSubscription(
   userId: string,

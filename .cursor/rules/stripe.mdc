@@ -8,7 +8,7 @@ globs: ["**/stripe/**", "**/payment*", "**/subscription*", "src/app/api/stripe/*
 ## Services (`src/services/stripe/`)
 
 - **Exports:** `checkout`, `team-checkout`, `customer-portal`, `products`, `subscriptions`, `user-sync`, `utils`. Import from `@/services/stripe`.
-- **Client:** `new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-06-30.basil' })`. Use the same `apiVersion` in Functions.
+- **Client:** Shared `stripe` instance from `@/services/stripe/client` (`apiVersion: '2025-08-27.basil'`). Do not create new `Stripe` instances in app code. Functions is a separate package and pins the same `apiVersion` in `functions/src/index.ts`.
 - **Customer metadata:** `firebase_uid` (required for webhooks); `team_id` for team subscriptions. Set when creating/updating customers and in checkout/team-checkout.
 - **Price IDs:** From env: `NEXT_PUBLIC_STRIPE_INDIVIDUAL_MONTHLY_PRICE_ID`, `NEXT_PUBLIC_STRIPE_TEAM_MONTHLY_PRICE_ID`, etc. Do not hardcode. Use `getPriceTrialInfo(priceId)` from `utils` for trial info; `NEXT_PUBLIC_STRIPE_TRIAL_ENABLED` can disable trials.
 

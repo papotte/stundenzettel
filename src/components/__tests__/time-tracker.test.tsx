@@ -75,10 +75,9 @@ describe('TimeTracker (integration)', () => {
     expect(screen.getByTestId('summary-panel')).toBeInTheDocument()
   })
 
-  it('shows loading state if auth is loading', () => {
+  it('renders panels while auth is loading', () => {
     renderWithProviders(<TimeTracker />, { ...mockAuthContext, loading: true })
-    // Optionally check for a loading spinner or text if your component renders one
-    // expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByTestId('live-timer-panel')).toBeInTheDocument()
   })
 
   it('handles null user gracefully', () => {
