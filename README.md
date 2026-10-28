@@ -212,11 +212,10 @@ For information about data model migrations and how to run them, see [MIGRATIONS
 
 ## Code Quality (Linting & Formatting)
 
-This project uses [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier.io/) for code formatting to ensure code quality and consistency.
+This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for linting and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for code formatting to ensure code quality and consistency.
 
-- **ESLint**: Catches common errors and enforces best practices. Configuration is in `.eslintrc.json`.
-- **Prettier**: Automatically formats code to a consistent style. Configuration is in `.prettierrc`.
-- **Tailwind CSS Plugin**: The Prettier setup includes a plugin that automatically sorts Tailwind CSS classes, keeping them organized and readable.
+- **Oxlint**: Catches common errors and enforces best practices. Configuration is in `.oxlintrc.json`. `eslint-plugin-sonarjs` runs as an Oxlint JS plugin for additional code-smell rules.
+- **Oxfmt**: Automatically formats code to a consistent style. Configuration is in `.oxfmtrc.json`. It also sorts imports and Tailwind CSS classes.
 
 ### Available Scripts
 
@@ -423,7 +422,7 @@ The repo includes config so AI assistants (e.g. **Cursor**, **GitHub Copilot**) 
 - **`.github/copilot-instructions.md`** – Setup, commands, conventions, and validation scenarios. Used by GitHub Copilot; also the main reference for Cursor and other tools.
 - **`.cursor/rules/`**, **`.cursorrules`** (Cursor) – Project rules: `project-context` (always on); `testing`, `pull-requests`, `api`, `firebase`, `stripe`, `i18n` (auto-attached when editing those areas); `migrations`, `deploy` (manual: @-mention when needed). **`.cursor/tasks/create-pull-request.md`** describes how to generate a PR description from `.github/pull_request_template.md` using the diff against `origin/main`.
 - **`.cursorignore`** (Cursor) – Excludes `node_modules`, build output, tests artifacts, env files, and secrets from indexing and AI context.
-- **`.vscode/`** – `settings.json` (format-on-save, Prettier, ESLint, search exclusions) and `extensions.json` (recommended: ESLint, Prettier, Tailwind, Firebase, Playwright). Applies in Cursor and VS Code.
+- **`.vscode/`** – `settings.json` (format-on-save, Oxc, search exclusions) and `extensions.json` (recommended: Oxc, Tailwind, Firebase, Playwright). Applies in Cursor and VS Code.
 
 For full setup and commands, see [.github/copilot-instructions.md](./.github/copilot-instructions.md). In Cursor, install the recommended extensions when prompted.
 

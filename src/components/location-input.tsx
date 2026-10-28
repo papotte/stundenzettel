@@ -42,9 +42,11 @@ export const LocationInput = forwardRef<HTMLInputElement, LocationInputProps>(
     const [focused, setFocused] = useState(false)
     const [activeSuggestion, setActiveSuggestion] = useState(-1)
 
-    React.useEffect(() => {
+    const [prevValue, setPrevValue] = useState(value)
+    if (prevValue !== value) {
+      setPrevValue(value)
       setInputValue(value)
-    }, [value])
+    }
 
     const showDropdown =
       focused && suggestions.length > 0 && !disabled && !isSpecialEntry

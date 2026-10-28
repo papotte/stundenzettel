@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -13,6 +13,23 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
 
+const subscribeNoop = () => () => {}
+
+const getIsIOS = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+  !(window as Window & { MSStream?: unknown }).MSStream
+
+const subscribeStandalone = (onChange: () => void) => {
+  const mql = window.matchMedia('(display-mode: standalone)')
+  mql.addEventListener('change', onChange)
+  return () => mql.removeEventListener('change', onChange)
+}
+
+const getIsStandalone = () =>
+  window.matchMedia('(display-mode: standalone)').matches
+
+const getServerFalse = () => false
+
 /**
  * Shows an install prompt for the PWA when not already running in standalone mode.
  * Styled as a compact toast-like bar. On iOS, shows instructions. On desktop/Android,
@@ -20,21 +37,16 @@ type BeforeInstallPromptEvent = Event & {
  */
 export function InstallPrompt() {
   const t = useTranslations()
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
+  const isIOS = useSyncExternalStore(subscribeNoop, getIsIOS, getServerFalse)
+  const isStandalone = useSyncExternalStore(
+    subscribeStandalone,
+    getIsStandalone,
+    getServerFalse,
+  )
   const [dismissed, setDismissed] = useState(false)
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalling, setIsInstalling] = useState(false)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    setIsIOS(
-      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-        !(window as Window & { MSStream?: unknown }).MSStream,
-    )
-    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches)
-  }, [])
 
   useEffect(() => {
     const handler = (e: Event) => {

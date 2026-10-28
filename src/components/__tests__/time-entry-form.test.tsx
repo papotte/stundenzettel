@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { fireEvent, render, screen, waitFor, within } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { fireEvent, render, screen, waitFor, within } from '@jest-setup'
 
 import { reverseGeocode } from '@/ai/flows/reverse-geocode-flow'
 import { Sheet, SheetContent } from '@/components/ui/sheet'

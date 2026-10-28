@@ -40,6 +40,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
+import { useNow } from '@/hooks/use-now'
 import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
 import {
   calculateExpectedMonthlyHours,
@@ -119,12 +120,14 @@ export default function StatsView() {
     [tSpecial],
   )
 
+  const now = useNow()
+
   const { start, end } = useMemo(() => {
     if (period === 'custom') {
       return { start: startOfDay(customStart), end: endOfDay(customEnd) }
     }
-    return getPeriodBounds(period, new Date())
-  }, [period, customStart, customEnd])
+    return getPeriodBounds(period, now)
+  }, [period, customStart, customEnd, now])
 
   const handleStartChange = (value: string) => {
     const date = parseDateInput(value)

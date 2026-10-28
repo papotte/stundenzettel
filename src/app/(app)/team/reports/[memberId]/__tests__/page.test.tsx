@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { render, screen, waitFor } from '@jest-setup'
-
 import { useParams, useSearchParams } from 'next/navigation'
 
 import { useAuth } from '@/hooks/use-auth'

@@ -1,5 +1,6 @@
-import { render, screen } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { render, screen } from '@jest-setup'
 
 import LandingFaqAccordion from '../landing-faq-accordion'
 

@@ -1,9 +1,9 @@
 import React from 'react'
 
-import { render, renderWithGermanLocale } from '@jest-setup'
-import '@testing-library/jest-dom'
 import { screen } from '@testing-library/react'
+import '@testing-library/jest-dom'
 
+import { render, renderWithGermanLocale } from '@jest-setup'
 import { useFormatter } from 'next-intl'
 
 // Test component for number and currency formatting

@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useNow } from '@/hooks/use-now'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { TeamInvitation } from '@/lib/types'
@@ -124,8 +125,10 @@ export function TeamInvitationsList({
     return t(`teams.roles.${role}`)
   }
 
+  const now = useNow()
+
   const isExpired = (expiresAt: Date) => {
-    return new Date() > new Date(expiresAt)
+    return now > new Date(expiresAt)
   }
 
   if (invitations.length === 0) {

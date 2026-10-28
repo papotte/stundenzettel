@@ -39,21 +39,16 @@ export function PushNotificationManager() {
   const t = useTranslations('settings')
   const tToasts = useTranslations('toasts')
   const { toast } = useToast()
-  const [isSupported, setIsSupported] = useState(false)
+  const [isSupported, setIsSupported] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      'serviceWorker' in navigator &&
+      'PushManager' in window,
+  )
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null,
   )
   const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      setIsSupported(true)
-      registerServiceWorker().catch((err) => {
-        console.error('Service worker registration failed:', err)
-        setIsSupported(false)
-      })
-    }
-  }, [])
 
   async function registerServiceWorker() {
     const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -63,6 +58,19 @@ export function PushNotificationManager() {
     const sub = await registration.pushManager.getSubscription()
     setSubscription(sub)
   }
+
+  useEffect(() => {
+    if (!isSupported) return
+    const register = async () => {
+      try {
+        await registerServiceWorker()
+      } catch (err) {
+        console.error('Service worker registration failed:', err)
+        setIsSupported(false)
+      }
+    }
+    void register()
+  }, [isSupported])
 
   async function subscribeToPush() {
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY

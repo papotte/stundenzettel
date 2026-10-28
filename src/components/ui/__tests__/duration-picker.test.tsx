@@ -1,8 +1,8 @@
 import React from 'react'
 
-import { render, screen, within } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
 
+import { render, screen, within } from '@jest-setup'
 import { NextIntlClientProvider } from 'next-intl'
 
 import { DurationPicker } from '@/components/ui/duration-picker'

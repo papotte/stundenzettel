@@ -7,6 +7,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { TeamMemberReportView } from '@/components/team/team-member-report-view'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
+import { useNow } from '@/hooks/use-now'
 import { verifyTeamAccess } from '@/lib/team-auth'
 import { getUserTeam } from '@/services/team-service'
 
@@ -22,7 +23,8 @@ export default function TeamMemberReportPage() {
   const memberId = params.memberId as string
   const monthParam = searchParams.get('month')
 
-  const selectedMonth = monthParam ? new Date(monthParam + '-01') : new Date()
+  const now = useNow()
+  const selectedMonth = monthParam ? new Date(monthParam + '-01') : now
 
   useEffect(() => {
     const checkAccess = async () => {

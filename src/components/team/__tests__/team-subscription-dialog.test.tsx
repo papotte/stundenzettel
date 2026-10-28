@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { fireEvent, render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { fireEvent, render, screen, waitFor } from '@jest-setup'
 
 import type { Team } from '@/lib/types'
 import { getPricingPlans } from '@/services/payment-service'

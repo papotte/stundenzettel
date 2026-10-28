@@ -1,0 +1,57 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 80,
+  "sortPackageJson": true,
+  "sortTailwindcss": {
+    "stylesheet": "./src/app/globals.css"
+  },
+  "sortImports": {
+    "internalPattern": ["@/"],
+    "customGroups": [
+      { "groupName": "react", "elementNamePattern": ["react"] },
+      {
+        "groupName": "scoped-external",
+        "elementNamePattern": ["@*/**"],
+        "selector": "external"
+      }
+    ],
+    "groups": [
+      "react",
+      "scoped-external",
+      ["type-builtin", "type-external", "builtin", "external"],
+      ["type-internal", "internal", "subpath"],
+      [
+        "type-parent",
+        "type-sibling",
+        "type-index",
+        "parent",
+        "sibling",
+        "index"
+      ],
+      "style",
+      "unknown"
+    ]
+  },
+  "ignorePatterns": [
+    ".next/",
+    "out/",
+    "next-env.d.ts",
+    "node_modules/",
+    "playwright-report/",
+    "test-results/",
+    "build/",
+    "dist/",
+    ".env",
+    ".env*.local",
+    "*.log",
+    "npm-debug.log*",
+    "yarn-debug.log*",
+    "yarn-error.log*",
+    "pnpm-debug.log*",
+    "coverage",
+    ".DS_Store",
+    "CHANGELOG.md"
+  ]
+}

@@ -60,6 +60,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
+import { useNow } from '@/hooks/use-now'
 import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import {
@@ -205,13 +206,14 @@ export default function TimeEntryForm({
     entry != null
       ? (entry.privateCarKilometers ?? 0) > 0
       : (userSettings?.defaultPrivateCar ?? false)
+  const now = useNow()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
       mode: defaultMode,
       location: entry?.location || '',
-      date: entry?.startTime ?? selectedDate ?? new Date(),
+      date: entry?.startTime ?? selectedDate ?? now,
       activities: entry?.activities || '',
       startTime:
         !isDurationEntry && entry && entry.startTime
@@ -342,7 +344,7 @@ export default function TimeEntryForm({
         startTime:
           modeValue === 'interval' && startTimeValue
             ? parseTimeString(startTimeValue, new Date(getValues('date')))
-            : set(getValues('date') || new Date(), {
+            : set(getValues('date') || now, {
                 hours: 12,
                 minutes: 0,
                 seconds: 0,
@@ -395,11 +397,11 @@ export default function TimeEntryForm({
     isSpecialEntry,
     driverTimeHoursValue,
     passengerTimeHoursValue,
-    userSettings?.driverCompensationPercent,
-    userSettings?.passengerCompensationPercent,
+    userSettings,
     modeValue,
     locationValue,
     getValues,
+    now,
   ])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -418,7 +420,7 @@ export default function TimeEntryForm({
       const [endHours, endMinutes] = (values.endTime ?? '')
         .split(':')
         .map(Number)
-      const date = values.date ?? new Date()
+      const date = values.date ?? now
       const startTime = set(date, {
         hours: startHours,
         minutes: startMinutes,
@@ -458,7 +460,7 @@ export default function TimeEntryForm({
         return
       }
       // Set startTime to selected date at 12:00 local time for duration-only entries
-      const date = values.date ?? new Date()
+      const date = values.date ?? now
       const startTime = set(date, {
         hours: 12,
         minutes: 0,

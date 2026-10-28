@@ -1,5 +1,7 @@
 {
   "name": "functions",
+  "private": true,
+  "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -9,10 +11,6 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
-  "engines": {
-    "node": "24"
-  },
-  "main": "lib/index.js",
   "dependencies": {
     "dotenv": "^17.2.3",
     "firebase-admin": "^13.10.0",
@@ -24,5 +22,7 @@
     "firebase-functions-test": "^3.5.0",
     "typescript": "^5.9.3"
   },
-  "private": true
+  "engines": {
+    "node": "24"
+  }
 }

@@ -42,41 +42,42 @@ export function TeamMemberReportView({
   const { displayNames } = useMemberDisplayNames([memberId])
   const [entries, setEntries] = useState<TimeEntry[]>([])
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [notPublished, setNotPublished] = useState(false)
+  const [loadingState, setLoadingState] = useState(true)
+  const [notPublishedState, setNotPublishedState] = useState(false)
 
   const monthKey = format.dateTime(selectedMonth, 'yearMonthISO')
 
   useEffect(() => {
     if (!teamId) {
-      setNotPublished(true)
-      setIsLoading(false)
       return
     }
     const fetchData = async () => {
-      setIsLoading(true)
-      setNotPublished(false)
+      setLoadingState(true)
+      setNotPublishedState(false)
       try {
         const data = await getPublishedMonth(teamId, memberId, monthKey)
         if (data) {
           setEntries(data.entries)
           setUserSettings(data.userSettings)
         } else {
-          setNotPublished(true)
+          setNotPublishedState(true)
           setEntries([])
           setUserSettings(null)
         }
       } catch (error) {
         console.error('Failed to load member report:', error)
-        setNotPublished(true)
+        setNotPublishedState(true)
         setEntries([])
         setUserSettings(null)
       } finally {
-        setIsLoading(false)
+        setLoadingState(false)
       }
     }
     fetchData()
   }, [teamId, memberId, monthKey])
+
+  const isLoading = teamId ? loadingState : false
+  const notPublished = teamId ? notPublishedState : true
 
   const getEntriesForDay = useCallback(
     (day: Date) => {

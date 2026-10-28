@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useTranslations } from 'next-intl'
 
@@ -10,8 +10,11 @@ export function useGeolocationAddress(onAddress: (address: string) => void) {
   const t = useTranslations()
   const [isFetchingLocation, setIsFetchingLocation] = useState(false)
   const onAddressRef = useRef(onAddress)
-  onAddressRef.current = onAddress
   const fetchingRef = useRef(false)
+
+  useEffect(() => {
+    onAddressRef.current = onAddress
+  })
 
   const fetchCurrentLocationAddress = useCallback(async () => {
     if (fetchingRef.current) return

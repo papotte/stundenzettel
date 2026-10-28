@@ -53,7 +53,6 @@ export default function ExportPreview() {
 
   useEffect(() => {
     if (!user) {
-      setEntriesLoading(false)
       return
     }
     const fetchAndSetEntries = async () => {
@@ -79,7 +78,6 @@ export default function ExportPreview() {
     : ''
   useEffect(() => {
     if (!user || !userTeam || !monthKey) {
-      setPublishedAt(userTeam ? null : undefined)
       return
     }
     let cancelled = false
@@ -90,6 +88,11 @@ export default function ExportPreview() {
       cancelled = true
     }
   }, [user, userTeam, monthKey])
+
+  let effectivePublishedAt: Date | null | undefined = publishedAt
+  if (!user || !userTeam || !monthKey) {
+    effectivePublishedAt = userTeam ? null : undefined
+  }
 
   const getEntriesForDay = useCallback(
     (day: Date) => {
@@ -300,7 +303,7 @@ export default function ExportPreview() {
               entries={entries}
               selectedMonth={selectedMonth}
               userTeam={userTeam}
-              publishedAt={publishedAt}
+              publishedAt={effectivePublishedAt}
               isPublishing={isPublishing}
             />
           </div>

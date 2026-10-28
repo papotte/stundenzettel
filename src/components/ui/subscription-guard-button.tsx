@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 import { ProBadge } from '@/components/ui/badge'
 import { Button, type ButtonProps } from '@/components/ui/button'
 import { useSubscriptionContext } from '@/context/subscription-context'
@@ -33,14 +35,14 @@ export function SubscriptionGuardButton({
     <Button {...props} className={buttonClassName} disabled={disabled}>
       {children}{' '}
       {!hasValidSubscription && (
-        <a
+        <Link
           href="/subscription"
           aria-label="Manage subscription"
           className="absolute -top-1 -right-1"
           onClick={(e) => e.stopPropagation()}
         >
           <ProBadge />
-        </a>
+        </Link>
       )}
     </Button>
   )

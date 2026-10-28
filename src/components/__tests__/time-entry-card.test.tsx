@@ -1,8 +1,9 @@
 import React from 'react'
 
-import { fireEvent, render, screen, waitFor } from '@jest-setup'
 import { within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+import { fireEvent, render, screen, waitFor } from '@jest-setup'
 
 import type { TimeEntry } from '@/lib/types'
 

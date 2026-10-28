@@ -11,7 +11,6 @@ export function useUserInvitations() {
 
   useEffect(() => {
     if (!user?.email) {
-      setInvitations([])
       return
     }
 
@@ -45,10 +44,12 @@ export function useUserInvitations() {
     }
   }
 
+  const pendingInvitations = user?.email ? invitations : []
+
   return {
-    invitations,
+    invitations: pendingInvitations,
     loading,
     refreshInvitations,
-    hasPendingInvitations: invitations.length > 0,
+    hasPendingInvitations: pendingInvitations.length > 0,
   }
 }

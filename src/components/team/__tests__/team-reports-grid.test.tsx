@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { render, screen, waitFor } from '@jest-setup'
 
 import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
 import type { TeamMember } from '@/lib/types'

@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { render, screen } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { render, screen } from '@jest-setup'
 
 import BillingToggle from '../billing-toggle'
 

@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { render, screen, waitFor } from '@jest-setup'
 import userEvent from '@testing-library/user-event'
+
+import { render, screen, waitFor } from '@jest-setup'
 
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { createMockAuthContext } from '@/test-utils/auth-mocks'
