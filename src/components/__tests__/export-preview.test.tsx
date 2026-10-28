@@ -387,7 +387,9 @@ describe('ExportPreview', () => {
       await user.hover(exportButton)
 
       await waitFor(() => {
-        expect(screen.getAllByText('export.noDataHint')).toHaveLength(2)
+        expect(screen.getByRole('tooltip')).toHaveTextContent(
+          'export.noDataHint',
+        )
       })
     })
   })
