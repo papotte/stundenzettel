@@ -19,10 +19,10 @@ description: Deployment and CI for Firebase (App Hosting, Functions, Firestore).
 
 ## CI (`.github/workflows/`)
 
-- **`deploy.yml`:** Triggered on `release: published` (and some `deploy/*` branches). Runs build, `functions:build`, then `firebase deploy` (App Hosting + Functions). Uses `FIREBASE_TOKEN`, `GCP_SA_KEY`, Stripe secrets. See README for required GitHub secrets.
+- **`deploy.yml`:** Triggered on `release: published` (and some `deploy/*` branches). Runs build, `functions:build`, then `firebase deploy` (App Hosting + Functions). Authenticates via `google-github-actions/auth` using the `GCP_SA_KEY` service account secret (raw or base64-encoded JSON). `FIREBASE_TOKEN` auth is deprecated and no longer used. See README for required GitHub secrets.
 - **`ci.yml`:** PRs; lint, test, build. **`main.yml`:** Push to main; full checks + semantic-release. **`e2e-tests.yml`**, **`lint-and-format.yml`**, **`unit-tests.yml`** as per repo.
 
 ## Secrets
 
 - **App Hosting:** Set in Firebase (`firebase apphosting:secrets:set NAME`) or via App Hosting UI; listed in `apphosting.yaml` as `secret: NAME`.
-- **GitHub Actions:** `FIREBASE_TOKEN`, `GCP_SA_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, etc. See README and `deploy.yml`.
+- **GitHub Actions:** `GCP_SA_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, etc. See README and `deploy.yml`.

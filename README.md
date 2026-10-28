@@ -364,7 +364,7 @@ This project includes a complete CI/CD pipeline configured with GitHub Actions. 
   - **Jobs**:
     - Runs E2E tests as a final gate before deployment.
     - Deploys the application to **Firebase App Hosting**.
-  - **Setup**: For this workflow to succeed, you must create a `FIREBASE_SERVICE_ACCOUNT_JSON` secret in your GitHub repository's settings. See below for instructions.
+  - **Setup**: For this workflow to succeed, you must create a `GCP_SA_KEY` secret in your GitHub repository's settings. See below for instructions.
 
 - **`nightly.yml` (Nightly Tests)**:
   - **Trigger**: Runs on a schedule (daily at 5 AM UTC).
@@ -390,11 +390,11 @@ To allow GitHub Actions to deploy your application to Firebase, you must create 
 3.  **Create the GitHub Secret**:
     - In your GitHub repository, go to **Settings > Secrets and variables > Actions**.
     - Click **New repository secret**.
-    - Name the secret `FIREBASE_SERVICE_ACCOUNT_JSON`.
-    - Open the downloaded JSON file, copy its entire contents, and paste it into the **Value** field in GitHub.
+    - Name the secret `GCP_SA_KEY`.
+    - Open the downloaded JSON file, copy its entire contents, and paste it into the **Value** field in GitHub (base64-encoded JSON also works).
     - Click **Add secret**.
 
-The `deploy.yml` workflow is now configured to use this secret to authenticate with Firebase and deploy your application.
+The `deploy.yml` workflow uses this secret with `google-github-actions/auth` to authenticate to Google Cloud before running `firebase deploy`.
 
 ---
 
