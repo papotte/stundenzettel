@@ -1,3 +1,10 @@
+## [1.32.2](https://github.com/papotte/stundenzettel/compare/v1.32.1...v1.32.2) (2026-10-29)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#241](https://github.com/papotte/stundenzettel/issues/241)) ([9f2838d](https://github.com/papotte/stundenzettel/commit/9f2838d6b2a438adf002b5989f9554f90b1e8d2d))
+
 ## [1.32.1](https://github.com/papotte/stundenzettel/compare/v1.32.0...v1.32.1) (2026-10-28)
 
 
