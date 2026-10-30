@@ -249,14 +249,7 @@ describe('excel-export', () => {
     expectedMonthlyHours: 160,
   }
 
-  const mockT = jest.fn((key: string, values?: Record<string, unknown>) => {
-    if (
-      key === 'export.footerTotalKilometers' &&
-      values &&
-      typeof values.km === 'string'
-    ) {
-      return `${values.km} km`
-    }
+  const mockT = jest.fn((key: string) => {
     return key
   }) as unknown as ReturnType<typeof useTranslations>
 
@@ -697,7 +690,7 @@ describe('excel-export', () => {
         .map((c) => c[0] as unknown[])
         .find((row) => row[2] === 'Office')
       expect(dataRow).toBeDefined()
-      expect(dataRow![9]).toBe('42 km')
+      expect(dataRow![9]).toBe(42)
     })
 
     it('puts activities in the activities column when showActivities is enabled', async () => {
@@ -885,6 +878,25 @@ describe('excel-export', () => {
 
       // Font color should be set for overtime cell
       expect(mockCell.font).toBeDefined()
+    })
+
+    it('should write Excel formulas with cached results for totals', async () => {
+      const { getEntriesForDay, getLocationDisplayName } = createDefaultMocks()
+
+      await callExportToExcel({ getEntriesForDay, getLocationDisplayName })
+
+      // The worksheet mock shares one cell object per column, so the last
+      // write wins: column 8 (compensated) ends with the after-conversion
+      // formula referencing the grand total and compensated passenger cells.
+      expect(mockWorksheet.getCell(1, 8).value).toEqual({
+        formula: expect.stringMatching(/^H\d+\+I\d+$/),
+        result: 90, // 80 compensated + 10 compensated passenger hours
+      })
+      // Column 3 (overtime) ends with actual minus expected hours.
+      expect(mockWorksheet.getCell(1, 3).value).toEqual({
+        formula: expect.stringMatching(/^H\d+-C\d+$/),
+        result: -70, // 90 actual - 160 expected
+      })
     })
 
     it('should calculate passenger compensation correctly', async () => {

@@ -32,17 +32,12 @@ interface ExportParams {
 type ExcelFormatter = ExportParams['format']
 const MAX_PRINTABLE_EXPORT_WIDTH = 80
 
-/** Per-entry mileage cell: empty unless km is a positive finite value. */
-function formatKilometersForExcelDisplay(
-  km: number | undefined | null,
-  t: ExportParams['t'],
-): string {
-  if (km == null || !Number.isFinite(km) || km <= 0) {
-    return ''
-  }
-  return t('export.footerTotalKilometers', {
-    km: km.toLocaleString(undefined, { maximumFractionDigits: 2 }),
-  })
+/** Mileage cells are numeric so totals can SUM them; the empty zero section hides 0 km. */
+const MILEAGE_NUM_FMT = '0.## "km";;'
+
+/** 1-based Excel column index → column letter (layout never exceeds ~11 columns). */
+function excelColumnLetter(colIndex: number): string {
+  return String.fromCharCode(64 + colIndex)
 }
 
 /** 1-based Excel column indices for timesheet grid (driver/passenger optional). */
@@ -171,6 +166,7 @@ function styleTimesheetDataRow(
     }
   }
   dataRow.getCell(layout.mileage).alignment = { horizontal: 'right' }
+  dataRow.getCell(layout.mileage).numFmt = MILEAGE_NUM_FMT
 }
 
 function applyExcelRowStyles(
@@ -294,6 +290,191 @@ function buildExportFileName(
         .replace(/^-+|-+$/g, '')}`
     : ''
   return `Stundenzettel_${userExportName || 'Export'}_${format.dateTime(selectedMonth, 'yearMonth')}${projectPart}.xlsx`
+}
+
+interface MonthlyTotalsParams {
+  worksheet: ExcelJS.Worksheet
+  layout: ExcelExportColumnLayout
+  t: ExportParams['t']
+  userSettings: UserSettings
+  weeksInMonth: Date[][]
+  getEntriesForDay: ExportParams['getEntriesForDay']
+  selectedMonth: Date
+  compColLetter: string
+  passColLetter: string | null
+  weeklyCompTotalRefs: string[]
+  weeklyPassengerTotalRefs: string[]
+  weeklyKmTotalRefs: string[]
+}
+
+function renderMonthlyTotalsRows({
+  worksheet,
+  layout,
+  t,
+  userSettings,
+  weeksInMonth,
+  getEntriesForDay,
+  selectedMonth,
+  compColLetter,
+  passColLetter,
+  weeklyCompTotalRefs,
+  weeklyPassengerTotalRefs,
+  weeklyKmTotalRefs,
+}: MonthlyTotalsParams): void {
+  // -- GRAND TOTAL AND EXPECTED HOURS ROW --
+  const grandTotalRow = worksheet.addRow(Array(layout.columnCount).fill(''))
+
+  // --- EXPECTED HOURS  ---
+  const expectedHours = calculateExpectedMonthlyHours(userSettings)
+  worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 2)
+  grandTotalRow.getCell(1).value = t('export.footerExpectedHours')
+  const expectedHoursCell = grandTotalRow.getCell(3)
+  expectedHoursCell.value = expectedHours
+  expectedHoursCell.numFmt = '0.00'
+  expectedHoursCell.alignment = { horizontal: 'left' }
+
+  // --- GRAND TOTAL ---
+  const monthCompTotal = weeksInMonth.reduce(
+    (acc, week) =>
+      acc +
+      calculateWeekCompensatedTime(
+        week,
+        getEntriesForDay,
+        userSettings,
+        selectedMonth,
+      ),
+    0,
+  )
+  const monthPassengerTotal = weeksInMonth.reduce(
+    (acc, week) =>
+      acc + calculateWeekPassengerTime(week, getEntriesForDay, selectedMonth),
+    0,
+  )
+  const monthPrivateCarKmTotal = weeksInMonth.reduce(
+    (acc, week) =>
+      acc + calculateWeekKilometers(week, getEntriesForDay, selectedMonth),
+    0,
+  )
+
+  worksheet.mergeCells(
+    grandTotalRow.number,
+    layout.from,
+    grandTotalRow.number,
+    layout.compensated - 1,
+  )
+  const grandTotalLabelCell = grandTotalRow.getCell(layout.from)
+  grandTotalLabelCell.value = t('export.footerTotalHours')
+  grandTotalLabelCell.alignment = { horizontal: 'right' }
+  const grandTotalCompCell = grandTotalRow.getCell(layout.compensated)
+  grandTotalCompCell.value =
+    weeklyCompTotalRefs.length > 0
+      ? {
+          formula: `SUM(${weeklyCompTotalRefs.join(',')})`,
+          result: monthCompTotal,
+        }
+      : monthCompTotal
+  grandTotalCompCell.numFmt = '0.00'
+  grandTotalCompCell.border = {
+    bottom: { style: 'double', color: { argb: 'FF000000' } },
+  }
+  grandTotalCompCell.alignment = { horizontal: 'right' }
+  if (layout.passenger != null) {
+    const grandTotalPassengerCell = grandTotalRow.getCell(layout.passenger)
+    grandTotalPassengerCell.value =
+      weeklyPassengerTotalRefs.length > 0
+        ? {
+            formula: `SUM(${weeklyPassengerTotalRefs.join(',')})`,
+            result: monthPassengerTotal,
+          }
+        : monthPassengerTotal
+    grandTotalPassengerCell.numFmt = '0.00'
+    grandTotalPassengerCell.border = {
+      bottom: { style: 'double', color: { argb: 'FF000000' } },
+    }
+    grandTotalPassengerCell.alignment = { horizontal: 'right' }
+  }
+  const grandTotalKmCell = grandTotalRow.getCell(layout.mileage)
+  grandTotalKmCell.alignment = { horizontal: 'right' }
+  grandTotalKmCell.value =
+    weeklyKmTotalRefs.length > 0
+      ? {
+          formula: `SUM(${weeklyKmTotalRefs.join(',')})`,
+          result: monthPrivateCarKmTotal,
+        }
+      : monthPrivateCarKmTotal
+  grandTotalKmCell.numFmt = MILEAGE_NUM_FMT
+  grandTotalKmCell.border = {
+    bottom: { style: 'double', color: { argb: 'FF000000' } },
+  }
+
+  // -- GRAND TOTAL AND OVERTIME ROW --
+  const afterConversionRow = worksheet.addRow(
+    Array(layout.columnCount).fill(''),
+  )
+  const passengerCompPercent = userSettings.passengerCompensationPercent ?? 100
+  const compensatedPassengerHours =
+    monthPassengerTotal * (passengerCompPercent / 100)
+
+  // --- OVERTIME CELLS ---
+  const actualHours = monthCompTotal + compensatedPassengerHours
+  const overtime = actualHours - expectedHours
+  worksheet.mergeCells(
+    afterConversionRow.number,
+    1,
+    afterConversionRow.number,
+    2,
+  )
+  afterConversionRow.getCell(1).value = t('export.footerOvertime')
+  const overTimeCell = afterConversionRow.getCell(3)
+  overTimeCell.value = {
+    formula: `${compColLetter}${afterConversionRow.number}-C${grandTotalRow.number}`,
+    result: overtime,
+  }
+  overTimeCell.numFmt = '0.00'
+  overTimeCell.alignment = { horizontal: 'left' }
+
+  // Color code the overtime cell
+  if (overtime > 0) {
+    overTimeCell.font = { color: { argb: 'FF00AA00' } } // Green
+  } else if (overtime < 0) {
+    overTimeCell.font = { color: { argb: 'FFAA0000' } } // Red
+  }
+
+  // --- SECOND MONTHLY TOTAL CELLS ---
+  worksheet.mergeCells(
+    afterConversionRow.number,
+    layout.from,
+    afterConversionRow.number,
+    layout.compensated - 1,
+  )
+  const afterConversionLabelCell = afterConversionRow.getCell(layout.from)
+  afterConversionLabelCell.value = t('export.footerTotalAfterConversion')
+  afterConversionLabelCell.alignment = { horizontal: 'right' }
+
+  const afterConversionValueCell = afterConversionRow.getCell(
+    layout.compensated,
+  )
+  // When the passenger column is hidden there is no cell to reference, so its
+  // compensated hours are embedded as a literal; the compensated part stays live.
+  const afterConversionFormula =
+    layout.passenger != null && passColLetter != null
+      ? `${compColLetter}${grandTotalRow.number}+${passColLetter}${afterConversionRow.number}`
+      : `${compColLetter}${grandTotalRow.number}+${compensatedPassengerHours}`
+  if (layout.passenger != null && passColLetter != null) {
+    const afterConversionPassengerCell = afterConversionRow.getCell(
+      layout.passenger,
+    )
+    afterConversionPassengerCell.value = {
+      formula: `${passColLetter}${grandTotalRow.number}*${passengerCompPercent}/100`,
+      result: compensatedPassengerHours,
+    }
+    afterConversionPassengerCell.numFmt = '0.00'
+  }
+  afterConversionValueCell.value = {
+    formula: afterConversionFormula,
+    result: actualHours,
+  }
+  afterConversionValueCell.numFmt = '0.00'
 }
 
 export const exportToExcel = async ({
@@ -438,6 +619,14 @@ export const exportToExcel = async ({
   // --- DATA ROWS ---
   const weeksInMonth = getWeeksForMonth(selectedMonth)
 
+  const compColLetter = excelColumnLetter(layout.compensated)
+  const passColLetter =
+    layout.passenger != null ? excelColumnLetter(layout.passenger) : null
+  const mileageColLetter = excelColumnLetter(layout.mileage)
+  const weeklyCompTotalRefs: string[] = []
+  const weeklyPassengerTotalRefs: string[] = []
+  const weeklyKmTotalRefs: string[] = []
+
   weeksInMonth.forEach((week) => {
     const weekHasContent = week.some((day) => {
       if (!isSameMonth(day, selectedMonth)) return false
@@ -507,6 +696,7 @@ export const exportToExcel = async ({
     bisCell.border = { right: defaultBorder, bottom: defaultBorder }
 
     // --- RENDER DATA ROWS FOR THE WEEK ---
+    const weekDataStartRow = worksheet.rowCount + 1
     week.forEach((day) => {
       const dayEntries = getEntriesForDay(day)
       const isSunday = getDay(day) === 0
@@ -544,10 +734,8 @@ export const exportToExcel = async ({
           if (layout.activities != null) {
             rowData[layout.activities - 1] = activitiesCellValue
           }
-          rowData[layout.mileage - 1] = formatKilometersForExcelDisplay(
-            mileageCellValue,
-            t,
-          )
+          rowData[layout.mileage - 1] =
+            mileageCellValue > 0 ? mileageCellValue : ''
           const dataRow = worksheet.addRow(rowData)
           styleTimesheetDataRow(dataRow, layout, defaultBorder, allBorders)
         })
@@ -610,6 +798,7 @@ export const exportToExcel = async ({
       getEntriesForDay,
       selectedMonth,
     )
+    const weekDataEndRow = worksheet.rowCount
     const totalRow = worksheet.addRow(Array(layout.columnCount).fill(''))
     worksheet.mergeCells(
       totalRow.number,
@@ -622,154 +811,57 @@ export const exportToExcel = async ({
     totalLabelCell.alignment = { horizontal: 'right' }
 
     const totalCompCell = totalRow.getCell(layout.compensated)
-    totalCompCell.value = weekCompTotal
+    totalCompCell.value = {
+      formula: `SUM(${compColLetter}${weekDataStartRow}:${compColLetter}${weekDataEndRow})`,
+      result: weekCompTotal,
+    }
     totalCompCell.numFmt = '0.00'
     totalCompCell.border = {
       bottom: { style: 'medium', color: { argb: 'FF000000' } },
     }
     totalCompCell.alignment = { horizontal: 'right' }
+    weeklyCompTotalRefs.push(`${compColLetter}${totalRow.number}`)
     if (layout.passenger != null) {
       const totalPassengerCell = totalRow.getCell(layout.passenger)
-      totalPassengerCell.value = weekPassengerTotal
+      totalPassengerCell.value = {
+        formula: `SUM(${passColLetter}${weekDataStartRow}:${passColLetter}${weekDataEndRow})`,
+        result: weekPassengerTotal,
+      }
       totalPassengerCell.numFmt = '0.00'
       totalPassengerCell.border = {
         bottom: { style: 'medium', color: { argb: 'FF000000' } },
       }
       totalPassengerCell.alignment = { horizontal: 'right' }
+      weeklyPassengerTotalRefs.push(`${passColLetter}${totalRow.number}`)
     }
     const totalKmCell = totalRow.getCell(layout.mileage)
     totalKmCell.alignment = { horizontal: 'right' }
-    totalKmCell.value = formatKilometersForExcelDisplay(
-      weekPrivateCarKmTotal,
-      t,
-    )
+    totalKmCell.value = {
+      formula: `SUM(${mileageColLetter}${weekDataStartRow}:${mileageColLetter}${weekDataEndRow})`,
+      result: weekPrivateCarKmTotal,
+    }
+    totalKmCell.numFmt = MILEAGE_NUM_FMT
     totalKmCell.border = {
       bottom: { style: 'medium', color: { argb: 'FF000000' } },
     }
+    weeklyKmTotalRefs.push(`${mileageColLetter}${totalRow.number}`)
     worksheet.addRow([]) // Blank row for spacing
   })
 
-  // -- GRAND TOTAL AND EXPECTED HOURS ROW --
-  const grandTotalRow = worksheet.addRow(Array(layout.columnCount).fill(''))
-
-  // --- EXPECTED HOURS  ---
-  const expectedHours = calculateExpectedMonthlyHours(userSettings)
-  worksheet.mergeCells(grandTotalRow.number, 1, grandTotalRow.number, 2)
-  grandTotalRow.getCell(1).value = t('export.footerExpectedHours')
-  const expectedHoursCell = grandTotalRow.getCell(3)
-  expectedHoursCell.value = expectedHours
-  expectedHoursCell.numFmt = '0.00'
-  expectedHoursCell.alignment = { horizontal: 'left' }
-
-  // --- GRAND TOTAL ---
-  const monthCompTotal = weeksInMonth.reduce(
-    (acc, week) =>
-      acc +
-      calculateWeekCompensatedTime(
-        week,
-        getEntriesForDay,
-        userSettings,
-        selectedMonth,
-      ),
-    0,
-  )
-  const monthPassengerTotal = weeksInMonth.reduce(
-    (acc, week) =>
-      acc + calculateWeekPassengerTime(week, getEntriesForDay, selectedMonth),
-    0,
-  )
-  const monthPrivateCarKmTotal = weeksInMonth.reduce(
-    (acc, week) =>
-      acc + calculateWeekKilometers(week, getEntriesForDay, selectedMonth),
-    0,
-  )
-
-  worksheet.mergeCells(
-    grandTotalRow.number,
-    layout.from,
-    grandTotalRow.number,
-    layout.compensated - 1,
-  )
-  const grandTotalLabelCell = grandTotalRow.getCell(layout.from)
-  grandTotalLabelCell.value = t('export.footerTotalHours')
-  grandTotalLabelCell.alignment = { horizontal: 'right' }
-  const grandTotalCompCell = grandTotalRow.getCell(layout.compensated)
-  grandTotalCompCell.value = monthCompTotal
-  grandTotalCompCell.numFmt = '0.00'
-  grandTotalCompCell.border = {
-    bottom: { style: 'double', color: { argb: 'FF000000' } },
-  }
-  grandTotalCompCell.alignment = { horizontal: 'right' }
-  if (layout.passenger != null) {
-    const grandTotalPassengerCell = grandTotalRow.getCell(layout.passenger)
-    grandTotalPassengerCell.value = monthPassengerTotal
-    grandTotalPassengerCell.numFmt = '0.00'
-    grandTotalPassengerCell.border = {
-      bottom: { style: 'double', color: { argb: 'FF000000' } },
-    }
-    grandTotalPassengerCell.alignment = { horizontal: 'right' }
-  }
-  const grandTotalKmCell = grandTotalRow.getCell(layout.mileage)
-  grandTotalKmCell.alignment = { horizontal: 'right' }
-  grandTotalKmCell.value = formatKilometersForExcelDisplay(
-    monthPrivateCarKmTotal,
+  renderMonthlyTotalsRows({
+    worksheet,
+    layout,
     t,
-  )
-  grandTotalKmCell.border = {
-    bottom: { style: 'double', color: { argb: 'FF000000' } },
-  }
-
-  // -- GRAND TOTAL AND OVERTIME ROW --
-  const afterConversionRow = worksheet.addRow(
-    Array(layout.columnCount).fill(''),
-  )
-  const passengerCompPercent = userSettings.passengerCompensationPercent ?? 100
-  const compensatedPassengerHours =
-    monthPassengerTotal * (passengerCompPercent / 100)
-
-  // --- OVERTIME CELLS ---
-  const actualHours = monthCompTotal + compensatedPassengerHours
-  const overtime = actualHours - expectedHours
-  worksheet.mergeCells(
-    afterConversionRow.number,
-    1,
-    afterConversionRow.number,
-    2,
-  )
-  afterConversionRow.getCell(1).value = t('export.footerOvertime')
-  const overTimeCell = afterConversionRow.getCell(3)
-  overTimeCell.value = overtime
-  overTimeCell.numFmt = '0.00'
-  overTimeCell.alignment = { horizontal: 'left' }
-
-  // Color code the overtime cell
-  if (overtime > 0) {
-    overTimeCell.font = { color: { argb: 'FF00AA00' } } // Green
-  } else if (overtime < 0) {
-    overTimeCell.font = { color: { argb: 'FFAA0000' } } // Red
-  }
-
-  // --- SECOND MONTHLY TOTAL CELLS ---
-  worksheet.mergeCells(
-    afterConversionRow.number,
-    layout.from,
-    afterConversionRow.number,
-    layout.compensated - 1,
-  )
-  const afterConversionLabelCell = afterConversionRow.getCell(layout.from)
-  afterConversionLabelCell.value = t('export.footerTotalAfterConversion')
-  afterConversionLabelCell.alignment = { horizontal: 'right' }
-
-  const afterConversionValueCell = afterConversionRow.getCell(
-    layout.compensated,
-  )
-  afterConversionValueCell.value = monthCompTotal + compensatedPassengerHours
-  afterConversionValueCell.numFmt = '0.00'
-  if (layout.passenger != null) {
-    afterConversionRow.getCell(layout.passenger).value =
-      compensatedPassengerHours
-    afterConversionRow.getCell(layout.passenger).numFmt = '0.00'
-  }
+    userSettings,
+    weeksInMonth,
+    getEntriesForDay,
+    selectedMonth,
+    compColLetter,
+    passColLetter,
+    weeklyCompTotalRefs,
+    weeklyPassengerTotalRefs,
+    weeklyKmTotalRefs,
+  })
 
   // --- PRINT AREA ---
   // The company info row is for on-screen viewing only; the running page
