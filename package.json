@@ -82,7 +82,7 @@
     "next-intl": "^4.13.6",
     "patch-package": "^8.0.1",
     "react": "^19.2.4",
-    "react-day-picker": "^9.13.0",
+    "react-day-picker": "^10.0.0",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.1",
     "resend": "^6.19.0",
