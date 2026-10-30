@@ -26,6 +26,7 @@ const defaultTeamSettings: TeamSettings = {
   exportIncludeDriverTime: true,
   exportIncludePassengerTime: true,
   allowMemberOverrideExport: true,
+  trackingMode: 'locations',
 }
 
 describe('Team Settings Service', () => {

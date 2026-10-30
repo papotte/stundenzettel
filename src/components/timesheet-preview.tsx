@@ -28,7 +28,11 @@ import {
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
-import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
+import {
+  formatDecimalHours,
+  getWeeksForMonth,
+  isProjectTrackingMode,
+} from '@/lib/utils'
 
 import TimesheetHeader from './timesheet-header'
 import TimesheetPreviewTotals from './timesheet-preview-totals'
@@ -160,7 +164,9 @@ export default function TimesheetPreview({
                       rowSpan={2}
                       className="w-auto border-r border-black text-left print:h-auto print:p-1"
                     >
-                      {t('export.headerLocation')}
+                      {isProjectTrackingMode(userSettings)
+                        ? t('export.headerProject')
+                        : t('export.headerLocation')}
                     </TableHead>
                     <TableHead
                       colSpan={2}

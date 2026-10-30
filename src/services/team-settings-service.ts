@@ -10,6 +10,7 @@ const defaultTeamSettings: TeamSettings = {
   exportIncludeDriverTime: true,
   exportIncludePassengerTime: true,
   allowMemberOverrideExport: true,
+  trackingMode: 'locations',
 }
 
 export const getTeamSettings = async (

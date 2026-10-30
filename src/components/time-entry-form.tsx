@@ -46,6 +46,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -61,7 +68,7 @@ import {
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
 import { useNow } from '@/hooks/use-now'
-import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
+import { isSpecialLocation } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import {
   suggestDriverTimes,
@@ -93,86 +100,93 @@ function newTimeEntryClientId(): string {
   return Date.now().toString()
 }
 
-const formSchema = z
-  .object({
-    mode: z.enum(['interval', 'duration']),
-    location: z.string().min(2, {
-      message: 'Location must be at least 2 characters.',
-    }),
-    activities: z.string().optional(),
-    date: z.date(),
-    startTime: z
-      .string()
-      .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
-      .optional(),
-    endTime: z
-      .string()
-      .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
-      .optional(),
-    duration: z
-      .string()
-      .refine(
-        (v) => {
-          if (v === '') return false
-          const minutes = timeStringToMinutes(v)
-          return minutes >= 15 && minutes <= 1440 && minutes % 15 === 0
-        },
-        (v) => {
-          if (v === '') return { message: 'Minimum 15 minutes' }
-          const minutes = timeStringToMinutes(v)
-          if (minutes < 15) return { message: 'Minimum 15 minutes' }
-          if (minutes > 1440) return { message: 'Maximum 24 hours' }
-          return { message: 'Must be a multiple of 15' }
-        },
-      )
-      .optional(),
-    pauseDuration: z
-      .string()
-      .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
-      .optional(),
-    driverTimeHours: z
-      .union([
-        z
-          .string()
-          .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
-        z.literal(''),
-      ])
-      .optional(),
-    passengerTimeHours: z
-      .union([
-        z
-          .string()
-          .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)'),
-        z.literal(''),
-      ])
-      .optional(),
-    usePrivateCar: z.boolean(),
-    privateCarKilometers: z.coerce
-      .number()
-      .min(0, 'Must be positive')
-      .optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.mode === 'interval') {
-        if (!data.startTime || !data.endTime) return false
-        try {
-          const start = parseTimeString(data.startTime)
-          const end = parseTimeString(data.endTime)
-          return end > start
-        } catch {
-          return false
+const buildFormSchema = (locationMinMessage: string) =>
+  z
+    .object({
+      mode: z.enum(['interval', 'duration']),
+      location: z.string().min(2, {
+        message: locationMinMessage,
+      }),
+      activities: z.string().optional(),
+      date: z.date(),
+      startTime: z
+        .string()
+        .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
+        .optional(),
+      endTime: z
+        .string()
+        .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
+        .optional(),
+      duration: z
+        .string()
+        .refine(
+          (v) => {
+            if (v === '') return false
+            const minutes = timeStringToMinutes(v)
+            return minutes >= 15 && minutes <= 1440 && minutes % 15 === 0
+          },
+          (v) => {
+            if (v === '') return { message: 'Minimum 15 minutes' }
+            const minutes = timeStringToMinutes(v)
+            if (minutes < 15) return { message: 'Minimum 15 minutes' }
+            if (minutes > 1440) return { message: 'Maximum 24 hours' }
+            return { message: 'Must be a multiple of 15' }
+          },
+        )
+        .optional(),
+      pauseDuration: z
+        .string()
+        .regex(/^([0-1]?\d|2[0-3]):[0-5]\d$/, 'Invalid time format (HH:mm)')
+        .optional(),
+      driverTimeHours: z
+        .union([
+          z
+            .string()
+            .regex(
+              /^([0-1]?\d|2[0-3]):[0-5]\d$/,
+              'Invalid time format (HH:mm)',
+            ),
+          z.literal(''),
+        ])
+        .optional(),
+      passengerTimeHours: z
+        .union([
+          z
+            .string()
+            .regex(
+              /^([0-1]?\d|2[0-3]):[0-5]\d$/,
+              'Invalid time format (HH:mm)',
+            ),
+          z.literal(''),
+        ])
+        .optional(),
+      usePrivateCar: z.boolean(),
+      privateCarKilometers: z.coerce
+        .number()
+        .min(0, 'Must be positive')
+        .optional(),
+    })
+    .refine(
+      (data) => {
+        if (data.mode === 'interval') {
+          if (!data.startTime || !data.endTime) return false
+          try {
+            const start = parseTimeString(data.startTime)
+            const end = parseTimeString(data.endTime)
+            return end > start
+          } catch {
+            return false
+          }
+        } else if (data.mode === 'duration') {
+          return true
         }
-      } else if (data.mode === 'duration') {
-        return true
-      }
-      return false
-    },
-    {
-      message: 'End time must be after start time',
-      path: ['endTime'],
-    },
-  )
+        return false
+      },
+      {
+        message: 'End time must be after start time',
+        path: ['endTime'],
+      },
+    )
 
 interface TimeEntryFormProps {
   entry: TimeEntry | null
@@ -192,7 +206,8 @@ export default function TimeEntryForm({
   const t = useTranslations()
   const format = useFormatter().dateTime
   const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const { entries } = useTimeTrackerContext()
+  const { entries, isProjectMode, projects, projectScope, isProjectsPending } =
+    useTimeTrackerContext()
 
   const defaultStartTime = userSettings?.defaultStartTime || '09:00'
   const defaultEndTime = userSettings?.defaultEndTime || '17:00'
@@ -207,6 +222,15 @@ export default function TimeEntryForm({
       ? (entry.privateCarKilometers ?? 0) > 0
       : (userSettings?.defaultPrivateCar ?? false)
   const now = useNow()
+  const formSchema = useMemo(
+    () =>
+      buildFormSchema(
+        isProjectMode
+          ? t('time_entry_form.projectRequired')
+          : t('time_entry_form.locationInvalid'),
+      ),
+    [isProjectMode, t],
+  )
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
@@ -257,10 +281,25 @@ export default function TimeEntryForm({
   const usePrivateCarValue = useWatch({ control, name: 'usePrivateCar' })
 
   const isSpecialEntry = useMemo(() => {
-    return SPECIAL_LOCATION_KEYS.includes(
-      getValues('location') as SpecialLocationKey,
-    )
+    return isSpecialLocation(getValues('location'))
   }, [getValues])
+
+  // Active projects plus the entry's own project when it is archived/deleted,
+  // so editing an old entry keeps its selection visible.
+  const projectOptions = useMemo((): { id: string; name: string }[] => {
+    const active = (projects ?? []).filter((p) => !p.archived)
+    // Append the stored name when it no longer matches an active project
+    // (project renamed, archived, or deleted) so the stored value stays
+    // selectable and the form shows what the entry actually recorded.
+    if (
+      entry?.projectId &&
+      entry.location &&
+      !active.some((p) => p.name === entry.location)
+    ) {
+      return [...active, { id: entry.projectId, name: entry.location }]
+    }
+    return active
+  }, [projects, entry])
 
   // Compute location suggestions as user types
   const locationSuggestions = useMemo(() => {
@@ -404,10 +443,33 @@ export default function TimeEntryForm({
     now,
   ])
 
+  const isValidProjectSelection = (
+    locationName: string,
+    finalIsSpecial: boolean,
+  ) =>
+    !isProjectMode ||
+    finalIsSpecial ||
+    projectOptions.some((p) => p.name === locationName)
+
+  const resolveEntryProjectId = (
+    locationName: string,
+    finalIsSpecial: boolean,
+  ): string | undefined => {
+    if (finalIsSpecial) return undefined
+    if (!isProjectMode) return entry?.projectId
+    const selected = projectOptions.find((p) => p.name === locationName)
+    return selected?.id ?? entry?.projectId
+  }
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const finalIsSpecial = SPECIAL_LOCATION_KEYS.includes(
-      values.location as SpecialLocationKey,
-    )
+    const finalIsSpecial = isSpecialLocation(values.location)
+    if (!isValidProjectSelection(values.location, finalIsSpecial)) {
+      form.setError('location', {
+        message: t('time_entry_form.projectPlaceholder'),
+      })
+      return
+    }
+    const projectId = resolveEntryProjectId(values.location, finalIsSpecial)
     let finalEntry: Omit<TimeEntry, 'userId'>
     if (values.mode === 'interval') {
       if (!values.startTime || !values.endTime) {
@@ -436,6 +498,7 @@ export default function TimeEntryForm({
       finalEntry = {
         id: entry?.id || newTimeEntryClientId(),
         location: values.location,
+        projectId,
         startTime,
         endTime,
         pauseDuration: finalIsSpecial
@@ -470,6 +533,7 @@ export default function TimeEntryForm({
       finalEntry = {
         id: entry?.id || newTimeEntryClientId(),
         location: values.location,
+        projectId,
         durationMinutes: timeStringToMinutes(values.duration),
         startTime,
         pauseDuration: 0,
@@ -515,32 +579,79 @@ export default function TimeEntryForm({
         <TooltipProvider>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Location field using Controller for full RHF control */}
+              {/* Location / project field using Controller for full RHF control */}
               <FormField
                 control={form.control}
                 name="location"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>{t('time_entry_form.locationLabel')}</FormLabel>
+                    <FormLabel>
+                      {t(
+                        isProjectMode
+                          ? 'time_entry_form.projectLabel'
+                          : 'time_entry_form.locationLabel',
+                      )}
+                    </FormLabel>
                     <FormControl>
-                      <LocationInput
-                        {...field}
-                        suggestions={locationSuggestions}
-                        isSpecialEntry={isSpecialEntry}
-                        placeholder={t('time_entry_form.locationPlaceholder')}
-                        displayValue={displayLocation}
-                        disabled={isSpecialEntry}
-                        onGetCurrentLocation={
-                          !isSpecialEntry ? handleGetCurrentLocation : undefined
-                        }
-                        isFetchingLocation={isFetchingLocation}
-                        onBlur={() => {
-                          field.onBlur()
-                          form.trigger('location')
-                        }}
-                        onFocus={() => {}}
-                      />
+                      {isProjectMode && !isSpecialEntry ? (
+                        <Select
+                          value={field.value || ''}
+                          onValueChange={field.onChange}
+                          disabled={field.disabled}
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            data-testid="project-select"
+                          >
+                            <SelectValue
+                              placeholder={t(
+                                'time_entry_form.projectPlaceholder',
+                              )}
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {projectOptions.map((project) => (
+                              <SelectItem
+                                key={project.name}
+                                value={project.name}
+                              >
+                                {project.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <LocationInput
+                          {...field}
+                          suggestions={locationSuggestions}
+                          isSpecialEntry={isSpecialEntry}
+                          placeholder={t('time_entry_form.locationPlaceholder')}
+                          displayValue={displayLocation}
+                          disabled={isSpecialEntry}
+                          onGetCurrentLocation={
+                            !isSpecialEntry
+                              ? handleGetCurrentLocation
+                              : undefined
+                          }
+                          isFetchingLocation={isFetchingLocation}
+                          onBlur={() => {
+                            field.onBlur()
+                            form.trigger('location')
+                          }}
+                          onFocus={() => {}}
+                        />
+                      )}
                     </FormControl>
+                    {isProjectMode &&
+                    !isSpecialEntry &&
+                    !isProjectsPending &&
+                    projectOptions.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        {projectScope?.kind === 'team'
+                          ? t('projects.teamManagedHint')
+                          : t('time_entry_form.noProjectsHint')}
+                      </p>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}

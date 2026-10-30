@@ -15,11 +15,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
-import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-import { compareEntriesByStartTime, maskEmail } from '@/lib/utils'
+import {
+  compareEntriesByStartTime,
+  getLocationDisplayName as getSpecialAwareDisplayName,
+  maskEmail,
+} from '@/lib/utils'
 import { getPublishedMonth } from '@/services/published-export-service'
 
 import TimesheetPreview from '../timesheet-preview'
@@ -89,12 +92,7 @@ export function TeamMemberReportView({
   )
 
   const getLocationDisplayName = useCallback(
-    (location: string) => {
-      if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
-        return t(`special_locations.${location}`)
-      }
-      return location
-    },
+    (location: string) => getSpecialAwareDisplayName(location, t),
     [t],
   )
 

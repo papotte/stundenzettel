@@ -2,6 +2,8 @@
   "liveTrackingTitle": "Live-Zeiterfassung",
   "liveTrackingDescription": "Starten Sie den Timer, um Ihre Arbeit in Echtzeit zu erfassen.",
   "runningTimerLocation": "Ort: {location}",
+  "runningTimerProject": "Projekt: {location}",
+  "projectPlaceholder": "Projekt für die Erfassung auswählen",
   "stopButton": "Stopp",
   "locationPlaceholder": "Wo arbeiten Sie gerade?",
   "getLocationTooltip": "Aktuellen Standort abrufen",

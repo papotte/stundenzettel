@@ -14,6 +14,7 @@ export interface PublishedMonthSnapshot {
     endTime?: ReturnType<typeof Timestamp.fromDate> | null
     durationMinutes?: number
     location: string
+    projectId?: string
     pauseDuration?: number
     driverTimeHours?: number
     passengerTimeHours?: number
@@ -33,13 +34,14 @@ export interface PublishedMonthData {
 function entryToFirestore(
   entry: TimeEntry,
 ): PublishedMonthSnapshot['entries'][0] {
-  const { id, userId, startTime, endTime, location, ...rest } = entry
+  const { id, userId, startTime, endTime, location, projectId, ...rest } = entry
   return {
     id,
     userId,
     startTime: Timestamp.fromDate(startTime),
     endTime: endTime ? Timestamp.fromDate(endTime) : null,
     location,
+    projectId,
     ...rest,
   }
 }
@@ -54,6 +56,7 @@ function entryFromFirestore(
     startTime: raw.startTime.toDate(),
     endTime: raw.endTime?.toDate(),
     location: raw.location,
+    projectId: raw.projectId,
     durationMinutes: raw.durationMinutes,
     pauseDuration: raw.pauseDuration,
     driverTimeHours: raw.driverTimeHours,

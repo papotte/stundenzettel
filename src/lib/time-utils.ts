@@ -16,6 +16,7 @@ export function shiftEntryToDate(
 ): Omit<TimeEntry, 'id' | 'userId'> {
   const base = {
     location: entry.location,
+    projectId: entry.projectId,
     pauseDuration: entry.pauseDuration ?? 0,
     driverTimeHours: entry.driverTimeHours,
     passengerTimeHours: entry.passengerTimeHours,

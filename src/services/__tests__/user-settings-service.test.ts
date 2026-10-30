@@ -51,6 +51,7 @@ describe('User Settings Service', () => {
       defaultPrivateCar: false,
       exportIncludeDriverTime: true,
       exportIncludePassengerTime: true,
+      trackingMode: 'locations',
     }
 
     it('getUserSettings returns default settings when no user ID provided', async () => {
@@ -340,7 +341,7 @@ describe('User Settings Service', () => {
 
       expect(result.exportIncludeDriverTime).toBe(false)
       expect(result.exportIncludePassengerTime).toBe(true)
-      expect(result.locked).toBeUndefined()
+      expect(result.locked).toEqual({ trackingMode: true })
     })
 
     it('getUserSettings uses user export overrides when member may override team', async () => {
@@ -590,6 +591,134 @@ describe('User Settings Service', () => {
       expect(result.get('user-1')).toBe('Alice')
       expect(result.get('user-2')).toBe('Bob')
       expect(mockGetDoc).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('tracking mode resolution', () => {
+    const mockSettingsAndUserSnaps = (
+      settingsData: Record<string, unknown>,
+    ) => {
+      const mockSettingsRef = {}
+      const mockUserRef = {}
+      const mockSettingsSnap = {
+        exists: () => true,
+        data: () => settingsData,
+      }
+      const mockUserSnap = { exists: () => false }
+      mockDoc
+        .mockReturnValueOnce(mockSettingsRef as DocumentReference)
+        .mockReturnValueOnce(mockUserRef as DocumentReference)
+      mockGetDoc
+        .mockResolvedValueOnce(mockSettingsSnap as unknown as DocumentSnapshot)
+        .mockResolvedValueOnce(mockUserSnap as unknown as DocumentSnapshot)
+    }
+
+    it('defaults solo users to locations mode', async () => {
+      mockSettingsAndUserSnaps({ language: 'en' })
+
+      const result = await userSettingsService.getUserSettings('solo-user')
+
+      expect(result.trackingMode).toBe('locations')
+      expect(result.locked).toBeUndefined()
+    })
+
+    it('keeps a solo user project preference', async () => {
+      mockSettingsAndUserSnaps({ trackingMode: 'projects' })
+
+      const result = await userSettingsService.getUserSettings('solo-user')
+
+      expect(result.trackingMode).toBe('projects')
+      expect(result.locked).toBeUndefined()
+    })
+
+    it('forces the team mode and locks trackingMode for members', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      getTeamSettings.mockResolvedValueOnce({ trackingMode: 'projects' })
+
+      mockSettingsAndUserSnaps({ trackingMode: 'locations' })
+
+      const result = await userSettingsService.getUserSettings('member-user')
+
+      expect(result.trackingMode).toBe('projects')
+      expect(result.locked?.trackingMode).toBe(true)
+    })
+
+    it('falls back to locations for members when the team has no mode set', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      getTeamSettings.mockResolvedValueOnce({})
+
+      mockSettingsAndUserSnaps({ trackingMode: 'projects' })
+
+      const result = await userSettingsService.getUserSettings('member-user')
+
+      expect(result.trackingMode).toBe('locations')
+      expect(result.locked?.trackingMode).toBe(true)
+    })
+
+    it('setUserSettings omits trackingMode for team members', async () => {
+      const { getUserTeamMembership } = jest.requireMock<{
+        getUserTeamMembership: jest.Mock
+      }>('@/services/team-service')
+      const { getTeamSettings } = jest.requireMock<{
+        getTeamSettings: jest.Mock
+      }>('@/services/team-settings-service')
+
+      getUserTeamMembership.mockResolvedValueOnce({
+        teamId: 'team-1',
+        role: 'member',
+      })
+      getTeamSettings.mockResolvedValueOnce({})
+
+      const mockSettingsRef = {}
+      mockDoc.mockReturnValueOnce(mockSettingsRef as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings('member-user', {
+        language: 'en',
+        trackingMode: 'projects',
+      })
+
+      expect(mockSetDoc).toHaveBeenCalledWith(
+        mockSettingsRef,
+        { language: 'en' },
+        { merge: true },
+      )
+    })
+
+    it('setUserSettings persists trackingMode for solo users', async () => {
+      const mockSettingsRef = {}
+      mockDoc.mockReturnValueOnce(mockSettingsRef as DocumentReference)
+      mockSetDoc.mockResolvedValue(undefined)
+
+      await userSettingsService.setUserSettings('solo-user', {
+        trackingMode: 'projects',
+      })
+
+      expect(mockSetDoc).toHaveBeenCalledWith(
+        mockSettingsRef,
+        { trackingMode: 'projects' },
+        { merge: true },
+      )
     })
   })
 })

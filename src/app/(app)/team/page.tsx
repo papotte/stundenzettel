@@ -14,6 +14,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
+import { ProjectsCard } from '@/components/projects-card'
 import { CreateTeamDialog } from '@/components/team/create-team-dialog'
 import { InviteMemberDialog } from '@/components/team/invite-member-dialog'
 import { TeamInvitationsList } from '@/components/team/team-invitations-list'
@@ -464,10 +465,16 @@ export default function TeamPage() {
 
               {hasWritePermissions && (
                 <TabsContent value="team-settings">
-                  <TeamOptionsCard
-                    teamId={team.id}
-                    canEdit={hasWritePermissions}
-                  />
+                  <div className="space-y-6">
+                    <TeamOptionsCard
+                      teamId={team.id}
+                      canEdit={hasWritePermissions}
+                    />
+                    <ProjectsCard
+                      scope={{ kind: 'team', teamId: team.id }}
+                      canEdit={hasWritePermissions}
+                    />
+                  </div>
                 </TabsContent>
               )}
 

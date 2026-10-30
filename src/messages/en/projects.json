@@ -1,0 +1,20 @@
+{
+  "title": "Projects",
+  "description": "Manage the projects you can track time against.",
+  "teamManagedHint": "Projects are managed by your team admins.",
+  "nameLabel": "Project name",
+  "namePlaceholder": "e.g., Website redesign",
+  "addButton": "Add project",
+  "rename": "Rename",
+  "archive": "Archive",
+  "unarchive": "Unarchive",
+  "delete": "Delete",
+  "deleteConfirmTitle": "Delete project?",
+  "deleteConfirmDescription": "Time entries for \"{name}\" are kept; the project is removed from your list.",
+  "empty": "No projects yet.",
+  "archivedBadge": "Archived",
+  "loadFailed": "Could not load projects.",
+  "saveFailed": "Could not save the project.",
+  "deleteFailed": "Could not delete the project.",
+  "duplicateError": "A project with this name already exists."
+}

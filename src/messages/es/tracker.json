@@ -2,6 +2,8 @@
   "liveTrackingTitle": "Seguimiento de tiempo en vivo",
   "liveTrackingDescription": "Inicia el cronómetro para guardar tu trabajo mientras sucede.",
   "runningTimerLocation": "Ubicación: {location}",
+  "runningTimerProject": "Proyecto: {location}",
+  "projectPlaceholder": "Selecciona un proyecto para registrar",
   "stopButton": "Detener",
   "locationPlaceholder": "¿Desde dónde estás trabajando?",
   "getLocationTooltip": "Obtener ubicación actual",

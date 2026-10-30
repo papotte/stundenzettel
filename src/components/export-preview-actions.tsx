@@ -33,6 +33,8 @@ export interface ExportPreviewActionsProps {
   userTeam: { id: string } | null
   publishedAt: Date | null | undefined
   isPublishing: boolean
+  /** Shown as the publish button tooltip (e.g. when a filter is active). */
+  publishHint?: string | null
 }
 
 const BUTTON_CLASS = 'w-full min-w-0'
@@ -47,6 +49,7 @@ export function ExportPreviewActions({
   userTeam,
   publishedAt,
   isPublishing,
+  publishHint,
 }: ExportPreviewActionsProps) {
   const t = useTranslations()
   const format = useFormatter()
@@ -128,7 +131,7 @@ export function ExportPreviewActions({
       </Button>
     )
 
-    let tooltipContent: string | null = null
+    let tooltipContent: string | null = publishHint ?? null
     if (!hasEntriesForMonth) {
       tooltipContent = t('export.noDataHint', {
         defaultValue: 'No data available for export in this month.',

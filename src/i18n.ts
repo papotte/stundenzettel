@@ -25,6 +25,7 @@ export default getRequestConfig(async () => {
       teams: (await import(`./messages/${locale}/teams.json`)).default,
       reports: (await import(`./messages/${locale}/reports.json`)).default,
       stats: (await import(`./messages/${locale}/stats.json`)).default,
+      projects: (await import(`./messages/${locale}/projects.json`)).default,
       subscription: (await import(`./messages/${locale}/subscription.json`))
         .default,
       special_locations: (

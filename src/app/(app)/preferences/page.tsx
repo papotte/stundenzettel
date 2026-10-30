@@ -11,6 +11,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import LanguageSelect from '@/components/language-select'
+import { LockedByTeamAlert } from '@/components/locked-by-team-alert'
+import { ProjectsCard } from '@/components/projects-card'
 import { PushNotificationManager } from '@/components/push-notification-manager'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +33,13 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -40,6 +49,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useAuth } from '@/hooks/use-auth'
+import { useProjectScope } from '@/hooks/use-projects'
 import { useToast } from '@/hooks/use-toast'
 import {
   useInvalidateUserSettings,
@@ -73,6 +83,7 @@ const preferencesFormSchema = z.object({
   language: z.enum(locales),
   showActivities: z.boolean().optional(),
   defaultPrivateCar: z.boolean().optional(),
+  trackingMode: z.enum(['locations', 'projects']).optional(),
 })
 
 type PreferencesFormValues = z.infer<typeof preferencesFormSchema>
@@ -89,6 +100,11 @@ export default function PreferencesPage() {
     isError: settingsError,
   } = useUserSettings()
   const invalidateUserSettings = useInvalidateUserSettings()
+  const { data: projectScopeResult } = useProjectScope()
+  const projectScope = projectScopeResult?.scope ?? null
+  const canManageTeamOptions =
+    projectScopeResult?.membership?.role === 'owner' ||
+    projectScopeResult?.membership?.role === 'admin'
   const [isSaving, setIsSaving] = useState(false)
   const [isExpectedHoursManuallySet, setIsExpectedHoursManuallySet] =
     useState(false)
@@ -106,6 +122,7 @@ export default function PreferencesPage() {
       displayName: '',
       showActivities: false,
       defaultPrivateCar: false,
+      trackingMode: 'locations',
     },
   })
 
@@ -264,6 +281,43 @@ export default function PreferencesPage() {
                       </FormControl>
                       <FormDescription>
                         {t('settings.languageDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="trackingMode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('settings.trackingMode')}</FormLabel>
+                      {settings?.locked?.trackingMode ? (
+                        <LockedByTeamAlert
+                          showChangeText={canManageTeamOptions}
+                        />
+                      ) : null}
+                      <FormControl>
+                        <Select
+                          value={field.value ?? 'locations'}
+                          onValueChange={field.onChange}
+                          disabled={Boolean(settings?.locked?.trackingMode)}
+                        >
+                          <SelectTrigger data-testid="tracking-mode-select">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="locations">
+                              {t('settings.trackingModeLocations')}
+                            </SelectItem>
+                            <SelectItem value="projects">
+                              {t('settings.trackingModeProjects')}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>
+                        {t('settings.trackingModeDescription')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -452,6 +506,18 @@ export default function PreferencesPage() {
             </Card>
           </form>
         </Form>
+
+        {settings?.trackingMode === 'projects' && projectScope ? (
+          <div className="mt-6">
+            <ProjectsCard
+              scope={projectScope}
+              canEdit={projectScope.kind === 'user' || canManageTeamOptions}
+              showManagedHint={
+                projectScope.kind === 'team' && !canManageTeamOptions
+              }
+            />
+          </div>
+        ) : null}
 
         <div className="mt-6">
           <PushNotificationManager />

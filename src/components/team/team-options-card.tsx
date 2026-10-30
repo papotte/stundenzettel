@@ -28,6 +28,13 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
@@ -52,6 +59,7 @@ const teamOptionsSchema = z.object({
   exportIncludeDriverTime: z.boolean(),
   exportIncludePassengerTime: z.boolean(),
   allowMemberOverrideExport: z.boolean(),
+  trackingMode: z.enum(['locations', 'projects']),
 })
 
 type TeamOptionsCardValues = z.infer<typeof teamOptionsSchema>
@@ -78,6 +86,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
       exportIncludeDriverTime: true,
       exportIncludePassengerTime: true,
       allowMemberOverrideExport: true,
+      trackingMode: 'locations',
     },
   })
 
@@ -96,6 +105,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
           exportIncludePassengerTime:
             settings.exportIncludePassengerTime ?? true,
           allowMemberOverrideExport: settings.allowMemberOverrideExport ?? true,
+          trackingMode: settings.trackingMode ?? 'locations',
         })
       } catch {
         toast({
@@ -344,6 +354,54 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
                   )}
                 />
               </div>
+            </section>
+
+            <section
+              className="space-y-4"
+              aria-labelledby="team-options-tracking-heading"
+            >
+              <div className="space-y-1">
+                <h3
+                  id="team-options-tracking-heading"
+                  className="text-base leading-none font-semibold tracking-tight"
+                >
+                  {t('teams.trackingMode')}
+                </h3>
+              </div>
+              <FormField
+                control={form.control}
+                name="trackingMode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={!canEdit}
+                      >
+                        <SelectTrigger
+                          className="w-full sm:w-64"
+                          data-testid="team-tracking-mode-select"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="locations">
+                            {t('teams.trackingModeLocations')}
+                          </SelectItem>
+                          <SelectItem value="projects">
+                            {t('teams.trackingModeProjects')}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      {t('teams.trackingModeDescription')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </section>
 
             {canEdit ? (
