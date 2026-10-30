@@ -382,6 +382,13 @@ To allow GitHub Actions to deploy your application to Firebase, you must create 
       - **Firebase App Hosting Admin** (to deploy the app)
       - **Firebase Admin** (can be narrowed, but this is simple for setup)
     - Click **CONTINUE**, then **DONE**.
+    - The service account also needs **Secret Manager Viewer** (`roles/secretmanager.viewer`) on every secret referenced by the functions (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_FIREBASE_DATABASE_ID`), otherwise `firebase deploy` fails secret validation with `Permission 'secretmanager.versions.get' denied`. Grant it per secret in the Secret Manager UI, or with:
+      ```
+      gcloud secrets add-iam-policy-binding SECRET_NAME \
+        --project=timewise-tracker-61lqb \
+        --member=serviceAccount:SERVICE_ACCOUNT_EMAIL \
+        --role=roles/secretmanager.viewer
+      ```
 2.  **Generate a JSON Key**:
     - Find the service account you just created in the list.
     - Click the three-dot menu on the right and select **Manage keys**.
