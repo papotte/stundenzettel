@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/papotte/stundenzettel/compare/v1.32.2...v1.33.0) (2026-10-30)
+
+
+### Features
+
+* add project-based time tracking as alternative to locations ([#245](https://github.com/papotte/stundenzettel/issues/245)) ([a646310](https://github.com/papotte/stundenzettel/commit/a646310633f2cdfdd5f98c4159445e2baed595e0))
+
 ## [1.32.2](https://github.com/papotte/stundenzettel/compare/v1.32.1...v1.32.2) (2026-10-29)
 
 
