@@ -82,14 +82,36 @@ function resolveExportIncludeFlags(
   }
 }
 
+function resolveTrackingMode(
+  settings: UserSettings,
+  membership: { teamId: string; role: string } | null,
+  teamSettings: TeamSettings | null,
+): { trackingMode: UserSettings['trackingMode']; trackingModeLocked: boolean } {
+  // Team members always use the team's tracking mode (default locations).
+  if (membership) {
+    return {
+      trackingMode: teamSettings?.trackingMode ?? 'locations',
+      trackingModeLocked: true,
+    }
+  }
+  return {
+    trackingMode: settings.trackingMode ?? 'locations',
+    trackingModeLocked: false,
+  }
+}
+
 function buildLockedField(
   compensationLocked: boolean,
   exportLocked: boolean,
+  trackingModeLocked: boolean,
 ): UserSettings['locked'] {
-  if (!compensationLocked && !exportLocked) return undefined
+  if (!compensationLocked && !exportLocked && !trackingModeLocked) {
+    return undefined
+  }
   const o: NonNullable<UserSettings['locked']> = {}
   if (compensationLocked) o.compensation = true
   if (exportLocked) o.export = true
+  if (trackingModeLocked) o.trackingMode = true
   return o
 }
 
@@ -126,6 +148,7 @@ async function resolveTeamContext(userId: string): Promise<{
 function buildInitialSettings(
   compensationLocked: boolean,
   exportLocked: boolean,
+  trackingModeLocked: boolean,
 ): UserSettings {
   const initial = { ...DEFAULT_USER_SETTINGS } as UserSettings
 
@@ -136,6 +159,9 @@ function buildInitialSettings(
   if (exportLocked) {
     delete initial.exportIncludeDriverTime
     delete initial.exportIncludePassengerTime
+  }
+  if (trackingModeLocked) {
+    delete initial.trackingMode
   }
 
   return initial
@@ -161,6 +187,7 @@ async function loadUserSettingsWithTeamContext(
 
   const { membership, teamSettings, compensationLocked, exportLocked } =
     await resolveTeamContext(userId)
+  const trackingModeLocked = membership != null
 
   const [settingsSnap, userSnap] = await Promise.all([
     getDoc(doc(db, 'users', userId, 'settings', 'general')),
@@ -181,7 +208,11 @@ async function loadUserSettingsWithTeamContext(
       core = mergeUserDisplayName(core, userSnap.data())
     }
   } else {
-    const initial = buildInitialSettings(compensationLocked, exportLocked)
+    const initial = buildInitialSettings(
+      compensationLocked,
+      exportLocked,
+      trackingModeLocked,
+    )
     await setUserSettings(userId, initial)
     core = {
       ...DEFAULT_USER_SETTINGS,
@@ -199,14 +230,21 @@ async function loadUserSettingsWithTeamContext(
     membership,
     teamSettings,
   )
+  const resolvedTrackingMode = resolveTrackingMode(
+    merged,
+    membership,
+    teamSettings,
+  )
   const locked = buildLockedField(
     compensationLocked,
     resolvedExport.exportLocked,
+    resolvedTrackingMode.trackingModeLocked,
   )
   const out: UserSettings = {
     ...merged,
     exportIncludeDriverTime: resolvedExport.exportIncludeDriverTime,
     exportIncludePassengerTime: resolvedExport.exportIncludePassengerTime,
+    trackingMode: resolvedTrackingMode.trackingMode,
   }
   if (locked) out.locked = locked
   return out
@@ -297,6 +335,9 @@ export const setUserSettings = async (
   if (exportLocked) {
     delete toWrite.exportIncludeDriverTime
     delete toWrite.exportIncludePassengerTime
+  }
+  if (membership) {
+    delete toWrite.trackingMode
   }
 
   const docRef = doc(db, 'users', userId, 'settings', 'general')

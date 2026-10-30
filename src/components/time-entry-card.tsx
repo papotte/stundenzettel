@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
+import { isSpecialLocation, type SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { calculateTotalCompensatedMinutes } from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
@@ -69,9 +69,7 @@ export default function TimeEntryCard({
     undefined,
   )
 
-  const isSpecial = SPECIAL_LOCATION_KEYS.includes(
-    entry.location as SpecialLocationKey,
-  )
+  const isSpecial = isSpecialLocation(entry.location)
   const SpecialIcon = isSpecial
     ? SpecialIcons[entry.location as SpecialLocationKey]
     : undefined

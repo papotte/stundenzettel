@@ -275,7 +275,7 @@ describe('TimeEntryForm', () => {
     )
 
     expect(
-      await screen.findByText('Location must be at least 2 characters.'),
+      await screen.findByText('time_entry_form.locationInvalid'),
     ).toBeInTheDocument()
     expect(mockOnSave).not.toHaveBeenCalled()
   })

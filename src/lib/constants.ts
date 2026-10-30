@@ -6,3 +6,9 @@ export const SPECIAL_LOCATION_KEYS = [
 ] as const
 
 export type SpecialLocationKey = (typeof SPECIAL_LOCATION_KEYS)[number]
+
+export function isSpecialLocation(
+  location: string,
+): location is SpecialLocationKey {
+  return SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)
+}

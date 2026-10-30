@@ -121,5 +121,9 @@
   "showActivities": "Mostrar campo de actividades",
   "showActivitiesDescription": "Muestra un campo de texto libre para actividades en el formulario de entrada de tiempo.",
   "defaultPrivateCar": "Coche propio (PKW) activado por defecto",
-  "defaultPrivateCarDescription": "Establece el estado predeterminado del interruptor de coche propio para nuevas entradas."
+  "defaultPrivateCarDescription": "Establece el estado predeterminado del interruptor de coche propio para nuevas entradas.",
+  "trackingMode": "Registrar tiempo por",
+  "trackingModeDescription": "Elige si tus entradas de tiempo se organizan por ubicaciones o por proyectos.",
+  "trackingModeLocations": "Ubicaciones",
+  "trackingModeProjects": "Proyectos"
 }

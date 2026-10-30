@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { addMonths, isSameDay, isSameMonth, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -8,16 +8,29 @@ import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
+import { useProjects } from '@/hooks/use-projects'
 import { useToast } from '@/hooks/use-toast'
 import { useUserSettings } from '@/hooks/use-user-settings'
-import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from '@/lib/constants'
+import { isSpecialLocation } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
 import type { TimeEntry } from '@/lib/types'
-import { compareEntriesByStartTime } from '@/lib/utils'
+import {
+  compareEntriesByStartTime,
+  getLocationDisplayName as getSpecialAwareDisplayName,
+  isProjectTrackingMode,
+} from '@/lib/utils'
+import type { ProjectScope } from '@/services/project-service'
 import {
   getPublishedMonth,
   publishMonthForTeam,
@@ -39,13 +52,24 @@ export default function ExportPreview() {
   const format = useFormatter()
   const { toast } = useToast()
   const { data: userSettings, isPending: settingsPending } = useUserSettings()
+  const isProjectMode = isProjectTrackingMode(userSettings)
   const [entries, setEntries] = useState<TimeEntry[]>([])
+  const [projectFilter, setProjectFilter] = useState<string>('all')
   const [entriesLoading, setEntriesLoading] = useState(true)
   const [selectedMonth, setSelectedMonth] = useState<Date>()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [newEntryDate, setNewEntryDate] = useState<Date | null>(null)
   const [userTeam, setUserTeam] = useState<{ id: string } | null>(null)
+  const projectScope: ProjectScope | null = useMemo(() => {
+    if (userTeam) return { kind: 'team', teamId: userTeam.id }
+    if (user) return { kind: 'user', userId: user.uid }
+    return null
+  }, [userTeam, user])
+  const { data: projects } = useProjects(
+    projectScope,
+    isProjectMode && projectScope != null,
+  )
   const [publishedAt, setPublishedAt] = useState<Date | null | undefined>(
     undefined,
   )
@@ -94,22 +118,54 @@ export default function ExportPreview() {
     effectivePublishedAt = userTeam ? null : undefined
   }
 
+  // Only offer projects that actually have entries in the loaded month,
+  // using the same matching rule as the export filter itself.
+  const projectsWithEntries = useMemo(
+    () =>
+      (projects ?? []).filter((project) =>
+        entries.some(
+          (entry) =>
+            !isSpecialLocation(entry.location) &&
+            (entry.projectId
+              ? entry.projectId === project.id
+              : entry.location === project.name),
+        ),
+      ),
+    [projects, entries],
+  )
+
+  const selectedFilterProject =
+    projectFilter === 'all'
+      ? undefined
+      : projectsWithEntries.find((p) => p.id === projectFilter)
+
+  const filteredEntries = useMemo(() => {
+    if (projectFilter === 'all' || !selectedFilterProject) return entries
+    return entries.filter((entry) => {
+      // Special entries (sick leave, PTO, ...) are not project-bound and are
+      // always included.
+      if (isSpecialLocation(entry.location)) {
+        return true
+      }
+      if (entry.projectId) {
+        return entry.projectId === selectedFilterProject.id
+      }
+      // Legacy entries predate projectId; fall back to the stored name.
+      return entry.location === selectedFilterProject.name
+    })
+  }, [entries, projectFilter, selectedFilterProject])
+
   const getEntriesForDay = useCallback(
     (day: Date) => {
-      return entries
+      return filteredEntries
         .filter((entry) => entry.startTime && isSameDay(entry.startTime, day))
         .sort(compareEntriesByStartTime)
     },
-    [entries],
+    [filteredEntries],
   )
 
   const getLocationDisplayName = useCallback(
-    (location: string) => {
-      if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
-        return t(`special_locations.${location}`)
-      }
-      return location
-    },
+    (location: string) => getSpecialAwareDisplayName(location, t),
     [t],
   )
 
@@ -124,9 +180,10 @@ export default function ExportPreview() {
       selectedMonth,
       user,
       userSettings,
-      entries,
+      entries: filteredEntries,
       getEntriesForDay,
       getLocationDisplayName,
+      projectFilterName: selectedFilterProject?.name,
       t,
       format,
     })
@@ -296,22 +353,53 @@ export default function ExportPreview() {
                 <ChevronRight className="size-4" />
               </Button>
             </div>
-            <ExportPreviewActions
-              onExport={handleExport}
-              onPdfExport={handlePdfExport}
-              onPublish={handlePublish}
-              entries={entries}
-              selectedMonth={selectedMonth}
-              userTeam={userTeam}
-              publishedAt={effectivePublishedAt}
-              isPublishing={isPublishing}
-            />
+            <div className="flex flex-col items-stretch gap-3 sm:items-end">
+              {isProjectMode && projectsWithEntries.length > 0 && (
+                <Select
+                  value={selectedFilterProject?.id ?? 'all'}
+                  onValueChange={setProjectFilter}
+                >
+                  <SelectTrigger
+                    className="w-full sm:w-56"
+                    data-testid="export-project-filter"
+                    aria-label={t('export.filterByProject')}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {t('export.allProjects')}
+                    </SelectItem>
+                    {projectsWithEntries.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <ExportPreviewActions
+                onExport={handleExport}
+                onPdfExport={handlePdfExport}
+                onPublish={handlePublish}
+                entries={filteredEntries}
+                selectedMonth={selectedMonth}
+                userTeam={userTeam}
+                publishedAt={effectivePublishedAt}
+                isPublishing={isPublishing}
+                publishHint={
+                  isProjectMode && projectFilter !== 'all'
+                    ? t('export.publishScopeHint')
+                    : null
+                }
+              />
+            </div>
           </div>
 
           <TimesheetPreview
             selectedMonth={selectedMonth}
             user={user}
-            entries={entries}
+            entries={filteredEntries}
             userSettings={userSettings}
             getEntriesForDay={getEntriesForDay}
             getLocationDisplayName={getLocationDisplayName}

@@ -1,0 +1,20 @@
+{
+  "title": "Projekte",
+  "description": "Verwalten Sie die Projekte, auf die Sie Zeit erfassen können.",
+  "teamManagedHint": "Projekte werden von Ihren Team-Admins verwaltet.",
+  "nameLabel": "Projektname",
+  "namePlaceholder": "z.B. Website-Relaunch",
+  "addButton": "Projekt hinzufügen",
+  "rename": "Umbenennen",
+  "archive": "Archivieren",
+  "unarchive": "Dearchivieren",
+  "delete": "Löschen",
+  "deleteConfirmTitle": "Projekt löschen?",
+  "deleteConfirmDescription": "Zeiteinträge für \"{name}\" bleiben erhalten; das Projekt wird aus Ihrer Liste entfernt.",
+  "empty": "Noch keine Projekte.",
+  "archivedBadge": "Archiviert",
+  "loadFailed": "Projekte konnten nicht geladen werden.",
+  "saveFailed": "Das Projekt konnte nicht gespeichert werden.",
+  "deleteFailed": "Das Projekt konnte nicht gelöscht werden.",
+  "duplicateError": "Ein Projekt mit diesem Namen existiert bereits."
+}

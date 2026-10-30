@@ -1,0 +1,20 @@
+{
+  "title": "Proyectos",
+  "description": "Gestiona los proyectos a los que puedes registrar tiempo.",
+  "teamManagedHint": "Los proyectos son gestionados por los administradores de tu equipo.",
+  "nameLabel": "Nombre del proyecto",
+  "namePlaceholder": "ej., Rediseño del sitio web",
+  "addButton": "Agregar proyecto",
+  "rename": "Renombrar",
+  "archive": "Archivar",
+  "unarchive": "Desarchivar",
+  "delete": "Eliminar",
+  "deleteConfirmTitle": "¿Eliminar proyecto?",
+  "deleteConfirmDescription": "Las entradas de tiempo para \"{name}\" se conservan; el proyecto se elimina de tu lista.",
+  "empty": "Aún no hay proyectos.",
+  "archivedBadge": "Archivado",
+  "loadFailed": "No se pudieron cargar los proyectos.",
+  "saveFailed": "No se pudo guardar el proyecto.",
+  "deleteFailed": "No se pudo eliminar el proyecto.",
+  "duplicateError": "Ya existe un proyecto con este nombre."
+}

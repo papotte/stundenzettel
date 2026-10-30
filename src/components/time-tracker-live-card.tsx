@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -28,11 +35,19 @@ const TimeTrackerLiveCard: React.FC = () => {
     elapsedTime,
     location,
     setLocation,
+    selectedProjectId,
+    setSelectedProjectId,
+    isProjectMode,
+    projects,
+    projectScope,
+    isProjectsPending,
     isFetchingLocation,
     handleGetCurrentLocation,
     handleStartTimer,
     handleStopTimer,
   } = useTimeTrackerContext()
+
+  const activeProjects = (projects ?? []).filter((p) => !p.archived)
 
   return (
     <Card className="shadow-lg">
@@ -48,9 +63,14 @@ const TimeTrackerLiveCard: React.FC = () => {
             <div className="flex items-center justify-between rounded-lg bg-muted p-4">
               <div>
                 <p className="font-medium">
-                  {t('tracker.runningTimerLocation', {
-                    location: runningTimer.location,
-                  })}
+                  {t(
+                    isProjectMode
+                      ? 'tracker.runningTimerProject'
+                      : 'tracker.runningTimerLocation',
+                    {
+                      location: runningTimer.location,
+                    },
+                  )}
                 </p>
               </div>
               <p className="font-mono text-2xl font-bold tracking-wider text-primary tabular-nums">
@@ -69,34 +89,72 @@ const TimeTrackerLiveCard: React.FC = () => {
           </div>
         ) : (
           <div className="grid gap-4">
-            <div className="flex w-full items-center gap-2">
-              <Input
-                placeholder={t('tracker.locationPlaceholder')}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="flex-1"
-              />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleGetCurrentLocation}
-                    aria-label={t('tracker.getLocationTooltip')}
-                    disabled={isFetchingLocation}
+            {isProjectMode ? (
+              <>
+                <Select
+                  value={selectedProjectId ?? ''}
+                  onValueChange={(projectId) => {
+                    setSelectedProjectId(projectId)
+                    const selected = activeProjects.find(
+                      (p) => p.id === projectId,
+                    )
+                    setLocation(selected?.name ?? '')
+                  }}
+                >
+                  <SelectTrigger
+                    className="w-full"
+                    data-testid="live-project-select"
                   >
-                    {isFetchingLocation ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <MapPin className="size-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t('tracker.getLocationTooltip')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
+                    <SelectValue
+                      placeholder={t('tracker.projectPlaceholder')}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeProjects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {!isProjectsPending && activeProjects.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {projectScope?.kind === 'team'
+                      ? t('projects.teamManagedHint')
+                      : t('time_entry_form.noProjectsHint')}
+                  </p>
+                )}
+              </>
+            ) : (
+              <div className="flex w-full items-center gap-2">
+                <Input
+                  placeholder={t('tracker.locationPlaceholder')}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="flex-1"
+                />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleGetCurrentLocation}
+                      aria-label={t('tracker.getLocationTooltip')}
+                      disabled={isFetchingLocation}
+                    >
+                      {isFetchingLocation ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <MapPin className="size-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('tracker.getLocationTooltip')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            )}
             <Button
               onClick={handleStartTimer}
               size="lg"

@@ -2,6 +2,8 @@
   "liveTrackingTitle": "Live Time Tracking",
   "liveTrackingDescription": "Start the timer to track your work as it happens.",
   "runningTimerLocation": "Location: {location}",
+  "runningTimerProject": "Project: {location}",
+  "projectPlaceholder": "Select a project to track",
   "stopButton": "Stop",
   "locationPlaceholder": "Where are you working from?",
   "getLocationTooltip": "Get current location",

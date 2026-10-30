@@ -1,6 +1,8 @@
 {
   "locationRequiredTitle": "Standort erforderlich",
   "locationRequiredDescription": "Bitte geben Sie einen Standort ein, um die Erfassung zu starten.",
+  "projectRequiredTitle": "Projekt erforderlich",
+  "projectRequiredDescription": "Bitte wählen Sie ein Projekt, um die Erfassung zu starten.",
   "entryUpdatedTitle": "Eintrag aktualisiert",
   "entryUpdatedDescription": "Änderungen an \"{location}\" wurden gespeichert.",
   "entryAddedTitle": "Eintrag hinzugefügt",

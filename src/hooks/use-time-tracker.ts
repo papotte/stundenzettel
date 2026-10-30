@@ -14,6 +14,7 @@ import {
 import { useTranslations } from 'next-intl'
 
 import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
+import { useProjectScope, useProjects } from '@/hooks/use-projects'
 import { useToast } from '@/hooks/use-toast'
 import { useUserSettings } from '@/hooks/use-user-settings'
 import type { SpecialLocationKey } from '@/lib/constants'
@@ -23,7 +24,7 @@ import {
   shiftEntryToDate,
 } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-import { compareEntriesByStartTime } from '@/lib/utils'
+import { compareEntriesByStartTime, isProjectTrackingMode } from '@/lib/utils'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -43,6 +44,9 @@ export function useTimeTracker(user: { uid: string } | null) {
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [location, setLocation] = useState('')
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    null,
+  )
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
@@ -53,6 +57,14 @@ export function useTimeTracker(user: { uid: string } | null) {
 
   const userSettings: UserSettings | null =
     settingsFromQuery ?? DEFAULT_USER_SETTINGS
+  const isProjectMode = isProjectTrackingMode(userSettings)
+  const { data: projectScopeResult, isPending: scopePending } =
+    useProjectScope()
+  const projectScope = projectScopeResult?.scope ?? null
+  const { data: projects, isPending: projectsPending } = useProjects(
+    projectScope,
+    isProjectMode,
+  )
   useEffect(() => {
     setSelectedDate(new Date())
     if (!user) return
@@ -97,8 +109,18 @@ export function useTimeTracker(user: { uid: string } | null) {
     if (!user) return
     if (!location) {
       toast({
-        title: t('toasts.locationRequiredTitle') ?? '',
-        description: t('toasts.locationRequiredDescription') ?? '',
+        title:
+          t(
+            isProjectMode
+              ? 'toasts.projectRequiredTitle'
+              : 'toasts.locationRequiredTitle',
+          ) ?? '',
+        description:
+          t(
+            isProjectMode
+              ? 'toasts.projectRequiredDescription'
+              : 'toasts.locationRequiredDescription',
+          ) ?? '',
         variant: 'destructive',
       })
       return
@@ -108,6 +130,9 @@ export function useTimeTracker(user: { uid: string } | null) {
       userId: user.uid,
       startTime: new Date(),
       location,
+      ...(isProjectMode && selectedProjectId
+        ? { projectId: selectedProjectId }
+        : {}),
     }
     setRunningTimer(newTimer)
   }
@@ -120,6 +145,7 @@ export function useTimeTracker(user: { uid: string } | null) {
       }
       setRunningTimer(null)
       setLocation('')
+      setSelectedProjectId(null)
       setElapsedTime(0)
       setEditingEntry(finishedEntry)
       setIsFormOpen(true)
@@ -201,6 +227,7 @@ export function useTimeTracker(user: { uid: string } | null) {
       if (runningTimer) {
         setRunningTimer(null)
         setLocation('')
+        setSelectedProjectId(null)
         setElapsedTime(0)
       }
       toast({
@@ -449,6 +476,12 @@ export function useTimeTracker(user: { uid: string } | null) {
     elapsedTime,
     location,
     setLocation,
+    selectedProjectId,
+    setSelectedProjectId,
+    isProjectMode,
+    projects: projects ?? [],
+    projectScope,
+    isProjectsPending: isProjectMode && (scopePending || projectsPending),
     selectedDate,
     setSelectedDate,
     isFormOpen,

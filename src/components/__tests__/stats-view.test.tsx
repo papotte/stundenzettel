@@ -98,9 +98,9 @@ describe('StatsView', () => {
   it('shows projects table when there are entries in the period', () => {
     mockEntries = [entryInCurrentMonth()]
     render(<StatsView />)
-    expect(screen.getByText('stats.sectionProjects')).toBeInTheDocument()
+    expect(screen.getByText('stats.sectionLocations')).toBeInTheDocument()
     expect(screen.getByText('Project A')).toBeInTheDocument()
-    expect(screen.getByText('stats.project')).toBeInTheDocument()
+    expect(screen.getByText('stats.location')).toBeInTheDocument()
   })
 
   it('shows default period in the selector (this month)', () => {

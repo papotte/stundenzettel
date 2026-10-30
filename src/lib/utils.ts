@@ -8,8 +8,15 @@ import {
 } from 'date-fns'
 import { twMerge } from 'tailwind-merge'
 
-import { SPECIAL_LOCATION_KEYS, SpecialLocationKey } from './constants'
-import type { TimeEntry } from './types'
+import { isSpecialLocation } from './constants'
+import type { TimeEntry, UserSettings } from './types'
+
+/** Whether the user's effective tracking mode is projects. */
+export function isProjectTrackingMode(
+  settings: Pick<UserSettings, 'trackingMode'> | null | undefined,
+): boolean {
+  return settings?.trackingMode === 'projects'
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -147,7 +154,7 @@ export function getLocationDisplayName(
   location: string,
   t: (key: string) => string,
 ): string {
-  if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
+  if (isSpecialLocation(location)) {
     return t(`special_locations.${location}`)
   }
   return location

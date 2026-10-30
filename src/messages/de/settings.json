@@ -121,5 +121,9 @@
   "showActivities": "Tätigkeitsfeld anzeigen",
   "showActivitiesDescription": "Zeigt ein Freitextfeld für Tätigkeiten im Zeiteintrag-Formular an.",
   "defaultPrivateCar": "Standardmäßig Privatwagen (PKW) aktiviert",
-  "defaultPrivateCarDescription": "Legt den Standardzustand des Privatwagen-Schalters für neue Einträge fest."
+  "defaultPrivateCarDescription": "Legt den Standardzustand des Privatwagen-Schalters für neue Einträge fest.",
+  "trackingMode": "Zeiterfassung nach",
+  "trackingModeDescription": "Wählen Sie, ob Ihre Zeiteinträge nach Einsatzorten oder nach Projekten organisiert werden.",
+  "trackingModeLocations": "Einsatzorte",
+  "trackingModeProjects": "Projekte"
 }

@@ -204,5 +204,9 @@
   "teamSettingsSaved": "Team settings saved",
   "teamSettingsSavedDescription": "Options have been updated successfully.",
   "failedToSaveTeamSettings": "Failed to save team settings",
-  "failedToLoadTeamSettings": "Failed to load team settings"
+  "failedToLoadTeamSettings": "Failed to load team settings",
+  "trackingMode": "Team tracking mode",
+  "trackingModeDescription": "Choose whether team members track time by locations or by projects. Applies to all members.",
+  "trackingModeLocations": "Locations",
+  "trackingModeProjects": "Projects"
 }

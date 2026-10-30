@@ -1,6 +1,8 @@
 {
   "locationRequiredTitle": "Location required",
   "locationRequiredDescription": "Please enter a location to start tracking.",
+  "projectRequiredTitle": "Project required",
+  "projectRequiredDescription": "Please select a project to start tracking.",
   "entryUpdatedTitle": "Entry Updated",
   "entryUpdatedDescription": "Changes to \"{location}\" have been saved.",
   "entryAddedTitle": "Entry Added",

@@ -1,6 +1,8 @@
 {
   "locationRequiredTitle": "Ubicación requerida",
   "locationRequiredDescription": "Por favor ingresa una ubicación para comenzar el seguimiento.",
+  "projectRequiredTitle": "Proyecto requerido",
+  "projectRequiredDescription": "Por favor selecciona un proyecto para comenzar el seguimiento.",
   "entryUpdatedTitle": "Entrada actualizada",
   "entryUpdatedDescription": "Los cambios en \"{location}\" han sido guardados.",
   "entryAddedTitle": "Entrada agregada",

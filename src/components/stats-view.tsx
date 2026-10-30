@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/table'
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useNow } from '@/hooks/use-now'
-import { SPECIAL_LOCATION_KEYS, type SpecialLocationKey } from '@/lib/constants'
+import { isSpecialLocation } from '@/lib/constants'
 import {
   calculateExpectedMonthlyHours,
   calculateTimeOffInLieuHours,
@@ -49,6 +49,10 @@ import {
   calculateWorkMinutes,
 } from '@/lib/time-utils'
 import type { TimeEntry } from '@/lib/types'
+import {
+  getLocationDisplayName as getSpecialAwareDisplayName,
+  isProjectTrackingMode,
+} from '@/lib/utils'
 
 export type StatsPeriod =
   | 'thisWeek'
@@ -101,7 +105,7 @@ function parseDateInput(value: string): Date | null {
 export default function StatsView() {
   const t = useTranslations('stats')
   const tSpecial = useTranslations('special_locations')
-  const { entries, userSettings, isLoading } = useTimeTrackerContext()
+  const { entries, userSettings, isLoading, projects } = useTimeTrackerContext()
   const [period, setPeriod] = useState<PeriodOption>('thisMonth')
   const [customStart, setCustomStart] = useState<Date>(() =>
     startOfDay(startOfMonth(new Date())),
@@ -111,12 +115,7 @@ export default function StatsView() {
   )
 
   const getLocationDisplayName = useCallback(
-    (location: string) => {
-      if (SPECIAL_LOCATION_KEYS.includes(location as SpecialLocationKey)) {
-        return tSpecial(location)
-      }
-      return location
-    },
+    (location: string) => getSpecialAwareDisplayName(location, tSpecial),
     [tSpecial],
   )
 
@@ -163,6 +162,7 @@ export default function StatsView() {
     )
   }, [entries, start, end, rangeError])
 
+  const isProjectMode = isProjectTrackingMode(userSettings)
   const driverComp = userSettings?.driverCompensationPercent ?? 100
   const passengerComp = userSettings?.passengerCompensationPercent ?? 100
   const defaultWorkHours = userSettings?.defaultWorkHours ?? 8
@@ -180,19 +180,23 @@ export default function StatsView() {
   }
 
   const byProjectCorrect = useMemo(() => {
+    // Group by projectId when present so renamed projects still aggregate;
+    // fall back to the stored location name for legacy entries.
+    const nameToId = new Map((projects ?? []).map((p) => [p.name, p.id]))
+    const idToName = new Map((projects ?? []).map((p) => [p.id, p.name]))
     const map = new Map<string, TimeEntry[]>()
     for (const entry of entriesInPeriod) {
-      const list = map.get(entry.location) ?? []
+      const key =
+        entry.projectId ?? nameToId.get(entry.location) ?? entry.location
+      const list = map.get(key) ?? []
       list.push(entry)
-      map.set(entry.location, list)
+      map.set(key, list)
     }
     const result: ProjectRow[] = []
     const regularEntries = (entries: TimeEntry[]) =>
-      entries.filter(
-        (e) =>
-          !SPECIAL_LOCATION_KEYS.includes(e.location as SpecialLocationKey),
-      )
-    map.forEach((groupEntries, location) => {
+      entries.filter((e) => !isSpecialLocation(e.location))
+    map.forEach((groupEntries, key) => {
+      const location = idToName.get(key) ?? key
       const workMinutes = calculateWorkMinutes(regularEntries(groupEntries))
       const driverHours = groupEntries.reduce(
         (s, e) => s + (e.driverTimeHours ?? 0),
@@ -225,7 +229,7 @@ export default function StatsView() {
     })
     result.sort((a, b) => b.totalHours - a.totalHours)
     return result
-  }, [entriesInPeriod, driverComp, passengerComp, defaultWorkHours])
+  }, [entriesInPeriod, driverComp, passengerComp, defaultWorkHours, projects])
 
   const totals = useMemo(
     () =>
@@ -278,18 +282,11 @@ export default function StatsView() {
   const showExpectedAndOvertime = expectedHoursForPeriod !== null
 
   const projectRows = useMemo(
-    () =>
-      byProjectCorrect.filter(
-        (row) =>
-          !SPECIAL_LOCATION_KEYS.includes(row.location as SpecialLocationKey),
-      ),
+    () => byProjectCorrect.filter((row) => !isSpecialLocation(row.location)),
     [byProjectCorrect],
   )
   const specialRows = useMemo(
-    () =>
-      byProjectCorrect.filter((row) =>
-        SPECIAL_LOCATION_KEYS.includes(row.location as SpecialLocationKey),
-      ),
+    () => byProjectCorrect.filter((row) => isSpecialLocation(row.location)),
     [byProjectCorrect],
   )
 
@@ -492,12 +489,14 @@ export default function StatsView() {
                   id="stats-projects-heading"
                   className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase"
                 >
-                  {t('sectionProjects')}
+                  {isProjectMode ? t('sectionProjects') : t('sectionLocations')}
                 </h2>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t('project')}</TableHead>
+                      <TableHead>
+                        {isProjectMode ? t('project') : t('location')}
+                      </TableHead>
                       <TableHead className="text-right">
                         {t('hoursWorked')}
                       </TableHead>

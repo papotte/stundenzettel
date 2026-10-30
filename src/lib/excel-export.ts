@@ -10,7 +10,11 @@ import {
   calculateWeekPassengerTime,
 } from '@/lib/time-utils'
 import type { AuthenticatedUser, TimeEntry, UserSettings } from '@/lib/types'
-import { formatDecimalHours, getWeeksForMonth } from '@/lib/utils'
+import {
+  formatDecimalHours,
+  getWeeksForMonth,
+  isProjectTrackingMode,
+} from '@/lib/utils'
 
 interface ExportParams {
   selectedMonth: Date
@@ -21,6 +25,8 @@ interface ExportParams {
   format: ReturnType<typeof useFormatter>
   getEntriesForDay: (day: Date) => TimeEntry[]
   getLocationDisplayName: (location: string) => string
+  /** When the export is filtered to a single project, its name (for header/filename). */
+  projectFilterName?: string
 }
 
 type ExcelFormatter = ExportParams['format']
@@ -98,11 +104,14 @@ export function buildExcelExportColumnLayout(
 function buildExcelHeaderRow1(
   layout: ExcelExportColumnLayout,
   t: ExportParams['t'],
+  isProjectMode: boolean,
 ): ExcelJS.CellValue[] {
   const row: ExcelJS.CellValue[] = Array(layout.columnCount).fill('')
   row[layout.week - 1] = t('export.headerWeek')
   row[layout.date - 1] = t('export.headerDate')
-  row[layout.location - 1] = t('export.headerLocation')
+  row[layout.location - 1] = t(
+    isProjectMode ? 'export.headerProject' : 'export.headerLocation',
+  )
   row[layout.from - 1] = t('export.headerWorkTime')
   row[layout.to - 1] = ''
   row[layout.pause - 1] = t('export.headerPauseDuration')
@@ -273,18 +282,34 @@ function getExcelRowValues(
   }
 }
 
+function buildExportFileName(
+  userExportName: string,
+  selectedMonth: Date,
+  projectFilterName: string | undefined,
+  format: ExcelFormatter,
+): string {
+  const projectPart = projectFilterName
+    ? `_${projectFilterName
+        .replace(/[^\p{L}\p{N}_-]+/gu, '-')
+        .replace(/^-+|-+$/g, '')}`
+    : ''
+  return `Stundenzettel_${userExportName || 'Export'}_${format.dateTime(selectedMonth, 'yearMonth')}${projectPart}.xlsx`
+}
+
 export const exportToExcel = async ({
   selectedMonth,
   user,
   userSettings,
   getEntriesForDay,
   getLocationDisplayName,
+  projectFilterName,
   t,
   format,
 }: ExportParams) => {
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Stundenzettel')
   const layout = buildExcelExportColumnLayout(userSettings)
+  const isProjectMode = isProjectTrackingMode(userSettings)
 
   // --- PAGE SETUP & HEADERS/FOOTERS ---
   const companyName = userSettings?.companyName || ''
@@ -430,7 +455,7 @@ export const exportToExcel = async ({
     const headerRow2Num = headerRow1Num + 1
 
     const headerRow1 = worksheet.getRow(headerRow1Num)
-    headerRow1.values = buildExcelHeaderRow1(layout, t)
+    headerRow1.values = buildExcelHeaderRow1(layout, t, isProjectMode)
 
     const headerRow2 = worksheet.getRow(headerRow2Num)
     headerRow2.values = buildExcelHeaderRow2(layout, t)
@@ -762,7 +787,12 @@ export const exportToExcel = async ({
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Stundenzettel_${userExportName || 'Export'}_${format.dateTime(selectedMonth, 'yearMonth')}.xlsx`
+  a.download = buildExportFileName(
+    userExportName,
+    selectedMonth,
+    projectFilterName,
+    format,
+  )
   document.body.appendChild(a)
   a.click()
   window.URL.revokeObjectURL(url)

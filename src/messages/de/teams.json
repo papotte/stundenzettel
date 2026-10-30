@@ -204,5 +204,9 @@
   "teamSettingsSaved": "Team-Einstellungen gespeichert",
   "teamSettingsSavedDescription": "Die Optionen wurden erfolgreich aktualisiert.",
   "failedToSaveTeamSettings": "Team-Einstellungen konnten nicht gespeichert werden",
-  "failedToLoadTeamSettings": "Team-Einstellungen konnten nicht geladen werden"
+  "failedToLoadTeamSettings": "Team-Einstellungen konnten nicht geladen werden",
+  "trackingMode": "Team-Erfassungsmodus",
+  "trackingModeDescription": "Wählen Sie, ob Teammitglieder Zeit nach Einsatzorten oder nach Projekten erfassen. Gilt für alle Mitglieder.",
+  "trackingModeLocations": "Einsatzorte",
+  "trackingModeProjects": "Projekte"
 }

@@ -14,6 +14,8 @@ export interface TimeEntry {
   endTime?: Date // Only for interval-based entries
   durationMinutes?: number // Only for duration-only entries
   location: string
+  /** Set when the entry was created against a managed project; `location` still stores the project name. */
+  projectId?: string
   pauseDuration?: number // in minutes
   driverTimeHours?: number // optional, decimal hours spent as driver
   passengerTimeHours?: number // optional, decimal hours spent as passenger
@@ -26,6 +28,17 @@ export interface UserSettingsLocked {
   compensation?: boolean
   /** Team disallows member override for export column defaults. */
   export?: boolean
+  /** Team enforces the tracking mode; member preference is ignored. */
+  trackingMode?: boolean
+}
+
+export type TrackingMode = 'locations' | 'projects'
+
+export interface Project {
+  id: string
+  name: string
+  archived?: boolean
+  createdAt: Date
 }
 
 export interface UserSettings {
@@ -50,6 +63,8 @@ export interface UserSettings {
   showActivities?: boolean
   /** Default state for the private car (PKW) toggle in new entries. */
   defaultPrivateCar?: boolean
+  /** Track time by locations (default) or by projects. Team setting wins for members. */
+  trackingMode?: TrackingMode
   locked?: UserSettingsLocked
 }
 
@@ -118,6 +133,8 @@ export interface TeamSettings {
   exportIncludeDriverTime?: boolean // default true
   exportIncludePassengerTime?: boolean // default true
   allowMemberOverrideExport?: boolean // default true
+  /** Team-wide tracking mode; when set, members cannot override it. */
+  trackingMode?: TrackingMode
 }
 
 // Team Management Types

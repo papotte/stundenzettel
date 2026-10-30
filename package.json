@@ -22,6 +22,7 @@
     "test:e2e:all-browsers": "RUN_ALL_BROWSERS=true playwright test",
     "deploy": "firebase deploy",
     "deploy:app": "firebase deploy --only apphosting",
+    "deploy:firestore": "firebase deploy --only firestore",
     "postinstall": "playwright install chromium",
     "functions:lint": "oxlint functions/",
     "functions:build": "tsc -p functions/tsconfig.json",
