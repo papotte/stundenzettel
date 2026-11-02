@@ -8,6 +8,7 @@ export interface EmailTranslations {
     acceptButton: string
     expiry: string
     ignore: string
+    roles: Record<string, string>
   }
   passwordChanged: {
     subject: string

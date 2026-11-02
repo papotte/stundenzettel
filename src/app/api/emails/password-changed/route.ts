@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { getEmailTranslations } from '@/lib/email-translations'
+import { getUserLocale } from '@/services/locale'
 import {
   createResendService,
   handleResendError,
@@ -27,8 +27,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const cookieStore = await cookies()
-    const locale = cookieStore.get('preferredLanguage')?.value
+    const locale = await getUserLocale()
 
     const t = await getEmailTranslations(locale)
     const {

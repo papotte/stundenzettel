@@ -5,7 +5,11 @@
     "body": "{inviterName} hat Sie eingeladen, dem Team \"{teamName}\" als {role} beizutreten.",
     "acceptButton": "Einladung annehmen oder ablehnen",
     "expiry": "Wichtig: Diese Einladung läuft in 7 Tagen ab.",
-    "ignore": "Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren."
+    "ignore": "Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren.",
+    "roles": {
+      "admin": "Administrator",
+      "member": "Mitglied"
+    }
   },
   "passwordChanged": {
     "subject": "Ihr Passwort wurde geändert",

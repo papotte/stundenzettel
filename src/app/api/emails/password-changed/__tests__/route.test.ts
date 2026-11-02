@@ -23,6 +23,7 @@ jest.mock('@/lib/email-translations', () => ({
       expiry: 'Important: This invitation will expire in 7 days.',
       ignore:
         'If you did not expect this invitation, you can safely ignore this email.',
+      roles: { admin: 'Admin', member: 'Member' },
     },
     passwordChanged: {
       subject: 'Your password was changed',
@@ -309,7 +310,7 @@ describe('/api/emails/password-changed', () => {
       expect(mockGetEmailTranslations).toHaveBeenCalledWith('es')
     })
 
-    it('should call getEmailTranslations with undefined when no locale cookie is set', async () => {
+    it('should call getEmailTranslations with the default locale when no locale cookie is set', async () => {
       mockCookies.mockResolvedValueOnce({
         get: jest.fn().mockReturnValue(undefined),
       } as never)
@@ -318,7 +319,7 @@ describe('/api/emails/password-changed', () => {
       const request = createMockRequest(validRequestBody)
       await POST(request)
 
-      expect(mockGetEmailTranslations).toHaveBeenCalledWith(undefined)
+      expect(mockGetEmailTranslations).toHaveBeenCalledWith('en')
     })
 
     it('should send Spanish password changed email when locale is es', async () => {
@@ -334,6 +335,7 @@ describe('/api/emails/password-changed', () => {
           expiry: 'Importante: Esta invitación expirará en 7 días.',
           ignore:
             'Si no esperabas esta invitación, puedes ignorar este correo electrónico de forma segura.',
+          roles: { admin: 'Administrador', member: 'Miembro' },
         },
         passwordChanged: {
           subject: 'Tu contraseña fue cambiada',
@@ -376,6 +378,7 @@ describe('/api/emails/password-changed', () => {
           expiry: 'Wichtig: Diese Einladung läuft in 7 Tagen ab.',
           ignore:
             'Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren.',
+          roles: { admin: 'Administrator', member: 'Mitglied' },
         },
         passwordChanged: {
           subject: 'Ihr Passwort wurde geändert',
@@ -418,6 +421,7 @@ describe('/api/emails/password-changed', () => {
           expiry: 'Importante: Esta invitación expirará en 7 días.',
           ignore:
             'Si no esperabas esta invitación, puedes ignorar este correo electrónico de forma segura.',
+          roles: { admin: 'Administrador', member: 'Miembro' },
         },
         passwordChanged: {
           subject: 'Tu contraseña fue cambiada',

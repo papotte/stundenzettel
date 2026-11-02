@@ -1,8 +1,8 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 import { TeamInvitationEmail } from '@/components/emails/team-invitation-email'
 import { getEmailTranslations } from '@/lib/email-translations'
+import { getUserLocale } from '@/services/locale'
 import {
   createResendService,
   handleResendError,
@@ -36,8 +36,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const cookieStore = await cookies()
-    const locale = cookieStore.get('preferredLanguage')?.value
+    const locale = await getUserLocale()
 
     const t = await getEmailTranslations(locale)
     const {
@@ -47,6 +46,7 @@ export async function POST(request: Request) {
       acceptButton,
       expiry,
       ignore,
+      roles,
     } = t.teamInvitation
 
     const emailSubject =
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const emailBody = bodyTemplate
       .replace('{inviterName}', inviterName)
       .replace('{teamName}', teamName)
-      .replace('{role}', role)
+      .replace('{role}', roles[role] ?? role)
 
     const resendService = createResendService()
     const data = await resendService.sendEmail({
