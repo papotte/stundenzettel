@@ -19,7 +19,7 @@
   - [Working with AI companions](#working-with-ai-companions)
   - [Troubleshooting](#troubleshooting)
 
-A Next.js application for effortless time tracking, designed for Firebase Studio.
+A Next.js application for effortless time tracking.
 
 ## Features
 
@@ -90,7 +90,7 @@ Follow these instructions to set up and run the project in your local developmen
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (version 20 or later recommended)
+- [Node.js](https://nodejs.org/) (version 26, see `.nvmrc`)
 - [npm](https://www.npmjs.com/) (usually comes with Node.js)
 - [Firebase CLI](https://firebase.google.com/docs/cli) (for deploying rules)
 

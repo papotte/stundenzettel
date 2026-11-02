@@ -9,7 +9,7 @@ TimeWise Tracker is a **Next.js 15** time-tracking app with **Firebase** (Firest
 
 ## Requirements
 
-- **Node.js 22** – `package.json` enforces it. Do not use older versions.
+- **Node.js 26** – `package.json` enforces it. Do not use older versions.
 - **Key commands before commit:** `npm run format`, `npm run lint`, `npm run functions:lint`, `npm run typecheck`, `npm test`
 
 ## Pull requests

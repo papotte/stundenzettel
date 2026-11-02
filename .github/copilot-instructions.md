@@ -8,20 +8,20 @@ TimeWise Tracker is a Next.js 15 time tracking application with Firebase backend
 
 ### Prerequisites and Setup
 
-**CRITICAL**: This project requires Node.js 22. Do not attempt to build with older versions.
+**CRITICAL**: This project requires Node.js 26. Do not attempt to build with older versions.
 
-1. **Install Node.js 22**:
+1. **Install Node.js 26**:
 
    ```bash
    # On Ubuntu/Debian systems:
-   curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+   curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash -
    sudo apt-get install nodejs -y
 
    # Update symlink if needed:
    sudo ln -sf /usr/bin/nodejs /usr/local/bin/node
 
    # Verify installation
-   node --version  # Should show v22.x.x
+   node --version  # Should show v26.x.x
    ```
 
 2. **Install dependencies**:
@@ -335,7 +335,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 feat: add time entry validation with pause suggestions
 fix: resolve authentication redirect loop on login
-docs: update installation instructions for Node.js 22
+docs: update installation instructions for Node.js 26
 chore: update dependencies to latest versions
 ```
 
@@ -364,7 +364,7 @@ npm test
    ```
 
 2. **Node.js version mismatch**:
-   - Ensure Node.js 22 is installed and active
+   - Ensure Node.js 26 is installed and active
    - Check with: `node --version`
 
 3. **npm install hanging**:
