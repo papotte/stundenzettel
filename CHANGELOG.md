@@ -1,3 +1,11 @@
+## [1.34.1](https://github.com/papotte/stundenzettel/compare/v1.34.0...v1.34.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v7 ([#259](https://github.com/papotte/stundenzettel/issues/259)) ([810776e](https://github.com/papotte/stundenzettel/commit/810776e539104aaf476852392fd67bf0b20780ea))
+* **deps:** update dependency firebase to v13 ([#261](https://github.com/papotte/stundenzettel/issues/261)) ([12e6fe9](https://github.com/papotte/stundenzettel/commit/12e6fe905b4b22411012b28f2a5dbcfea9d9082b))
+
 # [1.34.0](https://github.com/papotte/stundenzettel/compare/v1.33.0...v1.34.0) (2026-11-02)
 
 
