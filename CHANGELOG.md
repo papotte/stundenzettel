@@ -1,3 +1,16 @@
+# [1.34.0](https://github.com/papotte/stundenzettel/compare/v1.33.0...v1.34.0) (2026-11-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency lucide-react to v1 ([#250](https://github.com/papotte/stundenzettel/issues/250)) ([2083930](https://github.com/papotte/stundenzettel/commit/2083930668039440f40ab21d08d05fe901b04003))
+* **deps:** update dependency react-day-picker to v10 ([#251](https://github.com/papotte/stundenzettel/issues/251)) ([bdf014b](https://github.com/papotte/stundenzettel/commit/bdf014b20692bed0abc1ea811281016d762798eb))
+
+
+### Features
+
+* localize email notifications based on sender's language preference ([#199](https://github.com/papotte/stundenzettel/issues/199)) ([a3f483c](https://github.com/papotte/stundenzettel/commit/a3f483cc488f01fccbeeb631f7056ce1ad4f5082))
+
 # [1.33.0](https://github.com/papotte/stundenzettel/compare/v1.32.2...v1.33.0) (2026-10-30)
 
 
