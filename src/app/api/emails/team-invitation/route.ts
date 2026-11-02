@@ -1,7 +1,9 @@
+import { createElement } from 'react'
+
 import { NextResponse } from 'next/server'
 
 import { TeamInvitationEmail } from '@/components/emails/team-invitation-email'
-import { getEmailTranslations } from '@/lib/email-translations'
+import { getEmailTranslator } from '@/lib/email-translations'
 import { getUserLocale } from '@/services/locale'
 import {
   createResendService,
@@ -38,24 +40,17 @@ export async function POST(request: Request) {
 
     const locale = await getUserLocale()
 
-    const t = await getEmailTranslations(locale)
-    const {
-      subject: subjectTemplate,
-      heading,
-      body: bodyTemplate,
-      acceptButton,
-      expiry,
-      ignore,
-      roles,
-    } = t.teamInvitation
+    const t = await getEmailTranslator(locale)
+    const roles = t.raw('teamInvitation.roles') as Record<string, string>
 
-    const emailSubject =
-      subject || subjectTemplate.replace('{teamName}', teamName)
+    const emailSubject = subject || t('teamInvitation.subject', { teamName })
 
-    const emailBody = bodyTemplate
-      .replace('{inviterName}', inviterName)
-      .replace('{teamName}', teamName)
-      .replace('{role}', roles[role] ?? role)
+    const emailBody = t.rich('teamInvitation.body', {
+      strong: (chunks) => createElement('strong', null, chunks),
+      inviterName,
+      teamName,
+      role: roles[role] ?? role,
+    })
 
     const resendService = createResendService()
     const data = await resendService.sendEmail({
@@ -64,11 +59,11 @@ export async function POST(request: Request) {
       subject: emailSubject,
       react: TeamInvitationEmail({
         invitationLink,
-        heading,
+        heading: t('teamInvitation.heading'),
         body: emailBody,
-        acceptButtonText: acceptButton,
-        expiryText: expiry,
-        ignoreText: ignore,
+        acceptButtonText: t('teamInvitation.acceptButton'),
+        expiryText: t('teamInvitation.expiry'),
+        ignoreText: t('teamInvitation.ignore'),
       }),
     })
 

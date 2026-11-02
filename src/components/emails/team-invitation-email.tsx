@@ -3,7 +3,7 @@ import * as React from 'react'
 interface TeamInvitationEmailProps {
   invitationLink: string
   heading: string
-  body: string
+  body: React.ReactNode
   acceptButtonText: string
   expiryText: string
   ignoreText: string

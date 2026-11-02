@@ -2,7 +2,7 @@
   "teamInvitation": {
     "subject": "Invitation to join team \"{teamName}\"",
     "heading": "Team Invitation",
-    "body": "{inviterName} has invited you to join the team \"{teamName}\" as a {role}.",
+    "body": "<strong>{inviterName}</strong> has invited you to join the team <strong>\"{teamName}\"</strong> as a <strong>{role}</strong>.",
     "acceptButton": "Accept or Decline Invitation",
     "expiry": "Important: This invitation will expire in 7 days.",
     "ignore": "If you did not expect this invitation, you can safely ignore this email.",

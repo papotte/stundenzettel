@@ -124,6 +124,24 @@ describe('TeamInvitationEmail', () => {
     ).toBeInTheDocument()
   })
 
+  it('should render rich body content with markup', () => {
+    const richBodyProps = {
+      ...defaultProps,
+      body: (
+        <>
+          <strong>John Doe</strong> has invited you to join the team{' '}
+          <strong>&quot;Test Team&quot;</strong> as a <strong>Member</strong>.
+        </>
+      ),
+    }
+
+    render(<TeamInvitationEmail {...richBodyProps} />)
+
+    expect(screen.getByText('John Doe').tagName).toBe('STRONG')
+    expect(screen.getByText('"Test Team"').tagName).toBe('STRONG')
+    expect(screen.getByText('Member').tagName).toBe('STRONG')
+  })
+
   it('should have proper container styling', () => {
     const { container } = render(<TeamInvitationEmail {...defaultProps} />)
 
