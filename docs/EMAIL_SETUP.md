@@ -32,8 +32,10 @@ Add these to `.env.local` for local development and to your hosting provider’s
 ### Sender and subjects
 
 - Default sender: `TimeWise Tracker <noreply@papotte.dev>`
-- Team invitation subject (default): `Invitation to join team "{teamName}"`
-- Password changed subject: `Your password was changed`
+- Team invitation subject (default, English): `Invitation to join team "{teamName}"`
+- Password changed subject (English): `Your password was changed`
+
+Subjects and body text are localized based on the caller's `preferredLanguage` cookie (en, de, es; falls back to en). Translations live in `src/messages/{locale}/emails.json` and are loaded via `src/lib/email-translations.ts`.
 
 You can override `from` and `subject` by passing them in the POST body (team invitation route supports `subject`; both routes support `from`).
 

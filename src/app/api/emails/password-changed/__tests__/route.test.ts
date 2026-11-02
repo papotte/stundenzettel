@@ -1,6 +1,15 @@
+import { cookies } from 'next/headers'
+
 import * as resendService from '@/services/resend-service'
 
 import { POST } from '../route'
+
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  cookies: jest.fn().mockResolvedValue({
+    get: jest.fn().mockReturnValue(undefined),
+  }),
+}))
 
 // Mock the Resend service
 jest.mock('@/services/resend-service', () => ({
@@ -8,6 +17,7 @@ jest.mock('@/services/resend-service', () => ({
   handleResendError: jest.fn(),
 }))
 
+const mockCookies = jest.mocked(cookies)
 const mockCreateResendService = jest.mocked(resendService.createResendService)
 const mockHandleResendError = jest.mocked(resendService.handleResendError)
 
@@ -250,6 +260,99 @@ describe('/api/emails/password-changed', () => {
       const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
       expect(sendEmailCall.html).toContain('font-family: Arial, sans-serif')
       expect(sendEmailCall.html).toContain('line-height: 1.6')
+    })
+  })
+
+  describe('locale-based email content', () => {
+    const validRequestBody = {
+      to: 'test@example.com',
+      displayName: 'John Doe',
+    }
+
+    const setLocaleCookie = (locale?: string) => {
+      mockCookies.mockResolvedValueOnce({
+        get: jest.fn().mockReturnValue(locale ? { value: locale } : undefined),
+      } as never)
+    }
+
+    it('should send Spanish password changed email when locale is es', async () => {
+      setLocaleCookie('es')
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(sendEmailCall.subject).toBe('Tu contraseña fue cambiada')
+      expect(sendEmailCall.html).toContain('Contraseña cambiada')
+      expect(sendEmailCall.html).toContain('Hola John Doe')
+      expect(sendEmailCall.html).toContain(
+        'Esto es una confirmación de que tu contraseña ha sido cambiada.',
+      )
+      expect(sendEmailCall.html).toContain(
+        'Si no realizaste este cambio, por favor contacta al soporte inmediatamente.',
+      )
+    })
+
+    it('should send German password changed email when locale is de', async () => {
+      setLocaleCookie('de')
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(sendEmailCall.subject).toBe('Ihr Passwort wurde geändert')
+      expect(sendEmailCall.html).toContain('Passwort geändert')
+      expect(sendEmailCall.html).toContain('Hallo John Doe')
+      expect(sendEmailCall.html).toContain(
+        'Dies ist eine Bestätigung, dass Ihr Passwort geändert wurde.',
+      )
+      expect(sendEmailCall.html).toContain(
+        'Falls Sie diese Änderung nicht vorgenommen haben, kontaktieren Sie bitte sofort den Support.',
+      )
+    })
+
+    it('should use fallback greeting when displayName is absent (Spanish)', async () => {
+      setLocaleCookie('es')
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest({ to: 'test@example.com' })
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(sendEmailCall.html).toContain('Hola,')
+      expect(sendEmailCall.html).not.toContain('{displayName}')
+    })
+
+    it('should send English password changed email by default when no locale cookie', async () => {
+      setLocaleCookie()
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(sendEmailCall.subject).toBe('Your password was changed')
+      expect(sendEmailCall.html).toContain('Password Changed')
+      expect(sendEmailCall.html).toContain('Hello John Doe')
+    })
+
+    it('should fall back to English for an unsupported locale cookie', async () => {
+      setLocaleCookie('fr')
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(sendEmailCall.subject).toBe('Your password was changed')
+      expect(sendEmailCall.html).toContain('Hello John Doe')
     })
   })
 })

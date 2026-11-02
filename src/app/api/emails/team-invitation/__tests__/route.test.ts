@@ -1,6 +1,15 @@
+import { cookies } from 'next/headers'
+
 import * as resendService from '@/services/resend-service'
 
 import { POST } from '../route'
+
+// Mock next/headers
+jest.mock('next/headers', () => ({
+  cookies: jest.fn().mockResolvedValue({
+    get: jest.fn().mockReturnValue(undefined),
+  }),
+}))
 
 // Mock the Resend service
 jest.mock('@/services/resend-service', () => ({
@@ -8,6 +17,7 @@ jest.mock('@/services/resend-service', () => ({
   handleResendError: jest.fn(),
 }))
 
+const mockCookies = jest.mocked(cookies)
 const mockCreateResendService = jest.mocked(resendService.createResendService)
 const mockHandleResendError = jest.mocked(resendService.handleResendError)
 
@@ -287,6 +297,73 @@ describe('/api/emails/team-invitation', () => {
         message: 'Missing required fields',
       })
       expect(mockResendService.sendEmail).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('locale-based email content', () => {
+    const validRequestBody = {
+      to: 'test@example.com',
+      teamName: 'Test Team',
+      inviterName: 'John Doe',
+      invitationLink: 'https://example.com/invitation/123',
+      role: 'member',
+    }
+
+    const setLocaleCookie = (locale?: string) => {
+      mockCookies.mockResolvedValueOnce({
+        get: jest.fn().mockReturnValue(locale ? { value: locale } : undefined),
+      } as never)
+    }
+
+    it('should send Spanish team invitation email when locale is es', async () => {
+      setLocaleCookie('es')
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      expect(mockResendService.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: 'Invitación para unirse al equipo "Test Team"',
+        }),
+      )
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(JSON.stringify(sendEmailCall.react.props)).toContain('Miembro')
+    })
+
+    it('should send German team invitation email when locale is de', async () => {
+      setLocaleCookie('de')
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      expect(mockResendService.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: 'Einladung zum Team "Test Team"',
+        }),
+      )
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(JSON.stringify(sendEmailCall.react.props)).toContain('Mitglied')
+    })
+
+    it('should send English team invitation email by default when no locale cookie', async () => {
+      setLocaleCookie()
+      mockResendService.sendEmail.mockResolvedValue({ id: 'email-123' })
+
+      const request = createMockRequest(validRequestBody)
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      expect(mockResendService.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: 'Invitation to join team "Test Team"',
+        }),
+      )
+      const sendEmailCall = mockResendService.sendEmail.mock.calls[0][0]
+      expect(JSON.stringify(sendEmailCall.react.props)).toContain('Member')
     })
   })
 })

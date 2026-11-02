@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+import { getEmailTranslator } from '@/lib/email-translations'
+import { getUserLocale } from '@/services/locale'
 import {
   createResendService,
   handleResendError,
@@ -25,21 +27,28 @@ export async function POST(request: Request) {
       )
     }
 
+    const locale = await getUserLocale()
+
+    const t = await getEmailTranslator(locale)
+
+    const greetingText = displayName
+      ? t('passwordChanged.greeting', { displayName })
+      : t('passwordChanged.greetingFallback')
+
     const resendService = createResendService()
-    const subject = 'Your password was changed'
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2>Password Changed</h2>
-        <p>Hello ${displayName || 'there'},</p>
-        <p>This is a confirmation that your password has been changed.</p>
-        <p>If you did not make this change, please contact support immediately.</p>
+        <h2>${t('passwordChanged.heading')}</h2>
+        <p>${greetingText}</p>
+        <p>${t('passwordChanged.body')}</p>
+        <p>${t('passwordChanged.warning')}</p>
       </div>
     `
 
     const data = await resendService.sendEmail({
       from,
       to: [to],
-      subject,
+      subject: t('passwordChanged.subject'),
       html,
     })
 
