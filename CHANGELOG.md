@@ -1,3 +1,10 @@
+## [1.34.2](https://github.com/papotte/stundenzettel/compare/v1.34.1...v1.34.2) (2026-11-02)
+
+
+### Bug Fixes
+
+* **deps:** update dependency dotenv to v18 ([#263](https://github.com/papotte/stundenzettel/issues/263)) ([fe22f52](https://github.com/papotte/stundenzettel/commit/fe22f52e65593338e950c336fede8bc5418139dc))
+
 ## [1.34.1](https://github.com/papotte/stundenzettel/compare/v1.34.0...v1.34.1) (2026-11-02)
 
 
