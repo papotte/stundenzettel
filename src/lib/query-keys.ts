@@ -39,6 +39,10 @@ export const queryKeys = {
   teamInvitation: (invitationId: string) =>
     ['teamInvitation', invitationId] as const,
 
+  /** Display names for a set of member ids (sorted, comma-joined). */
+  memberDisplayNames: (memberIdsKey: string) =>
+    ['memberDisplayNames', memberIdsKey] as const,
+
   /** Team members. */
   teamMembers: (teamId: string) => ['teamMembers', teamId] as const,
 

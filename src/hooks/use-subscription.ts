@@ -34,7 +34,6 @@ export function useInvalidateSubscription(user: { uid: string } | null) {
   const uid = user?.uid ?? ''
   return () => {
     if (!uid) return
-    subscriptionService.clearCache()
     void queryClient.invalidateQueries({
       queryKey: queryKeys.subscription(uid),
     })

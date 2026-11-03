@@ -44,7 +44,6 @@ jest.mock('@/services/payment-service', () => ({
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
-    clearCache: jest.fn(),
   },
 }))
 

@@ -20,7 +20,6 @@ jest.unmock('@/context/subscription-context')
 jest.mock('@/services/subscription-service', () => ({
   subscriptionService: {
     getUserSubscription: jest.fn(),
-    clearCache: jest.fn(),
   },
 }))
 
@@ -28,9 +27,6 @@ const mockGetUserSubscription =
   subscriptionService.getUserSubscription as jest.MockedFunction<
     typeof subscriptionService.getUserSubscription
   >
-const mockClearCache = subscriptionService.clearCache as jest.MockedFunction<
-  typeof subscriptionService.clearCache
->
 
 // Mock useAuth
 const mockAuthContext = createMockAuthContext()
@@ -61,7 +57,6 @@ describe('SubscriptionContext', () => {
     jest.clearAllMocks()
     mockAuthContext.user = null
     mockAuthContext.loading = false
-    mockClearCache.mockReturnValue(undefined)
   })
 
   describe('useSubscriptionContext hook', () => {
@@ -446,8 +441,6 @@ describe('SubscriptionContext', () => {
         result.current.invalidateSubscription()
       })
 
-      expect(mockClearCache).toHaveBeenCalled()
-
       // Wait for refetch to complete
       await waitFor(() => {
         // Should have been called at least one more time
@@ -472,7 +465,6 @@ describe('SubscriptionContext', () => {
         result.current.invalidateSubscription()
       })
 
-      expect(mockClearCache).not.toHaveBeenCalled()
       expect(mockGetUserSubscription).not.toHaveBeenCalled()
     })
   })

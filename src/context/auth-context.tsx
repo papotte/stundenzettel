@@ -18,7 +18,6 @@ import { defaultLocale } from '@/i18n'
 import { auth as firebaseAuth } from '@/lib/firebase'
 import type { AuthenticatedUser } from '@/lib/types'
 import { setUserLocale } from '@/services/locale'
-import { subscriptionService } from '@/services/subscription-service'
 
 interface AuthContextType {
   user: AuthenticatedUser | null
@@ -72,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (lastUidRef.current !== uid) {
           lastUidRef.current = uid
           queryClient.clear()
-          subscriptionService.clearCache()
         }
 
         if (firebaseUser) {

@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@jest-setup'
+import { AllTheProviders, renderHook, waitFor } from '@jest-setup'
 
 import * as userSettingsService from '@/services/user-settings-service'
 
@@ -22,7 +22,10 @@ describe('useMemberDisplayNames', () => {
     )
     const { result, rerender } = renderHook(
       ({ ids }: { ids: string[] }) => useMemberDisplayNames(ids),
-      { initialProps: { ids: [] as string[] } },
+      {
+        initialProps: { ids: [] as string[] },
+        wrapper: AllTheProviders(),
+      },
     )
 
     expect(result.current.displayNames).toEqual(new Map())
@@ -50,8 +53,9 @@ describe('useMemberDisplayNames', () => {
       ]),
     )
 
-    const { result } = renderHook(() =>
-      useMemberDisplayNames(['user-1', 'user-2', 'user-3']),
+    const { result } = renderHook(
+      () => useMemberDisplayNames(['user-1', 'user-2', 'user-3']),
+      { wrapper: AllTheProviders() },
     )
 
     expect(result.current.displayNames).toEqual(new Map())
@@ -77,8 +81,9 @@ describe('useMemberDisplayNames', () => {
     })
     mockGetDisplayNamesForMembers.mockReturnValue(promise)
 
-    const { result, unmount } = renderHook(() =>
-      useMemberDisplayNames(['user-1']),
+    const { result, unmount } = renderHook(
+      () => useMemberDisplayNames(['user-1']),
+      { wrapper: AllTheProviders() },
     )
 
     expect(result.current.displayNames).toEqual(new Map())
@@ -103,7 +108,10 @@ describe('useMemberDisplayNames', () => {
 
     const { result, rerender } = renderHook(
       ({ ids }: { ids: string[] }) => useMemberDisplayNames(ids),
-      { initialProps: { ids: ['user-1'] } },
+      {
+        initialProps: { ids: ['user-1'] },
+        wrapper: AllTheProviders(),
+      },
     )
 
     await waitFor(() => {

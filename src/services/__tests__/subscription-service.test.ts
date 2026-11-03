@@ -14,7 +14,6 @@ global.fetch = jest.fn()
 describe('SubscriptionService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    subscriptionService.clearCache()
     ;(global.fetch as jest.Mock).mockClear()
   })
 
@@ -147,7 +146,7 @@ describe('SubscriptionService', () => {
       expect(mockGetUserTeam).not.toHaveBeenCalled()
     })
 
-    it('should cache results and return cached data for subsequent calls', async () => {
+    it('fetches fresh data on each call (caching is owned by react-query)', async () => {
       const mockSubscription = {
         stripeSubscriptionId: 'sub_123',
         stripeCustomerId: 'cus_123',
@@ -161,22 +160,19 @@ describe('SubscriptionService', () => {
         planDescription: 'Individual subscription',
       }
 
-      ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ;(global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: async () => mockSubscription,
       })
 
-      // First call
       const { subscription: subscription1 } =
         await subscriptionService.getUserSubscription('user123')
       expect(subscription1).toEqual(mockSubscription)
-      expect(global.fetch).toHaveBeenCalledTimes(1)
 
-      // Second call should use cache
       const { subscription: subscription2 } =
         await subscriptionService.getUserSubscription('user123')
       expect(subscription2).toEqual(mockSubscription)
-      expect(global.fetch).toHaveBeenCalledTimes(1) // Still only called once
+      expect(global.fetch).toHaveBeenCalledTimes(2)
     })
   })
 
