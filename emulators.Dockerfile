@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:26-alpine
 
 # Install JDK (required by the Java-based emulators)
 RUN apk add --no-cache openjdk21-jre-headless
