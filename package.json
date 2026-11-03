@@ -116,7 +116,7 @@
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "lint-staged": "^17.0.0",
-    "oxfmt": "^0.75.0",
+    "oxfmt": "^0.76.0",
     "oxlint": "^1.90.0",
     "postcss": "^8.5.26",
     "semantic-release": "^25.0.9",
