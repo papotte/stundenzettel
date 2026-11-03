@@ -104,12 +104,12 @@ export default function ExportPreview() {
     if (!user || !userTeam || !monthKey) {
       return
     }
-    let cancelled = false
+    const fetchState = { cancelled: false }
     getPublishedMonth(userTeam.id, user.uid, monthKey).then((data) => {
-      if (!cancelled) setPublishedAt(data?.publishedAt ?? null)
+      if (!fetchState.cancelled) setPublishedAt(data?.publishedAt ?? null)
     })
     return () => {
-      cancelled = true
+      fetchState.cancelled = true
     }
   }, [user, userTeam, monthKey])
 
