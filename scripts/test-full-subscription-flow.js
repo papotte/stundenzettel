@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
+require('dotenv').config({ path: '.env.local' })
 const fetch = require('node-fetch')
 const Stripe = require('stripe')
 
 // Configuration
 const BASE_URL = 'http://localhost:9002'
-const FUNCTIONS_URL = 'http://localhost:9001'
+const FUNCTIONS_URL = `http://${process.env.FUNCTIONS_EMULATOR_HOST ?? 'localhost:9001'}`
 const TEST_USER_ID = 'test-user-123'
 const TEST_EMAIL = 'test@example.com'
 
@@ -282,7 +283,7 @@ async function runFullTest() {
   console.log('   Decline: 4000 0000 0000 0002')
 
   console.log('\n📊 Monitoring:')
-  console.log('   Firebase Emulator UI: http://localhost:4000')
+  console.log('   Firebase Emulator UI: http://localhost:14000')
   console.log('   Functions Logs: Check terminal running firebase emulators')
   console.log('   Stripe Dashboard: https://dashboard.stripe.com/test/events')
 }

@@ -9,6 +9,7 @@
   - [Getting Started](#getting-started)
   - [Data Model Migration](#data-model-migration)
 - **Development**
+  - [Firebase Emulators](#firebase-emulators)
   - [Code Quality (Linting & Formatting)](#code-quality--linting--formatting-)
   - [End-to-End Testing (Playwright)](#end-to-end-testing--playwright-)
 - **Deployment**
@@ -207,6 +208,24 @@ The application will be available at [http://localhost:9002](http://localhost:90
 ## Data Model Migration
 
 For information about data model migrations and how to run them, see [MIGRATIONS.md](./MIGRATIONS.md).
+
+---
+
+## Firebase Emulators
+
+For local development and testing, the app connects to the Firebase Emulator Suite (Auth, Firestore, Functions). You can run the emulators directly on your machine or in Docker:
+
+```bash
+# Option 1: run locally (requires Java 21+ and firebase-tools)
+npm run emulators:start
+
+# Option 2: run in Docker
+docker compose up --build
+```
+
+The Emulator UI is at [http://localhost:14000](http://localhost:14000). The ports use a `1` prefix (Firestore 18080, Auth 19099, Functions 19001, Hub 14400) so they can run alongside other projects' emulators on the same machine. Client code reads the endpoints from `*_EMULATOR_HOST` variables in `.env.local` / `.env.test`; without them it falls back to the stock firebase-tools ports.
+
+In Docker, emulator data persists in the `firebase_data` volume — run `docker compose down -v` to reset it. See [docs/FIRESTORE_MIGRATION.md](./docs/FIRESTORE_MIGRATION.md) for details and caveats.
 
 ---
 

@@ -21,8 +21,8 @@ RUN npm --prefix functions ci
 COPY functions ./functions
 RUN npm --prefix functions run build
 
-#       UI    HUB   STORE  FUNC   AUTH
-EXPOSE  4000  4400  8080   9001   9099
+#       UI     HUB    STORE   FUNC    AUTH
+EXPOSE  14000  14400  18080   19001   19099
 
 # Mount your emulator export directory at /firebase/data when running the
 # container. Data is imported on startup and exported again on shutdown.

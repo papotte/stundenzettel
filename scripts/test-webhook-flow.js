@@ -8,7 +8,7 @@ const fetch = require('node-fetch')
 const Stripe = require('stripe')
 
 // Configuration
-const FUNCTIONS_URL = 'http://localhost:9001'
+const FUNCTIONS_URL = `http://${process.env.FUNCTIONS_EMULATOR_HOST ?? 'localhost:9001'}`
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test_...'
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_...'
 
@@ -415,7 +415,7 @@ async function runWebhookTests() {
 
   console.log('\n📋 Webhook Testing Summary:')
   console.log('✅ All webhook events have been sent to Firebase Functions')
-  console.log('📊 Check Firebase Emulator UI: http://localhost:4000')
+  console.log('📊 Check Firebase Emulator UI: http://localhost:14000')
   console.log('📝 Check Functions logs in the emulator terminal')
   console.log('🔍 Verify data was written to Firestore collections:')
   console.log('   - users/{userId}/subscription/current')

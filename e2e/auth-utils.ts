@@ -28,6 +28,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || 'dummy-app-id',
 }
 
+const firestoreEmulatorHost =
+  process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080'
+const authEmulatorHost =
+  process.env.FIREBASE_AUTH_EMULATOR_HOST ?? 'localhost:9099'
+const [firestoreHost, firestorePort] = firestoreEmulatorHost.split(':')
+
 let app: FirebaseApp
 let auth: Auth
 let db: Firestore
@@ -39,8 +45,8 @@ if (!getApps().length) {
   try {
     // Always use test-database and emulators for e2e helpers
     db = getFirestore(app, 'test-database')
-    connectAuthEmulator(auth, 'http://localhost:9099')
-    connectFirestoreEmulator(db, 'localhost', 8080)
+    connectAuthEmulator(auth, `http://${authEmulatorHost}`)
+    connectFirestoreEmulator(db, firestoreHost, Number(firestorePort))
     // connected to emulators
   } catch (error) {
     console.warn(
@@ -54,8 +60,8 @@ if (!getApps().length) {
   // Ensure we're using test-database and emulator connections
   db = getFirestore(app, 'test-database')
   try {
-    connectAuthEmulator(auth, 'http://localhost:9099')
-    connectFirestoreEmulator(db, 'localhost', 8080)
+    connectAuthEmulator(auth, `http://${authEmulatorHost}`)
+    connectFirestoreEmulator(db, firestoreHost, Number(firestorePort))
     // connected to emulators (existing app)
   } catch (error) {
     console.warn(
@@ -163,7 +169,7 @@ export async function cleanupUserData(userId: string): Promise<void> {
   try {
     const projectId =
       process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'timewise-tracker-61lqb'
-    const emulatorHost = 'localhost:8080'
+    const emulatorHost = firestoreEmulatorHost
     const databaseId = 'test-database'
 
     // Delete user-specific collections
@@ -207,12 +213,12 @@ export async function cleanupTestDatabaseWithAdmin(): Promise<void> {
   try {
     const projectId =
       process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'timewise-tracker-61lqb'
-    const emulatorHost = 'localhost:8080'
+    const emulatorHost = firestoreEmulatorHost
     const databaseId = 'test-database'
 
     const clearUrl = `http://${emulatorHost}/emulator/v1/projects/${projectId}/databases/${databaseId}/documents`
     // Shell alternative…
-    // curl -v -X DELETE "http://localhost:8080/emulator/v1/projects/timewise-tracker-61lqb/databases/test-database/documents"
+    // curl -v -X DELETE "http://localhost:18080/emulator/v1/projects/timewise-tracker-61lqb/databases/test-database/documents"
 
     const response = await fetch(clearUrl, {
       method: 'DELETE',
