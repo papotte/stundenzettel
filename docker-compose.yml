@@ -16,6 +16,7 @@ services:
       - '19099:19099' # auth
     volumes:
       - firebase_data:/firebase/data
+      - ./functions/src:/firebase/functions/src
 
 volumes:
   firebase_data:

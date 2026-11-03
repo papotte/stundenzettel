@@ -93,7 +93,7 @@ docker compose up --build
 
 - The Emulator UI is available at `http://localhost:14000`.
 - Emulator data persists in the `firebase_data` Docker volume, mounted at `/firebase/data` in the container. Data is imported on startup and exported on shutdown. Use `docker compose down -v` to delete the volume and start empty.
-- Rebuild with `--build` after changing `firebase.json`, `firestore.rules`, or Cloud Functions code, since they are copied into the image at build time.
+- `functions/src` is bind-mounted into the container and recompiled by a `tsc --watch` running inside it, so Cloud Functions changes hot-reload without a rebuild. Rebuild with `--build` after changing `firebase.json`, `firestore.rules`, `functions/package.json` (dependencies), or `functions/tsconfig.json`.
 
 #### Why the ports are prefixed
 

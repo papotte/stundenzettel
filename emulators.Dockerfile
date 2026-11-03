@@ -24,6 +24,9 @@ RUN npm --prefix functions run build
 #       UI     HUB    STORE   FUNC    AUTH
 EXPOSE  14000  14400  18080   19001   19099
 
-# Mount your emulator export directory at /firebase/data when running the
-# container. Data is imported on startup and exported again on shutdown.
-CMD ["sh", "-c", "firebase emulators:start --only auth,firestore,functions --import=/firebase/data --export-on-exit=/firebase/data --project=${FIREBASE_PROJECT}"]
+# Mount your emulator export directory at /firebase/data and (optionally)
+# functions/src at /firebase/functions/src when running the container.
+# Data is imported on startup and exported again on shutdown. The tsc watch
+# picks up changes to the mounted function sources so the Functions emulator
+# hot-reloads them without an image rebuild.
+CMD ["sh", "-c", "npm --prefix functions run build && npm --prefix functions run build:watch & exec firebase emulators:start --only auth,firestore,functions --import=/firebase/data --export-on-exit=/firebase/data --project=${FIREBASE_PROJECT}"]
