@@ -49,7 +49,7 @@ describe('TeamInvitationEmail', () => {
     const invitationLink = screen.getByText('Accept or Decline Invitation')
     expect(invitationLink).toHaveStyle({
       backgroundColor: '#389457',
-      color: 'white',
+      color: 'rgb(255, 255, 255)',
       padding: '12px 24px',
       textDecoration: 'none',
       borderRadius: '4px',

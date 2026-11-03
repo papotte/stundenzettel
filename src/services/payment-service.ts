@@ -1,5 +1,6 @@
 import { Stripe, loadStripe } from '@stripe/stripe-js'
 
+import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 
 import { StripeService } from './stripe-service'
@@ -187,12 +188,12 @@ export class PaymentService {
 
   async redirectToCheckout(sessionUrl: string): Promise<void> {
     await this.initialize()
-    window.location.href = sessionUrl
+    navigateTo(sessionUrl)
   }
 
   async redirectToCustomerPortal(portalUrl: string): Promise<void> {
     await this.initialize()
-    window.location.href = portalUrl
+    navigateTo(portalUrl)
   }
 
   getPricingPlans(): PricingPlan[] {

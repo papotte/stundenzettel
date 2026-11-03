@@ -18,6 +18,7 @@ import {
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
+import { navigateTo } from '@/lib/navigation'
 import { subscriptionService } from '@/services/subscription-service'
 
 interface SubscriptionGuardProps {
@@ -57,10 +58,7 @@ function SubscriptionFallback({
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <Button
-              onClick={() => (window.location.href = '/login')}
-              className="w-full"
-            >
+            <Button onClick={() => navigateTo('/login')} className="w-full">
               {t('subscription.loginButton')}
             </Button>
           </CardContent>
@@ -79,15 +77,12 @@ function SubscriptionFallback({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <Button
-            onClick={() => (window.location.href = '/pricing')}
-            className="w-full"
-          >
+          <Button onClick={() => navigateTo('/pricing')} className="w-full">
             {t('subscription.choosePlanButton')}
           </Button>
           <Button
             variant="outline"
-            onClick={() => (window.location.href = '/subscription')}
+            onClick={() => navigateTo('/subscription')}
             className="w-full"
           >
             {t('subscription.manageSubscriptionButton')}

@@ -26,6 +26,7 @@ import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
+import { navigateTo } from '@/lib/navigation'
 import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -80,7 +81,7 @@ export default function SubscriptionPage() {
   }
 
   const handleUpgrade = () => {
-    window.location.href = '/pricing'
+    navigateTo('/pricing')
   }
 
   // Trial-specific helpers

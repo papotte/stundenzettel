@@ -26,6 +26,7 @@ import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
+import { navigateTo } from '@/lib/navigation'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
 import { paymentService } from '@/services/payment-service'
 import { getTeamSubscription } from '@/services/team-service'
@@ -119,7 +120,7 @@ export function TeamSubscriptionCard({
         await paymentService.redirectToCustomerPortal(url)
       } else {
         // Redirect to pricing page for new subscription
-        window.location.href = '/pricing'
+        navigateTo('/pricing')
       }
     } catch {
       toast({

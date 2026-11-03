@@ -23,15 +23,6 @@ jest.mock('@/services/subscription-service', () => ({
   },
 }))
 
-// Mock window.location
-const mockLocation = {
-  href: '',
-}
-Object.defineProperty(window, 'location', {
-  value: mockLocation,
-  writable: true,
-})
-
 const mockAuthContext = createMockAuthContext()
 
 // Mock useAuth hook
@@ -56,7 +47,6 @@ describe('SubscriptionGuard', () => {
     jest.clearAllMocks()
     mockAuthContext.user = null
     mockAuthContext.loading = false
-    mockLocation.href = ''
 
     // Default mock implementations
     mockIsInTrial.mockReturnValue(false)

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import { render, screen, waitFor } from '@jest-setup'
 
+import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 // Mock the services
 import {
@@ -25,16 +26,7 @@ jest.mock('@/services/payment-service', () => ({
   _resetPricingPlansCacheForTest: jest.fn(),
 }))
 
-// Mock window.location
-const mockLocation = {
-  href: '',
-  origin: 'http://localhost:3000',
-  search: '',
-}
-Object.defineProperty(window, 'location', {
-  value: mockLocation,
-  writable: true,
-})
+const mockNavigateTo = navigateTo as jest.Mock
 
 const mockGetPricingPlans = getPricingPlans as jest.MockedFunction<
   typeof getPricingPlans
@@ -102,8 +94,6 @@ describe('PricingSection', () => {
     jest.clearAllMocks()
     mockAuthContext.user = null
     mockAuthContext.loading = false
-    mockLocation.href = ''
-    mockLocation.search = ''
     _resetPricingPlansCacheForTest()
   })
 
@@ -230,8 +220,8 @@ describe('PricingSection', () => {
       })
       await user.click(subscribeButton)
 
-      expect(mockLocation.href).toBe(
-        '/login?returnUrl=http%3A%2F%2Flocalhost%3A3000%2Fpricing%3Fplan%3Dindividual-monthly',
+      expect(mockNavigateTo).toHaveBeenCalledWith(
+        '/login?returnUrl=http%3A%2F%2Flocalhost%2Fpricing%3Fplan%3Dindividual-monthly',
       )
     })
 
@@ -263,8 +253,8 @@ describe('PricingSection', () => {
           'user123',
           'test@example.com',
           'price_monthly',
-          'http://localhost:3000/subscription?success=true',
-          'http://localhost:3000/pricing?canceled=true',
+          'http://localhost/subscription?success=true',
+          'http://localhost/pricing?canceled=true',
           true,
         )
         expect(mockRedirectToCheckout).toHaveBeenCalledWith(
@@ -315,7 +305,7 @@ describe('PricingSection', () => {
       })
       await user.click(teamSubscribeButton)
 
-      expect(mockLocation.href).toBe('/team?tab=subscription')
+      expect(mockNavigateTo).toHaveBeenCalledWith('/team?tab=subscription')
     })
   })
 
@@ -401,7 +391,7 @@ describe('PricingSection', () => {
       await user.click(teamSubscribeButton)
 
       // Team subscription should redirect immediately, so no loading state
-      expect(mockLocation.href).toBe('/team?tab=subscription')
+      expect(mockNavigateTo).toHaveBeenCalledWith('/team?tab=subscription')
     })
   })
 

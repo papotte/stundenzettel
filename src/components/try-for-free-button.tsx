@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
 import { paymentService } from '@/services/payment-service'
@@ -55,7 +56,7 @@ export default function TryForFreeButton({
       const returnUrl = encodeURIComponent(
         `${window.location.origin}/pricing?plan=${plan.id}&trial=true`,
       )
-      window.location.href = `/login?returnUrl=${returnUrl}`
+      navigateTo(`/login?returnUrl=${returnUrl}`)
       return
     }
 
