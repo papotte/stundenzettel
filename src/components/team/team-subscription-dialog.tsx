@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Check, CreditCard, Minus, Plus, Users } from 'lucide-react'
 import { useFormatter, useTranslations } from 'next-intl'
@@ -20,18 +20,16 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
+import { usePricingPlans } from '@/hooks/use-pricing-plans'
+import { useTeamCheckout } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
-import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan, Team } from '@/lib/types'
-import { getUserId } from '@/lib/utils'
-import { getPricingPlans } from '@/services/payment-service'
 
 interface TeamSubscriptionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   team: Team
   currentMembersCount: number
-  onSubscriptionCreated?: () => void
 }
 
 export function TeamSubscriptionDialog({
@@ -39,62 +37,28 @@ export function TeamSubscriptionDialog({
   onOpenChange,
   team,
   currentMembersCount,
-  onSubscriptionCreated,
 }: TeamSubscriptionDialogProps) {
   const t = useTranslations()
   const format = useFormatter()
   const { toast } = useToast()
   const { user } = useAuth()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingPlans, setIsLoadingPlans] = useState(false)
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
-  const [selectedPlan, setSelectedPlan] = useState<PricingPlan | null>(null)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
   const [isYearly, setIsYearly] = useState(false)
   const [seats, setSeats] = useState(Math.max(currentMembersCount, 1))
-
-  const loadPricingPlans = useCallback(async () => {
-    setIsLoadingPlans(true)
-    try {
-      const plans = await getPricingPlans()
-      const teamPlans = plans.filter((plan) => plan.maxUsers)
-      setPricingPlans(teamPlans)
-    } catch (error) {
-      console.error('Error loading pricing plans:', error)
-      toast({
-        title: t('common.error'),
-        description: t('teams.failedToLoadPricingPlans'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoadingPlans(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Load pricing plans when dialog opens
-  useEffect(() => {
-    if (open) {
-      loadPricingPlans()
-    }
-  }, [open, loadPricingPlans])
-
-  // Update selected plan when billing frequency changes
-  useEffect(() => {
-    if (pricingPlans.length > 0) {
-      const teamPlans = pricingPlans.filter(
-        (plan) =>
-          plan.maxUsers && plan.interval === (isYearly ? 'year' : 'month'),
-      )
-      if (teamPlans.length > 0) {
-        setSelectedPlan(teamPlans[0])
-      }
-    }
-  }, [pricingPlans, isYearly])
-
-  // Reset seats when current members count changes
-  useEffect(() => {
+  const [prevMembersCount, setPrevMembersCount] = useState(currentMembersCount)
+  if (prevMembersCount !== currentMembersCount) {
+    setPrevMembersCount(currentMembersCount)
     setSeats(Math.max(currentMembersCount, 1))
-  }, [currentMembersCount])
+  }
+
+  const { data: allPlans = [], isLoading: isLoadingPlans } = usePricingPlans({
+    enabled: open,
+  })
+  const pricingPlans = useMemo(
+    () => allPlans.filter((plan) => plan.maxUsers),
+    [allPlans],
+  )
+  const teamCheckoutMutation = useTeamCheckout(user)
 
   // Calculate pricing based on plan type and seat count
   const getSeatPrice = (plan: PricingPlan, seatCount: number) => {
@@ -120,52 +84,41 @@ export function TeamSubscriptionDialog({
     setSeats(Math.max(minSeats, Math.min(newSeats, maxSeats)))
   }
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = () => {
     if (!selectedPlan || !user) return
 
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/create-team-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    teamCheckoutMutation.mutate(
+      {
+        teamId: team.id,
+        priceId: selectedPlan.stripePriceId,
+        quantity: seats,
+        successUrl: `${window.location.origin}/team?success=true`,
+        cancelUrl: `${window.location.origin}/team?cancelled=true`,
+        trialEnabled: selectedPlan.trialEnabled,
+        requirePaymentMethod: true,
+      },
+      {
+        onSuccess: () => onOpenChange(false),
+        onError: (error) => {
+          console.error('Error creating team checkout session:', error)
+          toast({
+            title: t('common.error'),
+            description: t('teams.failedToUpgradeSubscription'),
+            variant: 'destructive',
+          })
         },
-        body: JSON.stringify({
-          userId: getUserId(user),
-          userEmail: user.email || '',
-          teamId: team.id,
-          priceId: selectedPlan.stripePriceId,
-          quantity: seats,
-          successUrl: `${window.location.origin}/team?success=true`,
-          cancelUrl: `${window.location.origin}/team?canceled=true`,
-          trialEnabled: selectedPlan.trialEnabled,
-          requirePaymentMethod: true,
-        }),
-      })
-
-      if (response.ok) {
-        const { url } = await response.json()
-        onOpenChange(false)
-        onSubscriptionCreated?.()
-        navigateTo(url)
-      } else {
-        throw new Error('Failed to create checkout session')
-      }
-    } catch (error) {
-      console.error('Error creating team checkout session:', error)
-      toast({
-        title: t('common.error'),
-        description: t('teams.failedToUpgradeSubscription'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
-    }
+      },
+    )
   }
 
+  // Keep the selection valid when plans load or the interval flips.
   const availablePlans = pricingPlans.filter(
     (plan) => plan.interval === (isYearly ? 'year' : 'month'),
   )
+  const selectedPlan =
+    availablePlans.find((plan) => plan.id === selectedPlanId) ??
+    availablePlans[0] ??
+    null
 
   if (isLoadingPlans) {
     return (
@@ -232,8 +185,7 @@ export function TeamSubscriptionDialog({
               <RadioGroup
                 value={selectedPlan?.id || ''}
                 onValueChange={(value) => {
-                  const plan = availablePlans.find((p) => p.id === value)
-                  setSelectedPlan(plan || null)
+                  setSelectedPlanId(value)
                 }}
                 className="space-y-3"
               >
@@ -411,16 +363,18 @@ export function TeamSubscriptionDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isLoading}
+            disabled={teamCheckoutMutation.isPending}
           >
             {t('common.cancel')}
           </Button>
           <Button
             onClick={handleSubscribe}
-            disabled={isLoading || !selectedPlan}
+            disabled={teamCheckoutMutation.isPending || !selectedPlan}
           >
             <CreditCard className="mr-2 size-4" />
-            {isLoading ? t('common.loading') : t('teams.subscribeNow')}
+            {teamCheckoutMutation.isPending
+              ? t('common.loading')
+              : t('teams.subscribeNow')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 
 import { useParams, useSearchParams } from 'next/navigation'
 
@@ -8,17 +8,12 @@ import { TeamMemberReportView } from '@/components/team/team-member-report-view'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
 import { useNow } from '@/hooks/use-now'
-import { verifyTeamAccess } from '@/lib/team-auth'
-import { getUserTeam } from '@/services/team-service'
+import { useTeamPageData } from '@/hooks/use-team'
 
 export default function TeamMemberReportPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
-  const [isAuthorized, setIsAuthorized] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [memberEmail, setMemberEmail] = useState<string>('')
-  const [teamId, setTeamId] = useState<string | null>(null)
 
   const memberId = params.memberId as string
   const monthParam = searchParams.get('month')
@@ -26,42 +21,11 @@ export default function TeamMemberReportPage() {
   const now = useNow()
   const selectedMonth = monthParam ? new Date(monthParam + '-01') : now
 
-  useEffect(() => {
-    const checkAccess = async () => {
-      if (!user) return
-
-      setIsLoading(true)
-      try {
-        const userTeam = await getUserTeam(user.uid)
-        if (!userTeam) {
-          setIsAuthorized(false)
-          setTeamId(null)
-          return
-        }
-
-        const authResult = await verifyTeamAccess(
-          userTeam.id,
-          user.uid,
-          'admin',
-        )
-        setIsAuthorized(authResult.authorized)
-        setTeamId(userTeam.id)
-
-        const emailParam = searchParams.get('email')
-        setMemberEmail(emailParam || memberId)
-      } catch (error) {
-        console.error('Failed to verify access:', error)
-        setIsAuthorized(false)
-        setTeamId(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    if (!authLoading && user) {
-      checkAccess()
-    }
-  }, [user, authLoading, memberId, searchParams])
+  const { data, isLoading } = useTeamPageData(user)
+  const teamId = data?.team?.id ?? null
+  const isAuthorized =
+    data?.currentUserRole === 'owner' || data?.currentUserRole === 'admin'
+  const memberEmail = searchParams.get('email') || memberId
 
   useEffect(() => {
     // Trigger print when page loads (for PDF export)

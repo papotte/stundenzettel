@@ -2,10 +2,7 @@ import { render, screen, waitFor } from '@jest-setup'
 import '@testing-library/jest-dom'
 
 import type { PricingPlan } from '@/lib/types'
-import {
-  _resetPricingPlansCacheForTest,
-  getPricingPlans,
-} from '@/services/payment-service'
+import { getPricingPlans } from '@/services/payment-service'
 
 import PricingPage from '../page'
 
@@ -16,7 +13,6 @@ jest.mock('@/services/payment-service', () => ({
     createCheckoutSession: jest.fn(),
     redirectToCheckout: jest.fn(),
   },
-  _resetPricingPlansCacheForTest: jest.fn(),
 }))
 
 // Mock useAuth hook to provide a simple unauthenticated context
@@ -51,9 +47,6 @@ describe('PricingPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockGetPricingPlans.mockResolvedValue(mockPricingPlans)
-    if (_resetPricingPlansCacheForTest) {
-      _resetPricingPlansCacheForTest()
-    }
   })
 
   it('renders the Pricing page with the standalone pricing section', async () => {

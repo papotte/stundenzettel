@@ -28,7 +28,6 @@ const mockCreateTeamInvitation = jest.fn()
 const defaultProps = {
   teamId: 'team-1',
   invitedBy: 'user-1',
-  onInvitationSent: jest.fn(),
 }
 
 describe('InviteMemberDialog', () => {
@@ -204,15 +203,11 @@ describe('InviteMemberDialog', () => {
       await user.click(inviteButton)
 
       await waitFor(() => {
-        expect(defaultProps.onInvitationSent).toHaveBeenCalledWith(
-          expect.objectContaining({
-            id: 'invitation-1',
-            teamId: 'team-1',
-            email: 'test@example.com',
-            role: 'member',
-            invitedBy: 'user-1',
-            status: 'pending',
-          }),
+        expect(mockCreateTeamInvitation).toHaveBeenCalledWith(
+          'team-1',
+          'test@example.com',
+          'member',
+          'user-1',
         )
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.invitationSent',

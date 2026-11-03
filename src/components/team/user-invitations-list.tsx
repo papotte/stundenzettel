@@ -16,53 +16,31 @@ import {
 } from '@/components/ui/table'
 import { useNow } from '@/hooks/use-now'
 import { useToast } from '@/hooks/use-toast'
-import { useUserInvitations } from '@/hooks/use-user-invitations'
+import {
+  useAcceptInvitation,
+  useDeclineInvitation,
+} from '@/hooks/use-user-invitations'
 import { useFormatter } from '@/lib/date-formatter'
 import type { TeamInvitation } from '@/lib/types'
-import {
-  acceptTeamInvitation,
-  declineTeamInvitation,
-} from '@/services/team-service'
 
 interface UserInvitationsListProps {
   invitations: TeamInvitation[]
-  onInvitationsChange: (invitations: TeamInvitation[]) => void
-  onInvitationAccepted?: () => void
-  currentUserEmail: string
-  currentUserId: string
 }
 
-export function UserInvitationsList({
-  invitations,
-  onInvitationsChange,
-  onInvitationAccepted,
-  currentUserEmail,
-  currentUserId,
-}: UserInvitationsListProps) {
+export function UserInvitationsList({ invitations }: UserInvitationsListProps) {
   const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(
     null,
   )
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter().dateTime
-  const { refreshInvitations } = useUserInvitations()
+  const acceptInvitationMutation = useAcceptInvitation()
+  const declineInvitationMutation = useDeclineInvitation()
 
   const handleAcceptInvitation = async (invitation: TeamInvitation) => {
     setLoadingInvitationId(invitation.id)
     try {
-      await acceptTeamInvitation(invitation.id, currentUserId, currentUserEmail)
-
-      // Remove the invitation from the list
-      const updatedInvitations = invitations.filter(
-        (inv) => inv.id !== invitation.id,
-      )
-      onInvitationsChange(updatedInvitations)
-
-      // Refresh global invitations state
-      await refreshInvitations()
-
-      // Notify parent component that invitation was accepted
-      onInvitationAccepted?.()
+      await acceptInvitationMutation.mutateAsync(invitation.id)
 
       toast({
         title: t('teams.invitationAccepted'),
@@ -85,16 +63,7 @@ export function UserInvitationsList({
   const handleDeclineInvitation = async (invitationId: string) => {
     setLoadingInvitationId(invitationId)
     try {
-      await declineTeamInvitation(invitationId)
-
-      // Remove the invitation from the list
-      const updatedInvitations = invitations.filter(
-        (inv) => inv.id !== invitationId,
-      )
-      onInvitationsChange(updatedInvitations)
-
-      // Refresh global invitations state
-      await refreshInvitations()
+      await declineInvitationMutation.mutateAsync(invitationId)
 
       toast({
         title: t('teams.invitationDeclined'),

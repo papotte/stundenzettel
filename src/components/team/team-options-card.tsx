@@ -39,7 +39,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
-import { userSettingsKeys } from '@/lib/query-keys'
+import { queryKeys } from '@/lib/query-keys'
 import type { TeamSettings } from '@/lib/types'
 import {
   getTeamSettings,
@@ -128,7 +128,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
       await setTeamSettings(teamId, data)
       if (user?.uid) {
         await queryClient.invalidateQueries({
-          queryKey: userSettingsKeys.detail(user.uid),
+          queryKey: queryKeys.userSettings(user.uid),
         })
       }
       toast({

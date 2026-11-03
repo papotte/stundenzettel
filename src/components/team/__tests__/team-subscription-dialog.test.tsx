@@ -72,7 +72,6 @@ const defaultProps = {
   onOpenChange: jest.fn(),
   team: mockTeam,
   currentMembersCount: 3,
-  onSubscriptionCreated: jest.fn(),
 }
 
 describe('TeamSubscriptionDialog', () => {
@@ -233,7 +232,7 @@ describe('TeamSubscriptionDialog', () => {
             priceId: 'price_team_monthly',
             quantity: 3,
             successUrl: 'http://localhost/team?success=true',
-            cancelUrl: 'http://localhost/team?canceled=true',
+            cancelUrl: 'http://localhost/team?cancelled=true',
             trialEnabled: true,
             requirePaymentMethod: true,
           }),

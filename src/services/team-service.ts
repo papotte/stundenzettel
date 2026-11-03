@@ -694,6 +694,47 @@ export async function getTeamSubscription(
   }
 }
 
+/**
+ * Link an existing Stripe subscription to a team by copying it onto the
+ * team's subscription doc (teams/{teamId}/subscription/current).
+ */
+export async function linkTeamSubscription(
+  teamId: string,
+  subscription: Subscription,
+): Promise<void> {
+  const teamSubRef = doc(db, 'teams', teamId, 'subscription', 'current')
+  const toISOString = (value: Date | string | null | undefined) => {
+    if (!value) return null
+    if (typeof value === 'string') return value
+    if (value instanceof Date) return value.toISOString()
+    if (
+      typeof value === 'object' &&
+      'toDate' in value &&
+      typeof (value as { toDate: () => Date }).toDate === 'function'
+    ) {
+      return (value as { toDate: () => Date }).toDate().toISOString()
+    }
+    return null
+  }
+  await setDoc(
+    teamSubRef,
+    {
+      stripeSubscriptionId: subscription.stripeSubscriptionId,
+      stripeCustomerId: subscription.stripeCustomerId,
+      status: subscription.status,
+      currentPeriodStart: toISOString(subscription.currentPeriodStart),
+      cancelAt: toISOString(subscription.cancelAt),
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd ?? false,
+      priceId: subscription.priceId,
+      quantity: subscription.quantity ?? 0,
+      updatedAt: serverTimestamp(),
+      planName: subscription.planName ?? undefined,
+      planDescription: subscription.planDescription ?? undefined,
+    },
+    { merge: true },
+  )
+}
+
 // Real-time listeners
 export function onTeamMembersChange(
   teamId: string,

@@ -90,7 +90,6 @@ const defaultProps = {
   team: mockTeam,
   members: mockMembers,
   subscription: mockSubscription,
-  onSubscriptionUpdate: jest.fn(),
 }
 
 describe('TeamSubscriptionCard', () => {
@@ -442,16 +441,6 @@ describe('TeamSubscriptionCard', () => {
       // Click refresh button
       await user.click(refreshButton)
 
-      // Should call getTeamSubscription
-      expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeam.id)
-
-      // Should call onSubscriptionUpdate with the result
-      await waitFor(() => {
-        expect(defaultProps.onSubscriptionUpdate).toHaveBeenCalledWith(
-          mockSubscription,
-        )
-      })
-
       // Should show success toast
       expect(mockToast.toast).toHaveBeenCalledWith({
         title: 'teams.subscription',
@@ -460,22 +449,20 @@ describe('TeamSubscriptionCard', () => {
       })
     })
 
-    it('handles refresh error gracefully', async () => {
+    it('shows success toast after invalidating subscription queries', async () => {
       const user = userEvent.setup()
-      const mockGetTeamSubscription = getTeamSubscription as jest.Mock
-      mockGetTeamSubscription.mockRejectedValue(new Error('Refresh failed'))
 
       render(<TeamSubscriptionCard {...defaultProps} />)
 
       const refreshButton = screen.getByRole('button', { name: '' })
       await user.click(refreshButton)
 
-      // Should show error toast
+      // Should show success toast
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'common.error',
-          description: 'teams.failedToRefreshSubscription',
-          variant: 'destructive',
+          title: 'teams.subscription',
+          description: 'teams.subscriptionRefreshed',
+          variant: 'default',
         })
       })
     })
@@ -494,12 +481,13 @@ describe('TeamSubscriptionCard', () => {
       // Click refresh button
       await user.click(refreshButton)
 
-      // Should call getTeamSubscription
-      expect(mockGetTeamSubscription).toHaveBeenCalledWith(mockTeam.id)
-
-      // Should call onSubscriptionUpdate with null
+      // Should show success toast
       await waitFor(() => {
-        expect(defaultProps.onSubscriptionUpdate).toHaveBeenCalledWith(null)
+        expect(mockToast.toast).toHaveBeenCalledWith({
+          title: 'teams.subscription',
+          description: 'teams.subscriptionRefreshed',
+          variant: 'default',
+        })
       })
     })
   })
@@ -555,21 +543,13 @@ describe('TeamSubscriptionCard', () => {
   })
 
   describe('Manage Seats Button', () => {
-    it('shows manage seats button when onMembersChange is provided', () => {
-      const mockOnMembersChange = jest.fn()
-
-      render(
-        <TeamSubscriptionCard
-          {...defaultProps}
-          onMembersChange={mockOnMembersChange}
-          currentUserRole="owner"
-        />,
-      )
+    it('shows manage seats button for owners and admins', () => {
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       expect(screen.getByText('teams.seatAssignment')).toBeInTheDocument()
     })
 
-    it('does not show manage seats button when onMembersChange is not provided', () => {
+    it('does not show manage seats button for regular members', () => {
       render(<TeamSubscriptionCard {...defaultProps} />)
 
       expect(screen.queryByText('teams.seatAssignment')).not.toBeInTheDocument()
@@ -577,15 +557,8 @@ describe('TeamSubscriptionCard', () => {
 
     it('opens seat assignment dialog when manage seats button is clicked', async () => {
       const user = userEvent.setup()
-      const mockOnMembersChange = jest.fn()
 
-      render(
-        <TeamSubscriptionCard
-          {...defaultProps}
-          onMembersChange={mockOnMembersChange}
-          currentUserRole="owner"
-        />,
-      )
+      render(<TeamSubscriptionCard {...defaultProps} currentUserRole="owner" />)
 
       // Get the button by role before the dialog opens
       const manageSeatsButton = screen.getByRole('button', {

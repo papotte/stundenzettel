@@ -1,55 +1,91 @@
-import { useEffect, useState } from 'react'
+'use client'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAuth } from '@/hooks/use-auth'
+import { queryKeys } from '@/lib/query-keys'
 import type { TeamInvitation } from '@/lib/types'
-import { getUserInvitations } from '@/services/team-service'
+import {
+  acceptTeamInvitation,
+  declineTeamInvitation,
+  getUserInvitations,
+} from '@/services/team-service'
 
 export function useUserInvitations() {
   const { user } = useAuth()
-  const [invitations, setInvitations] = useState<TeamInvitation[]>([])
-  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (!user?.email) {
-      return
-    }
+  const {
+    data,
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.userInvitations(user?.email ?? ''),
+    queryFn: () => getUserInvitations(user!.email),
+    enabled: Boolean(user?.email),
+  })
 
-    const loadInvitations = async () => {
-      setLoading(true)
-      try {
-        const pendingInvitations = await getUserInvitations(user.email)
-        setInvitations(pendingInvitations)
-      } catch (error) {
-        console.error('Error loading user invitations:', error)
-        setInvitations([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadInvitations()
-  }, [user?.email])
-
-  const refreshInvitations = async () => {
-    if (!user?.email) return
-
-    setLoading(true)
-    try {
-      const pendingInvitations = await getUserInvitations(user.email)
-      setInvitations(pendingInvitations)
-    } catch (error) {
-      console.error('Error refreshing user invitations:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const pendingInvitations = user?.email ? invitations : []
+  const invitations: TeamInvitation[] = data ?? []
 
   return {
-    invitations: pendingInvitations,
+    invitations: user?.email ? invitations : [],
     loading,
-    refreshInvitations,
-    hasPendingInvitations: pendingInvitations.length > 0,
+    refreshInvitations: refetch,
+    hasPendingInvitations: invitations.length > 0,
   }
+}
+
+/**
+ * Accept a team invitation. Invalidates the user's invitation list and the
+ * team page bundle so the new membership shows up everywhere.
+ */
+export function useAcceptInvitation() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (invitationId: string) => {
+      if (!user?.email) throw new Error('User is required')
+      return acceptTeamInvitation(invitationId, user.uid, user.email)
+    },
+    onSuccess: () => {
+      if (user?.email) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.userInvitations(user.email),
+        })
+      }
+      if (user?.uid) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.teamPageData(user.uid),
+        })
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.projectScope(user.uid),
+        })
+      }
+    },
+  })
+}
+
+/**
+ * Decline a team invitation. Invalidates the user's invitation list and the
+ * team page bundle.
+ */
+export function useDeclineInvitation() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (invitationId: string) => declineTeamInvitation(invitationId),
+    onSuccess: () => {
+      if (user?.email) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.userInvitations(user.email),
+        })
+      }
+      if (user?.uid) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.teamPageData(user.uid),
+        })
+      }
+    },
+  })
 }

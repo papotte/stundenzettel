@@ -42,8 +42,6 @@ const mockTeam: Team = {
 const defaultProps = {
   team: mockTeam,
   currentUserRole: 'owner' as const,
-  onTeamUpdated: jest.fn(),
-  onTeamDeleted: jest.fn(),
 }
 
 const renderTeamSettingsDialog = (props = {}) => {
@@ -210,13 +208,10 @@ describe('TeamSettingsDialog', () => {
       await user.click(saveButton)
 
       await waitFor(() => {
-        expect(defaultProps.onTeamUpdated).toHaveBeenCalledWith(
-          expect.objectContaining({
-            ...mockTeam,
-            name: 'Updated Team Name',
-            updatedAt: expect.any(Date),
-          }),
-        )
+        expect(mockUpdateTeam).toHaveBeenCalledWith('team-1', {
+          name: 'Updated Team Name',
+          description: 'A test team description',
+        })
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.teamUpdated',
           description: 'teams.teamUpdatedDescription',
@@ -462,7 +457,6 @@ describe('TeamSettingsDialog', () => {
 
       await waitFor(() => {
         expect(mockDeleteTeam).toHaveBeenCalledWith('team-1')
-        expect(defaultProps.onTeamDeleted).toHaveBeenCalledTimes(1)
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.teamDeleted',
           description: 'teams.teamDeletedDescription',

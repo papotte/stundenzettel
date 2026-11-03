@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { addMonths, isSameDay, isSameMonth, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -18,9 +18,14 @@ import {
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
+import {
+  useExportPreviewData,
+  usePublishMonth,
+  usePublishedMonth,
+} from '@/hooks/use-export-preview'
 import { useProjects } from '@/hooks/use-projects'
+import { useAddEntry, useUpdateEntry } from '@/hooks/use-time-tracker'
 import { useToast } from '@/hooks/use-toast'
-import { useUserSettings } from '@/hooks/use-user-settings'
 import { isSpecialLocation } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import { exportToExcel } from '@/lib/excel-export'
@@ -31,16 +36,6 @@ import {
   isProjectTrackingMode,
 } from '@/lib/utils'
 import type { ProjectScope } from '@/services/project-service'
-import {
-  getPublishedMonth,
-  publishMonthForTeam,
-} from '@/services/published-export-service'
-import { getUserTeam } from '@/services/team-service'
-import {
-  addTimeEntry,
-  getTimeEntries,
-  updateTimeEntry,
-} from '@/services/time-entry-service'
 
 import { ExportPreviewActions } from './export-preview-actions'
 import TimeEntryForm from './time-entry-form'
@@ -51,16 +46,19 @@ export default function ExportPreview() {
   const t = useTranslations()
   const format = useFormatter()
   const { toast } = useToast()
-  const { data: userSettings, isPending: settingsPending } = useUserSettings()
+
+  const { data, isLoading } = useExportPreviewData(user)
+  const entries = useMemo(() => data?.entries ?? [], [data?.entries])
+  const userSettings = data?.userSettings ?? null
+  const userTeam = data?.userTeam ?? null
   const isProjectMode = isProjectTrackingMode(userSettings)
-  const [entries, setEntries] = useState<TimeEntry[]>([])
+
   const [projectFilter, setProjectFilter] = useState<string>('all')
-  const [entriesLoading, setEntriesLoading] = useState(true)
-  const [selectedMonth, setSelectedMonth] = useState<Date>()
+  const [selectedMonth, setSelectedMonth] = useState<Date>(() => new Date())
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const [newEntryDate, setNewEntryDate] = useState<Date | null>(null)
-  const [userTeam, setUserTeam] = useState<{ id: string } | null>(null)
+
   const projectScope: ProjectScope | null = useMemo(() => {
     if (userTeam) return { kind: 'team', teamId: userTeam.id }
     if (user) return { kind: 'user', userId: user.uid }
@@ -70,53 +68,23 @@ export default function ExportPreview() {
     projectScope,
     isProjectMode && projectScope != null,
   )
-  const [publishedAt, setPublishedAt] = useState<Date | null | undefined>(
-    undefined,
-  )
-  const [isPublishing, setIsPublishing] = useState(false)
 
-  useEffect(() => {
-    if (!user) {
-      return
-    }
-    const fetchAndSetEntries = async () => {
-      setEntriesLoading(true)
-      try {
-        const [fetchedEntries, team] = await Promise.all([
-          getTimeEntries(user.uid),
-          getUserTeam(user.uid),
-        ])
-        setEntries(fetchedEntries)
-        setUserTeam(team)
-      } catch (error) {
-        console.error('Failed to load initial data from Firestore.', error)
-      }
-      setSelectedMonth(new Date())
-      setEntriesLoading(false)
-    }
-    void fetchAndSetEntries()
-  }, [user])
+  const addEntryMutation = useAddEntry(user?.uid)
+  const updateEntryMutation = useUpdateEntry(user?.uid)
+  const publishMonthMutation = usePublishMonth()
 
   const monthKey = selectedMonth
     ? format.dateTime(selectedMonth, 'yearMonthISO')
     : ''
-  useEffect(() => {
-    if (!user || !userTeam || !monthKey) {
-      return
-    }
-    const fetchState = { cancelled: false }
-    getPublishedMonth(userTeam.id, user.uid, monthKey).then((data) => {
-      if (!fetchState.cancelled) setPublishedAt(data?.publishedAt ?? null)
-    })
-    return () => {
-      fetchState.cancelled = true
-    }
-  }, [user, userTeam, monthKey])
 
-  let effectivePublishedAt: Date | null | undefined = publishedAt
-  if (!user || !userTeam || !monthKey) {
-    effectivePublishedAt = userTeam ? null : undefined
-  }
+  const { data: publishedData } = usePublishedMonth(
+    userTeam?.id,
+    user?.uid,
+    monthKey,
+  )
+
+  const publishedAt =
+    publishedData?.publishedAt ?? (userTeam && monthKey ? null : undefined)
 
   // Only offer projects that actually have entries in the loaded month,
   // using the same matching rule as the export filter itself.
@@ -189,22 +157,20 @@ export default function ExportPreview() {
     })
   }
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = async () => {
     if (!user || !userTeam || !userSettings || !selectedMonth) return
     const monthKeyPublish = format.dateTime(selectedMonth, 'yearMonthISO')
     const entriesForMonth = entries.filter(
       (e) => e.startTime && isSameMonth(e.startTime, selectedMonth),
     )
-    setIsPublishing(true)
     try {
-      await publishMonthForTeam(
-        userTeam.id,
-        user.uid,
-        monthKeyPublish,
-        entriesForMonth,
+      await publishMonthMutation.mutateAsync({
+        teamId: userTeam.id,
+        userId: user.uid,
+        monthKey: monthKeyPublish,
+        entries: entriesForMonth,
         userSettings,
-      )
-      setPublishedAt(new Date())
+      })
       toast({
         title: t('export.publishSuccess'),
       })
@@ -215,10 +181,8 @@ export default function ExportPreview() {
         description: t('toasts.saveFailedDescription'),
         variant: 'destructive',
       })
-    } finally {
-      setIsPublishing(false)
     }
-  }, [user, userTeam, userSettings, selectedMonth, entries, format, t, toast])
+  }
 
   const handleEditEntry = useCallback((entry: TimeEntry) => {
     setEditingEntry(entry)
@@ -244,10 +208,10 @@ export default function ExportPreview() {
       try {
         const existingEntry = entries.find((e) => e.id === entryWithUser.id)
         if (existingEntry) {
-          await updateTimeEntry(entryWithUser.id, entryWithUser)
-          setEntries(
-            entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)),
-          )
+          await updateEntryMutation.mutateAsync({
+            entryId: entryWithUser.id,
+            entry: entryWithUser,
+          })
           toast({
             title: t('toasts.entryUpdatedTitle'),
             description: t('toasts.entryUpdatedDescription', {
@@ -255,11 +219,7 @@ export default function ExportPreview() {
             }),
           })
         } else {
-          const newId = await addTimeEntry(entryWithUser)
-          const newEntry = { ...entryWithUser, id: newId }
-          setEntries((prev) =>
-            [newEntry, ...prev].sort((a, b) => compareEntriesByStartTime(b, a)),
-          )
+          await addEntryMutation.mutateAsync(entryWithUser)
           toast({
             title: t('toasts.entryAddedTitle'),
             description: t('toasts.entryAddedDescription', {
@@ -276,7 +236,7 @@ export default function ExportPreview() {
         })
       }
     },
-    [user, entries, t, toast],
+    [user, entries, t, toast, addEntryMutation, updateEntryMutation],
   )
 
   const handleCloseForm = () => {
@@ -285,12 +245,7 @@ export default function ExportPreview() {
     setNewEntryDate(null)
   }
 
-  const showSkeleton =
-    !user ||
-    entriesLoading ||
-    settingsPending ||
-    !selectedMonth ||
-    !userSettings
+  const showSkeleton = !user || isLoading || !selectedMonth || !userSettings
 
   if (showSkeleton) {
     return (
@@ -385,8 +340,8 @@ export default function ExportPreview() {
                 entries={filteredEntries}
                 selectedMonth={selectedMonth}
                 userTeam={userTeam}
-                publishedAt={effectivePublishedAt}
-                isPublishing={isPublishing}
+                publishedAt={publishedAt}
+                isPublishing={publishMonthMutation.isPending}
                 publishHint={
                   isProjectMode && projectFilter !== 'all'
                     ? t('export.publishScopeHint')

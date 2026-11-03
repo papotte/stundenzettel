@@ -35,10 +35,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useNow } from '@/hooks/use-now'
+import { useCreateInvitation } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
-import type { TeamInvitation } from '@/lib/types'
-import { createTeamInvitation } from '@/services/team-service'
 
 type InviteFormValues = {
   email: string
@@ -48,19 +46,17 @@ type InviteFormValues = {
 interface InviteMemberDialogProps {
   teamId: string
   invitedBy: string
-  onInvitationSent: (invitation: TeamInvitation) => void
 }
 
 export function InviteMemberDialog({
   teamId,
   invitedBy,
-  onInvitationSent,
 }: InviteMemberDialogProps) {
   const [open, setOpen] = useState(false)
   const [isSending, setIsSending] = useState(false)
-  const now = useNow()
   const { toast } = useToast()
   const t = useTranslations()
+  const createInvitationMutation = useCreateInvitation(invitedBy, teamId)
 
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(
@@ -80,26 +76,12 @@ export function InviteMemberDialog({
   const onSubmit = async (values: InviteFormValues) => {
     setIsSending(true)
     try {
-      const invitationId = await createTeamInvitation(
-        teamId,
-        values.email,
-        values.role,
-        invitedBy,
-      )
-
-      // Create invitation object for callback
-      const invitation: TeamInvitation = {
-        id: invitationId,
-        teamId,
+      await createInvitationMutation.mutateAsync({
         email: values.email,
         role: values.role,
         invitedBy,
-        invitedAt: now,
-        expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        status: 'pending',
-      }
+      })
 
-      onInvitationSent(invitation)
       setOpen(false)
       form.reset()
 
@@ -131,7 +113,7 @@ export function InviteMemberDialog({
           {t('teams.inviteMember')}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>{t('teams.inviteMemberTitle')}</DialogTitle>
           <DialogDescription>

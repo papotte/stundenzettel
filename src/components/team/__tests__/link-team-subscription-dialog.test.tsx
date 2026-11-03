@@ -10,6 +10,7 @@ import type { Subscription } from '@/lib/types'
 import { getPricingPlans } from '@/services/payment-service'
 // Get mocked functions after mocks are set up
 import { subscriptionService } from '@/services/subscription-service'
+import { linkTeamSubscription } from '@/services/team-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import { LinkTeamSubscriptionDialog } from '../link-team-subscription-dialog'
@@ -30,6 +31,10 @@ jest.mock('@/services/subscription-service', () => ({
 
 jest.mock('@/services/payment-service', () => ({
   getPricingPlans: jest.fn(),
+}))
+
+jest.mock('@/services/team-service', () => ({
+  linkTeamSubscription: jest.fn(),
 }))
 
 // Mock toast
@@ -63,11 +68,14 @@ const mockGetPricingPlans = getPricingPlans as jest.MockedFunction<
   typeof getPricingPlans
 >
 
+const mockLinkTeamSubscription = linkTeamSubscription as jest.MockedFunction<
+  typeof linkTeamSubscription
+>
+
 const defaultProps = {
   open: true,
   onOpenChange: jest.fn(),
   teamId: 'team-123',
-  onLinked: jest.fn(),
 }
 
 const mockTeamPlan = {
@@ -104,6 +112,7 @@ describe('LinkTeamSubscriptionDialog', () => {
     mockGetPricingPlans.mockResolvedValue([mockTeamPlan])
     mockDoc.mockReturnValue({} as DocumentReference)
     mockSetDoc.mockResolvedValue(undefined)
+    mockLinkTeamSubscription.mockResolvedValue(undefined)
   })
 
   it('renders dialog and shows loading state initially', () => {
@@ -161,8 +170,10 @@ describe('LinkTeamSubscriptionDialog', () => {
     await user.click(linkButton)
 
     await waitFor(() => {
-      expect(mockSetDoc).toHaveBeenCalled()
-      expect(defaultProps.onLinked).toHaveBeenCalled()
+      expect(mockLinkTeamSubscription).toHaveBeenCalledWith(
+        'team-123',
+        mockTeamSubscription,
+      )
       expect(defaultProps.onOpenChange).toHaveBeenCalledWith(false)
     })
   })

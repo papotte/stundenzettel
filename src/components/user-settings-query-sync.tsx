@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserSettings } from '@/hooks/use-user-settings'
 import { type Locale, defaultLocale, locales } from '@/i18n'
-import { userSettingsKeys } from '@/lib/query-keys'
+import { queryKeys } from '@/lib/query-keys'
 import { getUserLocale, setUserLocale } from '@/services/locale'
 import { setUserSettings } from '@/services/user-settings-service'
 
@@ -22,12 +22,12 @@ export function UserSettingsQuerySync() {
   const [, startTransition] = useTransition()
 
   const uid = user?.uid ?? ''
-  const { data } = useUserSettings()
+  const { userSettings: data } = useUserSettings(user)
 
   useEffect(() => {
     const prev = prevUidRef.current
     if (prev && !user) {
-      queryClient.removeQueries({ queryKey: userSettingsKeys.detail(prev) })
+      queryClient.removeQueries({ queryKey: queryKeys.userSettings(prev) })
     }
     prevUidRef.current = user?.uid
   }, [user, queryClient])
@@ -51,7 +51,7 @@ export function UserSettingsQuerySync() {
           : defaultLocale
         await setUserSettings(uid, { ...data, language: coerced })
         await queryClient.invalidateQueries({
-          queryKey: userSettingsKeys.detail(uid),
+          queryKey: queryKeys.userSettings(uid),
         })
         if (!cancelled) {
           startTransition(() => {

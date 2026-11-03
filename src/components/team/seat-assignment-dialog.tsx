@@ -24,11 +24,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
+import { useAssignSeats } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, TeamMember } from '@/lib/types'
 import { maskEmail } from '@/lib/utils'
-import { assignSeat, unassignSeat } from '@/services/team-service'
 
 interface SeatAssignmentDialogProps {
   open: boolean
@@ -37,7 +37,6 @@ interface SeatAssignmentDialogProps {
   members: TeamMember[]
   subscription: Subscription | null
   currentUserId: string
-  onMembersChange: (members: TeamMember[]) => void
 }
 
 export function SeatAssignmentDialog({
@@ -47,13 +46,17 @@ export function SeatAssignmentDialog({
   members,
   subscription,
   currentUserId,
-  onMembersChange,
 }: SeatAssignmentDialogProps) {
   const t = useTranslations()
   const format = useFormatter()
   const { toast } = useToast()
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
+  const assignSeatsMutation = useAssignSeats(
+    currentUserId,
+    teamId,
+    currentUserId,
+  )
 
   const totalSeats = subscription?.quantity || 0
   const assignedSeats = members.filter((m) => m.seatAssignment?.isActive).length
@@ -71,22 +74,7 @@ export function SeatAssignmentDialog({
 
     setLoadingMemberId(memberId)
     try {
-      await assignSeat(teamId, memberId, currentUserId)
-
-      // Refresh members list
-      const updatedMembers = members.map((member) =>
-        member.id === memberId
-          ? {
-              ...member,
-              seatAssignment: {
-                assignedAt: new Date(),
-                assignedBy: currentUserId,
-                isActive: true,
-              },
-            }
-          : member,
-      )
-      onMembersChange(updatedMembers)
+      await assignSeatsMutation.mutateAsync({ memberId, assign: true })
 
       toast({
         title: t('teams.seatAssigned'),
@@ -117,22 +105,7 @@ export function SeatAssignmentDialog({
 
     setLoadingMemberId(memberId)
     try {
-      await unassignSeat(teamId, memberId, currentUserId)
-
-      // Refresh members list
-      const updatedMembers = members.map((member) =>
-        member.id === memberId
-          ? {
-              ...member,
-              seatAssignment: {
-                assignedAt: new Date(),
-                assignedBy: currentUserId,
-                isActive: false,
-              },
-            }
-          : member,
-      )
-      onMembersChange(updatedMembers)
+      await assignSeatsMutation.mutateAsync({ memberId, assign: false })
 
       toast({
         title: t('teams.seatUnassigned'),

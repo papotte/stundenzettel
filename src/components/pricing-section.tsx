@@ -9,11 +9,12 @@ import PricingCard from '@/components/pricing/pricing-card'
 import PricingFAQ from '@/components/pricing/pricing-faq'
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useAuth } from '@/hooks/use-auth'
+import { usePricingPlans } from '@/hooks/use-pricing-plans'
+import { useCheckout } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
 import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
-import { getPricingPlans, paymentService } from '@/services/payment-service'
 
 interface PricingSectionProps {
   variant?: 'landing' | 'standalone'
@@ -33,24 +34,11 @@ export default function PricingSection({
   const t = useTranslations('landing')
 
   const [isYearly, setIsYearly] = useState(false)
-  const [loading, setLoading] = useState<string | null>(null)
-  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
-  const [isLoadingPlans, setIsLoadingPlans] = useState(true)
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const loadPricingPlans = async () => {
-      try {
-        const plans = await getPricingPlans()
-        setPricingPlans(plans)
-      } catch (error) {
-        console.error('Error loading pricing plans:', error)
-      } finally {
-        setIsLoadingPlans(false)
-      }
-    }
-
-    loadPricingPlans()
-  }, [])
+  const { data: pricingPlans = [], isLoading: isLoadingPlans } =
+    usePricingPlans()
+  const checkoutMutation = useCheckout(user)
 
   // Check for plan selection from URL params (post-login flow)
   useEffect(() => {
@@ -81,40 +69,35 @@ export default function PricingSection({
       return
     }
 
-    setLoading(plan.id)
-    try {
-      // Use email for mock users, uid for real users
-      const userId: string | undefined = getUserId(user)
-      if (!userId) {
-        toast({
-          title: t('pricing.errorTitle'),
-          description: 'User ID is missing (neither uid nor email found).',
-          variant: 'destructive',
-        })
-        setLoading(null)
-        return
-      }
-
-      const { url } = await paymentService.createCheckoutSession(
-        userId,
-        user.email,
-        plan.stripePriceId,
-        `${window.location.origin}/subscription?success=true`,
-        `${window.location.origin}/pricing?canceled=true`,
-        true, // Enable trials by default
-      )
-
-      await paymentService.redirectToCheckout(url)
-    } catch (error) {
-      console.error('Error creating checkout session:', error)
+    if (!getUserId(user)) {
       toast({
         title: t('pricing.errorTitle'),
         description: t('pricing.errorDescription'),
         variant: 'destructive',
       })
-    } finally {
-      setLoading(null)
+      return
     }
+
+    setLoadingPlanId(plan.id)
+    checkoutMutation.mutate(
+      {
+        priceId: plan.stripePriceId,
+        successUrl: `${window.location.origin}/subscription?success=true`,
+        cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+        trialEnabled: true,
+      },
+      {
+        onError: (error) => {
+          console.error('Error creating checkout session:', error)
+          toast({
+            title: t('pricing.errorTitle'),
+            description: t('pricing.errorDescription'),
+            variant: 'destructive',
+          })
+        },
+        onSettled: () => setLoadingPlanId(null),
+      },
+    )
   }
   const handleTeamSubscribe = async (plan: PricingPlan) => {
     if (!user) {
@@ -133,7 +116,8 @@ export default function PricingSection({
   const containerClasses =
     variant === 'landing' ? 'w-full py-12 md:py-24 lg:py-32' : 'py-24 sm:py-32'
 
-  console.log('isLoadingPlans', isLoadingPlans)
+  const loading = checkoutMutation.isPending ? loadingPlanId : null
+
   return (
     <div className={`${containerClasses} ${className}`}>
       <div className="mx-auto max-w-7xl px-6 lg:px-8">

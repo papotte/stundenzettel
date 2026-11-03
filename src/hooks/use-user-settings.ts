@@ -1,27 +1,99 @@
 'use client'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useAuth } from '@/hooks/use-auth'
-import { userSettingsKeys } from '@/lib/query-keys'
-import { getUserSettings } from '@/services/user-settings-service'
+import { queryKeys } from '@/lib/query-keys'
+import type { UserSettings } from '@/lib/types'
+import {
+  getUserSettings,
+  setUserSettings,
+} from '@/services/user-settings-service'
 
-const USER_SETTINGS_STALE_MS = 2 * 60 * 1000
-
-export function useUserSettings() {
-  const { user } = useAuth()
-  const uid = user?.uid ?? ''
-
-  return useQuery({
-    queryKey: userSettingsKeys.detail(uid),
-    queryFn: () => getUserSettings(uid),
-    enabled: Boolean(uid),
-    staleTime: USER_SETTINGS_STALE_MS,
-  })
+export interface UseUserSettingsOptions {
+  /** When false, the query will not run. Default true when user is present. */
+  enabled?: boolean
 }
 
-export function useInvalidateUserSettings() {
+/**
+ * Shared hook for reading and updating user settings with React Query cache.
+ * Use this wherever you need current user settings (company page, preferences,
+ * tracker, export preview, etc.).
+ */
+export function useUserSettings(
+  user: { uid: string } | null,
+  options: UseUserSettingsOptions = {},
+) {
   const queryClient = useQueryClient()
-  return (userId: string) =>
-    queryClient.invalidateQueries({ queryKey: userSettingsKeys.detail(userId) })
+  const uid = user?.uid ?? ''
+  const enabled = options.enabled ?? Boolean(uid)
+
+  const {
+    data: userSettings = null,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.userSettings(uid),
+    queryFn: () => getUserSettings(uid),
+    enabled,
+  })
+
+  const invalidate = () => {
+    if (!uid) return
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.userSettings(uid),
+    })
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.timeEntries(uid),
+    })
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.exportPreviewData(uid),
+    })
+  }
+
+  return {
+    userSettings: userSettings ?? null,
+    isLoading,
+    error,
+    refetch,
+    invalidate,
+  }
+}
+
+/**
+ * Save user settings and invalidate related queries so tracker, export, and
+ * any useUserSettings consumers get fresh data.
+ */
+export async function saveUserSettings(
+  userId: string,
+  settings: Partial<UserSettings> & Record<string, unknown>,
+): Promise<void> {
+  const current = await getUserSettings(userId)
+  await setUserSettings(userId, { ...current, ...settings })
+}
+
+/**
+ * Mutation wrapper around saveUserSettings that invalidates the settings,
+ * entries, and export-preview caches on success.
+ */
+export function useSaveUserSettings(user: { uid: string } | null) {
+  const queryClient = useQueryClient()
+  const uid = user?.uid ?? ''
+
+  return useMutation({
+    mutationFn: (settings: Partial<UserSettings> & Record<string, unknown>) =>
+      saveUserSettings(uid, settings),
+    onSuccess: () => {
+      if (!uid) return
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.userSettings(uid),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.timeEntries(uid),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.exportPreviewData(uid),
+      })
+    },
+  })
 }

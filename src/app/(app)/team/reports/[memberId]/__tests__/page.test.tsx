@@ -4,8 +4,7 @@ import { render, screen, waitFor } from '@jest-setup'
 import { useParams, useSearchParams } from 'next/navigation'
 
 import { useAuth } from '@/hooks/use-auth'
-import { verifyTeamAccess } from '@/lib/team-auth'
-import { getUserTeam } from '@/services/team-service'
+import { useTeamPageData } from '@/hooks/use-team'
 
 import TeamMemberReportPage from '../page'
 
@@ -16,12 +15,13 @@ jest.mock('next/navigation', () => ({
   useParams: jest.fn(),
 }))
 
-// Mock auth and team services
+// Mock auth and team data hooks
 jest.mock('@/hooks/use-auth', () => ({
   useAuth: jest.fn(),
 }))
-jest.mock('@/lib/team-auth')
-jest.mock('@/services/team-service')
+jest.mock('@/hooks/use-team', () => ({
+  useTeamPageData: jest.fn(),
+}))
 
 // Mock TeamMemberReportView to avoid hitting Firestore/services again
 jest.mock('@/components/team/team-member-report-view', () => ({
@@ -55,6 +55,11 @@ describe('TeamMemberReportPage (print view)', () => {
     ;(useParams as jest.Mock).mockReturnValue({
       memberId: 'member-1',
     })
+    ;(useTeamPageData as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+    })
   })
 
   it('shows loading skeleton while auth or access check is in progress', () => {
@@ -73,7 +78,18 @@ describe('TeamMemberReportPage (print view)', () => {
       user: { uid: 'user-1', email: 'user@example.com' },
       loading: false,
     })
-    ;(getUserTeam as jest.Mock).mockResolvedValue(null)
+    ;(useTeamPageData as jest.Mock).mockReturnValue({
+      data: {
+        team: { id: 'team-1', name: 'Test Team' },
+        members: [],
+        invitations: [],
+        subscription: null,
+        currentUserRole: 'member',
+        userInvitations: [],
+      },
+      isLoading: false,
+      isError: false,
+    })
 
     render(<TeamMemberReportPage />)
 
@@ -91,14 +107,17 @@ describe('TeamMemberReportPage (print view)', () => {
 
     mockSearchParams.set('month', '2024-01')
     mockSearchParams.set('email', 'member@example.com')
-    ;(getUserTeam as jest.Mock).mockResolvedValue({
-      id: 'team-1',
-      name: 'Test Team',
-      ownerId: 'admin-1',
-    })
-    ;(verifyTeamAccess as jest.Mock).mockResolvedValue({
-      authorized: true,
-      userRole: 'admin',
+    ;(useTeamPageData as jest.Mock).mockReturnValue({
+      data: {
+        team: { id: 'team-1', name: 'Test Team', ownerId: 'admin-1' },
+        members: [],
+        invitations: [],
+        subscription: null,
+        currentUserRole: 'admin',
+        userInvitations: [],
+      },
+      isLoading: false,
+      isError: false,
     })
 
     render(<TeamMemberReportPage />)

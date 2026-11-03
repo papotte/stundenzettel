@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
 import { act, renderHook, waitFor } from '@jest-setup'
 
 import type { Subscription } from '@/lib/types'
@@ -36,9 +38,23 @@ jest.mock('@/hooks/use-auth', () => ({
   useAuth: () => mockAuthContext,
 }))
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <SubscriptionProvider>{children}</SubscriptionProvider>
-)
+function TestWrapper({ children }: { children: React.ReactNode }) {
+  const [client] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+        },
+      }),
+  )
+  return (
+    <QueryClientProvider client={client}>
+      <SubscriptionProvider>{children}</SubscriptionProvider>
+    </QueryClientProvider>
+  )
+}
+
+const wrapper = TestWrapper
 
 describe('SubscriptionContext', () => {
   beforeEach(() => {
