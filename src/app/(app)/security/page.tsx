@@ -31,9 +31,7 @@ export default function SecurityPage() {
   const router = useRouter()
   const t = useTranslations()
 
-  const [pageLoading, setPageLoading] = useState(true)
-  const [hasPasswordAuth, setHasPasswordAuth] = useState<boolean>(false)
-  const [checkingPasswordAuth, setCheckingPasswordAuth] = useState(true)
+  const [hasPasswordAuth, setHasPasswordAuth] = useState<boolean | null>(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -42,29 +40,22 @@ export default function SecurityPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      setPageLoading(false)
-      checkPasswordAuth()
+    if (!user) return
+    let cancelled = false
+    hasPasswordAuthentication(user.uid)
+      .then((hasAuth) => {
+        if (!cancelled) setHasPasswordAuth(hasAuth)
+      })
+      .catch((error) => {
+        console.error('Error checking password authentication:', error)
+        if (!cancelled) setHasPasswordAuth(false)
+      })
+    return () => {
+      cancelled = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  const checkPasswordAuth = async () => {
-    if (!user) return
-
-    try {
-      setCheckingPasswordAuth(true)
-      const hasAuth = await hasPasswordAuthentication(user.uid)
-      setHasPasswordAuth(hasAuth)
-    } catch (error) {
-      console.error('Error checking password authentication:', error)
-      setHasPasswordAuth(false)
-    } finally {
-      setCheckingPasswordAuth(false)
-    }
-  }
-
-  if (authLoading || pageLoading) {
+  if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-muted p-4 sm:p-8">
         <div className="mx-auto max-w-2xl">
@@ -73,10 +64,6 @@ export default function SecurityPage() {
         </div>
       </div>
     )
-  }
-
-  if (!user) {
-    return null
   }
 
   return (
@@ -99,7 +86,7 @@ export default function SecurityPage() {
                   <h3 className="font-medium">{t('settings.accountEmail')}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
-                {!checkingPasswordAuth && hasPasswordAuth ? (
+                {hasPasswordAuth === true ? (
                   <Button
                     variant="outline"
                     size="sm"
@@ -131,7 +118,7 @@ export default function SecurityPage() {
               </div>
 
               {/* Password change section - only show for email users */}
-              {!checkingPasswordAuth && hasPasswordAuth && (
+              {hasPasswordAuth === true && (
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div>
                     <h3 className="font-medium">{t('settings.password')}</h3>

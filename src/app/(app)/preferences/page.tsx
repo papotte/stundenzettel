@@ -98,8 +98,21 @@ export default function PreferencesPage() {
     projectScopeResult?.membership?.role === 'owner' ||
     projectScopeResult?.membership?.role === 'admin'
   const [isSaving, setIsSaving] = useState(false)
-  const [isExpectedHoursManuallySet, setIsExpectedHoursManuallySet] =
-    useState(false)
+  // null = derive from loaded settings, true/false = user edited or reset
+  const [expectedHoursManualOverride, setExpectedHoursManualOverride] =
+    useState<boolean | null>(null)
+  const isExpectedHoursManuallySet =
+    expectedHoursManualOverride ??
+    Boolean(
+      settings?.expectedMonthlyHours &&
+      settings?.defaultWorkHours &&
+      Math.abs(
+        settings.expectedMonthlyHours -
+          calculateExpectedMonthlyHours({
+            defaultWorkHours: settings.defaultWorkHours,
+          }),
+      ) > 0.1,
+    )
   const languageFieldId = useId()
 
   const form = useZodForm(preferencesFormSchema, {
@@ -116,6 +129,7 @@ export default function PreferencesPage() {
       trackingMode: 'locations',
     },
   })
+  const { reset } = form
 
   // Watch defaultWorkHours to auto-calculate expectedMonthlyHours
   const defaultWorkHours = Number(form.watch('defaultWorkHours'))
@@ -138,19 +152,8 @@ export default function PreferencesPage() {
 
   useEffect(() => {
     if (!settings) return
-    const forForm = stripReadOnlySettingsFields(settings)
-    form.reset(forForm)
-
-    if (settings.expectedMonthlyHours && settings.defaultWorkHours) {
-      const autoCalculated = calculateExpectedMonthlyHours({
-        defaultWorkHours: settings.defaultWorkHours,
-      })
-      if (Math.abs(settings.expectedMonthlyHours - autoCalculated) > 0.1) {
-        setIsExpectedHoursManuallySet(true)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, form.reset])
+    reset(stripReadOnlySettingsFields(settings))
+  }, [settings, reset])
 
   useEffect(() => {
     if (!settingsError) return
@@ -367,7 +370,7 @@ export default function PreferencesPage() {
                           onChange={(e) => {
                             field.onChange(e)
                             // Mark as manually set when user changes the value
-                            setIsExpectedHoursManuallySet(true)
+                            setExpectedHoursManualOverride(true)
                           }}
                         />
                       </FormControl>
@@ -385,7 +388,7 @@ export default function PreferencesPage() {
                                 defaultWorkHours,
                               })
                               form.setValue('expectedMonthlyHours', calculated)
-                              setIsExpectedHoursManuallySet(false)
+                              setExpectedHoursManualOverride(false)
                             }}
                             className="ml-2 text-sm text-primary underline hover:text-primary/80"
                           >

@@ -78,6 +78,7 @@ export default function CompanyPage() {
       exportIncludePassengerTime: true,
     },
   })
+  const { reset } = form
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -87,7 +88,7 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (!settings) return
-    form.reset({
+    reset({
       companyName: settings.companyName || '',
       companyEmail: settings.companyEmail || '',
       companyPhone1: settings.companyPhone1 || '',
@@ -99,8 +100,7 @@ export default function CompanyPage() {
       exportIncludeDriverTime: settings.exportIncludeDriverTime !== false,
       exportIncludePassengerTime: settings.exportIncludePassengerTime !== false,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, form.reset])
+  }, [settings, reset])
 
   useEffect(() => {
     if (!settingsError) return

@@ -87,12 +87,13 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
       trackingMode: 'locations',
     },
   })
+  const { reset } = form
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const settings: TeamSettings = await getTeamSettings(teamId)
-        form.reset({
+        reset({
           defaultDriverCompensationPercent:
             settings.defaultDriverCompensationPercent ?? 100,
           defaultPassengerCompensationPercent:
@@ -116,8 +117,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
       }
     }
     fetchSettings()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId])
+  }, [teamId, reset, toast, t])
 
   const onSubmit = async (data: TeamOptionsCardValues) => {
     if (!canEdit) return
