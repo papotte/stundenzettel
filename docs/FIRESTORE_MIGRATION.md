@@ -28,10 +28,10 @@ The application automatically selects the appropriate Firestore configuration ba
 
 For test and development environments, the application automatically connects to local Firebase emulators:
 
-- **Firestore Emulator**: Port 8080
-- **Auth Emulator**: Port 9099
-- **Functions Emulator**: Port 9001
-- **Emulator UI**: Port 4000
+- **Firestore Emulator**: Port 18080
+- **Auth Emulator**: Port 19099
+- **Functions Emulator**: Port 19001
+- **Emulator UI**: Port 14000
 
 ## Emulator Setup and Configuration
 
@@ -56,10 +56,11 @@ The `firebase.json` file configures the emulators:
     "indexes": "firestore.indexes.json"
   },
   "emulators": {
-    "auth": { "port": 9099 },
-    "firestore": { "port": 8080 },
-    "functions": { "port": 9001 },
-    "ui": { "enabled": true, "port": 4000 }
+    "auth": { "host": "0.0.0.0", "port": 19099 },
+    "firestore": { "host": "0.0.0.0", "port": 18080 },
+    "functions": { "host": "0.0.0.0", "port": 19001 },
+    "ui": { "enabled": true, "host": "0.0.0.0", "port": 14000 },
+    "hub": { "host": "0.0.0.0", "port": 14400 }
   }
 }
 ```
@@ -81,6 +82,30 @@ npm run emulators:export
 # Seed emulator with test data
 npm run seed:emulator
 ```
+
+### 4. Running Emulators in Docker
+
+The repository includes `emulators.Dockerfile` and `docker-compose.yml` to run the emulator suite (Auth, Firestore, Functions, UI) in a container instead of installing Java and firebase-tools locally:
+
+```bash
+docker compose up --build
+```
+
+- The Emulator UI is available at `http://localhost:14000`.
+- Emulator data persists in the `firebase_data` Docker volume, mounted at `/firebase/data` in the container. Data is imported on startup and exported on shutdown. Use `docker compose down -v` to delete the volume and start empty.
+- Rebuild with `--build` after changing `firebase.json`, `firestore.rules`, or Cloud Functions code, since they are copied into the image at build time.
+
+#### Why the ports are prefixed
+
+The emulator ports use a `1` prefix (UI 14000, Hub 14400, Firestore 18080, Functions 19001, Auth 19099) so this project's emulators can run alongside other projects' emulators on the same machine.
+
+The Emulator UI talks to each emulator directly from the browser using the addresses the emulators report, so host and container ports must be identical: change the actual ports in `firebase.json` and map them one-to-one in `docker-compose.yml`. Remapping only the host side of a port mapping (e.g. `18080:8080`) breaks the UI's Firestore connection with CORS/network errors.
+
+#### Caveats
+
+- Do not mount a volume over `/firebase` itself. The image bakes `firebase.json`, `firestore.rules`, and the compiled functions into that directory, and a mount on it hides them (`could not locate firebase.json`). Mount only `/firebase/data`.
+- The Firestore "Requests" inspector in the Emulator UI uses an internal websocket port that is not exposed; browsing data works, but live request inspection may not.
+- Cloud Functions require a supported Node engine. `functions/package.json` must declare a `node` version that firebase-tools supports (currently 22 or 24), otherwise functions fail to load in the emulator.
 
 ## Emulator Usage in Development
 
@@ -104,7 +129,7 @@ npm run seed:emulator
 
 ### Emulator UI
 
-Access the Firebase Emulator UI at `http://localhost:4000` to:
+Access the Firebase Emulator UI at `http://localhost:14000` to:
 
 - Monitor Firestore operations in real-time
 - View authentication state
@@ -215,7 +240,7 @@ npm run emulators:start
 npm run dev
 
 # Access your app at http://localhost:9002
-# Access emulator UI at http://localhost:4000
+# Access emulator UI at http://localhost:14000
 ```
 
 ### Testing Features
@@ -252,9 +277,9 @@ npm run seed:emulator
 
    ```bash
    # Check if ports are in use
-   lsof -i :8080  # Firestore
-   lsof -i :9099  # Auth
-   lsof -i :4000  # UI
+   lsof -i :18080  # Firestore
+   lsof -i :19099  # Auth
+   lsof -i :14000  # UI
 
    # Kill processes if needed
    kill -9 <PID>
@@ -293,8 +318,8 @@ npm run emulators:fresh
 firebase emulators:start --only firestore,auth --debug
 
 # Check emulator health
-curl http://localhost:8080/  # Firestore
-curl http://localhost:9099/  # Auth
+curl http://localhost:18080/  # Firestore
+curl http://localhost:19099/  # Auth
 ```
 
 ## Benefits of Emulator-Based Development

@@ -7,7 +7,7 @@ globs: ["functions/**", "**/firebase*.ts", "**/firestore*.ts", "firestore.rules"
 
 ## Client (Next.js)
 
-- **`src/lib/firebase.ts`** – Exports `db` (Firestore) and `auth`. Uses `NEXT_PUBLIC_ENVIRONMENT`: `test` and `development` connect to **emulators** (Firestore 8080, Auth 9099); `production` uses real Firebase. Database ID: `test-database` for test, or `NEXT_PUBLIC_FIREBASE_DATABASE_ID` or default `''`.
+- **`src/lib/firebase.ts`** – Exports `db` (Firestore) and `auth`. Uses `NEXT_PUBLIC_ENVIRONMENT`: `test` and `development` connect to **emulators** (Firestore 18080, Auth 19099); `production` uses real Firebase. Database ID: `test-database` for test, or `NEXT_PUBLIC_FIREBASE_DATABASE_ID` or default `''`.
 
 ## Services
 
@@ -27,6 +27,6 @@ globs: ["functions/**", "**/firebase*.ts", "**/firestore*.ts", "firestore.rules"
 
 ## Emulators
 
-- **Ports:** Firestore 8080, Auth 9099, Functions 9001, UI 4000.
+- **Ports:** Firestore 18080, Auth 19099, Functions 19001, UI 14000, Hub 14400. Prefixed to avoid collisions with other projects' emulators; the Emulator UI talks to emulators directly, so host and container ports must match when running in Docker.
 - **Commands:** `npm run emulators:start` (with import/export to `emulator-data/`), `npm run emulators:fresh`, `npm run emulator:seed`, `npm run emulator:seed:ci`. E2E: `npm run test:e2e:ci` starts emulators, runs Playwright, then stops.
 - **Docs:** `docs/FIRESTORE_MIGRATION.md` for emulator setup and usage.

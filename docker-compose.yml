@@ -1,0 +1,21 @@
+services:
+  emulator:
+    build:
+      context: .
+      dockerfile: emulators.Dockerfile
+    stop_grace_period: 1m
+    environment:
+      FIREBASE_PROJECT: 'timewise-tracker-61lqb'
+      GCLOUD_PROJECT: 'timewise-tracker-61lqb'
+      FORCE_COLOR: 'true'
+    ports:
+      - '14000:14000' # ui
+      - '14400:14400' # hub
+      - '18080:18080' # firestore
+      - '19001:19001' # functions
+      - '19099:19099' # auth
+    volumes:
+      - firebase_data:/firebase/data
+
+volumes:
+  firebase_data:

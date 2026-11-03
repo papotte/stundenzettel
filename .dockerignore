@@ -1,0 +1,12 @@
+node_modules
+functions/node_modules
+functions/lib
+.next
+.git
+emulator-data
+firebase-export-*
+coverage
+test-results
+playwright-report
+.env*
+*.log

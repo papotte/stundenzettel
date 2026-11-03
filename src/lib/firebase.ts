@@ -73,11 +73,16 @@ const getDatabaseId = (): string => {
       // Connect to emulators
       const databaseId = getDatabaseId()
       db = getFirestore(app, databaseId)
-      connectFirestoreEmulator(db, 'localhost', 8080)
+      const firestoreEmulatorHost =
+        process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST ?? 'localhost:8080'
+      const [firestoreHost, firestorePort] = firestoreEmulatorHost.split(':')
+      connectFirestoreEmulator(db, firestoreHost, Number(firestorePort))
       console.log('Connected to Firestore with database ID:', databaseId)
       // Connect Auth emulator
       auth = getAuth(app)
-      connectAuthEmulator(auth, 'http://localhost:9099')
+      const authEmulatorHost =
+        process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST ?? 'localhost:9099'
+      connectAuthEmulator(auth, `http://${authEmulatorHost}`)
     } else {
       // Connect to real Firebase services
       const databaseId = getDatabaseId()

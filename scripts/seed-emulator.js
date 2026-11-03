@@ -66,8 +66,14 @@ const auth = getAuth(app)
 
 // Connect to emulators BEFORE any Firebase operations
 log('🔌 Connecting to Firebase emulators...')
-connectFirestoreEmulator(db, 'localhost', 8080)
-connectAuthEmulator(auth, 'http://localhost:9099')
+const [firestoreHost, firestorePort] = (
+  process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080'
+).split(':')
+connectFirestoreEmulator(db, firestoreHost, Number(firestorePort))
+connectAuthEmulator(
+  auth,
+  `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST ?? 'localhost:9099'}`,
+)
 log('✅ Connected to emulators')
 
 // Note: Emulators bypass Firestore security rules by default
