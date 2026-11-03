@@ -24,6 +24,7 @@ import {
   getTeamSubscription,
   getUserInvitations,
   getUserTeam,
+  getUserTeamMembership,
   linkTeamSubscription,
   onTeamSubscriptionChange,
   removeTeamMember,
@@ -139,6 +140,16 @@ export function useTeamInvitations(teamId: string | null | undefined) {
   })
 }
 
+/** The user's own team membership record (teamId + role). */
+export function useTeamMembership(user: { uid: string } | null) {
+  const uid = user?.uid ?? ''
+  return useQuery({
+    queryKey: queryKeys.teamMembership(uid),
+    queryFn: () => getUserTeamMembership(uid),
+    enabled: Boolean(uid),
+  })
+}
+
 export function useTeamSubscription(teamId: string | null | undefined) {
   return useQuery({
     queryKey: queryKeys.teamSubscription(teamId ?? ''),
@@ -202,6 +213,9 @@ function useInvalidateTeamQueries() {
       })
       void queryClient.invalidateQueries({
         queryKey: queryKeys.exportPreviewData(userId),
+      })
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.teamMembership(userId),
       })
     }
     if (teamId) {

@@ -46,6 +46,9 @@ export const queryKeys = {
   /** Team members. */
   teamMembers: (teamId: string) => ['teamMembers', teamId] as const,
 
+  /** The user's own team membership record (teamId + role). */
+  teamMembership: (userId: string) => ['teamMembership', userId] as const,
+
   /** Team invitations. */
   teamInvitations: (teamId: string) => ['teamInvitations', teamId] as const,
 
