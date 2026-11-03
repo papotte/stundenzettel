@@ -2,8 +2,6 @@
 
 import React, { useMemo, useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-
 import { differenceInMinutes, set } from 'date-fns'
 import {
   AlertTriangle,
@@ -13,7 +11,7 @@ import {
   Save,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -68,6 +66,7 @@ import {
 import { useTimeTrackerContext } from '@/context/time-tracker-context'
 import { useGeolocationAddress } from '@/hooks/use-geolocation-address'
 import { useNow } from '@/hooks/use-now'
+import { useZodForm } from '@/hooks/use-zod-form'
 import { isSpecialLocation } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
 import {
@@ -125,12 +124,15 @@ const buildFormSchema = (locationMinMessage: string) =>
             const minutes = timeStringToMinutes(v)
             return minutes >= 15 && minutes <= 1440 && minutes % 15 === 0
           },
-          (v) => {
-            if (v === '') return { message: 'Minimum 15 minutes' }
-            const minutes = timeStringToMinutes(v)
-            if (minutes < 15) return { message: 'Minimum 15 minutes' }
-            if (minutes > 1440) return { message: 'Maximum 24 hours' }
-            return { message: 'Must be a multiple of 15' }
+          {
+            error: (iss) => {
+              const v = iss.input as string
+              if (v === '') return 'Minimum 15 minutes'
+              const minutes = timeStringToMinutes(v)
+              if (minutes < 15) return 'Minimum 15 minutes'
+              if (minutes > 1440) return 'Maximum 24 hours'
+              return 'Must be a multiple of 15'
+            },
           },
         )
         .optional(),
@@ -161,10 +163,7 @@ const buildFormSchema = (locationMinMessage: string) =>
         ])
         .optional(),
       usePrivateCar: z.boolean(),
-      privateCarKilometers: z.coerce
-        .number()
-        .min(0, 'Must be positive')
-        .optional(),
+      privateCarKilometers: z.number().min(0, 'Must be positive').optional(),
     })
     .refine(
       (data) => {
@@ -231,8 +230,7 @@ export default function TimeEntryForm({
       ),
     [isProjectMode, t],
   )
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useZodForm(formSchema, {
     mode: 'onChange',
     defaultValues: {
       mode: defaultMode,

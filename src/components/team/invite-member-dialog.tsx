@@ -2,11 +2,8 @@
 
 import { useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-
 import { UserPlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -37,6 +34,7 @@ import {
 } from '@/components/ui/select'
 import { useCreateInvitation } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
+import { useZodForm } from '@/hooks/use-zod-form'
 
 type InviteFormValues = {
   email: string
@@ -58,20 +56,20 @@ export function InviteMemberDialog({
   const t = useTranslations()
   const createInvitationMutation = useCreateInvitation(invitedBy, teamId)
 
-  const form = useForm<InviteFormValues>({
-    resolver: zodResolver(
-      z.object({
-        email: z.string().email(t('teams.pleaseEnterValidEmail')),
-        role: z.enum(['admin', 'member'], {
-          required_error: t('teams.pleaseSelectRole'),
-        }),
+  const form = useZodForm(
+    z.object({
+      email: z.email(t('teams.pleaseEnterValidEmail')),
+      role: z.enum(['admin', 'member'], {
+        error: t('teams.pleaseSelectRole'),
       }),
-    ),
-    defaultValues: {
-      email: '',
-      role: 'member',
+    }),
+    {
+      defaultValues: {
+        email: '',
+        role: 'member',
+      },
     },
-  })
+  )
 
   const onSubmit = async (values: InviteFormValues) => {
     setIsSending(true)
