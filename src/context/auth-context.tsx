@@ -4,9 +4,12 @@ import React, {
   ReactNode,
   createContext,
   useEffect,
+  useRef,
   useState,
   useTransition,
 } from 'react'
+
+import { useQueryClient } from '@tanstack/react-query'
 
 import { signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth'
 
@@ -32,6 +35,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [, startTransition] = useTransition()
+  const queryClient = useQueryClient()
+  const lastUidRef = useRef<string | null>(null)
 
   const signOut = async () => {
     startTransition(() => {
@@ -59,6 +64,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(
       firebaseAuth,
       async (firebaseUser) => {
+        // Drop all user-scoped server state on any session transition
+        // (login, logout, account switch) so cached data can never
+        // leak across sessions.
+        const uid = firebaseUser?.uid ?? null
+        if (lastUidRef.current !== uid) {
+          lastUidRef.current = uid
+          queryClient.clear()
+        }
+
         if (firebaseUser) {
           const user = {
             uid: firebaseUser.uid,
@@ -74,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     )
 
     return () => unsubscribe()
-  }, [])
+  }, [queryClient])
 
   const contextValue = {
     user,

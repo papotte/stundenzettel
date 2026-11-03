@@ -29,10 +29,9 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { useCreateTeam } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
-import type { Team } from '@/lib/types'
 import { paymentService } from '@/services/payment-service'
-import { createTeam, getTeam } from '@/services/team-service'
 
 type TeamFormValues = {
   name: string
@@ -42,18 +41,14 @@ type TeamFormValues = {
 interface CreateTeamDialogProps {
   userId: string
   userEmail: string
-  onTeamCreated: (team: Team) => void
 }
 
-export function CreateTeamDialog({
-  userId,
-  userEmail,
-  onTeamCreated,
-}: CreateTeamDialogProps) {
+export function CreateTeamDialog({ userId, userEmail }: CreateTeamDialogProps) {
   const [open, setOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const { toast } = useToast()
   const t = useTranslations()
+  const createTeamMutation = useCreateTeam(userId)
 
   const form = useForm<TeamFormValues>({
     resolver: zodResolver(
@@ -71,32 +66,27 @@ export function CreateTeamDialog({
   const onSubmit = async (values: TeamFormValues) => {
     setIsCreating(true)
     try {
-      const teamId = await createTeam(
-        values.name,
-        values.description || '',
-        userId,
-        userEmail,
-      )
-      const team = await getTeam(teamId)
+      const teamId = await createTeamMutation.mutateAsync({
+        name: values.name,
+        description: values.description || '',
+        ownerEmail: userEmail,
+      })
 
-      if (team) {
-        // Sync team with Stripe
-        try {
-          await paymentService.syncTeamWithStripe(userEmail, userId, teamId)
-        } catch (error) {
-          // Log error but don't fail team creation
-          console.error('Failed to sync team with Stripe:', error)
-        }
-
-        onTeamCreated(team)
-        setOpen(false)
-        form.reset()
-
-        toast({
-          title: t('teams.teamCreated'),
-          description: t('teams.teamCreatedDescription', { name: team.name }),
-        })
+      // Sync team with Stripe
+      try {
+        await paymentService.syncTeamWithStripe(userEmail, userId, teamId)
+      } catch (error) {
+        // Log error but don't fail team creation
+        console.error('Failed to sync team with Stripe:', error)
       }
+
+      setOpen(false)
+      form.reset()
+
+      toast({
+        title: t('teams.teamCreated'),
+        description: t('teams.teamCreatedDescription', { name: values.name }),
+      })
     } catch (error) {
       toast({
         title: t('common.error'),
@@ -120,7 +110,7 @@ export function CreateTeamDialog({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="sm:max-w-106.25"
         data-testid="create-team-dialog"
       >
         <DialogHeader>

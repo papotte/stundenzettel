@@ -50,7 +50,6 @@ const mockTeam: Team = {
 const defaultProps = {
   userId: 'user-1',
   userEmail: 'test@example.com',
-  onTeamCreated: jest.fn(),
 }
 
 describe('CreateTeamDialog', () => {
@@ -212,7 +211,7 @@ describe('CreateTeamDialog', () => {
       await user.click(createButton)
     })
 
-    it('successfully creates team and calls callback', async () => {
+    it('successfully creates team and shows toast', async () => {
       const user = userEvent.setup()
       mockCreateTeam.mockResolvedValue('team-1')
       mockGetTeam.mockResolvedValue(mockTeam)
@@ -226,7 +225,12 @@ describe('CreateTeamDialog', () => {
       await user.click(createButton)
 
       await waitFor(() => {
-        expect(defaultProps.onTeamCreated).toHaveBeenCalledWith(mockTeam)
+        expect(mockCreateTeam).toHaveBeenCalledWith(
+          'Test Team',
+          '',
+          'user-1',
+          'test@example.com',
+        )
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.teamCreated',
           description: 'teams.teamCreatedDescription',
@@ -325,7 +329,12 @@ describe('CreateTeamDialog', () => {
       await user.click(createButton)
 
       await waitFor(() => {
-        expect(defaultProps.onTeamCreated).toHaveBeenCalledWith(mockTeam)
+        expect(mockCreateTeam).toHaveBeenCalledWith(
+          'Test Team',
+          '',
+          'user-1',
+          'test@example.com',
+        )
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.teamCreated',
           description: 'teams.teamCreatedDescription',
@@ -373,10 +382,9 @@ describe('CreateTeamDialog', () => {
       })
     })
 
-    it('handles team retrieval error', async () => {
+    it('shows success toast after team creation mutation resolves', async () => {
       const user = userEvent.setup()
       mockCreateTeam.mockResolvedValue('team-1')
-      mockGetTeam.mockRejectedValue(new Error('Failed to get team'))
 
       const nameInput = screen.getByLabelText('teams.teamName')
       await user.type(nameInput, 'Test Team')
@@ -388,9 +396,8 @@ describe('CreateTeamDialog', () => {
 
       await waitFor(() => {
         expect(mockToast.toast).toHaveBeenCalledWith({
-          title: 'common.error',
-          description: 'Failed to get team',
-          variant: 'destructive',
+          title: 'teams.teamCreated',
+          description: 'teams.teamCreatedDescription',
         })
       })
     })

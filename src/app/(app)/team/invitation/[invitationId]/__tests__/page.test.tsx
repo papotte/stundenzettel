@@ -41,12 +41,6 @@ jest.mock('@/hooks/use-toast', () => ({
   }),
 }))
 
-jest.mock('@/hooks/use-user-invitations', () => ({
-  useUserInvitations: () => ({
-    refreshInvitations: jest.fn(),
-  }),
-}))
-
 const mockRouter = {
   push: jest.fn(),
 }

@@ -9,34 +9,10 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
 )
 
-// Cache for pricing plans
-let cachedPricingPlans: PricingPlan[] | null = null
-let cacheExpiry: number = 0
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-
-// TEST-ONLY: Reset cache for tests
-export function _resetPricingPlansCacheForTest() {
-  if (process.env.NODE_ENV !== 'test') {
-    throw new Error(
-      '_resetPricingPlansCacheForTest can only be called in test environment',
-    )
-  }
-  cachedPricingPlans = null
-  cacheExpiry = 0
-}
-
-// Get pricing plans with caching
+// Get pricing plans. Caching is handled by React Query (usePricingPlans).
 export async function getPricingPlans(): Promise<PricingPlan[]> {
-  const now = Date.now()
-
-  if (cachedPricingPlans && now < cacheExpiry) {
-    return cachedPricingPlans
-  }
-
   try {
-    cachedPricingPlans = await StripeService.getPricingPlans()
-    cacheExpiry = now + CACHE_DURATION
-    return cachedPricingPlans
+    return await StripeService.getPricingPlans()
   } catch (error) {
     console.error('Error fetching pricing plans:', error)
     // Return fallback plans if API fails

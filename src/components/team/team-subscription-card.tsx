@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import { useQueryClient } from '@tanstack/react-query'
+
 import {
   AlertCircle,
   AlertTriangle,
@@ -24,12 +26,12 @@ import {
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/hooks/use-auth'
+import { useCustomerPortal } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import { navigateTo } from '@/lib/navigation'
+import { queryKeys } from '@/lib/query-keys'
 import type { Subscription, Team, TeamMember } from '@/lib/types'
-import { paymentService } from '@/services/payment-service'
-import { getTeamSubscription } from '@/services/team-service'
 
 import { LinkTeamSubscriptionDialog } from './link-team-subscription-dialog'
 import { SeatAssignmentDialog } from './seat-assignment-dialog'
@@ -39,8 +41,6 @@ interface TeamSubscriptionCardProps {
   team: Team
   members: TeamMember[]
   subscription: Subscription | null
-  onSubscriptionUpdate: (subscription: Subscription | null) => void
-  onMembersChange?: (members: TeamMember[]) => void
   currentUserRole?: 'owner' | 'admin' | 'member'
 }
 
@@ -48,11 +48,8 @@ export function TeamSubscriptionCard({
   team,
   members,
   subscription,
-  onSubscriptionUpdate,
-  onMembersChange,
   currentUserRole,
 }: TeamSubscriptionCardProps) {
-  const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showSeatAssignmentDialog, setShowSeatAssignmentDialog] =
     useState(false)
@@ -60,6 +57,8 @@ export function TeamSubscriptionCard({
   const t = useTranslations()
   const format = useFormatter()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const portalMutation = useCustomerPortal(user)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -89,8 +88,14 @@ export function TeamSubscriptionCard({
   const handleRefreshSubscription = async () => {
     setIsRefreshing(true)
     try {
-      const updatedSubscription = await getTeamSubscription(team.id)
-      onSubscriptionUpdate(updatedSubscription)
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.teamSubscription(team.id),
+      })
+      if (user?.uid) {
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.teamPageData(user.uid),
+        })
+      }
       toast({
         title: t('teams.subscription'),
         description: t('teams.subscriptionRefreshed'),
@@ -108,28 +113,20 @@ export function TeamSubscriptionCard({
     }
   }
 
-  const handleManageSubscription = async () => {
-    setIsLoading(true)
-    try {
-      // Redirect to customer portal or pricing page
-      if (user && subscription) {
-        const { url } = await paymentService.createCustomerPortalSession(
-          user.email,
-          `${window.location.origin}/subscription`,
-        )
-        await paymentService.redirectToCustomerPortal(url)
-      } else {
-        // Redirect to pricing page for new subscription
-        navigateTo('/pricing')
-      }
-    } catch {
-      toast({
-        title: t('common.error'),
-        description: t('teams.failedToOpenSubscriptionManagement'),
-        variant: 'destructive',
+  const handleManageSubscription = () => {
+    if (user && subscription) {
+      portalMutation.mutate(`${window.location.origin}/subscription`, {
+        onError: () => {
+          toast({
+            title: t('common.error'),
+            description: t('teams.failedToOpenSubscriptionManagement'),
+            variant: 'destructive',
+          })
+        },
       })
-    } finally {
-      setIsLoading(false)
+    } else {
+      // Redirect to pricing page for new subscription
+      navigateTo('/pricing')
     }
   }
 
@@ -203,11 +200,6 @@ export function TeamSubscriptionCard({
           open={showLinkDialog}
           onOpenChange={setShowLinkDialog}
           teamId={team.id}
-          onLinked={async () => {
-            // Refresh subscription immediately since we write directly to Firestore
-            const updated = await getTeamSubscription(team.id)
-            onSubscriptionUpdate(updated)
-          }}
         />
 
         {/* Team Subscription Dialog */}
@@ -216,10 +208,6 @@ export function TeamSubscriptionCard({
           onOpenChange={setShowSubscriptionDialog}
           team={team}
           currentMembersCount={members.length}
-          onSubscriptionCreated={() => {
-            setShowSubscriptionDialog(false)
-            onSubscriptionUpdate(null) // This will trigger a refresh
-          }}
         />
       </>
     )
@@ -284,17 +272,17 @@ export function TeamSubscriptionCard({
                 <span className="text-sm text-muted-foreground">
                   {t('teams.seatsUsed', { used: seatsUsed, total: totalSeats })}
                 </span>
-                {(currentUserRole === 'owner' || currentUserRole === 'admin') &&
-                  onMembersChange && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowSeatAssignmentDialog(true)}
-                    >
-                      <Users className="mr-2 size-4" />
-                      {t('teams.seatAssignment')}
-                    </Button>
-                  )}
+                {(currentUserRole === 'owner' ||
+                  currentUserRole === 'admin') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSeatAssignmentDialog(true)}
+                  >
+                    <Users className="mr-2 size-4" />
+                    {t('teams.seatAssignment')}
+                  </Button>
+                )}
               </div>
             </div>
             <Progress value={seatUsagePercentage} className="h-2" />
@@ -338,11 +326,11 @@ export function TeamSubscriptionCard({
                 <Button
                   variant="outline"
                   onClick={handleManageSubscription}
-                  disabled={isLoading}
+                  disabled={portalMutation.isPending}
                   className="flex-1"
                 >
                   <CreditCard className="mr-2 size-4" />
-                  {isLoading
+                  {portalMutation.isPending
                     ? t('common.loading')
                     : t('subscription.manageBilling')}
                 </Button>
@@ -368,14 +356,10 @@ export function TeamSubscriptionCard({
         onOpenChange={setShowSubscriptionDialog}
         team={team}
         currentMembersCount={members.length}
-        onSubscriptionCreated={() => {
-          setShowSubscriptionDialog(false)
-          onSubscriptionUpdate(null) // This will trigger a refresh
-        }}
       />
 
       {/* Seat Assignment Dialog */}
-      {onMembersChange && user && (
+      {user && (
         <SeatAssignmentDialog
           open={showSeatAssignmentDialog}
           onOpenChange={setShowSeatAssignmentDialog}
@@ -383,7 +367,6 @@ export function TeamSubscriptionCard({
           members={members}
           subscription={subscription}
           currentUserId={user.uid}
-          onMembersChange={onMembersChange}
         />
       )}
     </>

@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { ArrowLeft, Check, Clock, Mail, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -17,16 +15,28 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
+import { useNow } from '@/hooks/use-now'
+import { useTeam, useTeamInvitation } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
-import { useUserInvitations } from '@/hooks/use-user-invitations'
-import { useFormatter } from '@/lib/date-formatter'
-import type { Team, TeamInvitation } from '@/lib/types'
 import {
-  acceptTeamInvitation,
-  declineTeamInvitation,
-  getTeam,
-  getTeamInvitation,
-} from '@/services/team-service'
+  useAcceptInvitation,
+  useDeclineInvitation,
+} from '@/hooks/use-user-invitations'
+import { useFormatter } from '@/lib/date-formatter'
+import type { TeamInvitation } from '@/lib/types'
+
+function getInvitationError(
+  invitation: TeamInvitation | null | undefined,
+  loadError: boolean,
+  now: Date,
+): string | null {
+  if (loadError) return 'Failed to load invitation'
+  if (invitation === null) return 'Invitation not found'
+  if (!invitation) return null
+  if (invitation.expiresAt < now) return 'expired'
+  if (invitation.status !== 'pending') return 'alreadyProcessed'
+  return null
+}
 
 export default function InvitationPage() {
   const params = useParams()
@@ -36,63 +46,22 @@ export default function InvitationPage() {
   const t = useTranslations()
   const { toast } = useToast()
   const format = useFormatter().dateTime
-  const { refreshInvitations } = useUserInvitations()
 
-  const [loading, setLoading] = useState(true)
-  const [invitation, setInvitation] = useState<TeamInvitation | null>(null)
-  const [team, setTeam] = useState<Team | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [processing, setProcessing] = useState(false)
+  const {
+    data: invitation,
+    isLoading: loading,
+    isError: loadError,
+  } = useTeamInvitation(invitationId || null)
+  const { data: team } = useTeam(invitation?.teamId)
 
-  useEffect(() => {
-    const loadInvitation = async () => {
-      if (!invitationId) {
-        setError('Invalid invitation link')
-        setLoading(false)
-        return
-      }
+  const now = useNow()
+  const acceptMutation = useAcceptInvitation()
+  const declineMutation = useDeclineInvitation()
+  const processing = acceptMutation.isPending || declineMutation.isPending
 
-      try {
-        const inv = await getTeamInvitation(invitationId)
+  const error = getInvitationError(invitation, loadError, now)
 
-        if (!inv) {
-          setError('Invitation not found')
-          setLoading(false)
-          return
-        }
-
-        // Check if invitation is expired
-        if (new Date() > new Date(inv.expiresAt)) {
-          setError('expired')
-          setInvitation(inv)
-          setLoading(false)
-          return
-        }
-
-        // Check if invitation status is not pending
-        if (inv.status !== 'pending') {
-          setError('alreadyProcessed')
-          setInvitation(inv)
-          setLoading(false)
-          return
-        }
-
-        // Load team details
-        const teamData = await getTeam(inv.teamId)
-        setTeam(teamData)
-        setInvitation(inv)
-        setLoading(false)
-      } catch (err) {
-        console.error('Error loading invitation:', err)
-        setError('Failed to load invitation')
-        setLoading(false)
-      }
-    }
-
-    loadInvitation()
-  }, [invitationId])
-
-  const handleAccept = async () => {
+  const handleAccept = () => {
     if (!invitation || !user) return
 
     // Check if user email matches invitation email
@@ -105,61 +74,49 @@ export default function InvitationPage() {
       return
     }
 
-    setProcessing(true)
-    try {
-      await acceptTeamInvitation(invitation.id, user.uid, user.email)
-
-      // Refresh global invitations state
-      await refreshInvitations()
-
-      toast({
-        title: t('teams.invitationAccepted'),
-        description: t('teams.invitationAcceptedDescription'),
-      })
-
-      // Redirect to team page
-      router.push('/team')
-    } catch (err) {
-      toast({
-        title: t('common.error'),
-        description:
-          err instanceof Error
-            ? err.message
-            : t('teams.failedToAcceptInvitation'),
-        variant: 'destructive',
-      })
-      setProcessing(false)
-    }
+    acceptMutation.mutate(invitation.id, {
+      onSuccess: () => {
+        toast({
+          title: t('teams.invitationAccepted'),
+          description: t('teams.invitationAcceptedDescription'),
+        })
+        router.push('/team')
+      },
+      onError: (err) => {
+        toast({
+          title: t('common.error'),
+          description:
+            err instanceof Error
+              ? err.message
+              : t('teams.failedToAcceptInvitation'),
+          variant: 'destructive',
+        })
+      },
+    })
   }
 
-  const handleDecline = async () => {
+  const handleDecline = () => {
     if (!invitation) return
 
-    setProcessing(true)
-    try {
-      await declineTeamInvitation(invitation.id)
-
-      // Refresh global invitations state
-      await refreshInvitations()
-
-      toast({
-        title: t('teams.invitationDeclined'),
-        description: t('teams.invitationDeclinedDescription'),
-      })
-
-      // Redirect to team page
-      router.push('/team')
-    } catch (err) {
-      toast({
-        title: t('common.error'),
-        description:
-          err instanceof Error
-            ? err.message
-            : t('teams.failedToDeclineInvitation'),
-        variant: 'destructive',
-      })
-      setProcessing(false)
-    }
+    declineMutation.mutate(invitation.id, {
+      onSuccess: () => {
+        toast({
+          title: t('teams.invitationDeclined'),
+          description: t('teams.invitationDeclinedDescription'),
+        })
+        router.push('/team')
+      },
+      onError: (err) => {
+        toast({
+          title: t('common.error'),
+          description:
+            err instanceof Error
+              ? err.message
+              : t('teams.failedToDeclineInvitation'),
+          variant: 'destructive',
+        })
+      },
+    })
   }
 
   if (authLoading || loading) {

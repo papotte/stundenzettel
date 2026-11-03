@@ -151,10 +151,19 @@ describe('useTimeTracker', () => {
         endTime: end,
         pauseDuration: 30,
       }
-      jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([entry])
+      const entriesStore = [entry]
+      jest
+        .spyOn(timeEntryService, 'getTimeEntries')
+        .mockImplementation(async () => [...entriesStore])
       const addSpy = jest
         .spyOn(timeEntryService, 'addTimeEntry')
-        .mockResolvedValue('new-id')
+        .mockImplementation(async (newEntry) => {
+          entriesStore.push({
+            ...newEntry,
+            id: 'new-id',
+          } as (typeof entriesStore)[number])
+          return 'new-id'
+        })
 
       const result = renderTimeTracker()
       await waitFor(() => expect(result.current.isLoading).toBe(false))
@@ -172,7 +181,9 @@ describe('useTimeTracker', () => {
       expect(added.startTime.getMonth()).toBe(targetDate.getMonth())
       expect(added.startTime.getHours()).toBe(9)
       expect(added.endTime?.getHours()).toBe(17)
-      expect(result.current.entries).toHaveLength(2)
+      await waitFor(() => {
+        expect(result.current.entries).toHaveLength(2)
+      })
       expect(result.current.entries.some((e) => e.id === 'new-id')).toBe(true)
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -212,11 +223,21 @@ describe('useTimeTracker', () => {
         startTime: dayStart,
         endTime: dayEnd,
       }
-      jest.spyOn(timeEntryService, 'getTimeEntries').mockResolvedValue([e1, e2])
+      const entriesStore = [e1, e2]
+      jest
+        .spyOn(timeEntryService, 'getTimeEntries')
+        .mockImplementation(async () => [...entriesStore])
+      let addedCount = 0
       const addSpy = jest
         .spyOn(timeEntryService, 'addTimeEntry')
-        .mockResolvedValueOnce('id-a')
-        .mockResolvedValueOnce('id-b')
+        .mockImplementation(async (newEntry) => {
+          addedCount += 1
+          entriesStore.push({
+            ...newEntry,
+            id: `id-${addedCount}`,
+          } as (typeof entriesStore)[number])
+          return `id-${addedCount}`
+        })
 
       const result = renderTimeTracker()
       await waitFor(() => expect(result.current.isLoading).toBe(false))
@@ -227,7 +248,9 @@ describe('useTimeTracker', () => {
       })
 
       expect(addSpy).toHaveBeenCalledTimes(2)
-      expect(result.current.entries).toHaveLength(4)
+      await waitFor(() => {
+        expect(result.current.entries).toHaveLength(4)
+      })
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'toasts.entriesCopiedToTitle',
@@ -260,12 +283,19 @@ describe('useTimeTracker', () => {
         startTime: yesStart,
         endTime: yesEnd,
       }
+      const entriesStore = [yesterdayEntry]
       jest
         .spyOn(timeEntryService, 'getTimeEntries')
-        .mockResolvedValue([yesterdayEntry])
+        .mockImplementation(async () => [...entriesStore])
       const addSpy = jest
         .spyOn(timeEntryService, 'addTimeEntry')
-        .mockResolvedValue('copied-id')
+        .mockImplementation(async (newEntry) => {
+          entriesStore.push({
+            ...newEntry,
+            id: 'copied-id',
+          } as (typeof entriesStore)[number])
+          return 'copied-id'
+        })
 
       const result = renderTimeTracker()
       await waitFor(() => expect(result.current.isLoading).toBe(false))
@@ -281,7 +311,9 @@ describe('useTimeTracker', () => {
       expect(added.location).toBe('Yesterday Office')
       expect(added.startTime.getDate()).toBe(today.getDate())
       expect(added.startTime.getMonth()).toBe(today.getMonth())
-      expect(result.current.entries).toHaveLength(2)
+      await waitFor(() => {
+        expect(result.current.entries).toHaveLength(2)
+      })
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'toasts.entriesCopiedFromYesterdayTitle',

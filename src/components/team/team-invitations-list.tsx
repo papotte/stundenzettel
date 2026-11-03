@@ -20,23 +20,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useAuth } from '@/hooks/use-auth'
 import { useNow } from '@/hooks/use-now'
+import { useCancelInvitation, useResendInvitation } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { TeamInvitation } from '@/lib/types'
-import {
-  createTeamInvitation,
-  declineTeamInvitation,
-} from '@/services/team-service'
 
 interface TeamInvitationsListProps {
+  teamId: string
   invitations: TeamInvitation[]
-  onInvitationsChange: (invitations: TeamInvitation[]) => void
 }
 
 export function TeamInvitationsList({
+  teamId,
   invitations,
-  onInvitationsChange,
 }: TeamInvitationsListProps) {
   const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(
     null,
@@ -44,17 +42,14 @@ export function TeamInvitationsList({
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter()
+  const { user } = useAuth()
+  const cancelInvitationMutation = useCancelInvitation(user?.uid, teamId)
+  const resendInvitationMutation = useResendInvitation(user?.uid, teamId)
 
   const handleCancelInvitation = async (invitationId: string) => {
     setLoadingInvitationId(invitationId)
     try {
-      await declineTeamInvitation(invitationId)
-
-      // Remove the invitation from the list
-      const updatedInvitations = invitations.filter(
-        (inv) => inv.id !== invitationId,
-      )
-      onInvitationsChange(updatedInvitations)
+      await cancelInvitationMutation.mutateAsync(invitationId)
 
       toast({
         title: t('teams.invitationCancelled'),
@@ -77,29 +72,7 @@ export function TeamInvitationsList({
   const handleResendInvitation = async (invitation: TeamInvitation) => {
     setLoadingInvitationId(invitation.id)
     try {
-      // Cancel the old invitation first
-      await declineTeamInvitation(invitation.id)
-
-      // Create a new invitation
-      const newInvitationId = await createTeamInvitation(
-        invitation.teamId,
-        invitation.email,
-        invitation.role,
-        invitation.invitedBy,
-      )
-
-      // Update the invitation in the list
-      const updatedInvitations = invitations.map((inv) =>
-        inv.id === invitation.id
-          ? {
-              ...inv,
-              id: newInvitationId,
-              invitedAt: new Date(),
-              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-            }
-          : inv,
-      )
-      onInvitationsChange(updatedInvitations)
+      await resendInvitationMutation.mutateAsync(invitation)
 
       toast({
         title: t('teams.invitationResent'),
@@ -148,7 +121,7 @@ export function TeamInvitationsList({
             <TableHead>{t('teams.role')}</TableHead>
             <TableHead>{t('teams.status')}</TableHead>
             <TableHead>{t('teams.expires')}</TableHead>
-            <TableHead className="w-[70px]"></TableHead>
+            <TableHead className="w-17.5"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

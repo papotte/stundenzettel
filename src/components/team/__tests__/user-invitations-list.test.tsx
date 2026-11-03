@@ -26,10 +26,19 @@ jest.mock('@/hooks/use-toast', () => ({
   useToast: jest.fn(),
 }))
 
-// Mock the user invitations hook
+// Mock the user invitations hooks
 jest.mock('@/hooks/use-user-invitations', () => ({
   useUserInvitations: () => ({
     refreshInvitations: jest.fn(),
+  }),
+  useAcceptInvitation: () => ({
+    mutateAsync: (invitationId: string) =>
+      acceptTeamInvitation(invitationId, 'user-1', 'user@example.com'),
+    isPending: false,
+  }),
+  useDeclineInvitation: () => ({
+    mutateAsync: (invitationId: string) => declineTeamInvitation(invitationId),
+    isPending: false,
   }),
 }))
 
@@ -68,10 +77,6 @@ const mockInvitations: TeamInvitation[] = [
 
 const defaultProps = {
   invitations: mockInvitations,
-  onInvitationsChange: jest.fn(),
-  onInvitationAccepted: jest.fn(),
-  currentUserEmail: 'user@example.com',
-  currentUserId: 'user-1',
 }
 
 describe('UserInvitationsList', () => {
@@ -139,10 +144,6 @@ describe('UserInvitationsList', () => {
           'user-1',
           'user@example.com',
         )
-        expect(defaultProps.onInvitationsChange).toHaveBeenCalledWith([
-          mockInvitations[1],
-        ])
-        expect(defaultProps.onInvitationAccepted).toHaveBeenCalled()
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.invitationAccepted',
           description: 'teams.invitationAcceptedDescription',
@@ -161,9 +162,6 @@ describe('UserInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockDeclineTeamInvitation).toHaveBeenCalledWith('invitation-1')
-        expect(defaultProps.onInvitationsChange).toHaveBeenCalledWith([
-          mockInvitations[1],
-        ])
         expect(mockToast.toast).toHaveBeenCalledWith({
           title: 'teams.invitationDeclined',
           description: 'teams.invitationDeclinedDescription',

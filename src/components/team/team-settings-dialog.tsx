@@ -29,25 +29,25 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/hooks/use-auth'
+import { useDeleteTeam, useUpdateTeam } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
 import type { Team } from '@/lib/types'
-import { deleteTeam, updateTeam } from '@/services/team-service'
 
 interface TeamSettingsDialogProps {
   team: Team
   currentUserRole: 'owner' | 'admin' | 'member'
-  onTeamUpdated?: (updatedTeam: Team) => void
-  onTeamDeleted?: () => void
   children: React.ReactNode
 }
 
 export function TeamSettingsDialog({
   team,
   currentUserRole,
-  onTeamUpdated,
-  onTeamDeleted,
   children,
 }: TeamSettingsDialogProps) {
+  const { user } = useAuth()
+  const updateTeamMutation = useUpdateTeam(user?.uid, team.id)
+  const deleteTeamMutation = useDeleteTeam(user?.uid, team.id)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState(team.name)
@@ -83,19 +83,10 @@ export function TeamSettingsDialog({
 
     setLoading(true)
     try {
-      await updateTeam(team.id, {
+      await updateTeamMutation.mutateAsync({
         name: name.trim(),
         description: description.trim() || undefined,
       })
-
-      const updatedTeam: Team = {
-        ...team,
-        name: name.trim(),
-        description: description.trim() || undefined,
-        updatedAt: new Date(),
-      }
-
-      onTeamUpdated?.(updatedTeam)
 
       toast({
         title: t('teams.teamUpdated'),
@@ -131,14 +122,13 @@ export function TeamSettingsDialog({
 
     setDeleteLoading(true)
     try {
-      await deleteTeam(team.id)
+      await deleteTeamMutation.mutateAsync()
 
       toast({
         title: t('teams.teamDeleted'),
         description: t('teams.teamDeletedDescription', { name: team.name }),
       })
 
-      onTeamDeleted?.()
       setDeleteDialogOpen(false)
       setOpen(false)
       setDeleteConfirm('')
@@ -159,7 +149,7 @@ export function TeamSettingsDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>{t('teams.settings')}</DialogTitle>
           <DialogDescription>

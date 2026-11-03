@@ -57,8 +57,8 @@ const mockInvitations: TeamInvitation[] = [
 ]
 
 const defaultProps = {
+  teamId: 'team-1',
   invitations: mockInvitations,
-  onInvitationsChange: jest.fn(),
 }
 
 describe('TeamInvitationsList', () => {
@@ -142,7 +142,7 @@ describe('TeamInvitationsList', () => {
   })
 
   describe('Actions', () => {
-    it('calls onInvitationsChange when invitation is cancelled', async () => {
+    it('calls declineTeamInvitation when invitation is cancelled', async () => {
       const user = userEvent.setup()
       mockDeclineTeamInvitation.mockResolvedValue(undefined)
 
@@ -162,13 +162,10 @@ describe('TeamInvitationsList', () => {
 
       await waitFor(() => {
         expect(mockDeclineTeamInvitation).toHaveBeenCalledWith('invitation-1')
-        expect(defaultProps.onInvitationsChange).toHaveBeenCalledWith([
-          mockInvitations[1],
-        ])
       })
     })
 
-    it('calls onInvitationsChange when invitation is resent', async () => {
+    it('recreates the invitation when it is resent', async () => {
       const user = userEvent.setup()
       mockDeclineTeamInvitation.mockResolvedValue(undefined)
       mockCreateTeamInvitation.mockResolvedValue('new-invitation-id')
@@ -195,7 +192,6 @@ describe('TeamInvitationsList', () => {
           'member',
           'user-1',
         )
-        expect(defaultProps.onInvitationsChange).toHaveBeenCalled()
       })
     })
 

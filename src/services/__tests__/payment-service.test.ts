@@ -1,10 +1,6 @@
 import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
-import {
-  _resetPricingPlansCacheForTest,
-  getPricingPlans,
-  paymentService,
-} from '@/services/payment-service'
+import { getPricingPlans, paymentService } from '@/services/payment-service'
 import { StripeService } from '@/services/stripe-service'
 
 // Mock Stripe
@@ -36,7 +32,6 @@ describe('PaymentService', () => {
   beforeEach(() => {
     jest.resetModules()
     jest.clearAllMocks()
-    _resetPricingPlansCacheForTest()
   })
 
   describe('getPricingPlans (function)', () => {
@@ -52,17 +47,15 @@ describe('PaymentService', () => {
       },
     ]
 
-    it('returns cached plans if available and not expired', async () => {
+    it('delegates to StripeService on every call (React Query owns caching)', async () => {
       mockStripeService.getPricingPlans.mockResolvedValue(mockPlans)
 
-      // First call to populate cache
       const result1 = await getPricingPlans()
       expect(result1).toEqual(mockPlans)
 
-      // Second call should use cache
       const result2 = await getPricingPlans()
       expect(result2).toEqual(mockPlans)
-      expect(mockStripeService.getPricingPlans).toHaveBeenCalledTimes(1)
+      expect(mockStripeService.getPricingPlans).toHaveBeenCalledTimes(2)
     })
 
     it('handles API errors gracefully', async () => {
@@ -322,31 +315,6 @@ describe('PaymentService', () => {
       it('getPlanByStripePriceId returns undefined for non-existent plan', () => {
         const plan = paymentService.getPlanByStripePriceId('non-existent')
         expect(plan).toBeUndefined()
-      })
-    })
-  })
-
-  describe('Cache Management', () => {
-    it('resets cache correctly in test environment', () => {
-      expect(() => _resetPricingPlansCacheForTest()).not.toThrow()
-    })
-
-    it('throws error when resetting cache outside test environment', () => {
-      // Mock NODE_ENV to be production
-      const originalEnv = process.env.NODE_ENV
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: 'production',
-        writable: true,
-      })
-
-      expect(() => _resetPricingPlansCacheForTest()).toThrow(
-        '_resetPricingPlansCacheForTest can only be called in test environment',
-      )
-
-      // Restore original environment
-      Object.defineProperty(process.env, 'NODE_ENV', {
-        value: originalEnv,
-        writable: true,
       })
     })
   })

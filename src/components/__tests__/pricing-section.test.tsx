@@ -7,11 +7,7 @@ import { render, screen, waitFor } from '@jest-setup'
 import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 // Mock the services
-import {
-  _resetPricingPlansCacheForTest,
-  getPricingPlans,
-  paymentService,
-} from '@/services/payment-service'
+import { getPricingPlans, paymentService } from '@/services/payment-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
 
 import PricingSection from '../pricing-section'
@@ -23,7 +19,6 @@ jest.mock('@/services/payment-service', () => ({
     createCheckoutSession: jest.fn(),
     redirectToCheckout: jest.fn(),
   },
-  _resetPricingPlansCacheForTest: jest.fn(),
 }))
 
 const mockNavigateTo = navigateTo as jest.Mock
@@ -94,7 +89,6 @@ describe('PricingSection', () => {
     jest.clearAllMocks()
     mockAuthContext.user = null
     mockAuthContext.loading = false
-    _resetPricingPlansCacheForTest()
   })
 
   describe('Plan Loading', () => {
@@ -256,6 +250,7 @@ describe('PricingSection', () => {
           'http://localhost/subscription?success=true',
           'http://localhost/pricing?canceled=true',
           true,
+          undefined,
         )
         expect(mockRedirectToCheckout).toHaveBeenCalledWith(
           'https://checkout.stripe.com/test',

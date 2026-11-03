@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { addMonths, parse, subMonths } from 'date-fns'
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -14,11 +14,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/use-auth'
+import { useTeamPageData } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
-import { verifyTeamAccess } from '@/lib/team-auth'
-import type { Team, TeamMember } from '@/lib/types'
-import { getTeamMembers, getUserTeam } from '@/services/team-service'
 
 export default function TeamReportsPage() {
   const { user, loading: authLoading } = useAuth()
@@ -28,10 +26,17 @@ export default function TeamReportsPage() {
   const format = useFormatter()
   const { toast } = useToast()
 
-  const [team, setTeam] = useState<Team | null>(null)
-  const [members, setMembers] = useState<TeamMember[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthorized, setIsAuthorized] = useState(false)
+  const { data, isLoading: queryLoading, isError } = useTeamPageData(user)
+  const team = data?.team ?? null
+  const members = useMemo(() => data?.members ?? [], [data?.members])
+  const isAuthorized = useMemo(
+    () =>
+      data?.currentUserRole === 'owner' || data?.currentUserRole === 'admin',
+    [data?.currentUserRole],
+  )
+  // Only block the page on the first load; lack of team data afterwards
+  // redirects below.
+  const isLoading = queryLoading
 
   // Get month from URL params or default to current month
   const monthParam = searchParams.get('month')
@@ -56,56 +61,29 @@ export default function TeamReportsPage() {
   }, [user, authLoading, router])
 
   useEffect(() => {
-    const loadTeamData = async () => {
-      if (!user) return
-
-      setIsLoading(true)
-      try {
-        const userTeam = await getUserTeam(user.uid)
-        if (!userTeam) {
-          router.replace('/team')
-          return
-        }
-
-        const authResult = await verifyTeamAccess(
-          userTeam.id,
-          user.uid,
-          'admin',
-        )
-
-        if (!authResult.authorized) {
-          setIsAuthorized(false)
-          toast({
-            title: t('common.error'),
-            description: t('reports.unauthorized'),
-            variant: 'destructive',
-          })
-          router.replace('/team')
-          return
-        }
-
-        setTeam(userTeam)
-        setIsAuthorized(true)
-
-        const teamMembers = await getTeamMembers(userTeam.id)
-        setMembers(teamMembers)
-      } catch (error) {
-        console.error('Error loading team data:', error)
-        toast({
-          title: t('common.error'),
-          description: t('teams.failedToLoadTeamData'),
-          variant: 'destructive',
-        })
-        router.replace('/team')
-      } finally {
-        setIsLoading(false)
-      }
+    if (!user || isLoading) return
+    if (isError) {
+      toast({
+        title: t('common.error'),
+        description: t('teams.failedToLoadTeamData'),
+        variant: 'destructive',
+      })
+      router.replace('/team')
+      return
     }
-
-    if (user) {
-      loadTeamData()
+    if (!team) {
+      router.replace('/team')
+      return
     }
-  }, [user, router, toast, t])
+    if (!isAuthorized) {
+      toast({
+        title: t('common.error'),
+        description: t('reports.unauthorized'),
+        variant: 'destructive',
+      })
+      router.replace('/team')
+    }
+  }, [user, isLoading, isError, team, isAuthorized, router, toast, t])
 
   const selectedMemberId = searchParams.get('memberId')
 

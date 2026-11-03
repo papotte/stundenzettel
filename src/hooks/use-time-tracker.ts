@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import {
   addDays,
   endOfMonth,
@@ -19,12 +21,13 @@ import { useToast } from '@/hooks/use-toast'
 import { useUserSettings } from '@/hooks/use-user-settings'
 import type { SpecialLocationKey } from '@/lib/constants'
 import { useFormatter } from '@/lib/date-formatter'
+import { queryKeys } from '@/lib/query-keys'
 import {
   calculateTotalCompensatedMinutes,
   shiftEntryToDate,
 } from '@/lib/time-utils'
 import type { TimeEntry, UserSettings } from '@/lib/types'
-import { compareEntriesByStartTime, isProjectTrackingMode } from '@/lib/utils'
+import { isProjectTrackingMode } from '@/lib/utils'
 import {
   addTimeEntry,
   deleteAllTimeEntries,
@@ -34,20 +37,116 @@ import {
 } from '@/services/time-entry-service'
 import { DEFAULT_USER_SETTINGS } from '@/services/user-settings-service'
 
+/**
+ * Time entries for a user, sorted by startTime desc by the Firestore query.
+ */
+export function useTimeEntries(userId: string | undefined) {
+  const uid = userId ?? ''
+  return useQuery({
+    queryKey: queryKeys.timeEntries(uid),
+    queryFn: () => getTimeEntries(uid),
+    enabled: Boolean(uid),
+  })
+}
+
+/** Invalidates the entries query and the export-preview bundle that embeds it. */
+function useInvalidateTimeEntries(userId: string | undefined) {
+  const queryClient = useQueryClient()
+  const uid = userId ?? ''
+  return async () => {
+    if (!uid) return
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.timeEntries(uid),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.exportPreviewData(uid),
+      }),
+    ])
+  }
+}
+
+export function useAddEntry(userId: string | undefined) {
+  const invalidate = useInvalidateTimeEntries(userId)
+  return useMutation({
+    mutationFn: (entry: Omit<TimeEntry, 'id'>) => addTimeEntry(entry),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUpdateEntry(userId: string | undefined) {
+  const invalidate = useInvalidateTimeEntries(userId)
+  return useMutation({
+    mutationFn: ({
+      entryId,
+      entry,
+    }: {
+      entryId: string
+      entry: Partial<TimeEntry>
+    }) => updateTimeEntry(entryId, entry),
+    onSuccess: invalidate,
+  })
+}
+
+export function useDeleteEntry(userId: string | undefined) {
+  const invalidate = useInvalidateTimeEntries(userId)
+  return useMutation({
+    mutationFn: (entryId: string) => {
+      if (!userId) throw new Error('User not authenticated')
+      return deleteTimeEntry(userId, entryId)
+    },
+    onSuccess: invalidate,
+  })
+}
+
+export function useClearEntries(userId: string | undefined) {
+  const invalidate = useInvalidateTimeEntries(userId)
+  return useMutation({
+    mutationFn: () => {
+      if (!userId) throw new Error('User not authenticated')
+      return deleteAllTimeEntries(userId)
+    },
+    onSuccess: invalidate,
+  })
+}
+
+/** Copies a batch of entries (already shifted to the target date). */
+export function useCopyEntries(userId: string | undefined) {
+  const invalidate = useInvalidateTimeEntries(userId)
+  return useMutation({
+    mutationFn: (newEntries: Array<Omit<TimeEntry, 'id'>>) =>
+      Promise.all(newEntries.map((entry) => addTimeEntry(entry))),
+    onSuccess: invalidate,
+  })
+}
+
 export function useTimeTracker(user: { uid: string } | null) {
-  const { data: settingsFromQuery } = useUserSettings()
+  const { userSettings: settingsFromQuery } = useUserSettings(user)
   const { toast } = useToast()
   const t = useTranslations()
   const format = useFormatter().dateTime
-  const [entries, setEntries] = useState<TimeEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+
+  const uid = user?.uid
+  const {
+    data: entriesData,
+    isLoading,
+    error: entriesError,
+  } = useTimeEntries(uid)
+  const entries = useMemo(() => entriesData ?? [], [entriesData])
+
+  const addEntryMutation = useAddEntry(uid)
+  const updateEntryMutation = useUpdateEntry(uid)
+  const deleteEntryMutation = useDeleteEntry(uid)
+  const clearEntriesMutation = useClearEntries(uid)
+  const copyEntriesMutation = useCopyEntries(uid)
+
   const [runningTimer, setRunningTimer] = useState<TimeEntry | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [location, setLocation] = useState('')
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null,
   )
-  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date())
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null)
   const {
@@ -65,28 +164,17 @@ export function useTimeTracker(user: { uid: string } | null) {
     projectScope,
     isProjectMode,
   )
+
   useEffect(() => {
-    setSelectedDate(new Date())
-    if (!user) return
-    const fetchInitialData = async () => {
-      setIsLoading(true)
-      try {
-        const fetchedEntries = await getTimeEntries(user.uid)
-        setEntries(fetchedEntries)
-      } catch (error) {
-        console.error('Error fetching initial data:', error)
-        toast({
-          title: t('toasts.databaseErrorTitle') ?? '',
-          description: t('toasts.databaseConnectionError') ?? '',
-          variant: 'destructive',
-        })
-      } finally {
-        setIsLoading(false)
-      }
+    if (entriesError) {
+      console.error('Error fetching initial data:', entriesError)
+      toast({
+        title: t('toasts.databaseErrorTitle') ?? '',
+        description: t('toasts.databaseConnectionError') ?? '',
+        variant: 'destructive',
+      })
     }
-    fetchInitialData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+  }, [entriesError, t, toast])
 
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -160,10 +248,10 @@ export function useTimeTracker(user: { uid: string } | null) {
     try {
       const existingEntry = entries.find((e) => e.id === entryWithUser.id)
       if (existingEntry) {
-        await updateTimeEntry(entryWithUser.id, entryWithUser)
-        setEntries(
-          entries.map((e) => (e.id === entryWithUser.id ? entryWithUser : e)),
-        )
+        await updateEntryMutation.mutateAsync({
+          entryId: entryWithUser.id,
+          entry: entryWithUser,
+        })
         toast({
           title: t('toasts.entryUpdatedTitle') ?? '',
           description:
@@ -172,11 +260,7 @@ export function useTimeTracker(user: { uid: string } | null) {
             }) ?? '',
         })
       } else {
-        const newId = await addTimeEntry(entryWithUser)
-        const newEntry = { ...entryWithUser, id: newId }
-        setEntries((prev) =>
-          [newEntry, ...prev].sort(compareEntriesByStartTime),
-        )
+        await addEntryMutation.mutateAsync(entryWithUser)
         toast({
           title: t('toasts.entryAddedTitle') ?? '',
           description:
@@ -203,8 +287,7 @@ export function useTimeTracker(user: { uid: string } | null) {
   const handleDeleteEntry = async (id: string) => {
     if (!user) return
     try {
-      await deleteTimeEntry(user.uid, id)
-      setEntries(entries.filter((entry) => entry.id !== id))
+      await deleteEntryMutation.mutateAsync(id)
       toast({
         title: t('toasts.entryDeletedTitle') ?? '',
         variant: 'destructive',
@@ -222,8 +305,7 @@ export function useTimeTracker(user: { uid: string } | null) {
   const handleClearData = async () => {
     if (!user) return
     try {
-      await deleteAllTimeEntries(user.uid)
-      setEntries([])
+      await clearEntriesMutation.mutateAsync()
       if (runningTimer) {
         setRunningTimer(null)
         setLocation('')
@@ -279,11 +361,7 @@ export function useTimeTracker(user: { uid: string } | null) {
     }
     try {
       const entryWithUser = { ...newEntry, userId: user.uid }
-      const newId = await addTimeEntry(entryWithUser)
-      const finalNewEntry = { ...entryWithUser, id: newId }
-      setEntries((prev) =>
-        [finalNewEntry, ...prev].sort(compareEntriesByStartTime),
-      )
+      await addEntryMutation.mutateAsync(entryWithUser)
       toast({
         title: t('toasts.entryAddedTitle') ?? '',
         description:
@@ -311,16 +389,11 @@ export function useTimeTracker(user: { uid: string } | null) {
     )
     if (yesterdayEntries.length === 0) return
     try {
-      const newEntries: TimeEntry[] = []
-      for (const entry of yesterdayEntries) {
-        const shifted = shiftEntryToDate(entry, selectedDate)
-        const withUser = { ...shifted, userId: user.uid }
-        const newId = await addTimeEntry(withUser)
-        newEntries.push({ ...withUser, id: newId })
-      }
-      setEntries((prev) =>
-        [...newEntries, ...prev].sort(compareEntriesByStartTime),
-      )
+      const newEntries = yesterdayEntries.map((entry) => ({
+        ...shiftEntryToDate(entry, selectedDate),
+        userId: user.uid,
+      }))
+      await copyEntriesMutation.mutateAsync(newEntries)
       toast({
         title: t('toasts.entriesCopiedFromYesterdayTitle') ?? '',
         description:
@@ -343,9 +416,7 @@ export function useTimeTracker(user: { uid: string } | null) {
     try {
       const shifted = shiftEntryToDate(entry, targetDate)
       const withUser = { ...shifted, userId: user.uid }
-      const newId = await addTimeEntry(withUser)
-      const newEntry = { ...withUser, id: newId }
-      setEntries((prev) => [newEntry, ...prev].sort(compareEntriesByStartTime))
+      await copyEntriesMutation.mutateAsync([withUser])
       toast({
         title: t('toasts.entryCopiedTitle') ?? '',
         description:
@@ -370,16 +441,11 @@ export function useTimeTracker(user: { uid: string } | null) {
     )
     if (dayEntries.length === 0) return
     try {
-      const newEntries: TimeEntry[] = []
-      for (const entry of dayEntries) {
-        const shifted = shiftEntryToDate(entry, targetDate)
-        const withUser = { ...shifted, userId: user.uid }
-        const newId = await addTimeEntry(withUser)
-        newEntries.push({ ...withUser, id: newId })
-      }
-      setEntries((prev) =>
-        [...newEntries, ...prev].sort(compareEntriesByStartTime),
-      )
+      const newEntries = dayEntries.map((entry) => ({
+        ...shiftEntryToDate(entry, targetDate),
+        userId: user.uid,
+      }))
+      await copyEntriesMutation.mutateAsync(newEntries)
       toast({
         title: t('toasts.entriesCopiedToTitle') ?? '',
         description:

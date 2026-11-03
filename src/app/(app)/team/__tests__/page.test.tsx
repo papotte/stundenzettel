@@ -61,6 +61,14 @@ jest.mock('@/hooks/use-user-invitations', () => ({
   useUserInvitations: () => ({
     refreshInvitations: jest.fn(),
   }),
+  useAcceptInvitation: () => ({
+    mutateAsync: jest.fn(),
+    isPending: false,
+  }),
+  useDeclineInvitation: () => ({
+    mutateAsync: jest.fn(),
+    isPending: false,
+  }),
 }))
 
 // Mock services needed by team reports components

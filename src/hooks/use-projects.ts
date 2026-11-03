@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { useAuth } from '@/hooks/use-auth'
-import { projectKeys } from '@/lib/query-keys'
+import { queryKeys } from '@/lib/query-keys'
 import { type ProjectScope, getProjects } from '@/services/project-service'
 import { getUserTeamMembership } from '@/services/team-service'
 
@@ -16,7 +16,7 @@ export function useProjectScope() {
   const uid = user?.uid ?? ''
 
   return useQuery({
-    queryKey: ['projectScope', uid],
+    queryKey: queryKeys.projectScope(uid),
     queryFn: async () => {
       const membership = await getUserTeamMembership(uid)
       const scope: ProjectScope = membership
@@ -45,6 +45,6 @@ export function useProjects(
 
 export function projectScopeQueryKey(scope: ProjectScope) {
   return scope.kind === 'team'
-    ? projectKeys.team(scope.teamId)
-    : projectKeys.user(scope.userId)
+    ? queryKeys.projects.team(scope.teamId)
+    : queryKeys.projects.user(scope.userId)
 }

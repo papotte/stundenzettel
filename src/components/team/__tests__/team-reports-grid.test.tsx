@@ -420,12 +420,12 @@ describe('TeamReportsGrid', () => {
       />,
     )
 
+    let emails: HTMLElement[] = []
     await waitFor(() => {
-      const cards = screen.getAllByTestId(/member-card-/)
-      expect(cards).toHaveLength(2)
+      emails = screen.getAllByText(/@example\.com/)
+      expect(emails).toHaveLength(2)
     })
 
-    const emails = screen.getAllByText(/@example\.com/)
     expect(emails[0]).toHaveTextContent('alp***@example.com')
     expect(emails[1]).toHaveTextContent('zeb***@example.com')
   })

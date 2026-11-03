@@ -51,17 +51,11 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { useProjectScope } from '@/hooks/use-projects'
 import { useToast } from '@/hooks/use-toast'
-import {
-  useInvalidateUserSettings,
-  useUserSettings,
-} from '@/hooks/use-user-settings'
+import { saveUserSettings, useUserSettings } from '@/hooks/use-user-settings'
 import { locales } from '@/i18n'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import { setUserLocale } from '@/services/locale'
-import {
-  setUserSettings,
-  stripReadOnlySettingsFields,
-} from '@/services/user-settings-service'
+import { stripReadOnlySettingsFields } from '@/services/user-settings-service'
 
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
@@ -95,11 +89,11 @@ export default function PreferencesPage() {
   const t = useTranslations()
   const language: string = useLocale()
   const {
-    data: settings,
-    isPending: settingsPending,
-    isError: settingsError,
-  } = useUserSettings()
-  const invalidateUserSettings = useInvalidateUserSettings()
+    userSettings: settings,
+    isLoading: settingsPending,
+    error: settingsError,
+    invalidate: invalidateUserSettings,
+  } = useUserSettings(user)
   const { data: projectScopeResult } = useProjectScope()
   const projectScope = projectScopeResult?.scope ?? null
   const canManageTeamOptions =
@@ -174,8 +168,8 @@ export default function PreferencesPage() {
     if (!user) return
     setIsSaving(true)
     try {
-      await setUserSettings(user.uid, data)
-      await invalidateUserSettings(user.uid)
+      await saveUserSettings(user.uid, data)
+      invalidateUserSettings()
       await setUserLocale(data.language)
 
       // Update Resend contact if displayName is provided

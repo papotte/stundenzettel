@@ -30,15 +30,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useMemberDisplayNames } from '@/hooks/use-member-display-names'
+import { useRemoveMember, useUpdateMemberRole } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import type { Subscription, TeamMember } from '@/lib/types'
 import { maskEmail } from '@/lib/utils'
-import {
-  getTeamMembers,
-  removeTeamMember,
-  updateTeamMemberRole,
-} from '@/services/team-service'
 
 import { SeatAssignmentDialog } from './seat-assignment-dialog'
 
@@ -48,7 +44,6 @@ interface TeamMembersListProps {
   currentUserRole: 'owner' | 'admin' | 'member'
   subscription: Subscription | null
   currentUserId: string
-  onMembersChange: (members: TeamMember[]) => void
 }
 
 export function TeamMembersList({
@@ -57,7 +52,6 @@ export function TeamMembersList({
   currentUserRole,
   subscription,
   currentUserId,
-  onMembersChange,
 }: TeamMembersListProps) {
   const [loadingMemberId, setLoadingMemberId] = useState<string | null>(null)
   const [showSeatAssignmentDialog, setShowSeatAssignmentDialog] =
@@ -66,6 +60,8 @@ export function TeamMembersList({
   const t = useTranslations()
   const format = useFormatter()
   const { displayNames } = useMemberDisplayNames(members.map((m) => m.id))
+  const updateRoleMutation = useUpdateMemberRole(currentUserId, teamId)
+  const removeMemberMutation = useRemoveMember(currentUserId, teamId)
 
   const canManageMembers =
     currentUserRole === 'owner' || currentUserRole === 'admin'
@@ -81,9 +77,7 @@ export function TeamMembersList({
   ) => {
     setLoadingMemberId(memberId)
     try {
-      await updateTeamMemberRole(teamId, memberId, newRole)
-      const updatedMembers = await getTeamMembers(teamId)
-      onMembersChange(updatedMembers)
+      await updateRoleMutation.mutateAsync({ memberId, role: newRole })
 
       toast({
         title: t('teams.roleUpdated'),
@@ -106,9 +100,7 @@ export function TeamMembersList({
   const handleRemoveMember = async (memberId: string) => {
     setLoadingMemberId(memberId)
     try {
-      await removeTeamMember(teamId, memberId)
-      const updatedMembers = await getTeamMembers(teamId)
-      onMembersChange(updatedMembers)
+      await removeMemberMutation.mutateAsync(memberId)
 
       toast({
         title: t('teams.memberRemoved'),
@@ -198,7 +190,7 @@ export function TeamMembersList({
               <TableHead>{t('teams.role')}</TableHead>
               <TableHead>{t('teams.joined')}</TableHead>
               {canManageSeats && <TableHead>{t('teams.seatStatus')}</TableHead>}
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-17.5"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -296,7 +288,6 @@ export function TeamMembersList({
         members={members}
         subscription={subscription}
         currentUserId={currentUserId}
-        onMembersChange={onMembersChange}
       />
     </div>
   )

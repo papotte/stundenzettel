@@ -24,10 +24,10 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSubscriptionContext } from '@/context/subscription-context'
 import { useAuth } from '@/hooks/use-auth'
+import { useCustomerPortal } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
 import { useFormatter } from '@/lib/date-formatter'
 import { navigateTo } from '@/lib/navigation'
-import { paymentService } from '@/services/payment-service'
 import { subscriptionService } from '@/services/subscription-service'
 
 export default function SubscriptionPage() {
@@ -44,6 +44,7 @@ export default function SubscriptionPage() {
   } = useSubscriptionContext()
   const pageLoading = subLoading
   const isSubscriptionOwner = user?.uid === ownerId
+  const portalMutation = useCustomerPortal(user)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -61,23 +62,18 @@ export default function SubscriptionPage() {
     }
   }, [error, t, toast])
 
-  const handleManageBilling = async () => {
+  const handleManageBilling = () => {
     if (!user) return
-
-    try {
-      const { url } = await paymentService.createCustomerPortalSession(
-        user.email,
-        `${window.location.origin}/subscription`,
-      )
-      await paymentService.redirectToCustomerPortal(url)
-    } catch (error) {
-      console.error('Error creating customer portal session:', error)
-      toast({
-        title: t('subscription.errorPortalTitle'),
-        description: t('subscription.errorPortalDescription'),
-        variant: 'destructive',
-      })
-    }
+    portalMutation.mutate(`${window.location.origin}/subscription`, {
+      onError: (error) => {
+        console.error('Error creating customer portal session:', error)
+        toast({
+          title: t('subscription.errorPortalTitle'),
+          description: t('subscription.errorPortalDescription'),
+          variant: 'destructive',
+        })
+      },
+    })
   }
 
   const handleUpgrade = () => {
@@ -86,6 +82,13 @@ export default function SubscriptionPage() {
 
   // Trial-specific helpers
   const isInTrial = subscriptionService.isInTrial(subscription)
+
+  let manageBillingLabel = t('subscription.manageBilling')
+  if (portalMutation.isPending) {
+    manageBillingLabel = t('common.loading')
+  } else if (isInTrial) {
+    manageBillingLabel = t('subscription.addPaymentMethod')
+  }
   const trialEndDate = subscriptionService.getTrialEndDate(subscription)
   const daysRemaining =
     subscriptionService.getDaysRemainingInTrial(subscription)
@@ -223,11 +226,13 @@ export default function SubscriptionPage() {
 
                 {isSubscriptionOwner && (
                   <div className="space-y-3 border-t pt-4">
-                    <Button onClick={handleManageBilling} className="w-full">
+                    <Button
+                      onClick={handleManageBilling}
+                      className="w-full"
+                      disabled={portalMutation.isPending}
+                    >
                       <ExternalLink className="mr-2 size-4" />
-                      {isInTrial
-                        ? t('subscription.addPaymentMethod')
-                        : t('subscription.manageBilling')}
+                      {manageBillingLabel}
                     </Button>
                   </div>
                 )}

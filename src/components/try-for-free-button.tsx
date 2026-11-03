@@ -1,17 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-
 import { Sparkles } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
+import { useCheckout } from '@/hooks/use-subscription'
 import { useToast } from '@/hooks/use-toast'
 import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
-import { paymentService } from '@/services/payment-service'
 
 interface TryForFreeButtonProps {
   plan: PricingPlan
@@ -37,10 +35,9 @@ export default function TryForFreeButton({
   const { user } = useAuth()
   const { toast } = useToast()
   const t = useTranslations('landing')
+  const checkoutMutation = useCheckout(user)
 
-  const [loading, setLoading] = useState(false)
-
-  const handleTryForFree = async () => {
+  const handleTryForFree = () => {
     // Double-check that the plan has trials enabled
     if (!plan.trialEnabled) {
       toast({
@@ -60,35 +57,35 @@ export default function TryForFreeButton({
       return
     }
 
-    setLoading(true)
-    try {
-      // Use email for mock users, uid for real users
-      const userId: string | undefined = getUserId(user)
-      if (!userId) {
-        throw new Error('User ID is missing (neither uid nor email found)')
-      }
-
-      const { url } = await paymentService.createCheckoutSession(
-        userId,
-        user.email,
-        plan.stripePriceId,
-        `${window.location.origin}/subscription?success=true&trial=true`,
-        `${window.location.origin}/pricing?canceled=true`,
-        true, // Enable trials
-        false, // Don't require payment method
-      )
-
-      await paymentService.redirectToCheckout(url)
-    } catch (error) {
-      console.error('Error creating free trial session:', error)
+    // Use email for mock users, uid for real users
+    if (!getUserId(user)) {
       toast({
         title: t('pricing.errorTitle'),
         description: t('pricing.errorDescription'),
         variant: 'destructive',
       })
-    } finally {
-      setLoading(false)
+      return
     }
+
+    checkoutMutation.mutate(
+      {
+        priceId: plan.stripePriceId,
+        successUrl: `${window.location.origin}/subscription?success=true&trial=true`,
+        cancelUrl: `${window.location.origin}/pricing?canceled=true`,
+        trialEnabled: true,
+        requirePaymentMethod: false,
+      },
+      {
+        onError: (error) => {
+          console.error('Error creating free trial session:', error)
+          toast({
+            title: t('pricing.errorTitle'),
+            description: t('pricing.errorDescription'),
+            variant: 'destructive',
+          })
+        },
+      },
+    )
   }
 
   return (
@@ -97,10 +94,12 @@ export default function TryForFreeButton({
       size={size}
       className={`${className} ${showIcon ? 'gap-2' : ''}`}
       onClick={handleTryForFree}
-      disabled={loading}
+      disabled={checkoutMutation.isPending}
     >
       {showIcon && <Sparkles className="size-4" />}
-      {loading ? t('pricing.processing') : t('pricing.tryForFree')}
+      {checkoutMutation.isPending
+        ? t('pricing.processing')
+        : t('pricing.tryForFree')}
     </Button>
   )
 }

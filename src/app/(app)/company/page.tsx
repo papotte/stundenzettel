@@ -33,16 +33,10 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
+import { useTeamMembership } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
-import {
-  useInvalidateUserSettings,
-  useUserSettings,
-} from '@/hooks/use-user-settings'
-import { getUserTeamMembership } from '@/services/team-service'
-import {
-  setUserSettings,
-  stripReadOnlySettingsFields,
-} from '@/services/user-settings-service'
+import { saveUserSettings, useUserSettings } from '@/hooks/use-user-settings'
+import { stripReadOnlySettingsFields } from '@/services/user-settings-service'
 
 const companyFormSchema = z.object({
   companyName: z.string().optional(),
@@ -69,14 +63,13 @@ export default function CompanyPage() {
   const { toast } = useToast()
   const t = useTranslations()
   const {
-    data: settings,
-    isPending: settingsPending,
-    isError: settingsError,
-  } = useUserSettings()
-  const invalidateUserSettings = useInvalidateUserSettings()
+    userSettings: settings,
+    isLoading: settingsPending,
+    error: settingsError,
+    invalidate: invalidateUserSettings,
+  } = useUserSettings(user)
 
   const [isSaving, setIsSaving] = useState(false)
-  const [canManageTeamOptions, setCanManageTeamOptions] = useState(false)
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
@@ -126,27 +119,9 @@ export default function CompanyPage() {
     })
   }, [settingsError, t, toast])
 
-  useEffect(() => {
-    let cancelled = false
-    const loadMembership = async () => {
-      if (!user?.uid) {
-        if (!cancelled) setCanManageTeamOptions(false)
-        return
-      }
-      try {
-        const membership = await getUserTeamMembership(user.uid)
-        const canManage =
-          membership?.role === 'owner' || membership?.role === 'admin'
-        if (!cancelled) setCanManageTeamOptions(canManage)
-      } catch {
-        if (!cancelled) setCanManageTeamOptions(false)
-      }
-    }
-    void loadMembership()
-    return () => {
-      cancelled = true
-    }
-  }, [user?.uid])
+  const { data: membership } = useTeamMembership(user)
+  const canManageTeamOptions =
+    membership?.role === 'owner' || membership?.role === 'admin'
 
   const compensationLocked = Boolean(settings?.locked?.compensation)
   const exportLocked = Boolean(settings?.locked?.export)
@@ -156,8 +131,8 @@ export default function CompanyPage() {
     setIsSaving(true)
     try {
       const base = stripReadOnlySettingsFields(settings)
-      await setUserSettings(user.uid, { ...base, ...data })
-      await invalidateUserSettings(user.uid)
+      await saveUserSettings(user.uid, { ...base, ...data })
+      invalidateUserSettings()
       toast({
         title: t('settings.savedTitle'),
         description: t('settings.savedDescription'),

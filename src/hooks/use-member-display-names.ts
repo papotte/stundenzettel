@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 
+import { useQuery } from '@tanstack/react-query'
+
+import { queryKeys } from '@/lib/query-keys'
 import { getDisplayNamesForMembers } from '@/services/user-settings-service'
+
+const EMPTY_MAP = new Map<string, string>()
 
 /**
  * Fetches displayName for each member via getDisplayNamesForMembers (which uses
@@ -8,29 +13,16 @@ import { getDisplayNamesForMembers } from '@/services/user-settings-service'
  * Fall back to maskEmail(member.email) when displayNames.get(id) is ''.
  */
 export function useMemberDisplayNames(memberIds: string[]) {
-  const [displayNames, setDisplayNames] = useState<Map<string, string>>(
-    () => new Map(),
+  const memberIdsKey = useMemo(
+    () => [...memberIds].sort().join(','),
+    [memberIds],
   )
 
-  const memberIdsKey = memberIds.join(',')
+  const { data } = useQuery({
+    queryKey: queryKeys.memberDisplayNames(memberIdsKey),
+    queryFn: () => getDisplayNamesForMembers(memberIds),
+    enabled: memberIds.length > 0,
+  })
 
-  useEffect(() => {
-    if (memberIds.length === 0) {
-      setDisplayNames(new Map())
-      return
-    }
-
-    let cancelled = false
-
-    getDisplayNamesForMembers(memberIds).then((map) => {
-      if (!cancelled) setDisplayNames(map)
-    })
-
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- memberIdsKey is a stable serialization of memberIds; using memberIds would refire every render when the parent passes a new array ref (e.g. from .map()).
-  }, [memberIdsKey])
-
-  return { displayNames }
+  return { displayNames: data ?? EMPTY_MAP }
 }
