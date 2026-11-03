@@ -2,11 +2,8 @@
 
 import { useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -31,6 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useCreateTeam } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
+import { useZodForm } from '@/hooks/use-zod-form'
 import { paymentService } from '@/services/payment-service'
 
 type TeamFormValues = {
@@ -50,18 +48,18 @@ export function CreateTeamDialog({ userId, userEmail }: CreateTeamDialogProps) {
   const t = useTranslations()
   const createTeamMutation = useCreateTeam(userId)
 
-  const form = useForm<TeamFormValues>({
-    resolver: zodResolver(
-      z.object({
-        name: z.string().min(1, t('teams.teamNameRequired')),
-        description: z.string().optional(),
-      }),
-    ),
-    defaultValues: {
-      name: '',
-      description: '',
+  const form = useZodForm(
+    z.object({
+      name: z.string().min(1, t('teams.teamNameRequired')),
+      description: z.string().optional(),
+    }),
+    {
+      defaultValues: {
+        name: '',
+        description: '',
+      },
     },
-  })
+  )
 
   const onSubmit = async (values: TeamFormValues) => {
     setIsCreating(true)

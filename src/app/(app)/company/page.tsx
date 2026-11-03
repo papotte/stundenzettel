@@ -2,12 +2,9 @@
 
 import { useEffect, useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-
 import { Building, FileSpreadsheet, Loader2, Percent, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { LockedByTeamAlert } from '@/components/locked-by-team-alert'
@@ -36,21 +33,17 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTeamMembership } from '@/hooks/use-team'
 import { useToast } from '@/hooks/use-toast'
 import { saveUserSettings, useUserSettings } from '@/hooks/use-user-settings'
+import { useZodForm } from '@/hooks/use-zod-form'
 import { stripReadOnlySettingsFields } from '@/services/user-settings-service'
 
 const companyFormSchema = z.object({
   companyName: z.string().optional(),
-  companyEmail: z.string().email().optional().or(z.literal('')),
+  companyEmail: z.email().optional().or(z.literal('')),
   companyPhone1: z.string().optional(),
   companyPhone2: z.string().optional(),
   companyFax: z.string().optional(),
-  driverCompensationPercent: z.coerce.number().int().min(0).max(100).optional(),
-  passengerCompensationPercent: z.coerce
-    .number()
-    .int()
-    .min(0)
-    .max(100)
-    .optional(),
+  driverCompensationPercent: z.number().int().min(0).max(100).optional(),
+  passengerCompensationPercent: z.number().int().min(0).max(100).optional(),
   exportIncludeDriverTime: z.boolean(),
   exportIncludePassengerTime: z.boolean(),
 })
@@ -71,8 +64,7 @@ export default function CompanyPage() {
 
   const [isSaving, setIsSaving] = useState(false)
 
-  const form = useForm<CompanyFormValues>({
-    resolver: zodResolver(companyFormSchema),
+  const form = useZodForm(companyFormSchema, {
     mode: 'all',
     defaultValues: {
       companyName: '',
@@ -86,6 +78,7 @@ export default function CompanyPage() {
       exportIncludePassengerTime: true,
     },
   })
+  const { reset } = form
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -95,7 +88,7 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (!settings) return
-    form.reset({
+    reset({
       companyName: settings.companyName || '',
       companyEmail: settings.companyEmail || '',
       companyPhone1: settings.companyPhone1 || '',
@@ -107,8 +100,7 @@ export default function CompanyPage() {
       exportIncludeDriverTime: settings.exportIncludeDriverTime !== false,
       exportIncludePassengerTime: settings.exportIncludePassengerTime !== false,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, form.reset])
+  }, [settings, reset])
 
   useEffect(() => {
     if (!settingsError) return

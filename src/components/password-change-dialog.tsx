@@ -2,11 +2,8 @@
 
 import React, { useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { PasswordInput } from '@/components/inputs/password-input'
@@ -29,6 +26,7 @@ import {
 } from '@/components/ui/form'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { useZodForm } from '@/hooks/use-zod-form'
 import { sendPasswordChangeNotification } from '@/services/email-notification-service'
 import { updateUserPassword } from '@/services/password-update-service'
 
@@ -69,8 +67,7 @@ export default function PasswordChangeDialog({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
 
-  const form = useForm<PasswordChangeFormData>({
-    resolver: zodResolver(passwordChangeSchema),
+  const form = useZodForm(passwordChangeSchema, {
     defaultValues: {
       currentPassword: '',
       newPassword: '',

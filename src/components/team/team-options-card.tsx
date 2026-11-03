@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { Loader2, Save } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -39,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { useZodForm } from '@/hooks/use-zod-form'
 import { queryKeys } from '@/lib/query-keys'
 import type { TeamSettings } from '@/lib/types'
 import {
@@ -48,11 +47,11 @@ import {
 
 const teamOptionsSchema = z.object({
   defaultDriverCompensationPercent: z
-    .number({ coerce: true })
+    .number()
     .min(0, 'Must be at least 0')
     .max(200, 'Cannot be more than 200'),
   defaultPassengerCompensationPercent: z
-    .number({ coerce: true })
+    .number()
     .min(0, 'Must be at least 0')
     .max(200, 'Cannot be more than 200'),
   allowMemberOverrideCompensation: z.boolean(),
@@ -77,8 +76,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
   const [pageLoading, setPageLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
-  const form = useForm<TeamOptionsCardValues>({
-    resolver: zodResolver(teamOptionsSchema),
+  const form = useZodForm(teamOptionsSchema, {
     defaultValues: {
       defaultDriverCompensationPercent: 100,
       defaultPassengerCompensationPercent: 100,
@@ -89,12 +87,13 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
       trackingMode: 'locations',
     },
   })
+  const { reset } = form
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const settings: TeamSettings = await getTeamSettings(teamId)
-        form.reset({
+        reset({
           defaultDriverCompensationPercent:
             settings.defaultDriverCompensationPercent ?? 100,
           defaultPassengerCompensationPercent:
@@ -118,8 +117,7 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
       }
     }
     fetchSettings()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId])
+  }, [teamId, reset, toast, t])
 
   const onSubmit = async (data: TeamOptionsCardValues) => {
     if (!canEdit) return
@@ -205,6 +203,9 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
                           disabled={!canEdit}
                           {...field}
                           value={field.value ?? ''}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -229,6 +230,9 @@ export function TeamOptionsCard({ teamId, canEdit }: TeamOptionsCardProps) {
                           disabled={!canEdit}
                           {...field}
                           value={field.value ?? ''}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormDescription>

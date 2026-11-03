@@ -2,12 +2,9 @@
 
 import React, { useEffect, useId, useState } from 'react'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-
 import { InfoIcon, Loader2, Save, Settings } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import LanguageSelect from '@/components/language-select'
@@ -52,6 +49,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useProjectScope } from '@/hooks/use-projects'
 import { useToast } from '@/hooks/use-toast'
 import { saveUserSettings, useUserSettings } from '@/hooks/use-user-settings'
+import { useZodForm } from '@/hooks/use-zod-form'
 import { locales } from '@/i18n'
 import { calculateExpectedMonthlyHours } from '@/lib/time-utils'
 import { setUserLocale } from '@/services/locale'
@@ -59,12 +57,12 @@ import { stripReadOnlySettingsFields } from '@/services/user-settings-service'
 
 const preferencesFormSchema = z.object({
   displayName: z.string().optional(),
-  defaultWorkHours: z
-    .number({ coerce: true })
+  defaultWorkHours: z.coerce
+    .number()
     .min(1, 'Must be at least 1 hour')
     .max(10, 'Cannot be more than 10 hours'),
-  expectedMonthlyHours: z
-    .number({ coerce: true })
+  expectedMonthlyHours: z.coerce
+    .number()
     .min(1, 'Must be at least 1 hour')
     .max(500, 'Cannot be more than 500 hours')
     .optional(),
@@ -100,12 +98,24 @@ export default function PreferencesPage() {
     projectScopeResult?.membership?.role === 'owner' ||
     projectScopeResult?.membership?.role === 'admin'
   const [isSaving, setIsSaving] = useState(false)
-  const [isExpectedHoursManuallySet, setIsExpectedHoursManuallySet] =
-    useState(false)
+  // null = derive from loaded settings, true/false = user edited or reset
+  const [expectedHoursManualOverride, setExpectedHoursManualOverride] =
+    useState<boolean | null>(null)
+  const isExpectedHoursManuallySet =
+    expectedHoursManualOverride ??
+    Boolean(
+      settings?.expectedMonthlyHours &&
+      settings?.defaultWorkHours &&
+      Math.abs(
+        settings.expectedMonthlyHours -
+          calculateExpectedMonthlyHours({
+            defaultWorkHours: settings.defaultWorkHours,
+          }),
+      ) > 0.1,
+    )
   const languageFieldId = useId()
 
-  const form = useForm<PreferencesFormValues>({
-    resolver: zodResolver(preferencesFormSchema),
+  const form = useZodForm(preferencesFormSchema, {
     mode: 'all',
     defaultValues: {
       defaultWorkHours: 8,
@@ -119,9 +129,10 @@ export default function PreferencesPage() {
       trackingMode: 'locations',
     },
   })
+  const { reset } = form
 
   // Watch defaultWorkHours to auto-calculate expectedMonthlyHours
-  const defaultWorkHours = form.watch('defaultWorkHours')
+  const defaultWorkHours = Number(form.watch('defaultWorkHours'))
 
   useEffect(() => {
     // Only calculate when user manually changes defaultWorkHours (not during initial load)
@@ -141,19 +152,8 @@ export default function PreferencesPage() {
 
   useEffect(() => {
     if (!settings) return
-    const forForm = stripReadOnlySettingsFields(settings)
-    form.reset(forForm)
-
-    if (settings.expectedMonthlyHours && settings.defaultWorkHours) {
-      const autoCalculated = calculateExpectedMonthlyHours({
-        defaultWorkHours: settings.defaultWorkHours,
-      })
-      if (Math.abs(settings.expectedMonthlyHours - autoCalculated) > 0.1) {
-        setIsExpectedHoursManuallySet(true)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, form.reset])
+    reset(stripReadOnlySettingsFields(settings))
+  }, [settings, reset])
 
   useEffect(() => {
     if (!settingsError) return
@@ -328,7 +328,7 @@ export default function PreferencesPage() {
                           type="number"
                           step="0.5"
                           {...field}
-                          value={field.value ?? ''}
+                          value={String(field.value ?? '')}
                         />
                       </FormControl>
                       <FormDescription>
@@ -346,7 +346,7 @@ export default function PreferencesPage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         {t('settings.expectedMonthlyHours')}
-                        {defaultWorkHours && (
+                        {Boolean(defaultWorkHours) && (
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -366,11 +366,11 @@ export default function PreferencesPage() {
                           type="number"
                           step="1"
                           {...field}
-                          value={field.value ?? ''}
+                          value={String(field.value ?? '')}
                           onChange={(e) => {
                             field.onChange(e)
                             // Mark as manually set when user changes the value
-                            setIsExpectedHoursManuallySet(true)
+                            setExpectedHoursManualOverride(true)
                           }}
                         />
                       </FormControl>
@@ -388,7 +388,7 @@ export default function PreferencesPage() {
                                 defaultWorkHours,
                               })
                               form.setValue('expectedMonthlyHours', calculated)
-                              setIsExpectedHoursManuallySet(false)
+                              setExpectedHoursManualOverride(false)
                             }}
                             className="ml-2 text-sm text-primary underline hover:text-primary/80"
                           >
