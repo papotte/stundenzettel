@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { navigateTo } from '@/lib/navigation'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -41,7 +42,7 @@ export default function TrialBanner({
     if (onManageTrial) {
       onManageTrial()
     } else {
-      window.location.href = '/subscription'
+      navigateTo('/subscription')
     }
   }
 

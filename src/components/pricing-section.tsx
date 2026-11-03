@@ -10,6 +10,7 @@ import PricingFAQ from '@/components/pricing/pricing-faq'
 import LoadingIcon from '@/components/ui/loading-icon'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
 import { getPricingPlans, paymentService } from '@/services/payment-service'
@@ -76,7 +77,7 @@ export default function PricingSection({
       const returnUrl = encodeURIComponent(
         `${window.location.origin}/pricing?plan=${plan.id}`,
       )
-      window.location.href = `/login?returnUrl=${returnUrl}`
+      navigateTo(`/login?returnUrl=${returnUrl}`)
       return
     }
 
@@ -121,12 +122,12 @@ export default function PricingSection({
       const returnUrl = encodeURIComponent(
         `${window.location.origin}/pricing?plan=${plan.id}`,
       )
-      window.location.href = `/login?returnUrl=${returnUrl}`
+      navigateTo(`/login?returnUrl=${returnUrl}`)
       return
     }
 
     // Redirect to team page for team plans
-    window.location.href = '/team?tab=subscription'
+    navigateTo('/team?tab=subscription')
   }
 
   const containerClasses =

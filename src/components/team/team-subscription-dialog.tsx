@@ -21,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/use-auth'
 import { useToast } from '@/hooks/use-toast'
+import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan, Team } from '@/lib/types'
 import { getUserId } from '@/lib/utils'
 import { getPricingPlans } from '@/services/payment-service'
@@ -146,7 +147,7 @@ export function TeamSubscriptionDialog({
         const { url } = await response.json()
         onOpenChange(false)
         onSubscriptionCreated?.()
-        window.location.href = url
+        navigateTo(url)
       } else {
         throw new Error('Failed to create checkout session')
       }

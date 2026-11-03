@@ -2,6 +2,7 @@ import React from 'react'
 
 import { fireEvent, render, screen } from '@jest-setup'
 
+import { navigateTo } from '@/lib/navigation'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
 
@@ -15,6 +16,8 @@ jest.mock('@/services/subscription-service', () => ({
     isTrialExpiringSoon: jest.fn(),
   },
 }))
+
+const mockNavigateTo = navigateTo as jest.Mock
 
 const mockSubscriptionService = subscriptionService as jest.Mocked<
   typeof subscriptionService
@@ -186,25 +189,11 @@ describe('TrialBanner', () => {
       mockSubscriptionService.getDaysRemainingInTrial.mockReturnValue(5)
       mockSubscriptionService.isTrialExpiringSoon.mockReturnValue(false)
 
-      // Mock window.location.href
-      const originalLocation = window.location
-      const mockLocation = { ...originalLocation, href: '' }
-      Object.defineProperty(window, 'location', {
-        value: mockLocation,
-        writable: true,
-      })
-
       render(<TrialBanner subscription={createMockSubscription('trialing')} />)
 
       fireEvent.click(screen.getByTestId('trial-banner-manage-button'))
 
-      expect(window.location.href).toBe('/subscription')
-
-      // Restore original location
-      Object.defineProperty(window, 'location', {
-        value: originalLocation,
-        writable: true,
-      })
+      expect(mockNavigateTo).toHaveBeenCalledWith('/subscription')
     })
 
     it('calls custom onManageTrial handler when provided', () => {

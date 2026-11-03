@@ -1,3 +1,4 @@
+import { navigateTo } from '@/lib/navigation'
 import type { PricingPlan } from '@/lib/types'
 import {
   _resetPricingPlansCacheForTest,
@@ -21,6 +22,8 @@ jest.mock('@/services/stripe-service', () => ({
     getPricingPlans: jest.fn(),
   },
 }))
+
+const mockNavigateTo = navigateTo as jest.Mock
 
 // Mock fetch
 global.fetch = jest.fn()
@@ -278,47 +281,25 @@ describe('PaymentService', () => {
 
     describe('redirectToCheckout', () => {
       it('redirects to checkout URL', async () => {
-        // Mock window.location
-        const originalLocation = window.location
-        Object.defineProperty(window, 'location', {
-          value: { href: '' },
-          writable: true,
-        })
-
         await paymentService.redirectToCheckout(
           'https://checkout.stripe.com/123',
         )
 
-        expect(window.location.href).toBe('https://checkout.stripe.com/123')
-
-        // Restore original location
-        Object.defineProperty(window, 'location', {
-          value: originalLocation,
-          writable: true,
-        })
+        expect(mockNavigateTo).toHaveBeenCalledWith(
+          'https://checkout.stripe.com/123',
+        )
       })
     })
 
     describe('redirectToCustomerPortal', () => {
       it('redirects to customer portal URL', async () => {
-        // Mock window.location
-        const originalLocation = window.location
-        Object.defineProperty(window, 'location', {
-          value: { href: '' },
-          writable: true,
-        })
-
         await paymentService.redirectToCustomerPortal(
           'https://billing.stripe.com/portal',
         )
 
-        expect(window.location.href).toBe('https://billing.stripe.com/portal')
-
-        // Restore original location
-        Object.defineProperty(window, 'location', {
-          value: originalLocation,
-          writable: true,
-        })
+        expect(mockNavigateTo).toHaveBeenCalledWith(
+          'https://billing.stripe.com/portal',
+        )
       })
     })
 

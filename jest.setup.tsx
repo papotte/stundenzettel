@@ -71,6 +71,12 @@ jest.mock('@/context/subscription-context', () => ({
 // Export for use in tests
 export { defaultMockSubscriptionContext }
 
+// Global mock for navigateTo: jsdom cannot navigate and window.location is
+// non-configurable, so tests assert on navigateTo instead.
+jest.mock('@/lib/navigation', () => ({
+  navigateTo: jest.fn(),
+}))
+
 // Avoid loading next/cache (use cache, etc.) in Node—uses TextEncoder.
 jest.mock('next/cache', () => ({
   cacheLife: jest.fn(),

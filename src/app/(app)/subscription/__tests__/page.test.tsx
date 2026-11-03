@@ -6,6 +6,7 @@ import { render, screen, waitFor } from '@jest-setup'
 import { useRouter } from 'next/navigation'
 
 import { useSubscriptionContext } from '@/context/subscription-context'
+import { navigateTo } from '@/lib/navigation'
 import type { Subscription } from '@/lib/types'
 import { subscriptionService } from '@/services/subscription-service'
 import { createMockAuthContext, createMockUser } from '@/test-utils/auth-mocks'
@@ -39,6 +40,8 @@ jest.mock('@/services/payment-service', () => ({
     redirectToCustomerPortal: jest.fn(),
   },
 }))
+
+const mockNavigateTo = navigateTo as jest.Mock
 
 // Mock toast
 jest.mock('@/hooks/use-toast', () => ({
@@ -175,13 +178,6 @@ describe('SubscriptionPage', () => {
       invalidateSubscription: jest.fn(),
     })
 
-    // Mock window.location
-    const originalLocation = window.location
-    Object.defineProperty(window, 'location', {
-      value: { href: '' },
-      writable: true,
-    })
-
     renderWithProviders(<SubscriptionPage />)
 
     await waitFor(() => {
@@ -190,12 +186,6 @@ describe('SubscriptionPage', () => {
 
     await user.click(screen.getByText('subscription.upgrade'))
 
-    expect(window.location.href).toBe('/pricing')
-
-    // Restore original location
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-    })
+    expect(mockNavigateTo).toHaveBeenCalledWith('/pricing')
   })
 })
