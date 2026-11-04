@@ -71,6 +71,10 @@ jobs:
           NEXT_PUBLIC_FIREBASE_APP_ID=test-app-id
           NEXT_PUBLIC_FIREBASE_DATABASE_ID=test-database
 
+          # Emulator endpoints (prefixed ports, see firebase.json)
+          NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST=localhost:18080
+          NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=localhost:19099
+
           # Stripe (Test config - using real secrets)
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}

@@ -128,7 +128,7 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
       "oxfmt --no-error-on-unmatched-pattern",
-      "oxlint --fix"
+      "oxlint --fix --no-error-on-unmatched-pattern"
     ],
     "*.{md,json,yml,yaml}": [
       "oxfmt --no-error-on-unmatched-pattern"

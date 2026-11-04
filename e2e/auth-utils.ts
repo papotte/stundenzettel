@@ -29,9 +29,9 @@ const firebaseConfig = {
 }
 
 const firestoreEmulatorHost =
-  process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080'
+  process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST ?? 'localhost:8080'
 const authEmulatorHost =
-  process.env.FIREBASE_AUTH_EMULATOR_HOST ?? 'localhost:9099'
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST ?? 'localhost:9099'
 const [firestoreHost, firestorePort] = firestoreEmulatorHost.split(':')
 
 let app: FirebaseApp
