@@ -1,3 +1,11 @@
+## [1.34.4](https://github.com/papotte/stundenzettel/compare/v1.34.3...v1.34.4) (2026-11-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency zod to v4 ([#269](https://github.com/papotte/stundenzettel/issues/269)) ([1f55ca4](https://github.com/papotte/stundenzettel/commit/1f55ca416115cb354783b7aa150cc5922982a7d5))
+* disable React Query devtools in test environment ([9fabddd](https://github.com/papotte/stundenzettel/commit/9fabdddcaf6abba42422be19df5035b618a73b42))
+
 ## [1.34.3](https://github.com/papotte/stundenzettel/compare/v1.34.2...v1.34.3) (2026-11-03)
 
 
